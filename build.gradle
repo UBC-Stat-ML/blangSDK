@@ -1,0 +1,29 @@
+plugins {
+    id 'org.xtext.builder' version '1.0.5'
+    id 'java'
+  }
+
+  repositories {
+    maven {
+      url "https://ubc-stat-ml.github.io/artifacts/"
+    }
+    maven {
+      url "http://www.stat.ubc.ca/~bouchard/maven/"
+    }
+    jcenter()
+  }
+
+  dependencies {
+    xtextLanguages 'ca.ubc.stat.blang:ca.ubc.stat.blang:3.0.2'
+    compile 'ca.ubc.stat.blang:ca.ubc.stat.blang:3.0.2'
+  }
+
+  xtext {
+    languages {
+      blang {
+        setup = 'ca.ubc.stat.blang.BlangDslStandaloneSetup'
+        fileExtension = 'bl'
+        generator.outlet.producesJava = true
+      }
+    }
+  }
