@@ -5,6 +5,5 @@ Summary
 
 A template for creating blang projects. 
 
-See https://github.com/UBC-Stat-ML/blangDoc/using-from-command-line.md 
-
+See https://github.com/UBC-Stat-ML/blangDoc/blob/master/using-from-command-line.md
 
