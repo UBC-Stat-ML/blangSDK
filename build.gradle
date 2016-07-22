@@ -12,10 +12,12 @@ plugins {
     }
     jcenter()
   }
+  
+  def blangVersion = '3.0.3'
 
   dependencies {
-    xtextLanguages 'ca.ubc.stat.blang:ca.ubc.stat.blang:3.0.2'
-    compile 'ca.ubc.stat.blang:ca.ubc.stat.blang:3.0.2'
+    xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
+    compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   }
 
   xtext {
