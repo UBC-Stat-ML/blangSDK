@@ -1,31 +1,33 @@
 plugins {
-    id 'org.xtext.builder' version '1.0.5'
-    id 'java'
-  }
+  id 'org.xtext.builder' version '1.0.5'
+  id 'java'
+  id 'eclipse'
+}
 
-  repositories {
-    maven {
-      url "https://ubc-stat-ml.github.io/artifacts/"
-    }
-    maven {
-      url "http://www.stat.ubc.ca/~bouchard/maven/"
-    }
-    jcenter()
+repositories {
+  maven {
+    url "https://ubc-stat-ml.github.io/artifacts/"
   }
-  
-  def blangVersion = '3.0.3'
+  maven {
+    url "http://www.stat.ubc.ca/~bouchard/maven/"
+  }
+  jcenter()
+}
 
-  dependencies {
-    xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
-    compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
-  }
+def blangVersion = '3.0.3'
 
-  xtext {
-    languages {
-      blang {
-        setup = 'ca.ubc.stat.blang.BlangDslStandaloneSetup'
-        fileExtension = 'bl'
-        generator.outlet.producesJava = true
-      }
+dependencies {
+  xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
+  compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
+  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.10.0'
+}
+
+xtext {
+  languages {
+    blang {
+      setup = 'ca.ubc.stat.blang.BlangDslStandaloneSetup'
+      fileExtension = 'bl'
+      generator.outlet.producesJava = true
     }
   }
+}
