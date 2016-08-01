@@ -1,0 +1,33 @@
+import java.util.List
+import types.Real
+import types.Int
+import utils.StaticUtils
+
+model {
+	
+	param Real m
+	param Real v
+	param Real observationV
+	
+	random Real piLog
+	random List<Real> means
+	random List<Int> mixtureIndicators
+	random List<Real> observations
+	
+	laws {
+		
+		piLog | m, v ~ Normal(m, v)
+		
+		for (int i : StaticUtils::range(1)) {
+			means.get(i) | m, v ~ Normal(m, v)
+		}
+		
+		for (int i : StaticUtils::range(observations.size())) {
+			mixtureIndicators.get(i) | piLog ~ Bernoulli([StaticUtils::logistic(piLog.doubleValue)])
+			observations.get(i) | observationV, means, Int curIndic = mixtureIndicators.get(i) ~ Normal(
+				means.get(curIndic.intValue), 
+				observationV 
+			)
+		}
+	}
+}
