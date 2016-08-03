@@ -2,5 +2,5 @@ package types
 
 @FunctionalInterface
 interface Real {
-	def double doubleValue()
+  def double doubleValue()
 }

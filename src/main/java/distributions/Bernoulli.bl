@@ -4,26 +4,26 @@ import types.Real
 import types.Int
 
 model {
-	
-	param Real probability
-	
-	random Int realization
-	
-	laws {
-		
-		logf(probability, realization) = {
-			switch (realization) {
-				case 0  : 1.0 -  probability.doubleValue
-				case 1  : probability.doubleValue
-				default :
-					throw new RuntimeException("Not supported")
-			}
-		}
-		
-		indicator(realization) = {
-			realization.intValue == 0 || realization.intValue == 1
-		}
-		
-	}
-	
+  
+  param Real probability
+  
+  random Int realization
+  
+  laws {
+    
+    logf(probability, realization) = {
+      switch (realization) {
+        case 0  : 1.0 -  probability.doubleValue
+        case 1  : probability.doubleValue
+        default :
+          throw new RuntimeException("Not supported")
+      }
+    }
+    
+    indicator(realization) = {
+      realization.intValue == 0 || realization.intValue == 1
+    }
+    
+  }
+  
 }
