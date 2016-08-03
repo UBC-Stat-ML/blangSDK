@@ -20,6 +20,10 @@ model {
 			}
 		}
 		
+		indicator(realization) = {
+			realization.intValue == 0 || realization.intValue == 1
+		}
+		
 	}
 	
 }

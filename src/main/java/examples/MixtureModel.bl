@@ -23,11 +23,10 @@ model {
 		}
 		
 		for (int i : StaticUtils::range(observations.size())) {
-			mixtureIndicators.get(i) | piLog ~ Bernoulli([StaticUtils::logistic(piLog.doubleValue)])
-			observations.get(i) | observationV, means, Int curIndic = mixtureIndicators.get(i) ~ Normal(
-				means.get(curIndic.intValue), 
-				observationV 
-			)
+			mixtureIndicators.get(i) | piLog 
+				~ Bernoulli([StaticUtils::logistic(piLog.doubleValue)])
+			observations.get(i) | observationV, means, Int curIndic = mixtureIndicators.get(i) 
+				~ Normal(means.get(curIndic.intValue), observationV)
 		}
 	}
 }

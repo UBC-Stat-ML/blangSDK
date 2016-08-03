@@ -12,8 +12,12 @@ model {
 	laws {  
 		
 		logf(mean, variance, realization) = {
-			- 0.5 * Math.log(2.00 * Math.PI ) 
+			- 0.5 * Math.log(2.0 * Math.PI ) 
 			- 0.5 * (mean.doubleValue - realization.doubleValue) ** 2
+		}
+		
+		indicator(variance) = {
+			variance.doubleValue > 0
 		}
 	}
 	
