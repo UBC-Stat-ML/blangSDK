@@ -1,5 +1,6 @@
 package blang.accessibility;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -175,6 +176,11 @@ public class AccessibilityGraph
     result.addVertexAttribute("color",     node -> node.isMutable() ? "red" : "black");
     result.addVertexAttribute("fontcolor", node -> node.isMutable() ? "red" : "black");
     return result;
+  }
+  
+  public void exportDot(File file) 
+  {
+    toDotExporter().export(file);
   }
 
   public Stream<Node> getAccessibleNodes(Object from)

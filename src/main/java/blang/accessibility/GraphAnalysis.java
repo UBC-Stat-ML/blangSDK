@@ -1,5 +1,6 @@
 package blang.accessibility;
 
+import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -94,6 +95,10 @@ public class GraphAnalysis
 //    - question: how to deal with gradients?
 //    - need to think about RF vs MH infrastructure
   
+  public void exportFactorGraphVisualization(File file) 
+  {
+    factorGraphVisualization().export(file);
+  }
   
   public DotExporter<Node, UnorderedPair<Node, Node>> factorGraphVisualization()
   {

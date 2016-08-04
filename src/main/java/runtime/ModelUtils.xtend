@@ -56,8 +56,8 @@ class ModelUtils {
     // analyze the object graph
     var GraphAnalysis graphAnalysis = GraphAnalysis.create(inputs) 
     // output visualization of the graph
-//    graphAnalysis.accessibilityGraph.toDotExporter().export(Results.getFileInResultFolder("accessibility-graph.dot")) 
-//    graphAnalysis.factorGraphVisualization().export(Results.getFileInResultFolder("factor-graph.dot")) 
+    graphAnalysis.accessibilityGraph.exportDot(Results.getFileInResultFolder("accessibility-graph.dot")) 
+    graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot")) 
     System.out.println(graphAnalysis.toStringSummary()) 
     // create the samplers
     return SamplerBuilder.instantiateSamplers(graphAnalysis) 
