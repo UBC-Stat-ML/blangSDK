@@ -17,7 +17,6 @@ import java.util.Random
 import utils.StaticUtils
 import blang.annotations.Param
 import java.lang.reflect.ParameterizedType
-import java.util.function.Supplier
 import java.lang.reflect.Type
 
 class Runner implements Runnable {
@@ -97,10 +96,8 @@ class Runner implements Runnable {
   def static private Class<?> getImplementation(Class<?> boxedType, Type boxedTypeWithGenerics, boolean isParam) {
     val Class<?> deboxedType = {
       if (isParam) {
+        // given Supplier<T>, returns T
         StaticUtils::pickUnique((boxedTypeWithGenerics as ParameterizedType).actualTypeArguments) as Class<?>
-//        // find the Supplier 
-//        val ParameterizedType supplierInterfaceSpec = StaticUtils::pickUnique(boxedTypeWithGenerics.class.genericInterfaces.filter(ParameterizedType).filter[it.rawType == Supplier])
-//        StaticUtils::pickUnique(supplierInterfaceSpec.actualTypeArguments) as Class<?>
       } else {
         boxedType
       }

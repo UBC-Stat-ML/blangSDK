@@ -15,8 +15,6 @@ import blang.core.Sampler
 import java.lang.reflect.Field
 import blang.accessibility.Inputs
 
-import bayonet.graphs.DotExporter
-
 class ModelUtils {
   
   /**
