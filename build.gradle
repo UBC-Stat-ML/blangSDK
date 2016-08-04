@@ -14,12 +14,15 @@ repositories {
   jcenter()
 }
 
-def blangVersion = '3.2.1'
+def blangVersion = '3.2.3'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.10.0'
+  compile group: 'ca.ubc.stat', name: 'briefj', version: '2.4.13'
+  compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.0.0'
+  compile group: 'org.jgrapht', name: 'jgrapht-dist', version: '0.9.0'
 }
 
 xtext {
