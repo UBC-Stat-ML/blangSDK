@@ -24,6 +24,10 @@ model {
       realization.intValue == 0 || realization.intValue == 1
     }
     
+    indicator(probability) = {
+      probability.doubleValue >= 0.0 && probability.doubleValue <= 1.0
+    }
+    
   }
   
 }
