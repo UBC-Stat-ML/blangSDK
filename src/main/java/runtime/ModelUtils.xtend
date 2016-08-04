@@ -13,7 +13,9 @@ import blang.core.SamplerBuilder
 import blang.accessibility.GraphAnalysis
 import blang.core.Sampler
 import java.lang.reflect.Field
-import blang.accessibility.GraphAnalysis.Inputs
+import blang.accessibility.Inputs
+
+import bayonet.graphs.DotExporter
 
 class ModelUtils {
   
@@ -52,10 +54,10 @@ class ModelUtils {
           throw new RuntimeException(e)
         }
     // analyze the object graph
-    var GraphAnalysis graphAnalysis=GraphAnalysis.create(inputs) 
+    var GraphAnalysis graphAnalysis = GraphAnalysis.create(inputs) 
     // output visualization of the graph
-    graphAnalysis.accessibilityGraph.toDotExporter().export(Results.getFileInResultFolder("accessibility-graph.dot")) 
-    graphAnalysis.factorGraphVisualization().export(Results.getFileInResultFolder("factor-graph.dot")) 
+//    graphAnalysis.accessibilityGraph.toDotExporter().export(Results.getFileInResultFolder("accessibility-graph.dot")) 
+//    graphAnalysis.factorGraphVisualization().export(Results.getFileInResultFolder("factor-graph.dot")) 
     System.out.println(graphAnalysis.toStringSummary()) 
     // create the samplers
     return SamplerBuilder.instantiateSamplers(graphAnalysis) 

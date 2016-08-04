@@ -30,30 +30,6 @@ import com.google.common.collect.LinkedHashMultimap;
  */
 public class GraphAnalysis
 {
-  public static class Inputs
-  {
-    public final AccessibilityGraph accessibilityGraph = new AccessibilityGraph();
-    private final LinkedHashSet<Node> 
-      nonRecursiveObservedNodes = new LinkedHashSet<>(), 
-      recursiveObservedNodes = new LinkedHashSet<>();
-    
-    private final LinkedHashSet<ObjectNode<Factor>> factors = new LinkedHashSet<>();
-    
-    public final TypeProvider<Class<? extends Operator>> typeProvider = RecursiveAnnotationProducer.ofClasses(Samplers.class, true);
-    
-    public void addFactor(Factor f)
-    {
-      ObjectNode<Factor> factorNode = new ObjectNode<>(f);
-      accessibilityGraph.add(factorNode);
-      factors.add(factorNode);
-    }
-    
-    public void addVariable(Object variable)
-    {
-      // TODO: discover names
-      accessibilityGraph.add(variable);
-    }
-  }
   
   public static GraphAnalysis create(Inputs inputs)
   {
