@@ -15,6 +15,10 @@ import java.util.List
 import java.util.Map
 import java.util.Random
 import utils.StaticUtils
+import blang.annotations.Param
+import java.lang.reflect.ParameterizedType
+import java.util.function.Supplier
+import java.lang.reflect.Type
 
 class Runner implements Runnable {
   
@@ -42,13 +46,19 @@ class Runner implements Runnable {
     
     // Build argument lists
     val List<Object> arguments = new ArrayList
-    for (Parameter constructorArg : constructor.parameters) {
+    val Type [] argumentsWithGenerics = constructor.genericParameterTypes
+    val Parameter [] parameters = constructor.parameters
+    for (var int i = 0; i < parameters.size(); i++) {
+      val Parameter constructorArg = parameters.get(i)
       // Find deboxed name
       val DeboxedName deboxedName = StaticUtils::pickUnique(constructorArg.getAnnotationsByType(DeboxedName))
       val String key = deboxedName.value()
       
+      val boolean isParam = !constructorArg.getAnnotationsByType(Param).isEmpty()
+      
       // Find an implementation, i.e. use @DefaultImplementation if constr.type is an interface 
-      val Class<?> argumentType = getImplementation(constructorArg.type)
+      
+      val Class<?> argumentType = getImplementation(constructorArg.type, argumentsWithGenerics.get(i), isParam)
       
       // See if a command line argument was provided
       val String commandLineArg = parsedInputs.get(key)   // TODO: check spaces get trimmed
@@ -58,7 +68,15 @@ class Runner implements Runnable {
       } else {
         instantiateConstructorArgument(argumentType, commandLineArg)        
       }
-      arguments.add(instantiatedArgument)
+      
+      // Do boxing if it's a param
+      val Object instantiatedBoxedArgument = if (isParam) {
+        new ConstantSupplier(instantiatedArgument)
+      } else {
+        instantiatedArgument
+      }
+      
+      arguments.add(instantiatedBoxedArgument)
     }
     val Object [] argumentsVarArg = arguments
     return constructor.newInstance(argumentsVarArg) as Model
@@ -76,13 +94,23 @@ class Runner implements Runnable {
     return type.getConstructor(String).newInstance(commandLineArgument)
   }
   
-  def static private Class<?> getImplementation(Class<?> type) {
-    if (type.isInterface()) {
+  def static private Class<?> getImplementation(Class<?> boxedType, Type boxedTypeWithGenerics, boolean isParam) {
+    val Class<?> deboxedType = {
+      if (isParam) {
+        StaticUtils::pickUnique((boxedTypeWithGenerics as ParameterizedType).actualTypeArguments) as Class<?>
+//        // find the Supplier 
+//        val ParameterizedType supplierInterfaceSpec = StaticUtils::pickUnique(boxedTypeWithGenerics.class.genericInterfaces.filter(ParameterizedType).filter[it.rawType == Supplier])
+//        StaticUtils::pickUnique(supplierInterfaceSpec.actualTypeArguments) as Class<?>
+      } else {
+        boxedType
+      }
+    }
+    if (deboxedType.isInterface()) {
       // use type annotation @DefaultImplementation if it's an interface
-      val DefaultImplementation defaultImplAnn = StaticUtils::pickUnique(type.getAnnotationsByType(DefaultImplementation))
+      val DefaultImplementation defaultImplAnn = StaticUtils::pickUnique(deboxedType.getAnnotationsByType(DefaultImplementation))
       return defaultImplAnn.value()
     } else {
-      return type
+      return deboxedType
     }
   }
   

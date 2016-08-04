@@ -18,7 +18,7 @@ class StaticUtils {
     return 1.0 / (1.0 + Math.exp(-value))
   }
   
-  def static <T> T pickUnique(Collection<T> collection) {
+  def static <T> T pickUnique(Iterable<T> collection) {
     if (collection.size() != 1) {
       throw new RuntimeException('''Expected collection of size 1 but found a collection of size «collection.size»''')
     }
