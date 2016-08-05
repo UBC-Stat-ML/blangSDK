@@ -18,9 +18,12 @@ class StaticUtils {
     return 1.0 / (1.0 + Math.exp(-value))
   }
   
-  def static <T> T pickUnique(Iterable<T> collection) {
+  def static <T> T pickUnique(Iterable<T> collection, String errorMessage) {
+    // TODO: add some mechanism to report more informative error messages
     if (collection.size() != 1) {
-      throw new RuntimeException('''Expected collection of size 1 but found a collection of size «collection.size»''')
+      throw new RuntimeException('''
+        «errorMessage»
+        Details: Expected collection of size 1 but found a collection of size «collection.size»''')
     }
     return collection.iterator().next()
   }

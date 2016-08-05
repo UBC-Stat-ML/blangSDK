@@ -41,7 +41,9 @@ class Runner implements Runnable {
     val Map<String, String> parsedInputs = parseInputs(inputs)
     
     // Find constructor
-    val Constructor<?> constructor = StaticUtils.pickUnique(modelType.constructors)
+    val Constructor<?> constructor = StaticUtils.pickUnique(modelType.constructors, 
+      "Malformed compiled blang model; there should be exactly one constructor (based on the full list of variables)."
+    )
     
     // Build argument lists
     val List<Object> arguments = new ArrayList
@@ -50,7 +52,9 @@ class Runner implements Runnable {
     for (var int i = 0; i < parameters.size(); i++) {
       val Parameter constructorArg = parameters.get(i)
       // Find deboxed name
-      val DeboxedName deboxedName = StaticUtils::pickUnique(constructorArg.getAnnotationsByType(DeboxedName))
+      val DeboxedName deboxedName = StaticUtils::pickUnique(constructorArg.getAnnotationsByType(DeboxedName), 
+        "Malformed compiled blang model; variables should each have exactly @DeboxedName annotation"
+      )
       val String key = deboxedName.value()
       
       val boolean isParam = !constructorArg.getAnnotationsByType(Param).isEmpty()
@@ -97,14 +101,18 @@ class Runner implements Runnable {
     val Class<?> deboxedType = {
       if (isParam) {
         // given Supplier<T>, returns T
-        StaticUtils::pickUnique((boxedTypeWithGenerics as ParameterizedType).actualTypeArguments) as Class<?>
+        StaticUtils::pickUnique((boxedTypeWithGenerics as ParameterizedType).actualTypeArguments, 
+          "Malformed compiled blang model; params should be of type Supplier<T>.") as Class<?>
       } else {
         boxedType
       }
     }
     if (deboxedType.isInterface()) {
       // use type annotation @DefaultImplementation if it's an interface
-      val DefaultImplementation defaultImplAnn = StaticUtils::pickUnique(deboxedType.getAnnotationsByType(DefaultImplementation))
+      val DefaultImplementation defaultImplAnn = StaticUtils::pickUnique(
+        deboxedType.getAnnotationsByType(DefaultImplementation),
+          "Interfaces used in param variables should have an @DefaultImplementation annotation to allow automatic instantiation."
+      )
       return defaultImplAnn.value()
     } else {
       return deboxedType
