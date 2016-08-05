@@ -3,6 +3,7 @@ plugins {
   id 'org.xtext.builder' version '1.0.8'
   id 'java'
   id 'eclipse'
+  id 'maven'
 }
 
 repositories {
@@ -24,6 +25,7 @@ dependencies {
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.4.13'
   compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.0.0'
   compile group: 'org.jgrapht', name: 'jgrapht-dist', version: '0.9.0'
+  /* Some directive to add SDK in the dependencies block */
 }
 
 xtext {
@@ -32,6 +34,51 @@ xtext {
       setup = 'ca.ubc.stat.blang.BlangDslStandaloneSetup'
       fileExtension = 'bl'
       generator.outlet.producesJava = true
+    }
+  }
+}
+
+/** Deployment information */
+
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      repository(url: "file:///${System.properties['user.home']}/artifacts/")
+      snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
+      pom.version = "1.0.0"
+      pom.artifactId = "blangSDK"
+      pom.groupId = "ca.ubc.stat"
+    }
+  }
+}
+
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from 'build/docs/javadoc'
+}
+
+artifacts {
+  archives jar
+  archives sourcesJar
+  archives javadocJar
+}
+
+
+
+if (JavaVersion.current().isJava8Compatible()) {
+  allprojects {
+    //noinspection SpellCheckingInspection
+    tasks.withType(Javadoc) {
+      // disable the crazy super-strict doclint tool in Java 8
+      //noinspection SpellCheckingInspection
+      options.addStringOption('Xdoclint:none', '-quiet')
     }
   }
 }
