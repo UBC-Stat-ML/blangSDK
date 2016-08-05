@@ -1,8 +1,6 @@
-package blang.core;
+package blang.mcmc;
 
 import java.util.Random;
-
-import blang.mcmc.Operator;
 
 
 

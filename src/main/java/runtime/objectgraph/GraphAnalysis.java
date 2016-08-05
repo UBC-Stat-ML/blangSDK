@@ -1,4 +1,4 @@
-package blang.accessibility;
+package runtime.objectgraph;
 
 import java.io.File;
 import java.util.LinkedHashSet;
@@ -11,12 +11,12 @@ import org.jgrapht.UndirectedGraph;
 
 import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
-import blang.accessibility.AccessibilityGraph.Node;
-import blang.annotations.util.TypeProvider;
 import blang.core.Factor;
 import blang.mcmc.Operator;
 import briefj.BriefCollections;
 import briefj.collections.UnorderedPair;
+import runtime.objectgraph.AccessibilityGraph.Node;
+import utils.TypeProvider;
 
 import com.google.common.collect.LinkedHashMultimap;
 

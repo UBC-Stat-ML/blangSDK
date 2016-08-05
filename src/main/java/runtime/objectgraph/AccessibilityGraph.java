@@ -1,4 +1,4 @@
-package blang.accessibility;
+package runtime.objectgraph;
 
 import java.io.File;
 import java.util.Iterator;

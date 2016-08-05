@@ -1,11 +1,10 @@
-package blang.core;
+package blang.mcmc;
 
 import java.util.List;
 import java.util.Random;
 
 import blang.core.LogScaleFactor;
-import blang.mcmc.ConnectedFactor;
-import blang.mcmc.SampledVariable;
+import blang.core.SupportFactor;
 
 
 

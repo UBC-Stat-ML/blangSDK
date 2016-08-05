@@ -2,7 +2,6 @@ package utils
 
 import java.util.List
 import java.util.ArrayList
-import java.util.Collection
 
 class StaticUtils {
   

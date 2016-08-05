@@ -2,7 +2,6 @@ package blang.mcmc;
 
 import java.util.Random;
 
-import blang.core.MHSampler;
 import types.IntImplementation;
 
 

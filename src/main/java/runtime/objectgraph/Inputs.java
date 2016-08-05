@@ -1,13 +1,13 @@
-package blang.accessibility;
+package runtime.objectgraph;
 
 import java.util.LinkedHashSet;
 
-import blang.accessibility.AccessibilityGraph.Node;
-import blang.annotations.Samplers;
-import blang.annotations.util.RecursiveAnnotationProducer;
-import blang.annotations.util.TypeProvider;
 import blang.core.Factor;
 import blang.mcmc.Operator;
+import blang.mcmc.Samplers;
+import runtime.objectgraph.AccessibilityGraph.Node;
+import utils.RecursiveAnnotationProducer;
+import utils.TypeProvider;
 
 public class Inputs {
   public final AccessibilityGraph accessibilityGraph = new AccessibilityGraph();

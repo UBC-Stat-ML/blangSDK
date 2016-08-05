@@ -1,6 +1,6 @@
-package blang.accessibility;
+package runtime.objectgraph;
 
-import blang.accessibility.AccessibilityGraph.Node;
+import runtime.objectgraph.AccessibilityGraph.Node;
 
 
 

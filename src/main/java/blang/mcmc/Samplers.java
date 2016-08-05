@@ -1,11 +1,9 @@
-package blang.annotations;
+package blang.mcmc;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import blang.mcmc.Operator;
 
 
 

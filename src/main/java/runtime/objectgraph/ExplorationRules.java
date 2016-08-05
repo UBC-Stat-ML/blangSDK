@@ -1,4 +1,4 @@
-package blang.accessibility;
+package runtime.objectgraph;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;

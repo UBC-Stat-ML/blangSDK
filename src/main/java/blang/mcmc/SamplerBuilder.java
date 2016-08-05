@@ -1,4 +1,4 @@
-package blang.core;
+package blang.mcmc;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -6,13 +6,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import blang.accessibility.GraphAnalysis;
-import blang.accessibility.ObjectNode;
 import blang.core.Factor;
-import blang.mcmc.ConnectedFactor;
-import blang.mcmc.NodeMoveUtils;
-import blang.mcmc.Operator;
 import briefj.ReflexionUtils;
+import runtime.objectgraph.GraphAnalysis;
+import runtime.objectgraph.ObjectNode;
 
 
 

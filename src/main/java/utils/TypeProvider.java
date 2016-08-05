@@ -1,4 +1,4 @@
-package blang.annotations.util;
+package utils;
 
 import java.util.Collection;
 

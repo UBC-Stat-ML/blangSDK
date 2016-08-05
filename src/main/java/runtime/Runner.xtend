@@ -2,7 +2,7 @@ package runtime
 
 import blang.core.DeboxedName
 import blang.core.Model
-import blang.core.Sampler
+import blang.mcmc.Sampler
 import briefj.opt.Option
 import briefj.run.Mains
 import com.google.common.base.Optional

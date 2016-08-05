@@ -1,4 +1,4 @@
-package blang.accessibility;
+package runtime.objectgraph;
 
 import com.google.common.collect.ImmutableList;
 

@@ -1,6 +1,6 @@
 package types
 
-import blang.annotations.Samplers
+import blang.mcmc.Samplers
 import blang.mcmc.RealNaiveMHSampler
 
 @Samplers(RealNaiveMHSampler)

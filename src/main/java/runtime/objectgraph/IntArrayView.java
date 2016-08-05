@@ -1,26 +1,26 @@
-package blang.accessibility;
+package runtime.objectgraph;
 
 import com.google.common.collect.ImmutableList;
 
 
 
-public final class ObjectArrayView<T> extends ArrayView
+public final class IntArrayView extends ArrayView
 {
   @ViewedArray
-  private final T[] viewedArray;
+  private final int[] viewedArray;
   
-  public ObjectArrayView(ImmutableList<Integer> viewedIndices, T[] viewedArray)
+  public IntArrayView(ImmutableList<Integer> viewedIndices, int[] viewedArray)
   {
     super(viewedIndices);
     this.viewedArray = viewedArray;
   }
 
-  public T get(int indexIndex)
+  public int get(int indexIndex)
   {
     return viewedArray[viewedIndices.get(indexIndex)];
   }
   
-  public void set(int indexIndex, T object)
+  public void set(int indexIndex, int object)
   {
     viewedArray[viewedIndices.get(indexIndex)] = object;
   }

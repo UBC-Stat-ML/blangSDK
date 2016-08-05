@@ -9,11 +9,11 @@ import java.util.List
 import blang.core.Model
 import java.util.LinkedList
 import briefj.run.Results
-import blang.core.SamplerBuilder
-import blang.accessibility.GraphAnalysis
-import blang.core.Sampler
+import blang.mcmc.SamplerBuilder
+import runtime.objectgraph.GraphAnalysis
+import blang.mcmc.Sampler
 import java.lang.reflect.Field
-import blang.accessibility.Inputs
+import runtime.objectgraph.Inputs
 
 class ModelUtils {
   
