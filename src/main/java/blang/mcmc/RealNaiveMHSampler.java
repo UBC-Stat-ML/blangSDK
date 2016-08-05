@@ -2,7 +2,7 @@ package blang.mcmc;
 
 import java.util.Random;
 
-import types.RealImplementation;
+import blang.types.RealImplementation;
 
 
 

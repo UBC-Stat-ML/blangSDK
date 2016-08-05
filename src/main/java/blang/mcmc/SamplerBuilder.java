@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import blang.core.Factor;
+import blang.runtime.objectgraph.GraphAnalysis;
+import blang.runtime.objectgraph.ObjectNode;
 import briefj.ReflexionUtils;
-import runtime.objectgraph.GraphAnalysis;
-import runtime.objectgraph.ObjectNode;
 
 
 
