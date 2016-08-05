@@ -15,7 +15,7 @@ repositories {
   jcenter()
 }
 
-def blangVersion = '3.2.6'
+def blangVersion = '3.3.0'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"

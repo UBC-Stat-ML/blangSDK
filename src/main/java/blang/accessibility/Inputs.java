@@ -6,7 +6,7 @@ import blang.accessibility.AccessibilityGraph.Node;
 import blang.annotations.Samplers;
 import blang.annotations.util.RecursiveAnnotationProducer;
 import blang.annotations.util.TypeProvider;
-import blang.factors.Factor;
+import blang.core.Factor;
 import blang.mcmc.Operator;
 
 public class Inputs {

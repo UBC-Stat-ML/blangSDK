@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import blang.accessibility.GraphAnalysis;
 import blang.accessibility.ObjectNode;
-import blang.factors.Factor;
+import blang.core.Factor;
 import blang.mcmc.ConnectedFactor;
 import blang.mcmc.NodeMoveUtils;
 import blang.mcmc.Operator;

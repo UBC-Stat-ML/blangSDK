@@ -1,6 +1,6 @@
 package runtime
 
-import blang.annotations.DeboxedName
+import blang.core.DeboxedName
 import blang.core.Model
 import blang.core.Sampler
 import briefj.opt.Option
@@ -15,7 +15,7 @@ import java.util.List
 import java.util.Map
 import java.util.Random
 import utils.StaticUtils
-import blang.annotations.Param
+import blang.core.Param
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 

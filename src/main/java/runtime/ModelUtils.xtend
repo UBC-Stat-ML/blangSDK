@@ -1,6 +1,6 @@
 package runtime
 
-import blang.factors.Factor
+import blang.core.Factor
 import java.util.Set
 import blang.core.ModelComponent
 import java.util.ArrayList

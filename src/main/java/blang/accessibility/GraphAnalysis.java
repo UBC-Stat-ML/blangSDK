@@ -13,7 +13,7 @@ import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
 import blang.accessibility.AccessibilityGraph.Node;
 import blang.annotations.util.TypeProvider;
-import blang.factors.Factor;
+import blang.core.Factor;
 import blang.mcmc.Operator;
 import briefj.BriefCollections;
 import briefj.collections.UnorderedPair;

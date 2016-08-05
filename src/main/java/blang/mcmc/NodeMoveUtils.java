@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import blang.factors.Factor;
+import blang.core.Factor;
 import briefj.BriefCollections;
 import briefj.BriefLists;
 import briefj.ReflexionUtils;
