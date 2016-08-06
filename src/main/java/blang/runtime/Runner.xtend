@@ -18,11 +18,12 @@ import blang.utils.StaticUtils
 import blang.core.Param
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import org.apache.commons.lang3.StringUtils
 
 class Runner implements Runnable {
   
   @Option 
-  var public String inputs
+  var public String inputs = ""
   
   @Option 
   var public Random random = new Random(1)
@@ -86,6 +87,9 @@ class Runner implements Runnable {
   }
   
   def static private Map<String, String> parseInputs(String inputs) {
+    if (StringUtils.isEmpty(inputs)) {  // guava chokes otherwise
+      return Collections.EMPTY_MAP
+    }
     return Splitter.on(",").withKeyValueSeparator("=").split(inputs)
   }
   
