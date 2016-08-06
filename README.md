@@ -9,7 +9,6 @@ Blang's SDK (Software Development Kit), containing:
 - MCMC algorithms for such datatypes.
 - Standard probability distributions.
 
-This project can also be used as a template for creating blang projects. 
 
 See more documentation, see https://github.com/UBC-Stat-ML/blangDoc
 
