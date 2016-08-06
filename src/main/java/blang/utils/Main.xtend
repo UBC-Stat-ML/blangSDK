@@ -2,16 +2,13 @@ package blang.utils
 
 import binc.Command
 import blang.runtime.Runner
-import java.util.List
-import java.util.ArrayList
-import com.google.common.base.Joiner
 
 class Main {
 
   def static void main(String[] args) {
     // compile 
     val StandaloneCompiler compiler = new StandaloneCompiler
-    val classpath = compiler.compile()
+    val String classpath = compiler.compile()
     
     // run
     println(classpath)
@@ -21,6 +18,7 @@ class Main {
       runnerCmd = runnerCmd.withArg(arg)
     }
     Command.call(runnerCmd)
+    runnerCmd.which
   }
   
 

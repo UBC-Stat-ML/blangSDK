@@ -46,8 +46,13 @@ public class StandaloneCompiler  {
    */
   public String compile() {
     runGradle("build");
-    return parseClasspath(runGradle("printClasspath")) + ":" + Paths.get(compilationFolder.getPath(), "build", "libs", COMPILATION_DIR_NAME + ".jar").toAbsolutePath();
+    return "" +
+        parseClasspath(runGradle("printClasspath")) + // dependencies
+        File.pathSeparator +                             
+                                                      // plus newly compiled file:
+        Paths.get(compilationFolder.getPath(), "build", "libs", COMPILATION_DIR_NAME + ".jar").toAbsolutePath();
   }
+  
   
   private String runGradle(String gradleTaskName) {
     Command gradleCmd = Command.byName("gradle").withArg(gradleTaskName).ranIn(compilationFolder);
@@ -59,7 +64,7 @@ public class StandaloneCompiler  {
     for (String line : gradleOutput.split("\\r?\\n"))
       if (line.matches("^.*[.]jar\\s*$"))
         items.add(line.replaceAll("\\s+", ""));
-    return Joiner.on(":").join(items);
+    return Joiner.on(File.pathSeparator).join(items);
   }
 
   private void init() {
