@@ -11,16 +11,11 @@ class Main {
     val String classpath = compiler.compile()
     
     // run
-    println(classpath)
-    var Command runnerCmd = Command.byName("java").withArg("-cp").withArg(classpath).withArg(Runner.typeName).withStandardOutMirroring()
+    var Command runnerCmd = Command.byName("java").appendArg("-cp").appendArg(classpath).appendArg(Runner.typeName).withStandardOutMirroring()
     
     for (String arg : args) {
-      runnerCmd = runnerCmd.withArg(arg)
+      runnerCmd = runnerCmd.appendArg(arg)
     }
     Command.call(runnerCmd)
-    runnerCmd.which
   }
-  
-
-  
 }
