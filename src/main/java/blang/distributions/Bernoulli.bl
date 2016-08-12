@@ -9,7 +9,7 @@ model {
   
   laws {
     
-    logf(probability, realization) = {
+    logf(probability, realization)  {
       switch (realization) {
         case 0  : 1.0 -  probability.doubleValue
         case 1  : probability.doubleValue
@@ -18,11 +18,11 @@ model {
       }
     }
     
-    indicator(realization) = {
+    indicator(realization)  {
       realization.intValue == 0 || realization.intValue == 1
     }
     
-    indicator(probability) = {
+    indicator(probability)  {
       probability.doubleValue >= 0.0 && probability.doubleValue <= 1.0
     }
     
