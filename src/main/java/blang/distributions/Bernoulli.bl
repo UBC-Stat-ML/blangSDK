@@ -3,7 +3,7 @@ import blang.types.Int
 
 model {
   
-  param Real probability 
+  param Real probability
   
   random Int realization
   
