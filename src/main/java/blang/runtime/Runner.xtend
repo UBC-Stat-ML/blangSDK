@@ -1,154 +1,51 @@
 package blang.runtime
 
-import blang.core.DeboxedName
+import blang.inits.Instantiator
+import blang.inits.Instantiators
+import blang.inits.PosixParser
+import blang.inits.strategies.FullyQualifiedImplementation
 import blang.core.Model
-import blang.mcmc.Sampler
-import briefj.opt.Option
-import briefj.run.Mains
-import com.google.common.base.Optional
-import com.google.common.base.Splitter
-import java.lang.reflect.Constructor
-import java.lang.reflect.Parameter
-import java.util.ArrayList
-import java.util.Collections
-import java.util.List
-import java.util.Map
+import java.util.Optional
+import blang.inits.Arg
 import java.util.Random
-import blang.utils.StaticUtils
-import blang.core.Param
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
-import org.apache.commons.lang3.StringUtils
+import blang.inits.Default
+import java.util.List
+import blang.mcmc.Sampler
+import java.util.Collections
+import blang.types.Real
 
-class Runner  implements Runnable
-{
+class Runner implements Runnable {
   
-  @Option 
-  var public String inputs = ""
+  @Arg 
+  Model model
   
-  @Option 
-  var public Random random = new Random(1)
+  @Arg @Default("1")
+  Random random
   
-  @Option 
-  var public int nIterations = 10_000_000
+  @Arg @Default("10 000")
+  int nIterations
   
-  val Class<? extends Model> modelType
-   
-  new(Class<? extends Model> modelType) {
-    this.modelType = modelType
-  }
-  
-  def private Model instantiateModel() {
-    // Parse command line arguments for inputs
-    val Map<String, String> parsedInputs = parseInputs(inputs)
-    
-    // Find constructor
-    val Constructor<?> constructor = StaticUtils.pickUnique(modelType.constructors, 
-      "Malformed compiled blang model; there should be exactly one constructor (based on the full list of variables)."
-    )
-    
-    // Build argument lists
-    val List<Object> arguments = new ArrayList
-    val Type [] argumentsWithGenerics = constructor.genericParameterTypes
-    val Parameter [] parameters = constructor.parameters
-    for (var int i = 0; i < parameters.size(); i++) {
-      val Parameter constructorArg = parameters.get(i)
-      // Find deboxed name
-      val DeboxedName deboxedName = StaticUtils::pickUnique(constructorArg.getAnnotationsByType(DeboxedName), 
-        "Malformed compiled blang model; variables should each have exactly @DeboxedName annotation"
-      )
-      val String key = deboxedName.value()
-      
-      val boolean isParam = !constructorArg.getAnnotationsByType(Param).isEmpty()
-      
-      // Find an implementation, i.e. use @DefaultImplementation if constr.type is an interface 
-      
-      val Class<?> argumentType = getImplementation(constructorArg.type, argumentsWithGenerics.get(i), isParam)
-      
-      // See if a command line argument was provided
-      val String commandLineArg = parsedInputs.get(key)   // TODO: check spaces get trimmed
-      
-      val Object instantiatedArgument = if (commandLineArg === null) {
-        instantiateConstructorArgument(argumentType) 
-      } else {
-        instantiateConstructorArgument(argumentType, commandLineArg)        
-      }
-      
-      // Do boxing if it's a param
-      val Object instantiatedBoxedArgument = if (isParam) {
-        new ConstantSupplier(instantiatedArgument)
-      } else {
-        instantiatedArgument
-      }
-      
-      arguments.add(instantiatedBoxedArgument)
-    }
-    val Object [] argumentsVarArg = arguments
-    return constructor.newInstance(argumentsVarArg) as Model
-  }
-  
-  def static private Map<String, String> parseInputs(String inputs) {
-    if (StringUtils.isEmpty(inputs)) {  // guava chokes otherwise
-      return Collections.EMPTY_MAP
-    }
-    return Splitter.on(",").withKeyValueSeparator("=").split(inputs)
-  }
-  
-  def static Object instantiateConstructorArgument(Class<?> type) {
-    return type.getConstructor().newInstance() 
-  }
-  
-  def static Object instantiateConstructorArgument(Class<?> type, String commandLineArgument) {
-    return type.getConstructor(String).newInstance(commandLineArgument)
-  }
-  
-  def static private Class<?> getImplementation(Class<?> boxedType, Type boxedTypeWithGenerics, boolean isParam) {
-//    val Class<?> deboxedType = {
-//      if (isParam) {
-//        // given Supplier<T>, returns T
-//        StaticUtils::pickUnique((boxedTypeWithGenerics as ParameterizedType).actualTypeArguments, 
-//          "Malformed compiled blang model; params should be of type Supplier<T>.") as Class<?>
-//      } else {
-//        boxedType
-//      }
-//    }
-//    if (deboxedType.isInterface()) {
-//      // use type annotation @DefaultImplementation if it's an interface
-//      val DefaultImplementation defaultImplAnn = StaticUtils::pickUnique(
-//        deboxedType.getAnnotationsByType(DefaultImplementation),
-//          "Interfaces used in param variables should have an @DefaultImplementation annotation to allow automatic instantiation."
-//      )
-//      return defaultImplAnn.value()
-//    } else {
-//      return deboxedType
-//    }
-  }
-  
-  def public static void main(String [] args) {
-    var Optional<Class<? extends Model>> theClass = Optional.absent() 
-    if (!args.isEmpty()) try {
-      theClass = Optional.of((Class.forName(args.get(0)) as Class<? extends Model>)) 
-    } catch (ClassNotFoundException e) {}
-
-    if (theClass.isPresent()) {
-      Mains.instrumentedRun(args.subList(1, args.size()).toArray(newArrayOfSize(0)), new Runner(theClass.get()))  
+  def static void main(String [] args) {
+    val Instantiator<Runner> instantiator = Instantiators.getDefault(Runner, PosixParser.parse(args))
+    instantiator.strategies.put(Model, new FullyQualifiedImplementation)
+    instantiator.debug = true
+    val Optional<Runner> runner = instantiator.init  
+    if (runner.present) {
+      runner.get.run
     } else {
-      System.err.println('''The first argument must specify a fully qualified (e.g. package.subpack.ClassName) class implementing the Model interface.''') 
-      System.exit(1) 
+      println("Error(s) in provided arguments. Report:")
+      println(instantiator.lastInitReport)
     }
   }
   
-  override void run() {
-    var List<Sampler> samplers = ModelUtils.samplers(instantiateModel()) 
+  override run() {
+    var List<Sampler> samplers = ModelUtils.samplers(model) 
     for (var int i=0; i < nIterations; i++) {
       Collections.shuffle(samplers, random) 
       for (Sampler s : samplers) s.execute(random) 
-      if ((i + 1) % 1_000_000 === 0) 
+      if ((i + 1) % 1_000 === 0) 
         System.out.println('''Iteration «(i + 1)»''') 
     }
   }
   
 }
-
-// blang my.Model -nIter 1000 -inputs observations = csv data.csv; hyperPrior = 45
-// blang my.Model -nIter 1000 -inputs observations = generate 10 datapoints, 3 dimensions; hyperPrior = 45

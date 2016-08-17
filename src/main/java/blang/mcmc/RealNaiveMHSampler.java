@@ -2,11 +2,11 @@ package blang.mcmc;
 
 import java.util.Random;
 
-import blang.types.RealImplementation;
+import blang.types.Real.RealImpl;
 
 
 
-public class RealNaiveMHSampler extends MHSampler<RealImplementation>
+public class RealNaiveMHSampler extends MHSampler<RealImpl>
 {
   @Override
   public void propose(Random random, Callback callback)
