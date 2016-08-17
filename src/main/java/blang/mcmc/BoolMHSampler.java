@@ -2,7 +2,7 @@ package blang.mcmc;
 
 import java.util.Random;
 
-import blang.types.Bool.BoolImpl;
+import blang.types.BoolVar.BoolImpl;
 
 
 public class BoolMHSampler extends MHSampler<BoolImpl> 

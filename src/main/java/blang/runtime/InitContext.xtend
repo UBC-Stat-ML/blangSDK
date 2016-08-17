@@ -15,4 +15,8 @@ class InitContext {
   def void markAsObserved(Object object, boolean recursively) {
     graphAnalysisInputs.markAsObserved(object, recursively)
   }
+  
+  def <T> T parse(Class<T> type, String string) {
+    throw new RuntimeException
+  }
 }

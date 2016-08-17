@@ -1,18 +1,17 @@
 import java.util.List
-import blang.types.Real
-import blang.types.Int
-import blang.utils.StaticUtils 
+import blang.utils.StaticUtils import blang.types.IntVar
+import blang.types.RealVar
 
 model {
   
-  param Real m
-  param Real v
-  param Real observationV
+  param RealVar m
+  param RealVar v
+  param RealVar observationV
   
-  random Real piLog
-  random List<Real> means
-  random List<Int> mixtureIndicators
-  random List<Real> observations
+  random RealVar piLog
+  random List<RealVar> means
+  random List<IntVar> mixtureIndicators
+  random List<RealVar> observations
   
   laws {
     
@@ -25,7 +24,7 @@ model {
     for (int i : StaticUtils::range(observations.size())) {
       mixtureIndicators.get(i) | piLog 
         ~ Bernoulli([StaticUtils::logistic(piLog.doubleValue)])
-      observations.get(i) | observationV, means, Int curIndic = mixtureIndicators.get(i) 
+      observations.get(i) | observationV, means, IntVar curIndic = mixtureIndicators.get(i) 
         ~ Normal(means.get(curIndic.intValue), observationV)
     }
   }

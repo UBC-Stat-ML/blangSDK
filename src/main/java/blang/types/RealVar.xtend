@@ -1,52 +1,46 @@
 package blang.types
 
 import blang.inits.Implementation
+import blang.mcmc.Samplers
+import blang.mcmc.RealNaiveMHSampler
 import blang.inits.DesignatedConstructor
 import java.util.List
 import blang.inits.Input
 import com.google.common.base.Joiner
 import blang.inits.ConstructorArg
 import blang.runtime.InitContext
-import blang.mcmc.Samplers
-import blang.mcmc.BoolMHSampler
 
-@Implementation(BoolImpl)
+@Implementation(RealImpl)
 @FunctionalInterface
-interface Bool { 
+interface RealVar { 
   
-  def boolean booleanValue()
+  def double doubleValue()
   
-  @Samplers(BoolMHSampler)    
-  static class BoolImpl implements Bool {
+  @Samplers(RealNaiveMHSampler)
+  static class RealImpl implements RealVar {
     
-    var boolean value
+    var double value
     
     @DesignatedConstructor
     new(
-      @Input(formatDescription = "true|false") List<String> input,
+      @Input(formatDescription = "A real number") List<String> input,
       @ConstructorArg(InitContext::KEY) InitContext initContext
     ) {
       val String strValue = Joiner.on(" ").join(input).trim
       this.value =
         if (strValue == NA::SYMBOL) {
           initContext.markAsObserved(this, false)
-          false
+          0.0
         } else {
-          if (strValue.toLowerCase == "true") {
-            true
-          } else if (strValue.toLowerCase == "false") {
-            false
-          } else {
-            throw new RuntimeException("Invalid boolean string (should be 'true' or 'false'): " + strValue)
-          }
+          Double.parseDouble(strValue)
         }
     }
     
-    override boolean booleanValue() {
+    override double doubleValue() {
       return value
     }
     
-    def void set(boolean newValue) {
+    def void set(double newValue) {
       this.value = newValue
     }
   }

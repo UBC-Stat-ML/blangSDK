@@ -1,11 +1,11 @@
-import blang.types.Real
-import blang.types.Int 
+import blang.types.IntVar
+import blang.types.RealVar
 
 model {
   
-  param Real probability
+  param RealVar probability
   
-  random Int realization
+  random IntVar realization
   
   laws {
     

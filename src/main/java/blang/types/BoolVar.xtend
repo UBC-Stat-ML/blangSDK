@@ -8,39 +8,45 @@ import com.google.common.base.Joiner
 import blang.inits.ConstructorArg
 import blang.runtime.InitContext
 import blang.mcmc.Samplers
-import blang.mcmc.IntNaiveMHSampler
+import blang.mcmc.BoolMHSampler
 
-@Implementation(IntImpl)
+@Implementation(BoolImpl)
 @FunctionalInterface
-interface Int { 
+interface BoolVar { 
   
-  def int intValue()
+  def boolean booleanValue()
   
-  @Samplers(IntNaiveMHSampler)    
-  static class IntImpl implements Int {
+  @Samplers(BoolMHSampler)    
+  static class BoolImpl implements BoolVar {
     
-    var int value
+    var boolean value
     
     @DesignatedConstructor
     new(
-      @Input(formatDescription = "An integer") List<String> input,
+      @Input(formatDescription = "true|false") List<String> input,
       @ConstructorArg(InitContext::KEY) InitContext initContext
     ) {
       val String strValue = Joiner.on(" ").join(input).trim
       this.value =
         if (strValue == NA::SYMBOL) {
           initContext.markAsObserved(this, false)
-          0
+          false
         } else {
-          Integer.parseInt(strValue)
+          if (strValue.toLowerCase == "true") {
+            true
+          } else if (strValue.toLowerCase == "false") {
+            false
+          } else {
+            throw new RuntimeException("Invalid boolean string (should be 'true' or 'false'): " + strValue)
+          }
         }
     }
     
-    override int intValue() {
+    override boolean booleanValue() {
       return value
     }
     
-    def void set(int newValue) {
+    def void set(boolean newValue) {
       this.value = newValue
     }
   }

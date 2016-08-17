@@ -1,11 +1,11 @@
-import blang.types.Real
+import blang.types.RealVar
 
 model {
   
-  param Real mean 
-  param Real variance
+  param RealVar mean 
+  param RealVar variance
   
-  random Real realization 
+  random RealVar realization 
   
   
   laws {  
