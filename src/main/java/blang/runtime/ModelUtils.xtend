@@ -39,8 +39,7 @@ class ModelUtils {
     return result 
   }
   
-  def static List<Sampler> samplers(Model model) {
-    var Inputs inputs = new Inputs() 
+  def static List<Sampler> samplers(Model model, Inputs inputs) {
     for (Factor f : factors(model)) 
       inputs.addFactor((f as Factor)) 
     // register the variables

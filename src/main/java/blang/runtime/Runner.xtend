@@ -12,7 +12,6 @@ import blang.inits.Default
 import java.util.List
 import blang.mcmc.Sampler
 import java.util.Collections
-import blang.types.Real
 
 class Runner implements Runnable {
   
@@ -22,15 +21,20 @@ class Runner implements Runnable {
   @Arg @Default("1")
   Random random
   
-  @Arg @Default("10 000")
+  @Arg @Default("10000") 
   int nIterations
+  
+  InitContext initContext
   
   def static void main(String [] args) {
     val Instantiator<Runner> instantiator = Instantiators.getDefault(Runner, PosixParser.parse(args))
+    val InitContext initContext = new InitContext
+    instantiator.globals.put(InitContext::KEY, initContext)
     instantiator.strategies.put(Model, new FullyQualifiedImplementation)
     instantiator.debug = true
-    val Optional<Runner> runner = instantiator.init  
+    val Optional<Runner> runner = instantiator.init
     if (runner.present) {
+      runner.get.initContext = initContext
       runner.get.run
     } else {
       println("Error(s) in provided arguments. Report:")
@@ -39,7 +43,7 @@ class Runner implements Runnable {
   }
   
   override run() {
-    var List<Sampler> samplers = ModelUtils.samplers(model) 
+    var List<Sampler> samplers = ModelUtils.samplers(model, initContext.graphAnalysisInputs) 
     for (var int i=0; i < nIterations; i++) {
       Collections.shuffle(samplers, random) 
       for (Sampler s : samplers) s.execute(random) 

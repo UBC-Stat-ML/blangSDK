@@ -1,7 +1,7 @@
 import java.util.List
 import blang.types.Real
 import blang.types.Int
-import blang.utils.StaticUtils
+import blang.utils.StaticUtils 
 
 model {
   

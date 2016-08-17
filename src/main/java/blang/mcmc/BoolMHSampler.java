@@ -2,19 +2,17 @@ package blang.mcmc;
 
 import java.util.Random;
 
-import blang.types.Int.IntImpl;
+import blang.types.Bool.BoolImpl;
 
 
-
-
-public class IntNaiveMHSampler extends MHSampler<IntImpl>
+public class BoolMHSampler extends MHSampler<BoolImpl> 
 {
   @Override
   public void propose(Random random, Callback callback)
   {
-    final int oldValue = variable.intValue();
+    final boolean oldValue = variable.booleanValue();
     callback.setProposalLogRatio(0.0);
-    variable.set(oldValue + (random.nextBoolean() ? 1 : -1));
+    variable.set(!oldValue);
     if (!callback.sampleAcceptance())
       variable.set(oldValue);
   }

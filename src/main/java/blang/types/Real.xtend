@@ -7,6 +7,8 @@ import blang.inits.DesignatedConstructor
 import java.util.List
 import blang.inits.Input
 import com.google.common.base.Joiner
+import blang.inits.ConstructorArg
+import blang.runtime.InitContext
 
 @Implementation(RealImpl)
 @FunctionalInterface
@@ -20,8 +22,18 @@ interface Real {
     var double value
     
     @DesignatedConstructor
-    new(@Input(formatDescription = "A real number") List<String> input) {
-      value = Double.parseDouble(Joiner.on(" ").join(input))
+    new(
+      @Input(formatDescription = "A real number") List<String> input,
+      @ConstructorArg(InitContext::KEY) InitContext initContext
+    ) {
+      val String strValue = Joiner.on(" ").join(input).trim
+      this.value =
+        if (strValue == NA::SYMBOL) {
+          initContext.markAsObserved(this, false)
+          0.0
+        } else {
+          Double.parseDouble(strValue)
+        }
     }
     
     override double doubleValue() {

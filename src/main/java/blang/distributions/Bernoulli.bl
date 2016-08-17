@@ -1,5 +1,5 @@
 import blang.types.Real
-import blang.types.Int
+import blang.types.Int 
 
 model {
   

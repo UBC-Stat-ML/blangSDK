@@ -19,6 +19,11 @@ public class Inputs {
   
   public final TypeProvider<Class<? extends Operator>> typeProvider = RecursiveAnnotationProducer.ofClasses(Samplers.class, true);
   
+  public void markAsObserved(Object object, boolean recursively) {
+    final Node newNode = new ObjectNode<>(object);
+    (recursively ? recursiveObservedNodes : nonRecursiveObservedNodes).add(newNode);
+  }
+  
   public void addFactor(Factor f)
   {
     ObjectNode<Factor> factorNode = new ObjectNode<>(f);
