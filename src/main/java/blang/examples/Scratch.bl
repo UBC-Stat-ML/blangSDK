@@ -1,0 +1,14 @@
+
+
+import blang.types.Plated
+import blang.types.Plated.Plate
+
+model {
+  
+  param Plate<Short> plated
+  
+  laws {
+    
+  }
+  
+}

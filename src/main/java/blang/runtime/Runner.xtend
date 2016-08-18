@@ -27,12 +27,12 @@ class Runner implements Runnable {
   InitContext initContext
   
   def static void main(String [] args) {
-    val Instantiator<Runner> instantiator = Instantiators.getDefault(Runner, PosixParser.parse(args))
+    val Instantiator instantiator = Instantiators.getDefault()
     val InitContext initContext = new InitContext
     instantiator.globals.put(InitContext::KEY, initContext)
     instantiator.strategies.put(Model, new FullyQualifiedImplementation)
     instantiator.debug = true
-    val Optional<Runner> runner = instantiator.init
+    val Optional<Runner> runner = instantiator.init(Runner, PosixParser.parse(args)) 
     if (runner.present) {
       runner.get.initContext = initContext
       runner.get.run
@@ -48,7 +48,7 @@ class Runner implements Runnable {
       Collections.shuffle(samplers, random) 
       for (Sampler s : samplers) s.execute(random) 
       if ((i + 1) % 1_000 === 0) 
-        System.out.println('''Iteration «(i + 1)»''') 
+        System.out.println('''Iteration «(i + 1)»''')  
     }
   }
   
