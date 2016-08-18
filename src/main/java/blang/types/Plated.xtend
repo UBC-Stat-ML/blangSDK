@@ -109,13 +109,13 @@ interface Plated<T> {
     }
     
     override T get(Index<?> ... indices) {
-      val GetQuery query = new GetQuery(indices)
+      val GetQuery query = GetQuery.build(indices)
       if (_get_cache.containsKey(query)) {
         return _get_cache.get(query) as T
       }
       // compute all cache entries if not
       for (var int dataIdx = 0; dataIdx < rawSize; dataIdx++) {
-        val GetQuery curQuery = new GetQuery()
+        val GetQuery curQuery = GetQuery.build
         for (Index<?> referenceIndex : indices) {
           val Plate curPlate = referenceIndex.plate
           val String curColumn = curPlate.columnName
@@ -137,13 +137,10 @@ interface Plated<T> {
     @Data // important! this is used in hash tables
     private static class GetQuery {
       val Set<Index<?>> indices
-      new (Index<?> ... indices) {
-        // TODO: ugly, try to fix the @Data annotation..
-        this._indices = new HashSet(indices)
+      def static GetQuery build(Index<?> ... indices) {
+        return new GetQuery(new HashSet(indices))
       }
-      new () {
-        this._indices = new HashSet
-      }
+
     }
   }
   
@@ -160,14 +157,16 @@ interface Plated<T> {
     }
     
     @DesignatedConstructor
-    new(
+    def static <K> Plate<K> build(
       @InitInfoType Type plateType, 
       @InitInfoName QualifiedName qName  
     ) {
-      // TODO: ugly, try to fix the @Data annotation..
-      this._type = (plateType as ParameterizedType).actualTypeArguments.get(0) as Class
-      this._columnName = qName.simpleName()
+      val Class<K> type = (plateType as ParameterizedType).actualTypeArguments.get(0) as Class<K>
+      val String columnName = qName.simpleName()
+      return new Plate(type, columnName)
     }
+    
+    
   }
   
   @Data // important! this is used in hash tables
