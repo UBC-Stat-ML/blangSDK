@@ -24,12 +24,12 @@ class Runner implements Runnable {
   @Arg @Default("10000") 
   int nIterations
   
-  InitContext initContext
+  ObservationProcessor initContext
   
   def static void main(String [] args) {
     val Instantiator instantiator = Instantiators.getDefault()
-    val InitContext initContext = new InitContext
-    instantiator.globals.put(InitContext::KEY, initContext)
+    val ObservationProcessor initContext = new ObservationProcessor
+    instantiator.globals.put(ObservationProcessor::KEY, initContext)
     instantiator.strategies.put(Model, new FullyQualifiedImplementation)
     instantiator.debug = true
     val Optional<Runner> runner = instantiator.init(Runner, PosixParser.parse(args)) 

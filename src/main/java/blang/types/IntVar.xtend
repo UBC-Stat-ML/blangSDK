@@ -6,9 +6,9 @@ import java.util.List
 import blang.inits.Input
 import com.google.common.base.Joiner
 import blang.inits.ConstructorArg
-import blang.runtime.InitContext
 import blang.mcmc.Samplers
 import blang.mcmc.IntNaiveMHSampler
+import blang.runtime.ObservationProcessor
 
 @Implementation(IntImpl)
 @FunctionalInterface
@@ -24,7 +24,7 @@ interface IntVar {
     @DesignatedConstructor
     new(
       @Input(formatDescription = "An integer") List<String> input,
-      @ConstructorArg(InitContext::KEY) InitContext initContext
+      @ConstructorArg(ObservationProcessor::KEY) ObservationProcessor initContext
     ) {
       val String strValue = Joiner.on(" ").join(input).trim
       this.value =

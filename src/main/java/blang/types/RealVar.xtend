@@ -8,7 +8,7 @@ import java.util.List
 import blang.inits.Input
 import com.google.common.base.Joiner
 import blang.inits.ConstructorArg
-import blang.runtime.InitContext
+import blang.runtime.ObservationProcessor
 
 @Implementation(RealImpl)
 @FunctionalInterface
@@ -24,7 +24,7 @@ interface RealVar {
     @DesignatedConstructor
     new(
       @Input(formatDescription = "A real number") List<String> input,
-      @ConstructorArg(InitContext::KEY) InitContext initContext
+      @ConstructorArg(ObservationProcessor::KEY) ObservationProcessor initContext
     ) {
       val String strValue = Joiner.on(" ").join(input).trim
       this.value =

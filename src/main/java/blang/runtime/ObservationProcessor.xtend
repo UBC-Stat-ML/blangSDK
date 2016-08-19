@@ -5,18 +5,14 @@ import blang.runtime.objectgraph.Inputs
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Data
-class InitContext {
+class ObservationProcessor {
   
-  val public static KEY = "INIT_CONTEXT_KEY"
+  val public static KEY = "OBSERVATION_PROCESSOR"
   
   @Accessors(PUBLIC_GETTER)
   val Inputs graphAnalysisInputs = new Inputs
   
   def void markAsObserved(Object object, boolean recursively) {
     graphAnalysisInputs.markAsObserved(object, recursively)
-  }
-  
-  def <T> T parse(Class<T> type, String string) {
-    throw new RuntimeException
   }
 }

@@ -6,7 +6,6 @@ import java.util.List
 import java.util.HashMap
 import java.util.LinkedHashMap
 import org.eclipse.xtend.lib.annotations.Data
-import blang.runtime.InitContext
 import java.util.LinkedHashSet
 import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.HashSet
@@ -21,6 +20,11 @@ import blang.inits.InitInfoName
 import blang.inits.QualifiedName
 import java.lang.reflect.Type
 import java.lang.reflect.ParameterizedType
+import blang.runtime.ObservationProcessor
+import blang.inits.InitInfoContext
+import blang.inits.Instantiator.InstantiationContext
+import java.util.Collections
+import java.util.Optional
 
 @Implementation(TableImpl)
 interface Plated<T> {
@@ -32,17 +36,16 @@ interface Plated<T> {
     
     val Class<T> platedType
     val String valueColumnName
+    val InstantiationContext context
 
     @DesignatedConstructor
     new (
-      @ConstructorArg("csvFile")        File         csvFile,
-      @ConstructorArg(InitContext::KEY) InitContext  initContext,
-      @InitInfoType Type type, 
-      @InitInfoName QualifiedName qName  
+      @ConstructorArg("csvFile") File csvFile,
+      @InitInfoContext InstantiationContext context  
     ) {
-      this.platedType = (type as ParameterizedType).actualTypeArguments.get(0) as Class
-      this.valueColumnName = qName.simpleName()
-      this.initContext = initContext
+      this.context = context
+      this.platedType = (context.requestedType as ParameterizedType).actualTypeArguments.get(0) as Class
+      this.valueColumnName = context.qualifiedName.simpleName()
       val com.google.common.base.Optional<List<String>> fields = BriefIO.readLines(csvFile).splitCSV.first
       for (String name : fields.get) {
         column2RawData.put(name, new ArrayList)
@@ -62,9 +65,6 @@ interface Plated<T> {
     
     // cache these sets to avoid looping each time an eachDistinct is called
     val Map<String, Set<String>> columnName2IndexValues = new LinkedHashMap
-    
-    // keep the init context to parse stuff  
-    val InitContext initContext
     
     // cache all queries
     val Map<String, Set<Index<?>>> _eachDistinct_cache = new HashMap
@@ -96,7 +96,12 @@ interface Plated<T> {
       // compute if not
       var Set<Index<K>> result = new LinkedHashSet
       for (String indexValue : columnName2IndexValues.get(plate.columnName)) {
-        val K parsed = initContext.parse(plate.type, indexValue)
+        
+        val K parsed = context.instantiateChild(
+          plate.type, 
+          context.getChildArguments("_plate_index", Collections.singletonList(indexValue)))
+          .get // TODO: error handling
+        
         putInIndexCache(plate.columnName, indexValue, parsed)
         val Index<K> index = new Index(plate, parsed)
         result.add(index)
@@ -127,7 +132,12 @@ interface Plated<T> {
         if (_get_cache.containsKey(curQuery)) {
           throw new RuntimeException("More than one result for a given get(..) query")
         }
-        val T parsedValue = initContext.parse(platedType, column2RawData.get(valueColumnName).get(dataIdx))
+        
+        val T parsedValue = context.instantiateChild(
+          platedType, 
+          context.getChildArguments("_table_value", Collections.singletonList(column2RawData.get(valueColumnName).get(dataIdx))))
+          .get // TODO: error handling
+        
         _get_cache.put(curQuery, parsedValue)
       }
       
