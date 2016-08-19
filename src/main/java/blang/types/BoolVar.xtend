@@ -29,9 +29,9 @@ interface BoolVar {
       val String strValue = Joiner.on(" ").join(input).trim
       this.value =
         if (strValue == NA::SYMBOL) {
-          initContext.markAsObserved(this, false)
           false
         } else {
+          initContext.markAsObserved(this)
           if (strValue.toLowerCase == "true") {
             true
           } else if (strValue.toLowerCase == "false") {

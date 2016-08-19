@@ -29,9 +29,9 @@ interface RealVar {
       val String strValue = Joiner.on(" ").join(input).trim
       this.value =
         if (strValue == NA::SYMBOL) {
-          initContext.markAsObserved(this, false)
           0.0
         } else {
+          initContext.markAsObserved(this)
           Double.parseDouble(strValue)
         }
     }

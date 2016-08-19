@@ -138,7 +138,6 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
       
       _get_cache.put(curQuery, parsedValue)
     }
-    
     return _get_cache.get(query) as T
   }
   
@@ -148,7 +147,6 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
     def static GetQuery build(Index<?> ... indices) {
       return new GetQuery(new HashSet(indices))
     }
-
   }
 
   @Data // important! this is used in hash tables

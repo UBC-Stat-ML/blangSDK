@@ -56,6 +56,7 @@ class ModelUtils {
     graphAnalysis.accessibilityGraph.exportDot(Results.getFileInResultFolder("accessibility-graph.dot")) 
     graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot")) 
     System.out.println(graphAnalysis.toStringSummary()) 
+    System.out.println("# latent variables: " + graphAnalysis.latentVariables.size)
     // create the samplers
     return SamplerBuilder.instantiateSamplers(graphAnalysis) 
   }

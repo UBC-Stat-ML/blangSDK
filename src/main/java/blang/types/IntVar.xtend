@@ -29,9 +29,9 @@ interface IntVar {
       val String strValue = Joiner.on(" ").join(input).trim
       this.value =
         if (strValue == NA::SYMBOL) {
-          initContext.markAsObserved(this, false)
           0
         } else {
+          initContext.markAsObserved(this)
           Integer.parseInt(strValue)
         }
     }

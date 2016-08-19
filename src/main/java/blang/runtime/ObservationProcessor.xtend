@@ -12,7 +12,8 @@ class ObservationProcessor {
   @Accessors(PUBLIC_GETTER)
   val Inputs graphAnalysisInputs = new Inputs
   
-  def void markAsObserved(Object object, boolean recursively) {
-    graphAnalysisInputs.markAsObserved(object, recursively)
+  // make it nicer: recursively by default?
+  def void markAsObserved(Object object) {
+    graphAnalysisInputs.markAsObserved(object, true)
   }
 }
