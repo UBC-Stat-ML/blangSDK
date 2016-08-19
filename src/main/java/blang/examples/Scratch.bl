@@ -1,14 +1,26 @@
 
 
-import blang.types.Plated
-import blang.types.Plated.Plate
+import blang.types.Table.Plate
+import blang.types.Table
+import blang.types.RealVar
+import blang.types.Table.Index
 
 model {
   
-  param Plate<Short> plated
+  param Plate<Integer> sample
+  
+  random RealVar mean
+  
+  random Table<RealVar> observations
+  
   
   laws {
     
+    mean ~ Normal([0.0], [1.0])
+    
+    for (Index<Integer> sampleIndex : observations.eachDistinct(sample)) {
+      observations.get(sampleIndex) | mean ~ Normal(mean, [1.0])
+    }
   }
   
 }

@@ -1,7 +1,8 @@
 import java.util.List
 import blang.utils.StaticUtils import blang.types.IntVar
 import blang.types.RealVar
-import blang.types.Plated
+import blang.types.Table
+
 //import blang.types.Plated.Index
 //import blang.types.Plated.Plate
 
