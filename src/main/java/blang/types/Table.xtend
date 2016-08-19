@@ -23,6 +23,8 @@ import java.lang.reflect.ParameterizedType
 import blang.inits.InitInfoContext
 import blang.inits.Instantiator.InstantiationContext
 import java.util.Collections
+import blang.inits.Input
+import com.google.common.base.Joiner
 
 class Table<T> {  // Note: do not make an interface; this breaks because the generic argument gets lost in @Implementation(..) strategy 
     
@@ -38,9 +40,12 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
     this.context = context
     this.platedType = (context.requestedType as ParameterizedType).actualTypeArguments.get(0) as Class
     this.valueColumnName = context.qualifiedName.simpleName()
+    
+    // Break into separate function:
     val com.google.common.base.Optional<List<String>> fields = BriefIO.readLines(csvFile).splitCSV.first
     for (String name : fields.get) {
       column2RawData.put(name, new ArrayList)
+      columnName2IndexValues.put(name, new LinkedHashSet)
     }
     for (Map<String,String> line : BriefIO.readLines(csvFile).indexCSV) {
       if (line.size != column2RawData.keySet.size) {
@@ -48,6 +53,7 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
       }
       for (String name : fields.get) {
         column2RawData.get(name).add(line.get(name))
+        columnName2IndexValues.get(name).add(line.get(name))
       }
     }
   }
@@ -56,7 +62,7 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   val Map<String, List<String>> column2RawData = new LinkedHashMap
   
   // cache these sets to avoid looping each time an eachDistinct is called
-  val Map<String, Set<String>> columnName2IndexValues = new LinkedHashMap
+  val Map<String, Set<String>> columnName2IndexValues = new LinkedHashMap 
   
   // cache all queries
   val Map<String, Set<Index<?>>> _eachDistinct_cache = new HashMap
@@ -160,10 +166,18 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
     @DesignatedConstructor
     def static <K> Plate<K> build(
       @InitInfoType Type plateType, 
-      @InitInfoName QualifiedName qName  
+      @InitInfoName QualifiedName qName,
+      @Input(formatDescription = "Name of the plate (or empty to use name declared in blang file)") List<String> inputs
+      // limits
     ) {
       val Class<K> type = (plateType as ParameterizedType).actualTypeArguments.get(0) as Class<K>
-      val String columnName = qName.simpleName()
+      val String inputName = Joiner.on(" ").join(inputs)
+      val String columnName = 
+        if (inputName.isEmpty) {
+          qName.simpleName()
+        } else {
+          inputName
+        }
       return new Plate(type, columnName)
     }
   }
