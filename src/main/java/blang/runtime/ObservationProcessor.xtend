@@ -13,7 +13,8 @@ class ObservationProcessor {
   val Inputs graphAnalysisInputs = new Inputs
   
   // make it nicer: recursively by default?
-  def void markAsObserved(Object object) {
+  def <T> T markAsObserved(T object) {
     graphAnalysisInputs.markAsObserved(object, true)
+    return object
   }
 }

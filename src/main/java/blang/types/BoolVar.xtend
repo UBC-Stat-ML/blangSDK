@@ -21,24 +21,26 @@ interface BoolVar {
     
     var boolean value
     
+    new(boolean value) { this.value = value }
+    
     @DesignatedConstructor
-    new(
+    def static BoolImpl parse(
       @Input(formatDescription = "true|false") List<String> input,
       @ConstructorArg(ObservationProcessor::KEY) ObservationProcessor initContext
     ) {
       val String strValue = Joiner.on(" ").join(input).trim
-      this.value =
+      return
         if (strValue == NA::SYMBOL) {
-          false
+          new BoolImpl(false)
         } else {
-          initContext.markAsObserved(this)
-          if (strValue.toLowerCase == "true") {
-            true
-          } else if (strValue.toLowerCase == "false") {
-            false
-          } else {
-            throw new RuntimeException("Invalid boolean string (should be 'true' or 'false'): " + strValue)
-          }
+          initContext.markAsObserved(new BoolImpl(
+            if (strValue.toLowerCase == "true") {
+              true
+            } else if (strValue.toLowerCase == "false") {
+              false
+            } else {
+              throw new RuntimeException("Invalid boolean string (should be 'true' or 'false'): " + strValue)
+            }))
         }
     }
     
@@ -48,6 +50,10 @@ interface BoolVar {
     
     def void set(boolean newValue) {
       this.value = newValue
+    }
+    
+    override String toString() {
+      return Boolean.toString(value)
     }
   }
 }

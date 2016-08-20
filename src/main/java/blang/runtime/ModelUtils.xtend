@@ -39,7 +39,7 @@ class ModelUtils {
     return result 
   }
   
-  def static List<Sampler> samplers(Model model, Inputs inputs) {
+  def static GraphAnalysis graphAnalysis(Model model, Inputs inputs) {
     for (Factor f : factors(model)) 
       inputs.addFactor((f as Factor)) 
     // register the variables
@@ -55,10 +55,11 @@ class ModelUtils {
     // output visualization of the graph
     graphAnalysis.accessibilityGraph.exportDot(Results.getFileInResultFolder("accessibility-graph.dot")) 
     graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot")) 
-    System.out.println(graphAnalysis.toStringSummary()) 
-    System.out.println("# latent variables: " + graphAnalysis.latentVariables.size)
+//    System.out.println(graphAnalysis.toStringSummary()) 
+    System.out.println("# latent variables: " + graphAnalysis.latentVariables.size())
+    System.out.println("# factors: " + graphAnalysis.factorNodes.size())
     // create the samplers
-    return SamplerBuilder.instantiateSamplers(graphAnalysis) 
+    return graphAnalysis 
   }
   
   // static utils only

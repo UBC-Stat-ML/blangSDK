@@ -21,18 +21,19 @@ interface IntVar {
     
     var int value
     
+    new(int value) { this.value = value }
+    
     @DesignatedConstructor
-    new(
+    def static IntImpl parse(
       @Input(formatDescription = "An integer") List<String> input,
       @ConstructorArg(ObservationProcessor::KEY) ObservationProcessor initContext
     ) {
       val String strValue = Joiner.on(" ").join(input).trim
-      this.value =
+      return
         if (strValue == NA::SYMBOL) {
-          0
+          new IntImpl(0)
         } else {
-          initContext.markAsObserved(this)
-          Integer.parseInt(strValue)
+          initContext.markAsObserved(new IntImpl(Integer.parseInt(strValue)))
         }
     }
     
@@ -42,6 +43,10 @@ interface IntVar {
     
     def void set(int newValue) {
       this.value = newValue
+    }
+    
+    override String toString() {
+      return Integer.toString(value)
     }
   }
 }

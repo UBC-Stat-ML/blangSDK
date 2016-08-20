@@ -114,17 +114,19 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   def T get(Index<?> ... indices) {
     val GetQuery query = GetQuery.build(indices)
     if (_get_cache.containsKey(query)) {
-      return _get_cache.get(query) as T
+      return _get_cache.get(query) as T  
     }
     // compute all cache entries if not
     for (var int dataIdx = 0; dataIdx < rawSize; dataIdx++) {
       val GetQuery curQuery = GetQuery.build
+      val List<String> nameElements = new ArrayList
       for (Index<?> referenceIndex : indices) {
         val Plate curPlate = referenceIndex.plate
         val String curColumn = curPlate.columnName
         val String curIndexValue = column2RawData.get(curColumn).get(dataIdx)
         val Object parsed = getIndexCache(curColumn, curIndexValue)
         val Index curIndex = new Index(curPlate, parsed)
+        nameElements.add(curPlate.columnName + "=" + parsed)
         curQuery.indices.add(curIndex)
       }
       if (_get_cache.containsKey(curQuery)) {
@@ -133,7 +135,7 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
       
       val T parsedValue = context.instantiateChild(
         platedType, 
-        context.getChildArguments("_table_value", Collections.singletonList(column2RawData.get(valueColumnName).get(dataIdx))))
+        context.getChildArguments(Joiner.on("_").join(nameElements), Collections.singletonList(column2RawData.get(valueColumnName).get(dataIdx))))
         .get // TODO: error handling
       
       _get_cache.put(curQuery, parsedValue)

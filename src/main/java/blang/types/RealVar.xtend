@@ -19,20 +19,21 @@ interface RealVar {
   @Samplers(RealNaiveMHSampler)
   static class RealImpl implements RealVar {
     
-    var double value
+    var double value = 0.0
+    
+    new (double value) { this.value = value }
     
     @DesignatedConstructor
-    new(
+    def static RealImpl parse(
       @Input(formatDescription = "A real number") List<String> input,
       @ConstructorArg(ObservationProcessor::KEY) ObservationProcessor initContext
     ) {
       val String strValue = Joiner.on(" ").join(input).trim
-      this.value =
+      return
         if (strValue == NA::SYMBOL) {
-          0.0
+          new RealImpl(0.0)
         } else {
-          initContext.markAsObserved(this)
-          Double.parseDouble(strValue)
+          initContext.markAsObserved(new RealImpl(Double.parseDouble(strValue)))
         }
     }
     
@@ -42,6 +43,10 @@ interface RealVar {
     
     def void set(double newValue) {
       this.value = newValue
+    } 
+    
+    override String toString() {
+      return Double.toString(value)
     }
   }
 }
