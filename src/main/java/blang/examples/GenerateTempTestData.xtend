@@ -11,6 +11,7 @@ import java.util.ArrayList
 import java.io.File
 import blang.runtime.Runner
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics
+import blang.types.NA
 
 class GenerateTempTestData implements Runnable {
   
@@ -64,7 +65,7 @@ class GenerateTempTestData implements Runnable {
     val PrintWriter out = BriefIO.output(result)
     out.println("mixture,means,logVariances")
     for (var int mixIdx = 0; mixIdx < 2; mixIdx++) {
-      out.println("" + mixIdx + ",NA,NA")
+      out.println('''«mixIdx»,«NA::SYMBOL»,«NA::SYMBOL»''')
     }
     out.close()
     return result
@@ -81,7 +82,7 @@ class GenerateTempTestData implements Runnable {
       val double mean = means.get(idx)
       val double datum = rand.nextGaussian * dataGenNoise + mean
       data.add(datum)
-      out.println("" + dataIdx + ",NA," + datum)
+      out.println('''«dataIdx»,«NA::SYMBOL»,«datum»''')
     }
     out.close
     PlotHistogram.from(data).toPDF(Results.getFileInResultFolder("data.pdf"))
