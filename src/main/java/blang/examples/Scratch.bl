@@ -1,9 +1,9 @@
 
 
-import blang.types.Table.Plate
 import blang.types.Table
 import blang.types.RealVar
-import blang.types.Table.Index
+import blang.types.Plate
+import blang.types.Index
 
 model {
   
@@ -13,12 +13,15 @@ model {
   
   random Table<RealVar> observations
   
+  init {
+    sample.contains(observations)
+  }
   
   laws {
     
     mean ~ Normal([0.0], [1.0])
     
-    for (Index<Integer> sampleIndex : observations.eachDistinct(sample)) {
+    for (Index<Integer> sampleIndex : Plate.eachIn(sample)) {
       observations.get(sampleIndex) | mean ~ Normal(mean, [1.0])
     }
   }

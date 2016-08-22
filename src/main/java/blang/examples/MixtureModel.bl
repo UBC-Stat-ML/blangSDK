@@ -1,10 +1,10 @@
-import java.util.List
 import blang.utils.StaticUtils 
 import blang.types.IntVar
 import blang.types.RealVar
 import blang.types.Table
-import blang.types.Table.Plate
-import blang.types.Table.Index
+import blang.types.Plate
+import static blang.types.Plate.eachIn
+import blang.types.Index
 
 //import blang.types.Plated.Index
 //import blang.types.Plated.Plate
@@ -24,54 +24,24 @@ model {
   random Table<IntVar> clusterIndicators
   random Table<RealVar> observations
   
-  /*
-   * 
-   * init {
-   * 
-   *   means.in(mixture)
-   *   logVariances.in(mixture)
-   *   clusterIndicator.in(sample)
-   *   observations.in(sample)
-   * 
-   * }
-   * 
-   * Generally, someTable.in(plate1, plate2, plate3)
-   * 
-   * then: eachDistinct(sample)
-   * 
-   * or
-   * 
-   * just do eachDistinct(plate, table1, table2, ..)
-   * 
-   */
-   
-   
-   /**
-    * Argg: potential new type model
-    * 
-    * - assume all random variables are Supplier<T>
-    * - but they can have other 
-    * 
-    * 
-    */
+  init {
+    sample.contains(clusterIndicators, observations)
+    mixture.contains(means, logVariances)
+  }
   
   laws {
     
     logPi | hyperMean, logHyperVar ~ Normal(hyperMean, [Math.exp(logHyperVar.doubleValue)])
     
     // priors on each mixture component mean and variance
-    for (Index<Integer> mixtureIndex : means.eachDistinct(mixture)) {
+    for (Index<Integer> mixtureIndex : eachIn(mixture)) {
       means.get(mixtureIndex) | hyperMean, logHyperVar ~ Normal(hyperMean, [Math.exp(logHyperVar.doubleValue)])
-    }
-    for (Index<Integer> mixtureIndex : logVariances.eachDistinct(mixture)) {
       logVariances.get(mixtureIndex) | hyperMean, logHyperVar ~ Normal(hyperMean, [Math.exp(logHyperVar.doubleValue)])
     }
     
-    for (Index<Integer> sampleIndex : clusterIndicators.eachDistinct(sample)) {
+    for (Index<Integer> sampleIndex : eachIn(sample)) {
       // prior over mixture indicators
       clusterIndicators.get(sampleIndex) | logPi ~ Bernoulli([StaticUtils::logistic(logPi.doubleValue)])
-    }  
-    for (Index<Integer> sampleIndex : observations.eachDistinct(sample)) {
       // likelihood:
       observations.get(sampleIndex) | 
         RealVar mean0 = means.get(mixture.index(0)), 

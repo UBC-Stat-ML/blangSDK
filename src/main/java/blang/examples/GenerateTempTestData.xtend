@@ -14,7 +14,7 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics
 
 class GenerateTempTestData implements Runnable {
   
-  int nData = 370
+  int nData = 2 
   double p = 0.2
   List<Double> means = #[-1.0, 5.0]
   double dataGenNoise = 0.1 // std dev
@@ -49,17 +49,15 @@ class GenerateTempTestData implements Runnable {
       "--model.hyperMean", "0",
       "--model.logHyperVar", "3",
       "--model.logPi", "NA",
-      "--model.means.csvFile", latents.absolutePath,
-      "--model.logVariances.csvFile", latents.absolutePath,
-      "--model.clusterIndicators.csvFile", dataFile.absolutePath,
-      "--model.observations.csvFile", dataFile.absolutePath,
+      "--model.means", latents.absolutePath,
+      "--model.logVariances", latents.absolutePath,
+      "--model.clusterIndicators", dataFile.absolutePath,
+      "--model.observations", dataFile.absolutePath,
       "--mcmc.nIterations", "10000",
       "--mcmc.thinningPeriod", "100"
       )
     return Results.getFileInResultFolder(Runner.SAMPLE_FILE)
   }
-  
-  //--model Scratch --model.mean NA --model.observations.csvFile src/test/resource/data.csv --model.sample --mcmc.thinningPeriod 1000
   
   def File createDummyLatentFile() {
     val File result = Results.getFileInResultFolder("latents.csv")

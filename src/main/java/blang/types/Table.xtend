@@ -1,31 +1,25 @@
 package blang.types
 
-import java.util.Set
-import java.util.Map
-import java.util.List
-import java.util.HashMap
-import java.util.LinkedHashMap
-import org.eclipse.xtend.lib.annotations.Data
-import java.util.LinkedHashSet
-import org.eclipse.xtend.lib.annotations.Accessors
-import java.util.HashSet
-import blang.inits.Implementation
 import blang.inits.DesignatedConstructor
-import blang.inits.ConstructorArg
-import java.io.File
-import briefj.BriefIO
-import java.util.ArrayList
-import blang.inits.InitInfoType
-import blang.inits.InitInfoName
-import blang.inits.QualifiedName
-import java.lang.reflect.Type
-import java.lang.reflect.ParameterizedType
 import blang.inits.InitInfoContext
 import blang.inits.Instantiator.InstantiationContext
-import java.util.Collections
-import blang.inits.Input
-import com.google.common.base.Joiner
 import blang.runtime.objectgraph.SkipDependency
+import briefj.BriefIO
+import com.google.common.base.Joiner
+import java.io.File
+import java.lang.reflect.ParameterizedType
+import java.util.ArrayList
+import java.util.Collections
+import java.util.HashMap
+import java.util.LinkedHashMap
+import java.util.LinkedHashSet
+import java.util.List
+import java.util.Map
+import java.util.Optional
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.Data
+import blang.inits.Input
+import java.util.Collection
 
 class Table<T> {  // Note: do not make an interface; this breaks because the generic argument gets lost in @Implementation(..) strategy 
     
@@ -37,110 +31,54 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   
   @SkipDependency
   val InstantiationContext context
+  
+  /**
+   * There may not necessarily be a data source, e.g. for latent variables in a table.
+   */
+  @SkipDependency
+  @Accessors(PUBLIC_GETTER)
+  val Optional<DataSource> source
+  
+  // this one is driving dependencies!
+  val Map<GetQuery, Object> _get_cache = new HashMap
 
   @DesignatedConstructor
   new (
-    @ConstructorArg("csvFile") File csvFile,
+    @Input(formatDescription = "Path to csv file or empty if latent") List<String> file, // TODO: refactor that
     @InitInfoContext InstantiationContext context  
   ) {
     this.context = context
     this.platedType = (context.requestedType as ParameterizedType).actualTypeArguments.get(0) as Class
     this.valueColumnName = context.qualifiedName.simpleName()
     
-    // Break into separate function:
-    val com.google.common.base.Optional<List<String>> fields = BriefIO.readLines(csvFile).splitCSV.first
-    for (String name : fields.get) {
-      column2RawData.put(name, new ArrayList)
-      columnName2IndexValues.put(name, new LinkedHashSet)
-    }
-    for (Map<String,String> line : BriefIO.readLines(csvFile).indexCSV) {
-      if (line.size != column2RawData.keySet.size) {
-        throw new RuntimeException // TODO
-      }
-      for (String name : fields.get) {
-        column2RawData.get(name).add(line.get(name))
-        columnName2IndexValues.get(name).add(line.get(name))
-      }
+    this.source = if (file.isEmpty) {
+      Optional.empty
+    } else {
+      val File csvFile = new File(file.join(" "))
+      println('''Loaded «csvFile» for data in «platedType» «valueColumnName»''')
+      Optional.of(DataSource.fromCSV(csvFile))
     }
   }
-
-  // raw data
-  val Map<String, List<String>> column2RawData = new LinkedHashMap
   
-  // cache these sets to avoid looping each time an eachDistinct is called
-  @SkipDependency
-  val Map<String, Set<String>> columnName2IndexValues = new LinkedHashMap 
-  
-  // cache all queries
-  @SkipDependency
-  val Map<String, Set<Index<?>>> _eachDistinct_cache = new HashMap
-  
-  // this one is driving dependencies!
-  val Map<GetQuery, Object> _get_cache = new HashMap
-  
-  // cache the parsed keys
-  @SkipDependency
-  val Map<Pair<String,String>,Object> _columnAndString2ParsedObject = new HashMap
-  
-  def private Object getIndexCache(String columnName, String value) {
-    return _columnAndString2ParsedObject.get(Pair.of(columnName, value))
-  }
-  
-  def private void putInIndexCache(String columnName, String value, Object parsed) {
-    _columnAndString2ParsedObject.put(Pair.of(columnName, value), parsed)
-  }
-  
-  def private int rawSize() {
-    if (column2RawData.size === 0) {
-      return 0
+  def private String childVariableName(Collection<Index<?>> indices) {
+    val List<String> nameElements = new ArrayList
+    for (Index<?> index : indices) {
+      nameElements.add(index.plate.columnName + "=" + index.value)
     }
-    return column2RawData.values.iterator.next.size
+    return Joiner.on("_").join(nameElements)
   }
   
-  def <K> Set<Index<K>> eachDistinct(Plate<K> plate) {
-    // check if in cache
-    if (_eachDistinct_cache.containsKey(plate.columnName)) {
-      return _eachDistinct_cache.get(plate.columnName) as Set
-    }
-    // compute if not
-    var Set<Index<K>> result = new LinkedHashSet
-    for (String indexValue : columnName2IndexValues.get(plate.columnName)) {
-      
-      val K parsed = context.instantiateChild(
-        plate.type, 
-        context.getChildArguments("_plate_index", Collections.singletonList(indexValue)))
-        .get // TODO: error handling
-      
-      putInIndexCache(plate.columnName, indexValue, parsed)
-      val Index<K> index = new Index(plate, parsed)
-      result.add(index)
-    }
-    
-    // insert into cache
-    _eachDistinct_cache.put(plate.columnName, result as Set)
-    
-    return result
-  }
-  
-  def T get(Index<?> ... indices) {
+  def private cacheFromDataSource(Index<?> ... indices) {
     val GetQuery query = GetQuery.build(indices)
-    if (_get_cache.containsKey(query)) {
-      return _get_cache.get(query) as T  
-    }
     // compute all cache entries if not
-    for (var int dataIdx = 0; dataIdx < rawSize; dataIdx++) {
+    for (var int dataIdx = 0; dataIdx < source.get.nEntries; dataIdx++) {
       val GetQuery curQuery = GetQuery.build
-      val List<String> nameElements = new ArrayList
+      
       for (Index<?> referenceIndex : indices) {
-        val Plate curPlate = referenceIndex.plate
+        val Plate<?> curPlate = referenceIndex.plate
         val String curColumn = curPlate.columnName
-        if (!column2RawData.containsKey(curColumn)) {
-          throw new RuntimeException // TODO
-        }
-        val String curIndexValue = column2RawData.get(curColumn).get(dataIdx)
-        val Object parsed = getIndexCache(curColumn, curIndexValue)
-        val Index curIndex = new Index(curPlate, parsed)
-        nameElements.add(curPlate.columnName + "=" + parsed)
+        val String curIndexValue = source.get.entry(curColumn, dataIdx)
+        val Index<?> curIndex = curPlate.parseKey(curIndexValue)
         curQuery.indices.add(curIndex)
       }
       if (_get_cache.containsKey(curQuery)) {
@@ -149,10 +87,32 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
       
       val T parsedValue = context.instantiateChild(
         platedType, 
-        context.getChildArguments(Joiner.on("_").join(nameElements), Collections.singletonList(column2RawData.get(valueColumnName).get(dataIdx))))
+        context.getChildArguments(childVariableName(curQuery.indices), Collections.singletonList(source.get.entry(valueColumnName, dataIdx))))
         .get // TODO: error handling
       
       _get_cache.put(curQuery, parsedValue)
+    }
+  }
+  
+  def private void cacheFromLatent(Index<?> ... indices) {
+    val GetQuery curQuery = GetQuery.build
+    curQuery.indices.addAll(indices)
+    val T parsedValue = context.instantiateChild(
+        platedType, 
+        context.getChildArguments(childVariableName(curQuery.indices), Collections.singletonList(NA::SYMBOL)))
+        .get // TODO: error handling
+    _get_cache.put(curQuery, parsedValue)
+  }
+
+  def T get(Index<?> ... indices) {
+    val GetQuery query = GetQuery.build(indices)
+    if (_get_cache.containsKey(query)) {
+      return _get_cache.get(query) as T  
+    }
+    if (source.present) {
+      cacheFromDataSource(indices)
+    } else {
+      cacheFromLatent(indices)
     }
     return _get_cache.get(query) as T
   }
@@ -160,53 +120,50 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   @Data // important! this is used in hash tables
   private static class GetQuery {
     @SkipDependency
-    val Set<Index<?>> indices
+    val LinkedHashSet<Index<?>> indices
     def static GetQuery build(Index<?> ... indices) {
-      return new GetQuery(new HashSet(indices))
+      return new GetQuery(new LinkedHashSet(indices))
     }
   }
-
-  @Data // important! this is used in hash tables
-  static class Plate<K> {
-    @Accessors(PUBLIC_GETTER)
-    @SkipDependency
-    val Class<K> type
+  
+  static class DataSource {
     
-    @Accessors(PUBLIC_GETTER)
-    @SkipDependency
-    val String columnName
+    val Map<String, LinkedHashSet<String>> columnName2IndexValues = new LinkedHashMap 
+    val Map<String, List<String>> column2RawData = new LinkedHashMap
     
-    def Index<K> index(K indexValue) {
-      return new Index(this, indexValue)
-    }
-    
-    @DesignatedConstructor
-    def static <K> Plate<K> build(
-      @InitInfoType Type plateType, 
-      @InitInfoName QualifiedName qName,
-      @Input(formatDescription = "Name of the plate (or empty to use name declared in blang file)") List<String> inputs
-      // limits
-    ) {
-      val Class<K> type = (plateType as ParameterizedType).actualTypeArguments.get(0) as Class<K>
-      val String inputName = Joiner.on(" ").join(inputs)
-      val String columnName = 
-        if (inputName.isEmpty) {
-          qName.simpleName()
-        } else {
-          inputName
+    def static DataSource fromCSV(File csvFile) {
+      return new DataSource => [
+        val com.google.common.base.Optional<List<String>> fields = BriefIO.readLines(csvFile).splitCSV.first
+        for (String name : fields.get) {
+          column2RawData.put(name, new ArrayList)
+          columnName2IndexValues.put(name, new LinkedHashSet)
         }
-      return new Plate(type, columnName)
+        for (Map<String,String> line : BriefIO.readLines(csvFile).indexCSV) {
+          if (line.size != column2RawData.keySet.size) {
+            throw new RuntimeException // TODO
+          }
+          for (String name : fields.get) {
+            column2RawData.get(name).add(line.get(name))
+            columnName2IndexValues.get(name).add(line.get(name))
+          }
+        }
+      ]
     }
-  }
     
-  @Data // important! this is used in hash tables
-  static class Index<K> {
-    @SkipDependency
-    @Accessors(PUBLIC_GETTER)
-    val Plate<K> plate
+    def LinkedHashSet<String> keys(String columnName) {
+      return columnName2IndexValues.get(columnName)
+    }
     
-    @SkipDependency
-    @Accessors(PUBLIC_GETTER)
-    val K value
+    def int nEntries() {
+      if (column2RawData.size === 0) {
+        return 0
+      }
+      return column2RawData.values.iterator.next.size
+    }
+    
+    def String entry(String columnName, int dataIndex) {
+      return column2RawData.get(columnName).get(dataIndex)
+    }
+    
   }
 }

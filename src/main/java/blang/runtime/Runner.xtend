@@ -78,7 +78,9 @@ class Runner implements Runnable {
     instantiator.debug = true
     val Optional<Options> options = initModel(instantiator, PosixParser.parse(args)) 
     if (options.present) {
-      new Runner(options.get, ModelUtils::graphAnalysis(options.get().model, initContext.graphAnalysisInputs), instantiator)
+      val GraphAnalysis graphAnalysis = ModelUtils::graphAnalysis(options.get().model, initContext.graphAnalysisInputs)
+      ModelUtils::visualizeGraphAnalysis(graphAnalysis, instantiator)
+      new Runner(options.get, graphAnalysis, instantiator)
         .run()
     } else {
       println("Error(s) in provided arguments. Report:")

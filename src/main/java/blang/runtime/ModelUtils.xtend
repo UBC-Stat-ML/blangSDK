@@ -14,6 +14,8 @@ import blang.runtime.objectgraph.GraphAnalysis
 import blang.mcmc.Sampler
 import java.lang.reflect.Field
 import blang.runtime.objectgraph.Inputs
+import blang.inits.VariableNamingService
+import blang.runtime.objectgraph.ObjectNode
 
 class ModelUtils {
   
@@ -51,15 +53,26 @@ class ModelUtils {
           throw new RuntimeException(e)
         }
     // analyze the object graph
-    var GraphAnalysis graphAnalysis = GraphAnalysis.create(inputs) 
+    return GraphAnalysis.create(inputs) 
+  }
+  
+  def static void visualizeGraphAnalysis(GraphAnalysis graphAnalysis, VariableNamingService namingService) {
     // output visualization of the graph
     graphAnalysis.accessibilityGraph.exportDot(Results.getFileInResultFolder("accessibility-graph.dot")) 
-    graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot")) 
+    graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"), [node |
+      switch (node) {
+        ObjectNode<?> : {
+          val String name = namingService.getName(node.object)
+          if (name !== null) {
+            return name
+          }
+        }
+      }
+      return node.toStringSummary
+    ]);
 //    System.out.println(graphAnalysis.toStringSummary()) 
     System.out.println("# latent variables: " + graphAnalysis.latentVariables.size())
     System.out.println("# factors: " + graphAnalysis.factorNodes.size())
-    // create the samplers
-    return graphAnalysis 
   }
   
   // static utils only

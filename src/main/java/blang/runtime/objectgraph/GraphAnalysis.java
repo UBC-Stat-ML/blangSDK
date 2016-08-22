@@ -8,10 +8,12 @@ import java.util.function.Predicate;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.ext.VertexNameProvider;
 
 import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
 import blang.core.Factor;
+import blang.inits.VariableNamingService;
 import blang.mcmc.Operator;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;
 import blang.utils.TypeProvider;
@@ -93,12 +95,17 @@ public class GraphAnalysis
 //    - question: how to deal with gradients?
 //    - need to think about RF vs MH infrastructure
   
-  public void exportFactorGraphVisualization(File file) 
+  public void exportFactorGraphVisualization(File file, VertexNameProvider<Node> vertexNameProvider) 
   {
-    factorGraphVisualization().export(file);
+    factorGraphVisualization(vertexNameProvider).export(file);
   }
   
-  public DotExporter<Node, UnorderedPair<Node, Node>> factorGraphVisualization()
+  public DotExporter<Node, UnorderedPair<Node, Node>> factorGraphVisualization() 
+  {
+    return factorGraphVisualization(node -> node.toStringSummary());
+  }
+  
+  public DotExporter<Node, UnorderedPair<Node, Node>> factorGraphVisualization(VertexNameProvider<Node> vertexNameProvider)
   {
     
     UndirectedGraph<Node, UnorderedPair<Node, Node>> factorGraph = GraphUtils.newUndirectedGraph();
@@ -116,7 +123,7 @@ public class GraphAnalysis
     }
     
     DotExporter<Node, UnorderedPair<Node,Node>> result = new DotExporter<>(factorGraph);
-    result.vertexNameProvider = node -> node.toStringSummary();
+    result.vertexNameProvider = vertexNameProvider;
     result.addVertexAttribute("shape", node -> factorNodes.contains(node) ? "box" : "");
     
     return result;
