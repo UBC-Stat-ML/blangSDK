@@ -70,7 +70,7 @@ class Runner implements Runnable {
     namedLatentVariables = setupProcessors(naming)
   }
   
-  def static void main(String [] args) {
+  def static void main(String ... args) {
     val Instantiator instantiator = Instantiators.getDefault()
     val ObservationProcessor initContext = new ObservationProcessor
     instantiator.globals.put(ObservationProcessor::KEY, initContext)
@@ -105,10 +105,10 @@ class Runner implements Runnable {
     return result 
   }
   
-  
+  val public static final String SAMPLE_FILE = "samples.csv"
   override void run() {
     // TODO: some utilities to deal with details of writing to files
-    val BufferedWriter writer = Files.newBufferedWriter(Results.getFileInResultFolder("samples.csv").toPath) { 
+    val BufferedWriter writer = Files.newBufferedWriter(Results.getFileInResultFolder(SAMPLE_FILE).toPath) { 
       writer.append("variable,iteration,value\n")
       var List<Sampler> samplers = SamplerBuilder.instantiateSamplers(graphAnalysis) 
       for (var int i=0; i < options.mcmc.nIterations; i++) {

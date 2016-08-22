@@ -10,7 +10,7 @@ model {
   laws {
     
     logf(probability, realization)  {
-      switch (realization) {
+      switch (realization.intValue) {
         case 0  : 1.0 -  probability.doubleValue
         case 1  : probability.doubleValue
         default :

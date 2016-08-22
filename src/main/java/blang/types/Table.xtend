@@ -25,11 +25,17 @@ import blang.inits.Instantiator.InstantiationContext
 import java.util.Collections
 import blang.inits.Input
 import com.google.common.base.Joiner
+import blang.runtime.objectgraph.SkipDependency
 
 class Table<T> {  // Note: do not make an interface; this breaks because the generic argument gets lost in @Implementation(..) strategy 
     
+  @SkipDependency
   val Class<T> platedType
+  
+  @SkipDependency
   val String valueColumnName
+  
+  @SkipDependency
   val InstantiationContext context
 
   @DesignatedConstructor
@@ -62,13 +68,18 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   val Map<String, List<String>> column2RawData = new LinkedHashMap
   
   // cache these sets to avoid looping each time an eachDistinct is called
+  @SkipDependency
   val Map<String, Set<String>> columnName2IndexValues = new LinkedHashMap 
   
   // cache all queries
+  @SkipDependency
   val Map<String, Set<Index<?>>> _eachDistinct_cache = new HashMap
+  
+  // this one is driving dependencies!
   val Map<GetQuery, Object> _get_cache = new HashMap
   
   // cache the parsed keys
+  @SkipDependency
   val Map<Pair<String,String>,Object> _columnAndString2ParsedObject = new HashMap
   
   def private Object getIndexCache(String columnName, String value) {
@@ -123,6 +134,9 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
       for (Index<?> referenceIndex : indices) {
         val Plate curPlate = referenceIndex.plate
         val String curColumn = curPlate.columnName
+        if (!column2RawData.containsKey(curColumn)) {
+          throw new RuntimeException // TODO
+        }
         val String curIndexValue = column2RawData.get(curColumn).get(dataIdx)
         val Object parsed = getIndexCache(curColumn, curIndexValue)
         val Index curIndex = new Index(curPlate, parsed)
@@ -145,6 +159,7 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   
   @Data // important! this is used in hash tables
   private static class GetQuery {
+    @SkipDependency
     val Set<Index<?>> indices
     def static GetQuery build(Index<?> ... indices) {
       return new GetQuery(new HashSet(indices))
@@ -154,9 +169,11 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   @Data // important! this is used in hash tables
   static class Plate<K> {
     @Accessors(PUBLIC_GETTER)
+    @SkipDependency
     val Class<K> type
     
     @Accessors(PUBLIC_GETTER)
+    @SkipDependency
     val String columnName
     
     def Index<K> index(K indexValue) {
@@ -184,9 +201,11 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
     
   @Data // important! this is used in hash tables
   static class Index<K> {
+    @SkipDependency
     @Accessors(PUBLIC_GETTER)
     val Plate<K> plate
     
+    @SkipDependency
     @Accessors(PUBLIC_GETTER)
     val K value
   }

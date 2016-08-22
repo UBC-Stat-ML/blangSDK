@@ -53,7 +53,8 @@ public class ExplorationRules
         object instanceof Double || 
         object instanceof Boolean || 
         object instanceof Short ||
-        object instanceof Long)
+        object instanceof Long ||
+        object instanceof Class)
       return Collections.emptyList();
     else
       return null;
@@ -75,7 +76,8 @@ public class ExplorationRules
   
     // find all fields (including those of super class(es), recursively, if any
     for (Field f : ReflexionUtils.getDeclaredFields(object.getClass(), true))
-      result.add(new FieldConstituentNode(object, f));
+      if (f.getAnnotationsByType(SkipDependency.class).length == 0) // skip those annotated by @SkipDependency
+        result.add(new FieldConstituentNode(object, f));
     
     return result;
   }
