@@ -13,7 +13,6 @@ import org.jgrapht.ext.VertexNameProvider;
 import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
 import blang.core.Factor;
-import blang.inits.VariableNamingService;
 import blang.mcmc.Operator;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;
 import blang.utils.TypeProvider;
@@ -95,7 +94,11 @@ public class GraphAnalysis
 //    - question: how to deal with gradients?
 //    - need to think about RF vs MH infrastructure
   
-  public void exportFactorGraphVisualization(File file, VertexNameProvider<Node> vertexNameProvider) 
+  @SuppressWarnings("unchecked")
+  public void exportFactorGraphVisualization(File file, 
+      @SuppressWarnings("rawtypes") VertexNameProvider /* Type erasure used here to work around some weird bug with xtend (builds fine in eclipse, crashed in gradle with error:
+        "The method exportFactorGraphVisualization(File, VertexNameProvider<Object>) from the type GraphAnalysis refers to the missing type Object (file:/Users/bouchard/w/blangSDK/src/main/java/blang/runtime/ModelUtils.xtend line : 62 column : 19)"
+       */ vertexNameProvider) 
   {
     factorGraphVisualization(vertexNameProvider).export(file);
   }

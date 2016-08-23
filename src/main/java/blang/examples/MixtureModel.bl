@@ -6,20 +6,14 @@ import blang.types.Plate
 import static blang.types.Plate.eachIn
 import blang.types.Index
 
-//import blang.types.Plated.Index
-//import blang.types.Plated.Plate
 
 model {
   
-  param Plate<Integer> sample
-  param Plate<Integer> mixture
-  
-  param RealVar hyperMean
-  param RealVar logHyperVar
+  param  Plate<Integer> sample, mixture
+  param  RealVar hyperMean, logHyperVar
   
   random RealVar logPi
-  random Table<RealVar> means
-  random Table<RealVar> logVariances
+  random Table<RealVar> means, logVariances
   
   random Table<IntVar> clusterIndicators
   random Table<RealVar> observations
