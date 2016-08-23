@@ -21,7 +21,7 @@ model {
     
     mean ~ Normal([0.0], [1.0])
     
-    for (Index<Integer> sampleIndex : Plate.eachIn(sample)) {
+    for (Index<Integer> sampleIndex : sample.indices) {
       observations.get(sampleIndex) | mean ~ Normal(mean, [1.0])
     }
   }

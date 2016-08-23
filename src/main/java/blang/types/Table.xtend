@@ -20,6 +20,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
 import blang.inits.Input
 import java.util.Collection
+import java.util.Comparator
 
 class Table<T> {  // Note: do not make an interface; this breaks because the generic argument gets lost in @Implementation(..) strategy 
     
@@ -68,13 +69,12 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
     return Joiner.on("_").join(nameElements)
   }
   
-  def private cacheFromDataSource(Index<?> ... indices) {
-    val GetQuery query = GetQuery.build(indices)
+  def private cacheFromDataSource(GetQuery query) {
     // compute all cache entries if not
     for (var int dataIdx = 0; dataIdx < source.get.nEntries; dataIdx++) {
       val GetQuery curQuery = GetQuery.build
       
-      for (Index<?> referenceIndex : indices) {
+      for (Index<?> referenceIndex : query.indices) {
         val Plate<?> curPlate = referenceIndex.plate
         val String curColumn = curPlate.columnName
         val String curIndexValue = source.get.entry(curColumn, dataIdx)
@@ -94,27 +94,42 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
     }
   }
   
-  def private void cacheFromLatent(Index<?> ... indices) {
-    val GetQuery curQuery = GetQuery.build
-    curQuery.indices.addAll(indices)
+  def private void cacheFromLatent(GetQuery curQuery) {
     val T parsedValue = context.instantiateChild(
         platedType, 
         context.getChildArguments(childVariableName(curQuery.indices), Collections.singletonList(NA::SYMBOL)))
         .get // TODO: error handling
     _get_cache.put(curQuery, parsedValue)
   }
-
-  def T get(Index<?> ... indices) {
-    val GetQuery query = GetQuery.build(indices)
+  
+  def private T get(GetQuery query) {
     if (_get_cache.containsKey(query)) {
       return _get_cache.get(query) as T  
     }
     if (source.present) {
-      cacheFromDataSource(indices)
+      cacheFromDataSource(query)
     } else {
-      cacheFromLatent(indices)
+      cacheFromLatent(query)
     }
     return _get_cache.get(query) as T
+  }
+
+  def T get(Index<?> ... indices) {
+    val GetQuery query = GetQuery.build(indices)
+    return get(query)
+  }
+  
+  def List<T> getList(Plate<Integer> plateIndexingList, Index<?> ... otherIndices) {
+    val int max = plateIndexingList.indices.stream.map[it.value].max(Comparator.naturalOrder()).orElse(0)
+    val List<T> result = new ArrayList
+    var GetQuery tempQuery = GetQuery.build(otherIndices)
+    for (var int i = 0; i <= max; i++) {
+      val Index<Integer> cur = plateIndexingList.index(i)
+      tempQuery.indices.add(cur)
+      result.add(get(tempQuery))
+      tempQuery.indices.remove(cur)
+    }
+    return result
   }
   
   @Data // important! this is used in hash tables

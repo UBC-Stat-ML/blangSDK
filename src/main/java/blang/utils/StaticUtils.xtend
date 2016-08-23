@@ -2,6 +2,7 @@ package blang.utils
 
 import java.util.List
 import java.util.ArrayList
+import blang.types.RealVar
 
 class StaticUtils {
   
@@ -15,6 +16,10 @@ class StaticUtils {
   
   def static double logistic(double value) {
     return 1.0 / (1.0 + Math.exp(-value))
+  }
+  
+  def static double logistic(RealVar realVar) {
+    return logistic(realVar.doubleValue)
   }
   
   def static <T> T pickUnique(Iterable<T> collection, String errorMessage) {

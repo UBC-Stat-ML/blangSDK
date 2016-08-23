@@ -36,12 +36,13 @@ class Plate<K> {
   
   @SkipDependency
   var transient Map<String, Index<K>> _parsingCache = new HashMap
+
   
-  def static <K> LinkedHashSet<Index<K>> eachIn(Plate<K> plate) {
-    if (plate._indicesCache === null) {
+  def LinkedHashSet<Index<K>> indices() {
+    if (_indicesCache === null) {
       throw new RuntimeException("A plate should be initialized using contains(...)")
     }
-    return plate._indicesCache 
+    return _indicesCache
   }
   
   /**
