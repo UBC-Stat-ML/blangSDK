@@ -1,0 +1,21 @@
+
+
+import blang.types.IntVar
+import blang.types.Table
+import blang.types.Simplex
+import java.util.List
+
+model {
+  
+  param Simplex initialDistribution
+  param List<Simplex> transitionMatrix
+  
+  random Table<IntVar> states
+  
+  laws {
+    
+    
+    
+  }
+  
+}

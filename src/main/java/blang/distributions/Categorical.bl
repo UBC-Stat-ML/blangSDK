@@ -1,0 +1,25 @@
+import blang.types.IntVar
+import blang.types.Simplex
+
+import static extension blang.utils.ExtensionUtils.*
+
+model {
+  
+  param Simplex probabilities
+  
+  random IntVar realization
+  
+  laws {
+    
+    logf(probabilities, realization)  {
+      probabilities.get(realization)
+    }
+    
+    indicator(probabilities, realization)  {
+      realization >= 0 || realization < probabilities.dim()
+    }
+
+    
+  }
+  
+}
