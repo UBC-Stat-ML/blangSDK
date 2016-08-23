@@ -15,9 +15,9 @@ import blang.types.NA
 
 class GenerateTempTestData implements Runnable {
   
-  int nData = 2 
+  int nData = 1000
   double p = 0.2
-  List<Double> means = #[-1.0, 5.0]
+  List<Double> means = #[-2.0, 5.0]
   double dataGenNoise = 0.1 // std dev
   
   def static void main(String [] args) {

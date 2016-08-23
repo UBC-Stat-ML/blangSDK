@@ -50,7 +50,7 @@ model {
         RealVar logVar1 = logVariances.get(mixture.index(1)),
         IntVar curIndic = clusterIndicators.get(sampleIndex)
         ~ Normal(
-           if (curIndic.intValue === 0) logVar0                       else if (curIndic.intValue === 1) logVar1                       else throw new RuntimeException,
+           if (curIndic.intValue === 0) mean0                         else if (curIndic.intValue === 1)   mean1                       else throw new RuntimeException,
           [if (curIndic.intValue === 0) Math.exp(logVar0.doubleValue) else if (curIndic.intValue === 1) Math.exp(logVar1.doubleValue) else throw new RuntimeException] 
         )
     }
