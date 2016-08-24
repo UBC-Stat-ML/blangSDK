@@ -3,18 +3,34 @@
 import blang.types.IntVar
 import blang.types.Table
 import blang.types.Simplex
-import java.util.List
+import blang.types.Plate
+import blang.types.Index
 
 model {
   
+  param Plate<Integer> time, latent
+  
   param Simplex initialDistribution
-  param List<Simplex> transitionMatrix
+  param Table<Simplex> transitionProbabilities
   
   random Table<IntVar> states
   
+  init {
+    time.contains(states)
+    latent.contains(transitionProbabilities) 
+  }
+   
   laws {
     
+    states.get(time.index(0)) | initialDistribution ~ Categorical(initialDistribution)
     
+    for (Index<Integer> step : time.indices.filter[value > 0]) {
+      states.get(step) |
+        latent,
+        IntVar previous = states.get(time.index(step.value - 1)),
+        transitionProbabilities
+        ~ Categorical(transitionProbabilities.get(latent.index(previous.intValue)))
+    }
     
   }
   

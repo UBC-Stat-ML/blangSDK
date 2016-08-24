@@ -25,6 +25,7 @@ import java.util.Comparator
 class Table<T> {  // Note: do not make an interface; this breaks because the generic argument gets lost in @Implementation(..) strategy 
     
   @SkipDependency
+  @Accessors(PUBLIC_GETTER)
   val Class<T> platedType
   
   @SkipDependency
@@ -32,6 +33,10 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   
   @SkipDependency
   val InstantiationContext context
+  
+  @SkipDependency
+  @Accessors(PUBLIC_GETTER)
+  val package LinkedHashSet<Plate<?>> enclosingPlates = new LinkedHashSet
   
   /**
    * There may not necessarily be a data source, e.g. for latent variables in a table.

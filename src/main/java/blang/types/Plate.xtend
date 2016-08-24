@@ -53,6 +53,11 @@ class Plate<K> {
     if (_indicesCache !== null) {
       throw new RuntimeException("contains(.., ..) should be called only once (use comma separated tables if there are many tables in the plate)")
     }
+    
+    // inform the tables in what they are contained too
+    for (Table<?> table : tables) {
+      table.enclosingPlates.add(this)
+    }
 
     // find all tables with available datasource, and parse the keys
     val List<LinkedHashSet<Index<K>>> parsedKeysForEachAvailableDataSource = new ArrayList

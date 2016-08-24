@@ -19,20 +19,20 @@ class ExtensionUtils {
     return Math::exp(realVar.doubleValue)
   }
   
-  def static boolean >=(IntVar v0, int v1) {
-    return v0.intValue >= v1
-  }
-  
-    def static boolean <=(IntVar v0, int v1) {
-    return v0.intValue <= v1
-  }
-  
-    def static boolean >(IntVar v0, int v1) {
-    return v0.intValue > v1
-  }
-  
-    def static boolean <(IntVar v0, int v1) {
-    return v0.intValue < v1
-  }
+//  def static boolean >=(IntVar v0, int v1) {
+//    return v0.intValue >= v1
+//  }
+//  
+//    def static boolean <=(IntVar v0, int v1) {
+//    return v0.intValue <= v1
+//  }
+//  
+//    def static boolean >(IntVar v0, int v1) {
+//    return v0.intValue > v1
+//  }
+//  
+//    def static boolean <(IntVar v0, int v1) {
+//    return v0.intValue < v1
+//  }
   
 }

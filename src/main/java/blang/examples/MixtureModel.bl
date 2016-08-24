@@ -6,7 +6,7 @@ import blang.types.Plate
 import blang.types.Index
 import java.util.List
 
-import static extension blang.utils.ExtensionUtils.*
+import static extension blang.utils.ExtensionUtils.* 
 
 model {
   

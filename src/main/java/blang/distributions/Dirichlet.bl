@@ -1,0 +1,18 @@
+
+
+import xlinear.Matrix
+import blang.types.Simplex
+
+model {
+  
+  param Matrix concentrations
+  
+  random Simplex realization
+  
+  laws {
+    
+    // TODO
+    
+  }
+  
+}

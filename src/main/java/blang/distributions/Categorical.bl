@@ -16,9 +16,8 @@ model {
     }
     
     indicator(probabilities, realization)  {
-      realization >= 0 || realization < probabilities.dim()
+      realization.intValue >= 0 || realization.intValue < probabilities.dim()
     }
-
     
   }
   

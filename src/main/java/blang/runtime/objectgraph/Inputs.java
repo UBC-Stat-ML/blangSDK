@@ -33,7 +33,6 @@ public class Inputs {
   
   public void addVariable(Object variable)
   {
-    // TODO: discover names
     accessibilityGraph.add(variable);
   }
 }
