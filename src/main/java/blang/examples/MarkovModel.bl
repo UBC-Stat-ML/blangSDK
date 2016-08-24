@@ -1,10 +1,11 @@
-
+package blang.examples
 
 import blang.types.IntVar
 import blang.types.Table
 import blang.types.Simplex
 import blang.types.Plate
 import blang.types.Index
+import blang.distributions.Categorical
 
 model {
   

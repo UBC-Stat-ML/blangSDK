@@ -1,4 +1,4 @@
-
+package blang.distributions
 
 import blang.types.RealVar
 

@@ -1,4 +1,4 @@
-
+package blang.examples
 
 import blang.types.Simplex
 import blang.types.Plate
@@ -10,6 +10,9 @@ import blang.types.Index
 import java.util.List
 
 import static extension blang.utils.ExtensionUtils.*
+import blang.distributions.Dirichlet
+import blang.distributions.Normal
+import blang.distributions.Gamma
 
 model {
   
