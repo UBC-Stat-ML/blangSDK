@@ -1,0 +1,14 @@
+package blang.examples
+
+import blang.types.RealVar
+import blang.distributions.Normal
+
+model {
+  
+  random RealVar myVar
+  
+  laws {
+    
+    myVar ~ Normal(null, null)
+  }
+}
