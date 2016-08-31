@@ -2,7 +2,7 @@ package blang.distributions
 
 import blang.types.RealVar
 
-model {
+model Gamma {
   
   param RealVar shape, rate
   

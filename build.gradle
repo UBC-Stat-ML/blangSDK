@@ -23,7 +23,7 @@ xtend {
   }
 }
 
-def blangVersion = '3.7.2'
+def blangVersion = '3.7.3'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
@@ -43,6 +43,7 @@ xtext {
       setup = 'ca.ubc.stat.blang.BlangDslStandaloneSetup'
       fileExtension = 'bl'
       generator.outlet.producesJava = true
+      generator.javaSourceLevel = '1.8'
     }
   }
 }

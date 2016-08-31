@@ -1,12 +1,11 @@
 package blang.examples
 
 import blang.types.IntVar
-import blang.distributions.Categorical
-import blang.types.RealVar
 import xlinear.Matrix
 import java.util.List 
 
-model {
+
+model MarkovModel { 
   
   param Matrix initialDistribution
   param Matrix transitionProbabilities
@@ -22,7 +21,7 @@ model {
         latent,
         IntVar previous = chain.get(step - 1),
         transitionProbabilities
-        ~ Categorical(transitionProbabilities.row(previous.intValue))
+        ~ Categorical(transitionProbabilities.row(previous.intValue)) 
     }
   }
 }

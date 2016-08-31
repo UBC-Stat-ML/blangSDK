@@ -5,11 +5,8 @@ import xlinear.Matrix
 import blang.types.RealVar
 import java.util.List
 
-import blang.distributions.Dirichlet
-import blang.distributions.Normal
-import blang.distributions.Gamma
 
-model {
+model DynamicNormalMixture  {
   
   param Matrix concentrations
   param RealVar hyperMean, hyperVariance
@@ -20,12 +17,12 @@ model {
   random List<RealVar> means, variances 
   
   random List<IntVar> states
-  random List<RealVar> observations
+  random List<RealVar> observations    
   
   laws {
     
     // Priors on initial and transition probabilities
-    initialDistribution | concentrations ~ Dirichlet(concentrations)
+    initialDistribution | concentrations ~ Dirichlet(concentrations)  
     for (int latentStateIdx : 0 ..< means.size) {
       transitionProbabilities.row(latentStateIdx) | concentrations ~ Dirichlet(concentrations)
     }

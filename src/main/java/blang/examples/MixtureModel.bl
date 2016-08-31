@@ -6,10 +6,8 @@ import blang.types.RealVar
 import java.util.List
 
 import static extension blang.utils.ExtensionUtils.* 
-import blang.distributions.Normal
-import blang.distributions.Bernoulli 
 
-model {
+model MixtureModel { 
   
   random  List<RealVar>  observations 
   random  List<IntVar>   clusterIndicators  ?:  listOfIntVars(observations.size) 

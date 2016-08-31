@@ -2,7 +2,7 @@ package blang.distributions
 
 import xlinear.Matrix
 
-model {
+model Dirichlet {
   
   param Matrix concentrations 
   

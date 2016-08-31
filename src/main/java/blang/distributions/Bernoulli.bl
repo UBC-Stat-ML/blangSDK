@@ -3,9 +3,9 @@ package blang.distributions
 import blang.types.IntVar
 import blang.types.RealVar
 
-model {
+model Bernoulli {
   
-  param RealVar probability
+  param RealVar probability   
   
   random IntVar realization
   

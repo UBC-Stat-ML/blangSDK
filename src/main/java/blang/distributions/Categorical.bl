@@ -5,7 +5,7 @@ import blang.types.IntVar
 
 import xlinear.Matrix
 
-model {
+model Categorical {
   
   param Matrix probabilities
   
