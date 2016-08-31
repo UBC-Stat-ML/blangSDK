@@ -1,37 +1,32 @@
 package blang.runtime
 
-import blang.inits.parsing.Posix
 import blang.core.Model
-import java.util.Optional
+import blang.core.ModelBuilder
+import blang.core.Param
 import blang.inits.Arg
-import java.util.Random
-import java.util.List
-import blang.mcmc.Sampler
-import java.util.Collections
-import blang.inits.parsing.Arguments
-import blang.runtime.objectgraph.GraphAnalysis
-import org.eclipse.xtend.lib.annotations.Data
-import org.omg.CORBA.NamedValue
-import java.util.ArrayList
-import blang.mcmc.SamplerBuilder
-import java.io.BufferedWriter
-import java.nio.file.Files
-import briefj.run.Results
-import briefj.CSV
-import blang.runtime.objectgraph.ObjectNode
-import blang.inits.DesignatedConstructor
 import blang.inits.ConstructorArg
 import blang.inits.Creator
 import blang.inits.Creators
+import blang.inits.DesignatedConstructor
+import blang.inits.parsing.Arguments
+import blang.inits.parsing.Posix
 import blang.inits.providers.CoreProviders
-import blang.utils.Parsers
-import blang.core.ModelBuilder
+import blang.mcmc.Sampler
+import blang.mcmc.SamplerBuilder
 import blang.processing.SimpleCSVWriter
-import java.lang.reflect.Field
-import blang.core.Param
-import java.io.File
+import blang.runtime.objectgraph.GraphAnalysis
+import blang.utils.Parsers
 import briefj.BriefIO
 import briefj.ReflexionUtils
+import briefj.run.Results
+import java.io.File
+import java.lang.reflect.Field
+import java.util.ArrayList
+import java.util.Collections
+import java.util.List
+import java.util.Optional
+import java.util.Random
+import org.eclipse.xtend.lib.annotations.Data
 
 class Runner implements Runnable {
   
@@ -42,7 +37,13 @@ class Runner implements Runnable {
     MCMCOptions mcmc
     
     @DesignatedConstructor
-    new(@ConstructorArg("model") ModelBuilder builder) {
+    new(
+      @ConstructorArg(
+        value = "model", 
+        description = "The model to run (technically, an inner class builder for it, " + 
+          "but the suffix '$Builder' can be skipped)"
+      ) ModelBuilder builder
+    ) {
       this.model = builder.build()
     }
   }
@@ -72,25 +73,17 @@ class Runner implements Runnable {
   
   val Options options
   val GraphAnalysis graphAnalysis
-//  val List<NamedVariable> namedLatentVariables
-  
-//  @Data
-//  private static class NamedVariable {
-//    val String name
-//    val Object variable
-//  }
   
   new(
     Options options, 
     GraphAnalysis graphAnalysis
-//    VariableNamingService naming
   ) {
     this.options = options
     this.graphAnalysis = graphAnalysis
-//    namedLatentVariables = setupProcessors(naming)
   }
   
   def static void main(String ... args) {
+    fixModelBuilderArgument(args)
     val Creator creator = Creators::empty()
     creator.addFactories(CoreProviders)
     creator.addFactories(Parsers)
@@ -108,14 +101,16 @@ class Runner implements Runnable {
     }
   }
   
-//  def List<NamedVariable> setupProcessors(VariableNamingService naming) {
-//    val List<NamedVariable> result = new ArrayList
-//    for (ObjectNode<?> variable : graphAnalysis.latentVariables.filter(ObjectNode)) {
-//      val String name = naming.getName(variable.object)
-//      result.add(new NamedVariable(name, variable.object))
-//    }
-//    return result
-//  }
+  def static fixModelBuilderArgument(String[] strings) {
+    for (var int i = 0; i < strings.size; i++) {
+      if (strings.get(i).trim == "--model" && 
+          i < strings.size - 1 &&
+          !strings.get(i+1).contains('$')
+      ) {
+        strings.set(i+1, strings.get(i+1) + "$Builder") // TODO: get the string from SingleBlangModelInferrer
+      }
+    }
+  }
   
   def static Optional<Options> initModel(Creator instantiator, Arguments parseArgs) {
     val Optional<Options> result = 
@@ -134,9 +129,7 @@ class Runner implements Runnable {
   
   val public static final String SAMPLE_FILE = "samples.csv"
   override void run() {
-    // TODO: some utilities to deal with details of writing to files
     val SimpleCSVWriters writers = createCSVWriters(options.model) { 
-//      writer.append("variable,iteration,value\n")
       var List<Sampler> samplers = SamplerBuilder.instantiateSamplers(graphAnalysis) 
       for (var int i=0; i < options.mcmc.nIterations; i++) {
         Collections.shuffle(samplers, options.mcmc.random) 
@@ -144,10 +137,6 @@ class Runner implements Runnable {
         if (i % options.mcmc.thinningPeriod === 0) {
           System.out.println('''Pass «i» (computed «i*samplers.size()» moves so far)''')  
           writers.write(i)
-          // log the samples
-//          for (NamedVariable namedVariable : namedLatentVariables) {
-//            writer.append(namedVariable.name + "," + i + "," + namedVariable.variable.toString() + "\n")
-//          }
         } 
       }
     } writers.close()
@@ -186,7 +175,5 @@ class Runner implements Runnable {
         writer.write(objects.get(i))
       }
     }
-    
   }
-  
 }
