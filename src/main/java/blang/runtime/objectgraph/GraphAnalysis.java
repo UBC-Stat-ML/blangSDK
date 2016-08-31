@@ -14,6 +14,7 @@ import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
 import blang.core.Factor;
 import blang.mcmc.Operator;
+import blang.mcmc.SamplerBuilder;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;
 import blang.utils.TypeProvider;
 import briefj.BriefCollections;
@@ -36,7 +37,7 @@ public class GraphAnalysis
     GraphAnalysis result = new GraphAnalysis();
     result.accessibilityGraph = inputs.accessibilityGraph;
     result.factorNodes = inputs.factors;
-    result.typeProvider = inputs.typeProvider;
+    result.isVariablePredicate = c -> !SamplerBuilder.SAMPLER_PROVIDER.getProducts(c).isEmpty();
     
     if (!inputs.accessibilityGraph.graph.vertexSet().containsAll(inputs.nonRecursiveObservedNodes) ||
         !inputs.accessibilityGraph.graph.vertexSet().containsAll(inputs.recursiveObservedNodes))
@@ -61,7 +62,7 @@ public class GraphAnalysis
     result.latentVariables = latentVariables(
         inputs.accessibilityGraph, 
         result.unobservedMutableNodes, 
-        c -> !inputs.typeProvider.getProducts(c).isEmpty());
+        result.isVariablePredicate);
     
     // 4- prepare the cache
     result.mutableToFactorCache = LinkedHashMultimap.create();
@@ -79,7 +80,7 @@ public class GraphAnalysis
   public LinkedHashSet<ObjectNode<?>> latentVariables;
   private LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
   public LinkedHashSet<ObjectNode<Factor>> factorNodes;
-  public TypeProvider<Class<? extends Operator>> typeProvider; 
+  public Predicate<Class<?>> isVariablePredicate;
   
   private GraphAnalysis() 
   {

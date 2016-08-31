@@ -9,18 +9,22 @@ import java.util.stream.Collectors;
 import blang.core.Factor;
 import blang.runtime.objectgraph.GraphAnalysis;
 import blang.runtime.objectgraph.ObjectNode;
+import blang.utils.RecursiveAnnotationProducer;
+import blang.utils.TypeProvider;
 import briefj.ReflexionUtils;
 
 
 
 public class SamplerBuilder
 {
+  public static TypeProvider<Class<? extends Operator>> SAMPLER_PROVIDER = RecursiveAnnotationProducer.ofClasses(Samplers.class, true);
+  
   public static List<Sampler> instantiateSamplers(GraphAnalysis graphAnalysis)
   {
     List<Sampler> result = new ArrayList<Sampler>();
     for (ObjectNode<?> latent : graphAnalysis.latentVariables)
     {
-      Collection<Class<? extends Operator>> products = graphAnalysis.typeProvider.getProducts(latent.object.getClass());
+      Collection<Class<? extends Operator>> products = SAMPLER_PROVIDER.getProducts(latent.object.getClass());
       for (Class<? extends Operator> product : products)
         if (Operator.class.isAssignableFrom(product))
         {

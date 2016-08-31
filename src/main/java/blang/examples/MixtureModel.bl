@@ -1,0 +1,48 @@
+package blang.examples
+
+import blang.utils.StaticUtils 
+import blang.types.IntVar
+import blang.types.RealVar
+import blang.types.Table
+import blang.types.Plate
+import blang.types.Index 
+import java.util.List
+
+import static extension blang.utils.ExtensionUtils.* 
+import blang.distributions.Normal
+import blang.distributions.Bernoulli
+
+model {
+  
+  random  List<RealVar>  observations 
+  random  List<IntVar>   clusterIndicators  ?:  listOfIntVars(observations.size) 
+  random  RealVar        logPi
+  random  List<RealVar>  means              ?:  listOfRealVars(2), 
+                         logVariances       ?:  listOfRealVars(2)
+  param   RealVar        hyperMean,
+                         logHyperVar 
+  
+  laws {
+    
+    logPi | hyperMean, logHyperVar ~ Normal(hyperMean, [exp(logHyperVar)])
+    
+    // priors on each mixture component mean and variance
+    for (int mixIdx : 0 ..< means.size) {
+      means.get(mixIdx) | hyperMean, logHyperVar ~ Normal(hyperMean, [exp(logHyperVar)])
+      logVariances.get(mixIdx) | hyperMean, logHyperVar ~ Normal(hyperMean, [exp(logHyperVar)])
+    }
+    
+    for (int obsIdx : 0 ..< observations.size) {
+      // prior over mixture indicators
+      clusterIndicators.get(obsIdx) | logPi ~ Bernoulli([StaticUtils::logistic(logPi)])
+      // likelihood:
+      observations.get(obsIdx) |
+        means, logVariances, 
+        IntVar curIndic = clusterIndicators.get(obsIdx)
+        ~ Normal(
+          means.get(curIndic),
+          [exp(logVariances.get(curIndic))] 
+        )
+    }
+  }
+}

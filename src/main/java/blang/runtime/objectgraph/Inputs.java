@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 
 import blang.core.Factor;
 import blang.mcmc.Operator;
+import blang.mcmc.SamplerBuilder;
 import blang.mcmc.Samplers;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;
 import blang.utils.RecursiveAnnotationProducer;
@@ -16,8 +17,6 @@ public class Inputs {
     recursiveObservedNodes = new LinkedHashSet<>();
   
   final LinkedHashSet<ObjectNode<Factor>> factors = new LinkedHashSet<>();
-  
-  public final TypeProvider<Class<? extends Operator>> typeProvider = RecursiveAnnotationProducer.ofClasses(Samplers.class, true);
   
   public void markAsObserved(Object object, boolean recursively) {
     final Node newNode = new ObjectNode<>(object);

@@ -3,22 +3,23 @@ package blang.distributions
 import blang.types.IntVar
 import blang.types.Simplex
 
-import static extension blang.utils.ExtensionUtils.*
+
+import xlinear.Matrix
 
 model {
   
-  param Simplex probabilities
+  param Matrix probabilities
   
   random IntVar realization
   
   laws {
     
     logf(probabilities, realization)  {
-      probabilities.get(realization)
+      probabilities.get(realization.intValue)
     }
     
     indicator(probabilities, realization)  {
-      realization.intValue >= 0 || realization.intValue < probabilities.dim()
+      realization.intValue >= 0 && realization.intValue < probabilities.nEntries
     }
     
   }

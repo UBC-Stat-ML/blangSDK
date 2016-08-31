@@ -21,6 +21,23 @@ import org.eclipse.xtend.lib.annotations.Data
 import blang.inits.Input
 import java.util.Collection
 import java.util.Comparator
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+
+/**
+ * NB: what about covariance matrices? - for now no special type needed, e.g. just define priors on indiv entries and Chol
+ * 
+ * will need Plate<Model> ? - no not needed, will handle these with rv1, _, rv2 ~ Dist( ... ) if needed, (or not? would cause problem with cmd line init)
+ * 
+ * OK strategy:
+ * 
+ * - need plate support 
+ * 
+ * TODO: can be made efficient:
+ * - use an array with index0 + plate1size * index1 + .. type strategy
+ * - instead of plate.contains(...), use table.in(...)?
+ * 
+ * - also: keep the order
+ */
 
 class Table<T> {  // Note: do not make an interface; this breaks because the generic argument gets lost in @Implementation(..) strategy 
     
@@ -36,7 +53,25 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
   
   @SkipDependency
   @Accessors(PUBLIC_GETTER)
-  val package LinkedHashSet<Plate<?>> enclosingPlates = new LinkedHashSet
+  val LinkedHashSet<Plate<?>> enclosingPlates = new LinkedHashSet
+  
+  /**
+   * Initialize the table to specify the set of plates in which 
+   * the variable resides. 
+   * 
+   * Note that plates are treated as set, use matrices or specialized
+   * MatrixTable to handle cases such as transition matrices where 
+   * two dimensions are index by same plate.
+   */
+  def void indexedBy(Plate<?> ... plates) {
+    enclosingPlates.addAll(plates)
+    if (source.present) {
+      for (Plate<?> plate : plates) {
+        plate.initialize(plate.parseKeys(source.get))
+      }
+      
+    }
+  }
   
   /**
    * There may not necessarily be a data source, e.g. for latent variables in a table.
@@ -50,7 +85,7 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
 
   @DesignatedConstructor
   new (
-    @Input(formatDescription = "Path to csv file or empty if latent") List<String> file, // TODO: refactor that
+    @Input(formatDescription = "Path to csv file or empty if latent") List<String> file, // TODO: refactor that?
     @InitInfoContext InstantiationContext context  
   ) {
     this.context = context
@@ -74,13 +109,11 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
     return Joiner.on("_").join(nameElements)
   }
   
-  def private cacheFromDataSource(GetQuery query) {
+  def private cacheFromDataSource() {
     // compute all cache entries if not
     for (var int dataIdx = 0; dataIdx < source.get.nEntries; dataIdx++) {
       val GetQuery curQuery = GetQuery.build
-      
-      for (Index<?> referenceIndex : query.indices) {
-        val Plate<?> curPlate = referenceIndex.plate
+      for (Plate<?> curPlate : enclosingPlates) {
         val String curColumn = curPlate.columnName
         val String curIndexValue = source.get.entry(curColumn, dataIdx)
         val Index<?> curIndex = curPlate.parseKey(curIndexValue)
@@ -112,7 +145,7 @@ class Table<T> {  // Note: do not make an interface; this breaks because the gen
       return _get_cache.get(query) as T  
     }
     if (source.present) {
-      cacheFromDataSource(query)
+      cacheFromDataSource()
     } else {
       cacheFromLatent(query)
     }

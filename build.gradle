@@ -23,7 +23,7 @@ xtend {
   }
 }
 
-def blangVersion = '3.7.1'
+def blangVersion = '3.7.2'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"

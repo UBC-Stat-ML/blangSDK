@@ -1,0 +1,57 @@
+package blang.examples
+
+import blang.types.Simplex
+import blang.types.Plate
+import blang.types.IntVar
+import blang.types.Table
+import xlinear.Matrix
+import blang.types.RealVar
+import blang.types.Index
+import java.util.List
+
+import static extension blang.utils.ExtensionUtils.*
+import blang.distributions.Dirichlet
+import blang.distributions.Normal
+import blang.distributions.Gamma
+
+model {
+  
+  param Matrix concentrations
+  param RealVar hyperMean, hyperVariance
+  param RealVar hyperShape, hyperRate
+  
+  random Matrix initialDistribution
+  random Matrix transitionProbabilities
+  random List<RealVar> means, variances
+  
+  random List<IntVar> states
+  random List<RealVar> observations
+  
+  laws {
+    
+    // Priors on initial and transition probabilities
+    initialDistribution | concentrations ~ Dirichlet(concentrations)
+    for (int latentStateIdx : 0 ..< means.size) {
+      transitionProbabilities.row(latentStateIdx) | concentrations ~ Dirichlet(concentrations)
+    }
+    
+    // Priors on means and variances
+    for (int latentStateIdx : 0 ..< means.size) {
+      means.get(latentStateIdx)     | hyperMean, hyperVariance ~ Normal(hyperMean, hyperVariance)
+      variances.get(latentStateIdx) | hyperShape, hyperRate    ~ Gamma(hyperShape, hyperRate)
+    }
+    
+    states | latent, time, initialDistribution, transitionProbabilities  
+      ~ MarkovModel(initialDistribution, transitionProbabilities)
+      
+    // Gaussian emissions
+    for (int obsIdx : 0 ..< observations.size) {
+      observations.get(obsIdx) |
+        means, 
+        variances, 
+        IntVar curIndic = states.get(obsIdx)
+      ~ Normal(means.get(curIndic.intValue), variances.get(curIndic.intValue))
+    }
+    
+  }
+}

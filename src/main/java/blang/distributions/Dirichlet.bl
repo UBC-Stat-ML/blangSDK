@@ -1,13 +1,12 @@
 package blang.distributions
 
 import xlinear.Matrix
-import blang.types.Simplex
 
 model {
   
   param Matrix concentrations
   
-  random Simplex realization
+  random Matrix realization
   
   laws {
     

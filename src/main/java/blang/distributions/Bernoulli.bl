@@ -7,7 +7,7 @@ model {
   
   param RealVar probability
   
-  random IntVar realization
+  random IntVar realization 
   
   laws {
     
