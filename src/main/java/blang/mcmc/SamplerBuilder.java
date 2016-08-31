@@ -60,6 +60,9 @@ public class SamplerBuilder
     // fill the variable node too; make sure there is only one such field
     NodeMoveUtils.assignVariable(instantiated, variable.object);
     
+    // fill other injected variables
+    NodeMoveUtils.assignGraphAnalysis(instantiated, graphAnalysis);
+    
     return instantiated;
   }
   

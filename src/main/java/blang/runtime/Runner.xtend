@@ -142,7 +142,7 @@ class Runner implements Runnable {
         Collections.shuffle(samplers, options.mcmc.random) 
         for (Sampler s : samplers) s.execute(options.mcmc.random) 
         if (i % options.mcmc.thinningPeriod === 0) {
-          System.out.println('''Iteration «i»''')  
+          System.out.println('''Pass «i» (computed «i*samplers.size()» moves so far)''')  
           writers.write(i)
           // log the samples
 //          for (NamedVariable namedVariable : namedLatentVariables) {

@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import blang.core.Factor;
+import blang.inits.GlobalArg;
+import blang.runtime.objectgraph.GraphAnalysis;
 import briefj.BriefCollections;
 import briefj.BriefLists;
 import briefj.ReflexionUtils;
@@ -121,6 +123,13 @@ public class NodeMoveUtils
     ReflexionUtils.setFieldValue(field, mcmcMoveInstance, variable);
   }
   
+  public static void assignGraphAnalysis(Operator mcmcMoveInstance, GraphAnalysis graphAnalysis) 
+  {
+    List<Field> matches = ReflexionUtils.getAnnotatedDeclaredFields(mcmcMoveInstance.getClass(), GlobalArg.class, true);
+    for (Field field : matches) 
+      ReflexionUtils.setFieldValue(field, mcmcMoveInstance, graphAnalysis);
+  }
+  
   public static Field getSampledVariableField(Class<? extends Operator> moveType)
   {
     List<Field> matches = ReflexionUtils.getAnnotatedDeclaredFields(moveType, SampledVariable.class, true);
@@ -205,4 +214,6 @@ public class NodeMoveUtils
     ParameterizedType genericType = (ParameterizedType) field.getGenericType();
     return (Class<?>) genericType.getActualTypeArguments()[0];
   }
+
+
 }

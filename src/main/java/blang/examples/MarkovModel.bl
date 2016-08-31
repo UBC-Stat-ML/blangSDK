@@ -4,7 +4,7 @@ import blang.types.IntVar
 import blang.distributions.Categorical
 import blang.types.RealVar
 import xlinear.Matrix
-import java.util.List
+import java.util.List 
 
 model {
   
@@ -13,10 +13,10 @@ model {
   
   random List<IntVar> chain
    
-  laws {
-    
+  laws { 
+    // Initial distribution:
     chain.get(0) | initialDistribution ~ Categorical(initialDistribution)
-    
+    // Transitions:
     for (int step : 1 ..< chain.size) {
       chain.get(step) |
         latent,
@@ -24,7 +24,5 @@ model {
         transitionProbabilities
         ~ Categorical(transitionProbabilities.row(previous.intValue))
     }
-    
   }
-  
 }

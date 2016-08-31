@@ -4,7 +4,7 @@ import xlinear.Matrix
 
 model {
   
-  param Matrix concentrations
+  param Matrix concentrations 
   
   random Matrix realization
   

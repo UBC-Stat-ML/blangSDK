@@ -30,9 +30,9 @@ dependencies {
   compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.10.0'
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.4.13'
-  compile group: 'ca.ubc.stat', name: 'inits', version: '1.0.1'
+  compile group: 'ca.ubc.stat', name: 'inits', version: '1.0.2'
   compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.0.0'
-  compile group: 'ca.ubc.stat', name: 'xlinear', version: '1.0.1'
+  compile group: 'ca.ubc.stat', name: 'xlinear', version: '1.0.2'
   compile group: 'org.jgrapht', name: 'jgrapht-dist', version: '0.9.0'
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
 }
