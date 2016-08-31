@@ -1,15 +1,10 @@
 package blang.examples
 
-import blang.types.Simplex
-import blang.types.Plate
 import blang.types.IntVar
-import blang.types.Table
 import xlinear.Matrix
 import blang.types.RealVar
-import blang.types.Index
 import java.util.List
 
-import static extension blang.utils.ExtensionUtils.*
 import blang.distributions.Dirichlet
 import blang.distributions.Normal
 import blang.distributions.Gamma

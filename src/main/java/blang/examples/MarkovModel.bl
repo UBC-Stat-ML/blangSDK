@@ -1,27 +1,12 @@
 package blang.examples
 
 import blang.types.IntVar
-import blang.types.Table
-import blang.types.Simplex
-import blang.types.Plate
-import blang.types.Index
 import blang.distributions.Categorical
 import blang.types.RealVar
 import xlinear.Matrix
 import java.util.List
 
 model {
-  
-  /*
-   * change structure:
-   * 
-   * 1- use matrices for transitions
-   * 2- use vector for probabilities, e.g. in Dirichlet
-   * 3- use slice datastructures to define Dirichlet
-   * 4- make the matrices work nicely with tables (might need the matrix.in(plate1, plate2) notation)... or have a table.asMatrix.. but things get weird with sparse matrices..
-   * 5- use special type of factor to mark dirichlet variables as unsampleable with standard samplers
-   */
-  
   
   param Matrix initialDistribution
   param Matrix transitionProbabilities

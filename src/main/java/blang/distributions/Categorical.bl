@@ -1,7 +1,6 @@
 package blang.distributions
 
 import blang.types.IntVar
-import blang.types.Simplex
 
 
 import xlinear.Matrix

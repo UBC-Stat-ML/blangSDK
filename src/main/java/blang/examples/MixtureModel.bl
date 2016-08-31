@@ -3,9 +3,6 @@ package blang.examples
 import blang.utils.StaticUtils 
 import blang.types.IntVar
 import blang.types.RealVar
-import blang.types.Table
-import blang.types.Plate
-import blang.types.Index 
 import java.util.List
 
 import static extension blang.utils.ExtensionUtils.* 
