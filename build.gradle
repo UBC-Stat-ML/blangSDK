@@ -23,7 +23,7 @@ xtend {
   }
 }
 
-def blangVersion = '3.7.3'
+def blangVersion = '3.7.4'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
@@ -76,7 +76,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "1.0.8" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "1.0.9" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "ca.ubc.stat"
     }

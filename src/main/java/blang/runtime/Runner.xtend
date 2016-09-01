@@ -27,6 +27,7 @@ import java.util.List
 import java.util.Optional
 import java.util.Random
 import org.eclipse.xtend.lib.annotations.Data
+import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 
 class Runner implements Runnable {
   
@@ -107,7 +108,7 @@ class Runner implements Runnable {
           i < strings.size - 1 &&
           !strings.get(i+1).contains('$')
       ) {
-        strings.set(i+1, strings.get(i+1) + "$Builder") // TODO: get the string from SingleBlangModelInferrer
+        strings.set(i+1, strings.get(i+1) + "$" + SingleBlangModelInferrer.BUILDER_NAME) 
       }
     }
   }
