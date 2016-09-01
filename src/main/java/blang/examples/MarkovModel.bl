@@ -3,15 +3,14 @@ package blang.examples
 import blang.types.IntVar
 import xlinear.Matrix
 import java.util.List 
-import blang.mcmc.BaumWelch
 import blang.mcmc.Samplers
 import blang.mcmc.RealNaiveMHSampler
 
 import static extension blang.utils.ExtensionUtils.*
 import static extension xlinear.MatrixOperations.* 
 
-@Samplers(BaumWelch)
-model MarkovModel { 
+@Samplers(blang.mcmc.BaumWelch)
+model MarkovModel {  
   
   param Matrix initialDistribution      ?: denseCopy(#[0.5, 0.5])
   param Matrix transitionProbabilities  ?: 

@@ -37,7 +37,9 @@ public class GraphAnalysis
     GraphAnalysis result = new GraphAnalysis();
     result.accessibilityGraph = inputs.accessibilityGraph;
     result.factorNodes = inputs.factors;
-    result.isVariablePredicate = c -> !SamplerBuilder.SAMPLER_PROVIDER.getProducts(c).isEmpty();
+    result.isVariablePredicate = c -> 
+      !SamplerBuilder.SAMPLER_PROVIDER_1.getProducts(c).isEmpty() ||
+      !SamplerBuilder.SAMPLER_PROVIDER_2.getProducts(c).isEmpty();
     
     if (!inputs.accessibilityGraph.graph.vertexSet().containsAll(inputs.nonRecursiveObservedNodes) ||
         !inputs.accessibilityGraph.graph.vertexSet().containsAll(inputs.recursiveObservedNodes))
