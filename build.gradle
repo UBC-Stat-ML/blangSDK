@@ -76,11 +76,15 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "1.0.9" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "1.0.10" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "ca.ubc.stat"
     }
   }
+}
+
+jar {
+    from { fileTree(dir: 'src/main/java', includes: [ '**/*.bl' ]) }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
