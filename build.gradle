@@ -1,6 +1,6 @@
 plugins {
-  id 'org.xtext.xtend' version '1.0.8'
-  id 'org.xtext.builder' version '1.0.8'
+  id 'org.xtext.xtend' version '1.0.12'
+  id 'org.xtext.builder' version '1.0.12'
   id 'java'
   id 'eclipse'
   id 'maven'
@@ -23,7 +23,7 @@ xtend {
   }
 }
 
-def blangVersion = '3.7.4'
+def blangVersion = '3.7.5'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
