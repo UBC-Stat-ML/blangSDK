@@ -20,6 +20,14 @@ class ExtensionUtils {
     return new IntImpl(initialValue)
   }
   
+  def static RealVar createConstantReal(double value) {
+    return [value]
+  }
+  
+  def static IntVar createConstantInt(int value) {
+    return [value]
+  }
+  
   def static List<IntVar> listOfIntVars(int size) {
     val List<IntVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {

@@ -4,23 +4,35 @@ import blang.types.IntVar
 import xlinear.Matrix
 import blang.types.RealVar
 import java.util.List
+import static extension blang.utils.ExtensionUtils.*
+import static extension xlinear.MatrixOperations.* 
 
-
-model DynamicNormalMixture  {
+model DynamicNormalMixture  { 
   
-  param Matrix concentrations
-  param RealVar hyperMean, hyperVariance
-  param RealVar hyperShape, hyperRate
+  random List<RealVar> observations 
+  random List<IntVar>  states                   ?: listOfIntVars(observations.size)
   
-  random Matrix initialDistribution
-  random Matrix transitionProbabilities
-  random List<RealVar> means, variances 
+  param  int           nLatentStates            ?: 2
   
-  random List<IntVar> states
-  random List<RealVar> observations    
+  random Matrix        initialDistribution      ?: dense(nLatentStates)   
+  random Matrix        transitionProbabilities  ?: dense(nLatentStates, nLatentStates)
+  random List<RealVar> means                    ?: listOfRealVars(nLatentStates),
+                       variances                ?: listOfRealVars(nLatentStates)
+           
+  param  RealVar       hyperMean                ?: createConstantReal(0.0), 
+                       hyperVariance            ?: createConstantReal(1.0)
+  param  RealVar       hyperShape               ?: createConstantReal(1.0),
+                       hyperRate                ?: createConstantReal(1.0)
+  
+  param  Matrix        concentrations           ?: {
+    val Matrix result = dense(nLatentStates) // TODO: fix and add ones(..)
+    for (i : 0 ..< nLatentStates) {
+      result.set(i, 0, 1.0)
+    }
+    return result
+  }        
   
   laws {
-    
     // Priors on initial and transition probabilities
     initialDistribution | concentrations ~ Dirichlet(concentrations)  
     for (int latentStateIdx : 0 ..< means.size) {
@@ -33,7 +45,7 @@ model DynamicNormalMixture  {
       variances.get(latentStateIdx) | hyperShape, hyperRate     ~ Gamma(hyperShape, hyperRate)
     }
     
-    states | latent, time, initialDistribution, transitionProbabilities  
+    states | initialDistribution, transitionProbabilities  
       ~ MarkovModel(initialDistribution, transitionProbabilities)
       
     // Gaussian emissions
@@ -44,6 +56,5 @@ model DynamicNormalMixture  {
         IntVar curIndic = states.get(obsIdx)
       ~ Normal(means.get(curIndic.intValue), variances.get(curIndic.intValue))
     }
-    
   }
 }

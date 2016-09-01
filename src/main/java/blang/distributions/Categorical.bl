@@ -14,7 +14,7 @@ model Categorical {
   laws {
     
     logf(probabilities, realization)  {
-      probabilities.get(realization.intValue)
+      Math.log(probabilities.get(realization.intValue))
     }
     
     indicator(probabilities, realization)  {

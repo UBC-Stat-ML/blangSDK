@@ -44,13 +44,12 @@ class ModelUtils {
     for (Factor f : factors(model)) 
       inputs.addFactor((f as Factor)) 
     // register the variables
-    for (Field f : model.getClass().getFields()) 
-      if (!f.getType().isPrimitive()) 
-        try {
-          inputs.addVariable(f.get(model)) 
-        } catch (Exception e) {
-          throw new RuntimeException(e)
-        }
+    
+    // Since we do not track variable names this way anymore, just register the model
+    // directly, which will recursively take care of all the variables; this is 
+    // **also important** if one wants to design a sampler for the outer-most model
+    inputs.addVariable(model)
+    
     // analyze the object graph
     return GraphAnalysis.create(inputs) 
   }
