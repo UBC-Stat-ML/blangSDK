@@ -28,6 +28,8 @@ import java.util.Optional
 import java.util.Random
 import org.eclipse.xtend.lib.annotations.Data
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
+import blang.inits.parsing.ConfigFile
+import blang.inits.parsing.QualifiedName
 
 class Runner implements Runnable {
   
@@ -83,32 +85,71 @@ class Runner implements Runnable {
     this.graphAnalysis = graphAnalysis
   }
   
+  /**
+   * Two syntaxes:
+   * - simplified: just one args, the model, rest is read from config file
+   * - standard
+   */
+  def private static Arguments parseArguments(String ... args) {
+    if (useSimplifiedArguments(args)) {
+      // try to read in (else empty)
+      val File configFile = new File(CONFIG_FILE_NAME)
+      val Arguments fromFile = {
+        if (configFile.exists) {
+          ConfigFile.parse(configFile)
+        } else {
+          new Arguments(Optional.empty, QualifiedName.root)
+        }
+      }
+      // add the one argument (after fixing it)
+      val String modelString = fixModelBuilderArgument(args.get(0))
+      fromFile.createChildren("model", Optional.of(Collections.singletonList(modelString)), true)
+      return fromFile
+    } else {
+      fixModelBuilderArgument(args)
+      return Posix.parse(args)
+    }
+  }
+  val public static final String CONFIG_FILE_NAME = "configuration.txt"
+  
+  
+  def private static boolean useSimplifiedArguments(String ... args) {
+    return args.size == 1
+  }
+  
   def static void main(String ... args) {
-    fixModelBuilderArgument(args)
+    val Arguments parsedArgs = parseArguments(args)
     val Creator creator = Creators::empty()
     creator.addFactories(CoreProviders)
     creator.addFactories(Parsers)
     val ObservationProcessor initContext = new ObservationProcessor
     creator.addGlobal(ObservationProcessor, initContext)
-    val Optional<Options> options = initModel(creator, Posix.parse(args)) 
+    val Optional<Options> options = initModel(creator, parsedArgs) 
     if (options.present) {
       val GraphAnalysis graphAnalysis = ModelUtils::graphAnalysis(options.get().model, initContext.graphAnalysisInputs)
 //      ModelUtils::visualizeGraphAnalysis(graphAnalysis, instantiator)
       new Runner(options.get, graphAnalysis)
         .run()
     } else {
-      println("Error(s) in provided arguments. Report:")
+      if (useSimplifiedArguments(args) && !new File(CONFIG_FILE_NAME).exists) {
+        println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:")
+      } else {
+        println("Error(s) in provided arguments. Report:")
+      }
       println(creator.fullReport)
     }
   }
   
-  def static fixModelBuilderArgument(String[] strings) {
+  def static String fixModelBuilderArgument(String string) {
+    return string + "$" + SingleBlangModelInferrer.BUILDER_NAME
+  }
+  def static void fixModelBuilderArgument(String[] strings) {
     for (var int i = 0; i < strings.size; i++) {
       if (strings.get(i).trim == "--model" && 
           i < strings.size - 1 &&
           !strings.get(i+1).contains('$')
       ) {
-        strings.set(i+1, strings.get(i+1) + "$" + SingleBlangModelInferrer.BUILDER_NAME) 
+        strings.set(i+1, fixModelBuilderArgument(strings.get(i+1))) 
       }
     }
   }
