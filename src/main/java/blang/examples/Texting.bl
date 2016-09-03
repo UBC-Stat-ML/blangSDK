@@ -1,0 +1,43 @@
+package blang.examples
+
+import blang.types.IntVar
+import java.util.List
+import xlinear.Matrix
+import blang.types.RealVar
+
+import static blang.utils.ExtensionUtils.*
+import static xlinear.MatrixOperations.*
+
+model Texting {
+  
+  random List<IntVar>  data
+  random List<IntVar>  chain         ?: listOfIntVars(data.size)
+  
+  random List<RealVar> means         ?: listOfRealVars(2)
+  
+  param  Matrix        initialDist   ?: denseCopy(#[0.99, 0.01]),  
+                       transMtx      ?: 
+    denseCopy(#[
+      #[0.99, 0.01],
+      #[0.01, 0.99]
+    ])   
+  
+  param  RealVar       shape         ?: createConstantReal(1.0), 
+                       rate          ?: createConstantReal(1.0)
+  
+  laws {
+    
+    for (int latentIdx : 0 .. 1) {
+      means.get(latentIdx) | shape, rate ~ Gamma(shape, rate)
+    }
+    
+    chain | initialDist, transMtx ~ MarkovModel(initialDist, transMtx)
+    
+    for (int obsIdx : 0 ..< data.size) {
+      data.get(obsIdx) | IntVar curLatent = chain.get(obsIdx), 
+                                means
+                       ~ Poisson(means.get(curLatent.intValue))
+    }
+    
+  }
+}

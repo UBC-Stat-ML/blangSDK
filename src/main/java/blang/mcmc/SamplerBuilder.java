@@ -73,6 +73,10 @@ public class SamplerBuilder
     // fill other injected variables
     NodeMoveUtils.assignGraphAnalysis(instantiated, graphAnalysis);
     
+    if (instantiated instanceof Sampler) 
+      if (!((Sampler) instantiated).setup())
+        return null;
+    
     return instantiated;
   }
   

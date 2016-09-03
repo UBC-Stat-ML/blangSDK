@@ -22,6 +22,7 @@ import blang.types.BoolVar
 import blang.types.BoolVar.BoolImpl
 import blang.types.RealVar
 import blang.types.RealVar.RealImpl
+import blang.inits.providers.CoreProviders
 
 class Parsers {
   
@@ -47,7 +48,7 @@ class Parsers {
       if (!str.present || str.get == NA::SYMBOL) {
         new IntImpl(0)
       } else {
-        initContext.markAsObserved(new IntImpl(Integer.parseInt(str.get)))
+        initContext.markAsObserved(new IntImpl(CoreProviders.parse_int(str.get)))
       }
   }
   
@@ -79,6 +80,9 @@ class Parsers {
     @InitService TypeLiteral<List<T>> actualType,
     @InitService Creator              creator
   ) {
+    if (!file.exists) {
+      throw new RuntimeException("File not found: " + file)
+    }
     val TypeLiteral<T> typeArgument = 
       TypeLiteral.get((actualType.type as ParameterizedType).actualTypeArguments.get(0))
       as TypeLiteral<T>

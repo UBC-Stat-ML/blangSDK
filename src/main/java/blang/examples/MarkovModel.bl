@@ -12,7 +12,7 @@ import static extension xlinear.MatrixOperations.*
 @Samplers(blang.mcmc.BaumWelch)
 model MarkovModel {  
   
-  param Matrix initialDistribution      ?: denseCopy(#[0.5, 0.5])
+  param Matrix initialDistribution      ?: denseCopy(#[0.5, 0.5]) 
   param Matrix transitionProbabilities  ?: 
     denseCopy(#[
       #[0.99,  0.01],

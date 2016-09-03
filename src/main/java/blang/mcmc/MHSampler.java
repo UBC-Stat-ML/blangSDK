@@ -19,10 +19,18 @@ public abstract class MHSampler<T> implements Sampler
   @ConnectedFactor
   protected List<LogScaleFactor> numericFactors;
   
+  private FactorProduct factorProduct = null;
+  
+  public boolean setup() 
+  {
+    factorProduct = new FactorProduct(supportFactors, numericFactors);
+    return true;
+  }
+  
   public void execute(Random random)
   {
     // record likelihood before
-    final double logBefore = neighborLogLikelihood();
+    final double logBefore = factorProduct.logDensity();
     MHSampler.Callback callback = new Callback()
     {
       private Double proposalLogRatio = null;
@@ -36,25 +44,12 @@ public abstract class MHSampler<T> implements Sampler
       {
         if (proposalLogRatio == null)
           throw new RuntimeException("Use setProposalLogRatio(..) before calling sampleAcceptance()");
-        final double logAfter = neighborLogLikelihood();
+        final double logAfter = factorProduct.logDensity();
         final double ratio = Math.exp(proposalLogRatio + logAfter - logBefore);
         return random.nextDouble() < ratio;
       }
     };
     propose(random, callback);
-  }
-  
-  public double neighborLogLikelihood()
-  {
-    for (SupportFactor support : supportFactors)
-      if (!support.isInSupport())
-        return Double.NEGATIVE_INFINITY;
-    
-    double sum = 0.0;
-    for (LogScaleFactor numericFactor : numericFactors)
-      sum += numericFactor.logDensity();
-    
-    return sum;
   }
   
   public abstract void propose(Random random, Callback callback);

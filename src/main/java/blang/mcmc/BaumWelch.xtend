@@ -91,11 +91,14 @@ class BaumWelch implements Sampler {
     return model.chain.get(chainIndex) as IntVar.IntImpl
   }
   
+  override boolean setup() {
+    // TODO: check structure is ok!
+    computeUnaryCache()
+    return true
+  }
+  
   var transient List<LinkedHashSet<ObjectNode<Factor>>> _unaryFactors_cache = null
   def private LinkedHashSet<ObjectNode<Factor>> unaryFactors(int i) {
-    if (_unaryFactors_cache == null) {
-      computeUnaryCache()
-    }
     return _unaryFactors_cache.get(i)
   }
   

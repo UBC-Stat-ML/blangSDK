@@ -1,16 +1,44 @@
 package blang.distributions
 
 import blang.types.RealVar
+import static bayonet.math.SpecialFunctions.lnGamma
+import static java.lang.Math.log
 
 model Gamma {
   
-  param RealVar shape, rate
-  
   random RealVar realization
+  
+  param RealVar shape, rate
   
   laws {
     
-    // TODO
+    logf(shape, rate, realization) {
+      (shape.doubleValue - 1.0) * log(realization.doubleValue * rate.doubleValue)
+    }
+    
+    logf(realization, rate) {
+      - realization.doubleValue * rate.doubleValue
+    }
+    
+    logf(shape) {
+      - lnGamma(shape.doubleValue)
+    }
+    
+    logf(rate) {
+      Math.log(rate.doubleValue)
+    }
+    
+    indicator(shape) {
+      shape.doubleValue > 0.0
+    }
+    
+    indicator(rate) {
+      rate.doubleValue > 0.0
+    }
+    
+    indicator(realization) {
+      realization.doubleValue > 0.0
+    }
     
   }
 }

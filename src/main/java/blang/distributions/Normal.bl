@@ -1,6 +1,7 @@
 package blang.distributions
 
 import blang.types.RealVar
+import static java.lang.Math.log
 
 model Normal {
   
@@ -11,9 +12,16 @@ model Normal {
   
   laws {  
     
+    logf() {
+      - log(Math.sqrt(2*Math.PI))
+    }
+    
+    logf(variance) {
+      - 0.5 * log(variance.doubleValue)
+    }
+    
     logf(mean, variance, realization)  {
-      - 0.5 * Math.log(2.0 * Math.PI )  
-      - 0.5 * (mean.doubleValue - realization.doubleValue) ** 2 / variance.doubleValue
+      - 0.5 * ((mean.doubleValue - realization.doubleValue) ** 2) / variance.doubleValue
     }
     
     indicator(variance)  {

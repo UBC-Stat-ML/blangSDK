@@ -22,4 +22,9 @@ public interface Sampler extends Operator
    */
   
   public void execute(Random rand);
+  
+  /**
+   * @return If this sampler is actually compatible.
+   */
+  public boolean setup();
 }
