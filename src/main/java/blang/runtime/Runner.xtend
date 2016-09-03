@@ -103,7 +103,7 @@ class Runner implements Runnable {
       }
       // add the one argument (after fixing it)
       val String modelString = fixModelBuilderArgument(args.get(0))
-      fromFile.createChildren("model", Optional.of(Collections.singletonList(modelString)), true)
+      fromFile.setOrCreateChild("model", Collections.singletonList(modelString))
       return fromFile
     } else {
       fixModelBuilderArgument(args)
