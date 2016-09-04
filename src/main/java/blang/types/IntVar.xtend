@@ -1,12 +1,7 @@
 package blang.types
 
-import blang.inits.DesignatedConstructor
-import blang.inits.Input
-import blang.mcmc.Samplers
 import blang.mcmc.IntNaiveMHSampler
-import blang.runtime.ObservationProcessor
-import blang.inits.GlobalArg
-import java.util.Optional
+import blang.mcmc.Samplers
 
 @FunctionalInterface
 interface IntVar { 
@@ -14,7 +9,7 @@ interface IntVar {
   def int intValue()
   
   @Samplers(IntNaiveMHSampler)   
-  static class IntImpl implements IntVar {
+  static class IntScalar implements IntVar {
     
     var int value
     

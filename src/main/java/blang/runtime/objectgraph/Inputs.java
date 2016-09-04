@@ -3,7 +3,6 @@ package blang.runtime.objectgraph;
 import java.util.LinkedHashSet;
 
 import blang.core.Factor;
-import blang.mcmc.Operator;
 import blang.mcmc.SamplerBuilder;
 import blang.mcmc.Samplers;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;

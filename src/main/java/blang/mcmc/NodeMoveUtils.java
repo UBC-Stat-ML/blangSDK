@@ -57,7 +57,7 @@ public class NodeMoveUtils
    * @param factors
    * @param fieldsToPopulate
    */
-  public static void assignFactorConnections(Operator mcmcMoveInstance, 
+  public static void assignFactorConnections(Sampler mcmcMoveInstance, 
       List<? extends Factor> factors, 
       List<Field> fieldsToPopulate)
   {
@@ -86,7 +86,7 @@ public class NodeMoveUtils
    * @return true if all factors were successfully matched.
    */
   private static boolean assignFactorConnections(
-      Operator mcmcMoveInstance, 
+      Sampler mcmcMoveInstance, 
       List<? extends Factor> factors, 
       List<Field> fieldsToPopulate,
       boolean onlyPeek)
@@ -101,7 +101,7 @@ public class NodeMoveUtils
     return factors.isEmpty();
   }
   
-  private static void assignSingleConnection(Operator mcmcMoveInstance, Field field, List<? extends Factor> factors, boolean onlyPeek)
+  private static void assignSingleConnection(Sampler mcmcMoveInstance, Field field, List<? extends Factor> factors, boolean onlyPeek)
   {
     Iterator<? extends Factor> iterator = factors.iterator();
     while (iterator.hasNext())
@@ -117,20 +117,20 @@ public class NodeMoveUtils
     }
   }
 
-  public static void assignVariable(Operator mcmcMoveInstance, Object variable)
+  public static void assignVariable(Sampler mcmcMoveInstance, Object variable)
   {
     Field field = getSampledVariableField(mcmcMoveInstance.getClass());
     ReflexionUtils.setFieldValue(field, mcmcMoveInstance, variable);
   }
   
-  public static void assignGraphAnalysis(Operator mcmcMoveInstance, GraphAnalysis graphAnalysis) 
+  public static void assignGraphAnalysis(Sampler mcmcMoveInstance, GraphAnalysis graphAnalysis) 
   {
     List<Field> matches = ReflexionUtils.getAnnotatedDeclaredFields(mcmcMoveInstance.getClass(), GlobalArg.class, true);
     for (Field field : matches) 
       ReflexionUtils.setFieldValue(field, mcmcMoveInstance, graphAnalysis);
   }
   
-  public static Field getSampledVariableField(Class<? extends Operator> moveType)
+  public static Field getSampledVariableField(Class<? extends Sampler> moveType)
   {
     List<Field> matches = ReflexionUtils.getAnnotatedDeclaredFields(moveType, SampledVariable.class, true);
     if (matches.size() != 1)
@@ -139,7 +139,7 @@ public class NodeMoveUtils
     return BriefCollections.pick(matches);
   }
 
-  private static void assignListConnection(Operator mcmcMoveInstance, Field field, List<? extends Factor> factors, boolean onlyPeek)
+  private static void assignListConnection(Sampler mcmcMoveInstance, Field field, List<? extends Factor> factors, boolean onlyPeek)
   {
     List<? super Factor> fieldList = onlyPeek ? null : Lists.newArrayList();
     if (!onlyPeek)

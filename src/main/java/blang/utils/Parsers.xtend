@@ -16,12 +16,12 @@ import blang.inits.Input
 import blang.inits.GlobalArg
 import blang.runtime.ObservationProcessor
 import java.util.Optional
-import blang.types.IntVar.IntImpl
+import blang.types.IntVar.IntScalar
 import blang.types.NA
 import blang.types.BoolVar
-import blang.types.BoolVar.BoolImpl
+import blang.types.BoolVar.BoolScalar
 import blang.types.RealVar
-import blang.types.RealVar.RealImpl
+import blang.types.RealVar.RealScalar
 import blang.inits.providers.CoreProviders
 
 class Parsers {
@@ -33,9 +33,9 @@ class Parsers {
   ) {
     return
       if (!str.present || str.get == NA::SYMBOL) {
-        new RealImpl(0.0)
+        new RealScalar(0.0)
       } else {
-        initContext.markAsObserved(new RealImpl(Double.parseDouble(str.get)))
+        initContext.markAsObserved(new RealScalar(Double.parseDouble(str.get)))
       }
   }
   
@@ -46,9 +46,9 @@ class Parsers {
   ) {
     return
       if (!str.present || str.get == NA::SYMBOL) {
-        new IntImpl(0)
+        new IntScalar(0)
       } else {
-        initContext.markAsObserved(new IntImpl(CoreProviders.parse_int(str.get)))
+        initContext.markAsObserved(new IntScalar(CoreProviders.parse_int(str.get)))
       }
   }
   
@@ -59,9 +59,9 @@ class Parsers {
   ) {
     return
       if (!str.present || str.get == NA::SYMBOL) {
-        new BoolImpl(false)
+        new BoolScalar(false)
       } else {
-        initContext.markAsObserved(new BoolImpl(
+        initContext.markAsObserved(new BoolScalar(
           if (str.get.toLowerCase == "true") {
             true
           } else if (str.get.toLowerCase == "false") {

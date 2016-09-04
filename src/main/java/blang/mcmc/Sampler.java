@@ -5,7 +5,7 @@ import java.util.Random;
 
 
 
-public interface Sampler extends Operator
+public interface Sampler 
 {
   /*
    * Todo: need facilities for

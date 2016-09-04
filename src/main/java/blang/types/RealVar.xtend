@@ -1,12 +1,7 @@
 package blang.types
 
-import blang.mcmc.Samplers
 import blang.mcmc.RealNaiveMHSampler
-import blang.inits.DesignatedConstructor
-import blang.inits.Input
-import blang.runtime.ObservationProcessor
-import blang.inits.GlobalArg
-import java.util.Optional
+import blang.mcmc.Samplers
 
 @FunctionalInterface
 interface RealVar { 
@@ -14,7 +9,7 @@ interface RealVar {
   def double doubleValue()
   
   @Samplers(RealNaiveMHSampler)
-  static class RealImpl implements RealVar {
+  static class RealScalar implements RealVar { 
     
     var double value = 0.0
     

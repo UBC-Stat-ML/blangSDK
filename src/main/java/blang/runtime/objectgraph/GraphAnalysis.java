@@ -13,7 +13,6 @@ import org.jgrapht.ext.VertexNameProvider;
 import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
 import blang.core.Factor;
-import blang.mcmc.Operator;
 import blang.mcmc.SamplerBuilder;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;
 import blang.utils.TypeProvider;

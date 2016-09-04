@@ -1,20 +1,15 @@
 package blang.types
 
-import blang.inits.DesignatedConstructor
-import blang.inits.Input
-import blang.mcmc.Samplers
 import blang.mcmc.BoolMHSampler
-import blang.runtime.ObservationProcessor
-import java.util.Optional
-import blang.inits.GlobalArg
+import blang.mcmc.Samplers
 
 @FunctionalInterface
 interface BoolVar { 
   
   def boolean booleanValue()
   
-  @Samplers(BoolMHSampler)    
-  static class BoolImpl implements BoolVar {
+  @Samplers(BoolMHSampler)   
+  static class BoolScalar implements BoolVar {
     
     var boolean value
     

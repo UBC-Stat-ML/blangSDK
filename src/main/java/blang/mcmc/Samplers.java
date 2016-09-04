@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface Samplers
 {
-  public Class<? extends Operator>[] value();
+  public Class<? extends Sampler>[] value();
 }

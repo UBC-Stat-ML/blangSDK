@@ -172,7 +172,7 @@ class Runner implements Runnable {
   val public static final String SAMPLE_FILE = "samples.csv"
   override void run() {
     val SimpleCSVWriters writers = createCSVWriters(options.model) { 
-      var List<Sampler> samplers = SamplerBuilder.instantiateSamplers(graphAnalysis) 
+      var List<Sampler> samplers = SamplerBuilder.instantiateSamplers(graphAnalysis, Collections.EMPTY_SET, Collections.EMPTY_SET)  
       for (var int i=0; i < options.mcmc.nIterations; i++) {
         Collections.shuffle(samplers, options.mcmc.random) 
         for (Sampler s : samplers) s.execute(options.mcmc.random) 

@@ -88,7 +88,7 @@ class BaumWelch implements Sampler {
   }
   
   def private getVar(int chainIndex) {
-    return model.chain.get(chainIndex) as IntVar.IntImpl
+    return model.chain.get(chainIndex) as IntVar.IntScalar
   }
   
   override boolean setup() {

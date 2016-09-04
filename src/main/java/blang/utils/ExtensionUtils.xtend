@@ -7,17 +7,17 @@ import java.util.ArrayList
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend.lib.annotations.Delegate
 import java.util.Map
-import blang.types.IntVar.IntImpl
-import blang.types.RealVar.RealImpl
+import blang.types.IntVar.IntScalar
+import blang.types.RealVar.RealScalar
 
 class ExtensionUtils {
   
   def static RealVar createLatentReal(double initialValue) { 
-    return new RealImpl(initialValue)
+    return new RealScalar(initialValue)
   }
   
   def static IntVar createLatentInt(int initialValue) { 
-    return new IntImpl(initialValue)
+    return new IntScalar(initialValue)
   }
   
   def static RealVar createConstantReal(double value) {

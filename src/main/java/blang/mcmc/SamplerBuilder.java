@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import blang.core.Factor;
@@ -18,35 +19,54 @@ import briefj.ReflexionUtils;
 
 public class SamplerBuilder
 {
-  public static TypeProvider<Class<? extends Operator>> SAMPLER_PROVIDER_1 = RecursiveAnnotationProducer.ofClasses(Samplers.class,     true);
+  public static TypeProvider<Class<? extends Sampler>> SAMPLER_PROVIDER_1 = RecursiveAnnotationProducer.ofClasses(Samplers.class,     true);
   public static TypeProvider<String>                    SAMPLER_PROVIDER_2 = new RecursiveAnnotationProducer<>(SamplerTypes.class, String.class, true, "value");
   
-  public static List<Sampler> instantiateSamplers(GraphAnalysis graphAnalysis)
+  public static List<Sampler> instantiateSamplers(
+      GraphAnalysis graphAnalysis, 
+      Set<Class<Sampler>> additionalSamplers, 
+      Set<Class<Sampler>> excludedSamplers)
   {
     List<Sampler> result = new ArrayList<Sampler>();
     for (ObjectNode<?> latent : graphAnalysis.latentVariables)
     {
-      for (Class<? extends Operator> product : SAMPLER_PROVIDER_1.getProducts(latent.object.getClass()))
-        if (Operator.class.isAssignableFrom(product))
-        {
-          Operator o = tryInstantiate(product, latent, graphAnalysis);
-          if (o != null)
-            result.add((Sampler) o);
-        }
-      
-      for (String product : SAMPLER_PROVIDER_2.getProducts(latent.object.getClass()))
+      // add samplers coming from Samplers annotations
+      innerLoop:for (Class<? extends Sampler> product : SAMPLER_PROVIDER_1.getProducts(latent.object.getClass())) 
       {
+        if (excludedSamplers.contains(product)) 
+          continue innerLoop;
+        Sampler o = tryInstantiate(product, latent, graphAnalysis);
+        if (o != null)
+          result.add(o);
+      }
+      
+      // add samplers coming from SamplerTypes annotations
+      innerLoop:for (String product : SAMPLER_PROVIDER_2.getProducts(latent.object.getClass()))
+      {
+        @SuppressWarnings("rawtypes")
         Class opClass = null;
         try { opClass = Class.forName(product); } catch (Exception e) { throw new RuntimeException(e); }
-        Operator o = tryInstantiate(opClass, latent, graphAnalysis);
+        if (excludedSamplers.contains(opClass)) 
+          continue innerLoop;
+        @SuppressWarnings("unchecked")
+        Sampler o = tryInstantiate(opClass, latent, graphAnalysis);
         if (o != null)
-          result.add((Sampler) o);
+          result.add(o);
       }
+      
+      // add sampler from additional list
+      for (Class<Sampler> additionalSamplerClass : additionalSamplers)
+        if (!excludedSamplers.contains(additionalSamplerClass)) 
+        {
+          Sampler o = tryInstantiate(additionalSamplerClass, latent, graphAnalysis);
+          if (o != null) 
+            result.add(o);
+        }
     }
     return result;
   }
   
-  public static <O extends Operator> O tryInstantiate(
+  public static <O extends Sampler> O tryInstantiate(
       Class<O> operatorClass, 
       ObjectNode<?> variable,
       GraphAnalysis graphAnalysis)

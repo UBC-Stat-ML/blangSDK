@@ -2,12 +2,12 @@ package blang.mcmc;
 
 import java.util.Random;
 
-import blang.types.IntVar.IntImpl;
+import blang.types.IntVar.IntScalar;
 
 
 
 
-public class IntNaiveMHSampler extends MHSampler<IntImpl>
+public class IntNaiveMHSampler extends MHSampler<IntScalar>
 {
   @Override
   public void propose(Random random, Callback callback)
