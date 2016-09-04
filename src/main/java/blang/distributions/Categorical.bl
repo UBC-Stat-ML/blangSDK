@@ -1,7 +1,7 @@
 package blang.distributions
 
 import blang.types.IntVar
-
+import static java.lang.Math.log
 
 import xlinear.Matrix
 
@@ -14,7 +14,7 @@ model Categorical {
   laws {
     
     logf(probabilities, realization)  {
-      Math.log(probabilities.get(realization.intValue))
+      log(probabilities.get(realization.intValue))
     }
     
     indicator(probabilities, realization)  {

@@ -25,7 +25,7 @@ model Gamma {
     }
     
     logf(rate) {
-      Math.log(rate.doubleValue)
+      log(rate.doubleValue)
     }
     
     indicator(shape) {

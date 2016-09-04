@@ -1,5 +1,7 @@
 package blang.distributions
 
+
+import static java.lang.Math.log
 import blang.types.IntVar
 import blang.types.RealVar
 
@@ -13,8 +15,8 @@ model Bernoulli {
     
     logf(probability, realization)  {
       switch (realization.intValue) {
-        case 0  : 1.0 -  probability.doubleValue
-        case 1  : probability.doubleValue
+        case 0  : log(1.0 -  probability.doubleValue)
+        case 1  : log(probability.doubleValue)
         default :
           throw new RuntimeException("Not supported")
       }

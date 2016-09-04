@@ -1,0 +1,58 @@
+package blang.distributions
+
+import static bayonet.math.SpecialFunctions.lnGamma
+import static java.lang.Math.log
+
+
+import blang.types.RealVar
+
+model Beta {
+   
+  random RealVar realization
+  
+  param  RealVar alpha, beta
+  
+  laws {
+    
+    logf(alpha, realization) {
+      if (realization.doubleValue == 0.0) {
+        // avoid return +INFINITY so that INF - INF does not occur
+        return Double.NEGATIVE_INFINITY
+      }
+      (alpha.doubleValue - 1.0) * log(realization.doubleValue)
+    }
+    
+    logf(beta, realization) {
+      if (realization.doubleValue == 1.0) {
+        // avoid return +INFINITY so that INF - INF does not occur
+        return Double.NEGATIVE_INFINITY
+      }
+      (beta.doubleValue - 1.0) * log(1.0 - realization.doubleValue)
+    }
+        
+    logf(alpha, beta) {
+      lnGamma(alpha.doubleValue + beta.doubleValue)
+    }
+    
+    logf(alpha) {
+      - lnGamma(alpha.doubleValue)
+    }
+    
+    logf(beta) {
+      - lnGamma(beta.doubleValue)
+    }
+    
+    indicator(alpha) {
+      alpha.doubleValue > 0.0
+    }
+    
+    indicator(beta) {
+      beta.doubleValue > 0.0
+    }
+    
+    indicator(realization) {
+      realization.doubleValue >= 0.0 && realization.doubleValue <= 1.0
+    }
+    
+  }
+}
