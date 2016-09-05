@@ -1,0 +1,17 @@
+
+
+import xlinear.Matrix
+import xlinear.MatrixOperations
+
+model Matrices {
+  
+  random Matrix m ?: MatrixOperations::dense(2,2)
+  
+  laws {
+    
+    null | Matrix subM = m.row(0) ~ Categorical(subM)
+    
+    null | Matrix subM = m.row(1) ~ Categorical(subM)
+    
+  }
+}

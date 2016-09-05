@@ -39,15 +39,20 @@ class Runner implements Runnable {
     @Arg
     MCMCOptions mcmc
     
+    val boolean printAccessibilityGraph
+    
     @DesignatedConstructor
     new(
       @ConstructorArg(
         value = "model", 
         description = "The model to run (technically, an inner class builder for it, " + 
           "but the suffix '$Builder' can be skipped)"
-      ) ModelBuilder builder
+      ) ModelBuilder builder,
+      @ConstructorArg(value = "printAccessibilityGraph", description = "printAccessibilityGraph (default: false)")
+      Optional<Boolean> printAccessibilityGraphOptional
     ) {
       this.model = builder.build()
+      this.printAccessibilityGraph = printAccessibilityGraphOptional.orElse(false)
     }
   }
   
@@ -127,6 +132,8 @@ class Runner implements Runnable {
     val Optional<Options> options = initModel(creator, parsedArgs) 
     if (options.present) {
       val GraphAnalysis graphAnalysis = ModelUtils::graphAnalysis(options.get().model, initContext.graphAnalysisInputs)
+      if (options.get.printAccessibilityGraph)
+        graphAnalysis.accessibilityGraph.exportDot(Results.getFileInResultFolder("accessibility-graph.dot"))
 //      ModelUtils::visualizeGraphAnalysis(graphAnalysis, instantiator)
       new Runner(options.get, graphAnalysis)
         .run()

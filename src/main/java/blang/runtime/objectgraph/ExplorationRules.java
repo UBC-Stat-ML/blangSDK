@@ -7,7 +7,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.xtext.xbase.lib.Pair;
+
 import briefj.ReflexionUtils;
+import xlinear.DenseMatrix;
+import xlinear.Matrix;
+import xlinear.SparseMatrix;
+import xlinear.internals.Slice;
 
 
 
@@ -16,6 +22,7 @@ public class ExplorationRules
   public static List<ExplorationRule> defaultExplorationRules = Arrays.asList(
       ExplorationRules::arrayViews,
       ExplorationRules::arrays,
+      ExplorationRules::matrices,
       ExplorationRules::knownImmutableObjects,
       ExplorationRules::standardObjects);
   
@@ -43,6 +50,33 @@ public class ExplorationRules
     Object array = ReflexionUtils.getFieldValue(annotatedDeclaredFields.get(0), view);
     for (int index : view.viewedIndices)
       result.add(new ArrayConstituentNode(array, index));
+    return result;
+  }
+  
+  public static List<MatrixConstituentNode> matrices(Object object) 
+  {
+    if (!(object instanceof Matrix))
+      return null;
+    ArrayList<MatrixConstituentNode> result = new ArrayList<>();
+    Matrix matrix = (Matrix) object;
+    Matrix rootMatrix = matrix;
+    int rowOffSet = 0;
+    int colOffSet = 0;
+    if (rootMatrix instanceof Slice)
+    {
+      rowOffSet = ((Slice) rootMatrix).row0Incl;
+      colOffSet = ((Slice) rootMatrix).col0Incl;
+      rootMatrix = ((Slice) matrix).rootMatrix;
+    }
+    // TODO: special behavior for sparse matrix : use a 'locked' support
+    if      (matrix instanceof SparseMatrix) 
+      throw new RuntimeException("Sparse matrices not yet supported");
+    else if (matrix instanceof DenseMatrix)
+      for (int r = 0; r < matrix.nRows(); r++) 
+        for (int c = 0; c < matrix.nCols(); c++)
+          result.add(new MatrixConstituentNode(rootMatrix, Pair.of(rowOffSet + r, colOffSet + c)));
+    else
+      throw new RuntimeException();
     return result;
   }
   

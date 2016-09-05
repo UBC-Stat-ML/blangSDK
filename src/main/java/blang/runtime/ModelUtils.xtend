@@ -29,7 +29,8 @@ class ModelUtils {
     while (!queue.isEmpty()) {
       var ModelComponent current = queue.poll() 
       visited.add(current) 
-      if (current instanceof Factor) result.add(current as Factor) 
+      if (current instanceof Factor) 
+        result.add(current as Factor) 
       if (current instanceof Model) {
         var Model model = current as Model 
         for (ModelComponent child : model.components()) 

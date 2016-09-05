@@ -3,10 +3,11 @@ package blang.mcmc;
 import java.util.Random;
 
 import blang.types.RealVar.RealScalar;
+import blang.types.RealVar.WritableRealVar;
 
 
 
-public class RealNaiveMHSampler extends MHSampler<RealScalar>
+public class RealNaiveMHSampler extends MHSampler<WritableRealVar>
 {
   @Override
   public void propose(Random random, Callback callback)
