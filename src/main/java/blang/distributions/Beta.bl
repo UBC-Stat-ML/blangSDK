@@ -10,7 +10,8 @@ model Beta {
    
   random RealVar realization
   
-  param  RealVar alpha, beta
+  param  RealVar alpha, 
+                 beta
   
   laws {
     

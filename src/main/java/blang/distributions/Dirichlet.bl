@@ -10,9 +10,9 @@ import blang.types.Simplex
 
 model Dirichlet {
   
-  param  Matrix concentrations 
-  
   random Simplex realization
+  
+  param  Matrix concentrations 
   
   laws {
     

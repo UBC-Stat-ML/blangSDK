@@ -8,7 +8,8 @@ model Gamma {
   
   random RealVar realization
   
-  param RealVar shape, rate
+  param  RealVar shape, 
+                 rate
   
   laws {
     

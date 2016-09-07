@@ -7,9 +7,9 @@ import blang.types.Simplex
 
 model Categorical {
   
-  param Simplex probabilities
-  
   random IntVar realization
+  
+  param Simplex probabilities
   
   laws {
     

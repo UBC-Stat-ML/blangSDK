@@ -1,23 +1,14 @@
 package blang.examples
 
-import blang.types.*
-import java.util.*
-import xlinear.*
-
-import static extension blang.utils.ExtensionUtils.* 
-import static extension xlinear.MatrixOperations.* 
-
+import blang.types.RealVar
 
 model Doomsday { 
-
-  random RealVar Y
   
+  random RealVar Y // how to get data (create config file)
   random RealVar N
   
   laws {
-  
-    // laws go here
-    
-    
+    N ~ Exponential([1.0 / 10.0]) // what [.. ] is about
+    Y | N ~ ContinuousUniform([0.0], N)    
   }
 }

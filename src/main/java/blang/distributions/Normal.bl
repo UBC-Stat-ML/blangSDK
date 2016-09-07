@@ -5,10 +5,10 @@ import static java.lang.Math.log
 
 model Normal {
   
-  param RealVar mean 
-  param RealVar variance
-  
   random RealVar realization 
+  
+  param RealVar mean,
+                variance
   
   laws {  
     

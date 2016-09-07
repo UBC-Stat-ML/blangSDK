@@ -7,9 +7,9 @@ import blang.types.RealVar
 
 model Bernoulli {
   
-  param RealVar probability   
-  
   random IntVar realization
+  
+  param RealVar probability   
   
   laws {
     

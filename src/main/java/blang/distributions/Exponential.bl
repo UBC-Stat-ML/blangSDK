@@ -1,0 +1,18 @@
+package blang.distributions
+
+
+
+import blang.types.RealVar
+
+model Exponential {
+  
+  random RealVar realization
+   
+  param  RealVar rate
+  
+  laws {
+    
+    realization | rate ~ Gamma([1.0], rate)
+    
+  }
+}

@@ -13,6 +13,7 @@ import xlinear.DenseMatrix
 import static extension xlinear.MatrixOperations.*
 import blang.types.TransitionMatrix
 import bayonet.math.NumericalUtils
+import java.util.Collections
 
 class ExtensionUtils {
   
@@ -88,7 +89,7 @@ class ExtensionUtils {
     for (var int i = 0; i < size; i++) {
       result.add(createLatentInt(0))
     }
-    return result
+    return Collections::unmodifiableList(result)
   }
   
   def static List<RealVar> listOfRealVars(int size) {
@@ -96,7 +97,7 @@ class ExtensionUtils {
     for (var int i = 0; i < size; i++) {
       result.add(createLatentReal(0.0))
     }
-    return result
+    return Collections::unmodifiableList(result)
   }
   
   def static <T> T get(List<T> list, IntVar intVar) {

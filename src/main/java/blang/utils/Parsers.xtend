@@ -18,8 +18,6 @@ import blang.runtime.ObservationProcessor
 import java.util.Optional
 import blang.types.IntVar.IntScalar
 import blang.types.NA
-import blang.types.BoolVar
-import blang.types.BoolVar.BoolScalar
 import blang.types.RealVar
 import blang.types.RealVar.RealScalar
 import blang.inits.providers.CoreProviders
@@ -43,7 +41,7 @@ class Parsers {
   }
   
   @ProvidesFactory
-  def static RealVar parse(    
+  def static RealVar parseRealVar(    
     @Input(formatDescription = "A number or NA (default is NA)") Optional<String> str,
     @GlobalArg ObservationProcessor initContext
   ) {
@@ -67,28 +65,6 @@ class Parsers {
         initContext.markAsObserved(new IntScalar(CoreProviders.parse_int(str.get)))
       }
   }
-  
-  @ProvidesFactory
-  def static BoolVar parseBoolVar(
-    @Input(formatDescription = "true|false|NA (default is NA)") Optional<String> str,
-    @GlobalArg ObservationProcessor initContext
-  ) {
-    return
-      if (!str.present || str.get == NA::SYMBOL) {
-        new BoolScalar(false)
-      } else {
-        initContext.markAsObserved(new BoolScalar(
-          if (str.get.toLowerCase == "true") {
-            true
-          } else if (str.get.toLowerCase == "false") {
-            false
-          } else {
-            throw new RuntimeException("Invalid boolean string (should be 'true' or 'false' or 'NA'): " + str.get)
-          }))
-      }
-  }
-  
-  
   
   @ProvidesFactory
   def static <T> List<T> parseList(

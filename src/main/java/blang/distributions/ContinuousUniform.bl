@@ -1,0 +1,28 @@
+package blang.distributions
+
+import static java.lang.Math.log
+
+
+import blang.types.RealVar
+
+model ContinuousUniform {
+  
+  random RealVar realization
+   
+  param  RealVar min, 
+                 max
+  
+  
+  laws {
+    
+    logf(min, max) {
+      - log(max.doubleValue - min.doubleValue)
+    }
+    
+    indicator(realization, min, max) {
+      min.doubleValue <= realization.doubleValue &&
+      realization.doubleValue <= max.doubleValue
+    }
+    
+  }
+}
