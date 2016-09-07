@@ -1,0 +1,23 @@
+package blang.examples
+
+import blang.types.*
+import java.util.*
+import xlinear.*
+
+import static extension blang.utils.ExtensionUtils.* 
+import static extension xlinear.MatrixOperations.* 
+
+
+model Doomsday { 
+
+  random RealVar Y
+  
+  random RealVar N
+  
+  laws {
+  
+    // laws go here
+    
+    
+  }
+}
