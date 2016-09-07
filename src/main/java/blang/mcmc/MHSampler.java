@@ -31,7 +31,7 @@ public abstract class MHSampler<T> implements Sampler
   {
     // record likelihood before
     final double logBefore = factorProduct.logDensity();
-    MHSampler.Callback callback = new Callback()
+    Callback callback = new Callback()
     {
       private Double proposalLogRatio = null;
       @Override
@@ -53,11 +53,5 @@ public abstract class MHSampler<T> implements Sampler
   }
   
   public abstract void propose(Random random, Callback callback);
-  
-  public static interface Callback
-  {
-    public void setProposalLogRatio(double logRatio);
-    public boolean sampleAcceptance();
-  }
 
 }

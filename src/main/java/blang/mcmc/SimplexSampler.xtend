@@ -2,7 +2,6 @@ package blang.mcmc
 
 import blang.types.Simplex
 import java.util.Random
-import blang.mcmc.MHSampler.Callback
 import blang.core.ConstrainedFactor
 import java.util.List
 
