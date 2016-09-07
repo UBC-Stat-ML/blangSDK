@@ -23,8 +23,24 @@ import blang.types.BoolVar.BoolScalar
 import blang.types.RealVar
 import blang.types.RealVar.RealScalar
 import blang.inits.providers.CoreProviders
+import xlinear.Matrix
+import blang.types.Simplex
 
 class Parsers {
+  
+  @ProvidesFactory
+  def static Matrix parseMatrix(
+    @ConstructorArg(value = "file", description = "Each line will be an item in the list") File file
+  ) {
+    throw new RuntimeException // TODO
+  }
+  
+    @ProvidesFactory
+  def static Simplex parseSimplex(
+    @ConstructorArg(value = "file", description = "Each line will be an item in the list") File file
+  ) {
+    throw new RuntimeException // TODO
+  }
   
   @ProvidesFactory
   def static RealVar parse(    

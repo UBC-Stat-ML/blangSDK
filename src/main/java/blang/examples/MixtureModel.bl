@@ -5,22 +5,22 @@ import blang.types.RealVar
 import java.util.List
 
 import static extension blang.utils.ExtensionUtils.* 
+import static extension xlinear.MatrixOperations.* 
+import blang.types.Simplex
+import xlinear.Matrix
 
 model MixtureModel { 
   
   random  List<RealVar>  observations 
   random  List<IntVar>   clusterIndicators  ?:  listOfIntVars(observations.size) 
-  random  RealVar        pi
+  random  Simplex        pi                 ?:  simplex(2)
   random  List<RealVar>  means              ?:  listOfRealVars(2), 
                          variances          ?:  listOfRealVars(2)
-  param   RealVar        hyperMean,
-                         hyperVariance,
-                         alpha,
-                         beta 
+  param   Matrix         concentration      ?:  denseCopy(#[1.0, 1.0])  
   
   laws {
     
-    pi ~ Beta([1.0], [1.0])
+    pi | concentration ~ Dirichlet(concentration)
     
     // priors on each mixture component mean and variance
     for (int mixIdx : 0 ..< means.size) { 
@@ -30,7 +30,7 @@ model MixtureModel {
     
     for (int obsIdx : 0 ..< observations.size) {
       // prior over mixture indicators
-      clusterIndicators.get(obsIdx) | pi ~ Bernoulli(pi)
+      clusterIndicators.get(obsIdx) | pi ~ Categorical(pi)
       // likelihood:
       observations.get(obsIdx) |
         means, variances, 

@@ -6,25 +6,27 @@ import blang.types.RealVar
 import java.util.List
 import static extension blang.utils.ExtensionUtils.*
 import static extension xlinear.MatrixOperations.* 
+import blang.types.Simplex
+import blang.types.TransitionMatrix
 
 model DynamicNormalMixture  { 
   
-  random List<RealVar> observations 
-  random List<IntVar>  states                   ?: listOfIntVars(observations.size)
+  random List<RealVar>     observations 
+  random List<IntVar>      states                   ?: listOfIntVars(observations.size)
   
-  param  int           nLatentStates            ?: 2
+  param  int               nLatentStates            ?: 2
   
-  random Matrix        initialDistribution      ?: dense(nLatentStates)   
-  random Matrix        transitionProbabilities  ?: dense(nLatentStates, nLatentStates)
-  random List<RealVar> means                    ?: listOfRealVars(nLatentStates),
-                       variances                ?: listOfRealVars(nLatentStates)
+  random Simplex           initialDistribution      ?: simplex(nLatentStates)
+  random TransitionMatrix  transitionProbabilities  ?: transitionMatrix(nLatentStates)
+  random List<RealVar>     means                    ?: listOfRealVars(nLatentStates),
+                           variances                ?: listOfRealVars(nLatentStates)
            
-  param  RealVar       hyperMean                ?: createConstantReal(0.0), 
-                       hyperVariance            ?: createConstantReal(1.0)
-  param  RealVar       hyperShape               ?: createConstantReal(1.0),
-                       hyperRate                ?: createConstantReal(1.0)
+  param  RealVar           hyperMean                ?: createConstantReal(0.0), 
+                           hyperVariance            ?: createConstantReal(1.0)
+  param  RealVar           hyperShape               ?: createConstantReal(1.0),
+                           hyperRate                ?: createConstantReal(1.0)
   
-  param  Matrix        concentrations           ?: {
+  param  Matrix            concentrations           ?: {
     val Matrix result = dense(nLatentStates) // TODO: fix and add ones(..)
     for (i : 0 ..< nLatentStates) {
       result.set(i, 0, 1.0)

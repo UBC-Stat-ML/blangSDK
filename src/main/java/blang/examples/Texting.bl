@@ -5,19 +5,21 @@ import java.util.List
 import xlinear.Matrix
 import blang.types.RealVar
 
-import static blang.utils.ExtensionUtils.*
+import static extension blang.utils.ExtensionUtils.*
 import static xlinear.MatrixOperations.*
+import blang.types.Simplex
+import blang.types.TransitionMatrix
 
 model Texting {
   
-  random List<IntVar>  data
-  random List<IntVar>  chain         ?: listOfIntVars(data.size)
+  random List<IntVar>     data
+  random List<IntVar>     chain         ?: listOfIntVars(data.size)
   
-  random List<RealVar> means         ?: listOfRealVars(2)
+  random List<RealVar>    means         ?: listOfRealVars(2)
   
-  param  Matrix        initialDist   ?: denseCopy(#[0.99, 0.01]),  
-                       transMtx      ?: 
-    denseCopy(#[
+  param  Simplex          initialDist   ?: simplex(2)
+  param  TransitionMatrix transMtx      ?: 
+    transitionMatrix(#[
       #[0.99, 0.01],
       #[0.01, 0.99]
     ])   

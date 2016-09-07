@@ -1,17 +1,42 @@
 package blang.distributions
 
 import xlinear.Matrix
+import static extension xlinear.MatrixOperations.*
+import static extension blang.utils.ExtensionUtils.*
+import static bayonet.math.SpecialFunctions.lnGamma
+import static java.lang.Math.log
+import blang.types.RealVar
+import blang.types.Simplex
 
 model Dirichlet {
   
-  param Matrix concentrations 
+  param  Matrix concentrations 
   
-  random Matrix realization
+  random Simplex realization
   
   laws {
     
-    // TODO
+    for (int dim : 0 ..< concentrations.nEntries) {
+      logf(
+        RealVar concentration = concentrations.getRealVar(dim),
+        RealVar x = realization.getRealVar(dim)
+      ) {
+        (concentration.doubleValue - 1.0) * log(x.doubleValue)
+      }
+      
+      logf(RealVar concentration = concentrations.getRealVar(dim)) {
+        - lnGamma(concentration.doubleValue)
+      }
+      
+      indicator(RealVar concentration = concentrations.getRealVar(dim)) {
+        concentration.doubleValue > 0.0
+      }
+    }
     
+    logf(concentrations) {
+      lnGamma(concentrations.sum) 
+    }
+    
+    realization ~ new blang.core.ConstrainedFactor() 
   }
-  
 }

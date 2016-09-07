@@ -1,20 +1,19 @@
 package blang.examples
 
 import blang.types.IntVar
-import xlinear.Matrix
-import java.util.List 
-import blang.mcmc.Samplers
-import blang.mcmc.RealNaiveMHSampler
+import blang.types.Simplex
+import blang.types.TransitionMatrix
+import java.util.List
 
 import static extension blang.utils.ExtensionUtils.*
-import static extension xlinear.MatrixOperations.* 
+import blang.mcmc.Samplers
 
 @Samplers(blang.mcmc.BaumWelch)
 model MarkovModel {  
   
-  param Matrix initialDistribution      ?: denseCopy(#[0.5, 0.5]) 
-  param Matrix transitionProbabilities  ?: 
-    denseCopy(#[
+  param Simplex initialDistribution     ?: simplex(2)
+  param TransitionMatrix transitionProbabilities  ?: 
+    transitionMatrix(#[
       #[0.99,  0.01],
       #[0.01,  0.99]
     ])
