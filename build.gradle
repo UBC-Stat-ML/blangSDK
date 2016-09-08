@@ -30,9 +30,9 @@ dependencies {
   compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.10.0'
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.4.13'
-  compile group: 'ca.ubc.stat', name: 'inits', version: '1.0.6'
+  compile group: 'ca.ubc.stat', name: 'inits', version: '1.0.7'
   compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.0.0'
-  compile group: 'ca.ubc.stat', name: 'xlinear', version: '1.0.7'
+  compile group: 'ca.ubc.stat', name: 'xlinear', version: '1.0.6'
   compile group: 'org.jgrapht', name: 'jgrapht-dist', version: '0.9.0'
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
 }
@@ -76,7 +76,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "1.0.18" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "1.0.19" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "ca.ubc.stat"
     }
