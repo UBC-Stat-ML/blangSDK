@@ -26,6 +26,7 @@ import blang.types.Simplex
 import xlinear.MatrixOperations
 import xlinear.DenseMatrix
 import xlinear.SparseMatrix
+import blang.types.TransitionMatrix
 
 class Parsers {
   
@@ -118,6 +119,17 @@ class Parsers {
   ) {
     val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
     return StaticUtils::simplex(m)
+  }
+  
+  @ProvidesFactory
+  def static TransitionMatrix parseTransitionMatrix(
+    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value. Include the redundant ones.") File file,
+    @GlobalArg ObservationProcessor initContext,
+    @ConstructorArg(value = "nRows") int nRows,
+    @ConstructorArg(value = "nCols") int nCols
+  ) {
+    val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
+    return StaticUtils::transitionMatrix(m)
   }
   
   @ProvidesFactory
