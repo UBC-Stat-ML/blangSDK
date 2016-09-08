@@ -23,47 +23,101 @@ import blang.types.RealVar.RealScalar
 import blang.inits.providers.CoreProviders
 import xlinear.Matrix
 import blang.types.Simplex
+import xlinear.MatrixOperations
+import xlinear.DenseMatrix
+import xlinear.SparseMatrix
 
 class Parsers {
   
   @ProvidesFactory
-  def static Matrix parseMatrix(
-    @ConstructorArg(value = "file", description = "Each line will be an item in the list") File file
-  ) {
-    throw new RuntimeException // TODO
-  }
-  
-    @ProvidesFactory
-  def static Simplex parseSimplex(
-    @ConstructorArg(value = "file", description = "Each line will be an item in the list") File file
-  ) {
-    throw new RuntimeException // TODO
-  }
-  
-  @ProvidesFactory
   def static RealVar parseRealVar(    
-    @Input(formatDescription = "A number or NA (default is NA)") Optional<String> str,
+    @Input(formatDescription = "A number or NA (default is NA)") String str,
     @GlobalArg ObservationProcessor initContext
   ) {
     return
-      if (!str.present || str.get == NA::SYMBOL) {
+      if (str == NA::SYMBOL) {
         new RealScalar(0.0)
       } else {
-        initContext.markAsObserved(new RealScalar(Double.parseDouble(str.get)))
+        initContext.markAsObserved(new RealScalar(Double.parseDouble(str)))
       }
   }
   
   @ProvidesFactory
   def static IntVar parseIntVar(
-    @Input(formatDescription = "An integer or NA (default is NA)") Optional<String> str,
+    @Input(formatDescription = "An integer or NA") String str,
     @GlobalArg ObservationProcessor initContext
   ) {
     return
-      if (!str.present || str.get == NA::SYMBOL) {
+      if (str == NA::SYMBOL) {
         new IntScalar(0)
       } else {
-        initContext.markAsObserved(new IntScalar(CoreProviders.parse_int(str.get)))
+        initContext.markAsObserved(new IntScalar(CoreProviders.parse_int(str)))
       }
+  }
+  
+  @ProvidesFactory
+  def static Matrix parseMatrix(
+    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
+    @GlobalArg ObservationProcessor initContext,
+    @ConstructorArg(value = "nRows") int nRows,
+    @ConstructorArg(value = "nCols") int nCols,
+    @ConstructorArg(value = "sparse", description = "Use a sparse matrix, else, a dense one (default is false)") Optional<Boolean> sparseOptional
+  ) {
+    val boolean sparse = sparseOptional.orElse(false)
+    val Matrix result = 
+      if (sparse) {
+        MatrixOperations::sparse(nRows, nCols)
+      } else {
+        MatrixOperations::dense(nRows, nCols)
+      }
+    for (List<String> line : BriefIO.readLines(file).splitCSV()) {
+      if (!line.isEmpty()) {
+        if (line.size() != 3) {
+          throw new RuntimeException
+        }
+        val int row = Integer.parseInt(line.get(0))
+        val int col = Integer.parseInt(line.get(1))
+        val String str = line.get(2)
+        if (str == NA::SYMBOL) {
+          // nothing, leave set to 0
+        } else {
+          initContext.markAsObserved(ExtensionUtils::getRealVar(result, row, col))
+          result.set(row, col, Double.parseDouble(str))
+        }
+      }
+    }
+    return result
+  }
+  
+  @ProvidesFactory
+  def static DenseMatrix parseDenseMatrix(
+    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
+    @GlobalArg ObservationProcessor initContext,
+    @ConstructorArg(value = "nRows") int nRows,
+    @ConstructorArg(value = "nCols") int nCols
+  ) {
+    return parseMatrix(file, initContext, nRows, nCols, Optional.of(false)) as DenseMatrix
+  }
+  
+  @ProvidesFactory
+  def static SparseMatrix parseSparseMatrix(
+    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
+    @GlobalArg ObservationProcessor initContext,
+    @ConstructorArg(value = "nRows") int nRows,
+    @ConstructorArg(value = "nCols") int nCols
+  ) {
+    return parseMatrix(file, initContext, nRows, nCols, Optional.of(true)) as SparseMatrix
+  }
+  
+  @ProvidesFactory
+  def static Simplex parseSimplex(
+    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the value. Include the redundant one.") File file,
+    @GlobalArg ObservationProcessor initContext,
+    @ConstructorArg(value = "nRows") int nRows,
+    @ConstructorArg(value = "nCols") int nCols
+  ) {
+    val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
+    return StaticUtils::simplex(m)
   }
   
   @ProvidesFactory

@@ -168,11 +168,6 @@ class Runner implements Runnable {
       } catch (Exception e) {
         Optional.empty
       }
-    if (result.isPresent()) {
-      // make sure to initialize lazy objects such as Table, 
-      // as all variables to be printed will need to be known by the output processor
-      result.get().model.components()
-    }
     return result 
   }
   

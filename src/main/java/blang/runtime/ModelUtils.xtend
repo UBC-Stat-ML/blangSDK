@@ -15,6 +15,8 @@ import blang.mcmc.Sampler
 import java.lang.reflect.Field
 import blang.runtime.objectgraph.Inputs
 import blang.runtime.objectgraph.ObjectNode
+import briefj.ReflexionUtils
+import blang.core.Param
 
 class ModelUtils {
   
@@ -50,6 +52,13 @@ class ModelUtils {
     // directly, which will recursively take care of all the variables; this is 
     // **also important** if one wants to design a sampler for the outer-most model
     inputs.addVariable(model)
+    
+    // mark params as observed
+    for (Field f : ReflexionUtils::getDeclaredFields(model.class, true)) {
+      if (f.getAnnotation(Param) != null) {
+        inputs.markAsObserved(ReflexionUtils::getFieldValue(f, model), true)
+      }
+    }
     
     // analyze the object graph
     return GraphAnalysis.create(inputs) 

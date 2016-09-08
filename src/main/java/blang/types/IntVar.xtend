@@ -8,8 +8,12 @@ interface IntVar {
   
   def int intValue()
   
-  @Samplers(IntNaiveMHSampler)   
-  static class IntScalar implements IntVar {
+  @Samplers(IntNaiveMHSampler)  
+  static interface WritableIntVar extends IntVar {
+    def void set(int value)
+  }
+  
+  static class IntScalar implements WritableIntVar {
     
     var int value
     
@@ -19,7 +23,7 @@ interface IntVar {
       return value
     }
     
-    def void set(int newValue) {
+    override void set(int newValue) {
       this.value = newValue
     }
     

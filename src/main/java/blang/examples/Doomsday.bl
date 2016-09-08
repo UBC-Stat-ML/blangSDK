@@ -7,14 +7,14 @@ import xlinear.*
 import static extension blang.utils.ExtensionUtils.* 
 import static extension xlinear.MatrixExtensions.* 
 import static blang.utils.StaticUtils.*
-import static xlinear.MatrixOperations.* 
+import static xlinear.MatrixOperations.* import blang.types.RealVar.RealScalar
 
 model Doomsday { 
   
   random RealVar Y 
-  random RealVar N
+  random RealVar N          ?: realVar(Y.doubleValue + 1.0)
   
-  param  RealVar priorRate  ?:  [1.0/10.0]
+  param  RealVar priorRate  ?: realVar(1.0/10.0)
   
   laws {
     N | priorRate ~ Exponential(priorRate) 

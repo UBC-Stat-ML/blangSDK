@@ -19,10 +19,18 @@ class StaticUtils {
   
   //// Initialization utilities
   
+  def static IntVar intVar(int initialValue) {
+    return new IntScalar(initialValue)
+  }
+  
+  def static RealVar realVar(double initialValue) {
+    return new RealScalar(initialValue)
+  }
+  
   def static List<IntVar> listOfIntVars(int size) {
     val List<IntVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
-      result.add(new IntScalar(0))
+      result.add(intVar(0))
     }
     return Collections::unmodifiableList(result)
   }
@@ -30,7 +38,7 @@ class StaticUtils {
   def static List<RealVar> listOfRealVars(int size) {
     val List<RealVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
-      result.add(new RealScalar(0.0))
+      result.add(realVar(0.0))
     }
     return Collections::unmodifiableList(result)
   }

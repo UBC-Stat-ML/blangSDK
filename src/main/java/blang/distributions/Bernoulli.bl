@@ -1,6 +1,5 @@
 package blang.distributions
 
-
 import static java.lang.Math.log
 import blang.types.IntVar
 import blang.types.RealVar

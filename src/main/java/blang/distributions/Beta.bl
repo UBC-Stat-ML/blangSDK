@@ -3,7 +3,6 @@ package blang.distributions
 import static bayonet.math.SpecialFunctions.lnGamma
 import static java.lang.Math.log
 
-
 import blang.types.RealVar
 
 model Beta {
