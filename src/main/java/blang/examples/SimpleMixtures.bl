@@ -1,0 +1,32 @@
+package blang.examples
+
+import blang.types.*
+import java.util.*
+import xlinear.*
+
+import static extension blang.utils.ExtensionUtils.* 
+import static extension xlinear.MatrixExtensions.* 
+import static blang.utils.StaticUtils.*
+import static xlinear.MatrixOperations.* import blang.types.RealVar.RealScalar
+
+model SimpleMixtures { 
+  
+  random List<RealVar> Ys   
+  random List<IntVar>  Zs
+  
+  random List<RealVar> means
+  
+  laws {
+    
+    for (int k : 0 .. 1) {
+      means.get(k) ~ Normal([0.0], [1.0])
+    }
+    
+    for (int i : 0 .. Ys.size) {
+      Ys.get(i), Zs.get(i) | means ~ SimpleMixture(means)
+    }
+    
+  }
+}
+
+

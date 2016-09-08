@@ -31,7 +31,7 @@ class Parsers {
   
   @ProvidesFactory
   def static RealVar parseRealVar(    
-    @Input(formatDescription = "A number or NA (default is NA)") String str,
+    @Input(formatDescription = "A number or NA") String str,
     @GlobalArg ObservationProcessor initContext
   ) {
     return

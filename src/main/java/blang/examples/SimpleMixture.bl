@@ -8,17 +8,17 @@ import static extension blang.utils.ExtensionUtils.*
 import static extension xlinear.MatrixExtensions.* 
 import static blang.utils.StaticUtils.*
 import static xlinear.MatrixOperations.* 
+import blang.types.RealVar.RealScalar
 
-
-model Doomsday { 
+model SimpleMixture { 
   
-  random RealVar Y 
-  random RealVar N          ?: realVar(Y.doubleValue + 1.0)
+  random RealVar Y   
+  random IntVar Z
   
-  param  RealVar priorRate  ?: realVar(1.0/10.0)
+  param List<RealVar> means 
   
   laws {
-    N | priorRate ~ Exponential(priorRate) 
-    Y | N ~ ContinuousUniform([0.0], N)    
+    Z ~ Bernoulli([0.5])
+    Y | Z, means ~ Normal(means.get(Z), [1.0])
   }
 }
