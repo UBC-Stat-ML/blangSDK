@@ -30,6 +30,10 @@ public class StandaloneCompiler  {
   private final Path srcFolder;
   
   public StandaloneCompiler() {
+    
+ // TODO: hack: remove me!!
+    Results.initResultFolder(".");
+    
     // TODO: document that the SDK must preserves its .git folder
     // TODO: change this to not depend on the .git stuff (seems to call bash and hence might not be portable to windows)
     this.blangHome = new File(RepositoryUtils.findRepository(RepositoryUtils.findSourceFile(this)).getLocalAddress());
@@ -68,6 +72,7 @@ public class StandaloneCompiler  {
   }
 
   private void init() {
+    
     try { 
       // TODO: detect if already have a gradle setup
       // TODO: later, use always same and symlink if possible to save time

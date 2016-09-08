@@ -12,3 +12,4 @@ src/main/xtend-gen/blang/mcmc/.gitignore
 src/main/xtend-gen/blang/runtime/.gitignore
 src/main/xtend-gen/blang/types/.gitignore
 src/main/xtend-gen/blang/utils/.gitignore
+samples

@@ -29,7 +29,7 @@ dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.10.0'
-  compile group: 'ca.ubc.stat', name: 'briefj', version: '2.4.13'
+  compile group: 'ca.ubc.stat', name: 'briefj', version: '2.4.17'
   compile group: 'ca.ubc.stat', name: 'inits', version: '1.0.7'
   compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.0.0'
   compile group: 'ca.ubc.stat', name: 'xlinear', version: '1.0.6'
@@ -76,7 +76,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "1.0.20" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "1.0.21" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "ca.ubc.stat"
     }
