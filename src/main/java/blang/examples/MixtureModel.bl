@@ -1,12 +1,15 @@
 package blang.examples
 
-import blang.types.*
-import java.util.*
-import xlinear.*
+import blang.types.IntVar
+import blang.types.RealVar
+import blang.types.Simplex
+import java.util.List
+import xlinear.Matrix
 
-import static extension blang.utils.ExtensionUtils.* 
-import static extension xlinear.MatrixOperations.* 
+import static blang.utils.StaticUtils.*
+import static xlinear.MatrixOperations.*
 
+import static extension blang.utils.ExtensionUtils.*
 
 model MixtureModel { 
   

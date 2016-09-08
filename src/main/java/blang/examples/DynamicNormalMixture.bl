@@ -1,13 +1,14 @@
 package blang.examples
 
 import blang.types.IntVar
-import xlinear.Matrix
 import blang.types.RealVar
-import java.util.List
-import static extension blang.utils.ExtensionUtils.*
-import static extension xlinear.MatrixOperations.* 
 import blang.types.Simplex
 import blang.types.TransitionMatrix
+import java.util.List
+import xlinear.Matrix
+
+import static blang.utils.StaticUtils.*
+import static xlinear.MatrixOperations.*
 
 model DynamicNormalMixture  { 
   
@@ -21,10 +22,10 @@ model DynamicNormalMixture  {
   random List<RealVar>     means                    ?: listOfRealVars(nLatentStates),
                            variances                ?: listOfRealVars(nLatentStates)
            
-  param  RealVar           hyperMean                ?: createConstantReal(0.0), 
-                           hyperVariance            ?: createConstantReal(1.0)
-  param  RealVar           hyperShape               ?: createConstantReal(1.0),
-                           hyperRate                ?: createConstantReal(1.0)
+  param  RealVar           hyperMean                ?: [0.0], 
+                           hyperVariance            ?: [1.0]
+  param  RealVar           hyperShape               ?: [1.0],
+                           hyperRate                ?: [1.0]
   
   param  Matrix            concentrations           ?: {
     val Matrix result = dense(nLatentStates) // TODO: fix and add ones(..)

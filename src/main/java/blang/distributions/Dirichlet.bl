@@ -1,12 +1,14 @@
 package blang.distributions
 
-import xlinear.Matrix
-import static extension xlinear.MatrixOperations.*
-import static extension blang.utils.ExtensionUtils.*
-import static bayonet.math.SpecialFunctions.lnGamma
-import static java.lang.Math.log
 import blang.types.RealVar
 import blang.types.Simplex
+import xlinear.Matrix
+
+import static bayonet.math.SpecialFunctions.lnGamma
+import static java.lang.Math.log
+
+import static extension blang.utils.ExtensionUtils.*
+import static extension xlinear.MatrixExtensions.*
 
 model Dirichlet {
   

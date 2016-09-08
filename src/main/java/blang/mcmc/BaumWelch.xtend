@@ -17,9 +17,9 @@ import java.util.LinkedHashSet
 import java.util.List
 import java.util.Map
 import java.util.Random
-import xlinear.MatrixOperations
 import blang.inits.GlobalArg
 import java.util.ArrayList
+import xlinear.MatrixExtensions
 
 /**
  * Assumes there are no cycles in the observation links.
@@ -46,7 +46,7 @@ class BaumWelch implements Sampler {
     val int chainLen = model.chain.size()
     val int nStates = model.initialDistribution.nEntries
     val DiscreteFactorGraph<Integer> discreteFactorGraph = new DiscreteFactorGraph(GraphUtils.createChainTopology(chainLen))
-    val double [][] transitions = MatrixOperations::toArray(model.transitionProbabilities)
+    val double [][] transitions = MatrixExtensions::toArray(model.transitionProbabilities)
     // find the observation factors
     for (var int i = 0; i < chainLen; i++) {
       val LinkedHashSet<ObjectNode<Factor>> factors = unaryFactors(i)
