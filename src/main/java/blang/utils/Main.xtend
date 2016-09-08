@@ -2,6 +2,7 @@ package blang.utils
 
 import binc.Command
 import blang.runtime.Runner
+import java.io.File
 
 class Main {
 
@@ -17,5 +18,9 @@ class Main {
       runnerCmd = runnerCmd.appendArg(arg)
     }
     Command.call(runnerCmd)
+    
+    // hack: remove results/latest
+    val File bad = new File("results/latest")
+    bad.delete
   }
 }
