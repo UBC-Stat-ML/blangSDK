@@ -11,13 +11,13 @@ import static xlinear.MatrixOperations.*
 
 model Doomsday { 
   
-  random RealVar Y // how to get data (create config file)
+  random RealVar Y 
   random RealVar N
   
   param  RealVar priorRate  ?:  [1.0/10.0]
   
   laws {
-    N | priorRate ~ Exponential(priorRate) // what [.. ] is about
+    N | priorRate ~ Exponential(priorRate) 
     Y | N ~ ContinuousUniform([0.0], N)    
   }
 }

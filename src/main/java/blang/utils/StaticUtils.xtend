@@ -19,20 +19,10 @@ class StaticUtils {
   
   //// Initialization utilities
   
-    // TODO: rename
-  def static RealVar createLatentReal(double initialValue) { 
-    return new RealScalar(initialValue)
-  }
-  
-  def static IntVar createLatentInt(int initialValue) { 
-    return new IntScalar(initialValue)
-  }
-  
-  // TODO: rename?
   def static List<IntVar> listOfIntVars(int size) {
     val List<IntVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
-      result.add(createLatentInt(0))
+      result.add(new IntScalar(0))
     }
     return Collections::unmodifiableList(result)
   }
@@ -40,11 +30,10 @@ class StaticUtils {
   def static List<RealVar> listOfRealVars(int size) {
     val List<RealVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
-      result.add(createLatentReal(0.0))
+      result.add(new RealScalar(0.0))
     }
     return Collections::unmodifiableList(result)
   }
-  
   
   def static Simplex simplex(int nStates) {
     val double unif = 1.0 / (nStates as double)
@@ -83,6 +72,7 @@ class StaticUtils {
   def static TransitionMatrix transitionMatrix(double [][] probabilities) {
     return transitionMatrix(denseCopy(probabilities))
   }
+  
 
   //// mathematical functions
   
