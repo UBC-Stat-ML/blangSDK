@@ -31,9 +31,6 @@ public class StandaloneCompiler  {
   
   public StandaloneCompiler() {
     
- // TODO: hack: remove me!!
-    Results.initResultFolder(".");
-    
     // TODO: document that the SDK must preserves its .git folder
     // TODO: change this to not depend on the .git stuff (seems to call bash and hence might not be portable to windows)
     this.blangHome = new File(RepositoryUtils.findRepository(RepositoryUtils.findSourceFile(this)).getLocalAddress());
