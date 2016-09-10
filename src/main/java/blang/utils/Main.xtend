@@ -18,9 +18,5 @@ class Main {
       runnerCmd = runnerCmd.appendArg(arg)
     }
     Command.call(runnerCmd)
-    
-    // hack: remove results/latest
-    val File bad = new File("results/latest")
-    bad.delete
   }
 }

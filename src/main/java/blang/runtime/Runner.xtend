@@ -123,11 +123,6 @@ class Runner implements Runnable {
   }
   
   def static void main(String ... args) {
-    
-    // TODO: hack: remove me!!
-    Results::initResultFolder(".") 
-    
-    
     val Arguments parsedArgs = parseArguments(args)
     val Creator creator = Creators::empty()
     creator.addFactories(CoreProviders)
