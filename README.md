@@ -1,4 +1,4 @@
-Summary [![Build Status](https://travis-ci.org/alexandrebouchard/blangSDK.png?branch=master)](https://travis-ci.org/alexandrebouchard/blangProjectTemplate)
+Summary [![Build Status](https://travis-ci.org/UBC-Stat-ML/blangSDK.png?branch=master)](https://travis-ci.org/alexandrebouchard/blangProjectTemplate)
 -------
 
 
