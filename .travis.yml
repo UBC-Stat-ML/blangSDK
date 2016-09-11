@@ -3,3 +3,4 @@ script:
    - gradle check -i
 jdk:
   - oraclejdk8
+install: ./gradlew assemble --stacktrace
