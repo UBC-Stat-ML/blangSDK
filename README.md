@@ -1,7 +1,6 @@
-Summary
+Summary [![Build Status](https://travis-ci.org/alexandrebouchard/blangSDK.png?branch=master)](https://travis-ci.org/alexandrebouchard/blangProjectTemplate)
 -------
 
-<!-- [![Build Status](https://travis-ci.org/alexandrebouchard/blangProjectTemplate.png?branch=master)](https://travis-ci.org/alexandrebouchard/blangProjectTemplate) -->
 
 Blang's SDK (Software Development Kit), containing:
 
