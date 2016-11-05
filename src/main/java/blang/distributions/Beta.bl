@@ -3,7 +3,9 @@ package blang.distributions
 import static bayonet.math.SpecialFunctions.lnGamma
 import static java.lang.Math.log
 
-import blang.types.RealVar
+import static extension blang.utils.ExtensionUtils.*
+
+import blang.core.RealVar
 
 model Beta {
    
@@ -15,43 +17,43 @@ model Beta {
   laws {
     
     logf(alpha, realization) {
-      if (realization.doubleValue == 0.0) {
+      if (realization == 0.0) {
         // avoid return +INFINITY so that INF - INF does not occur
         return Double.NEGATIVE_INFINITY
       }
-      (alpha.doubleValue - 1.0) * log(realization.doubleValue)
+      (alpha.doubleValue - 1.0) * log(realization)
     }
     
     logf(beta, realization) {
-      if (realization.doubleValue == 1.0) {
+      if (realization == 1.0) {
         // avoid return +INFINITY so that INF - INF does not occur
         return Double.NEGATIVE_INFINITY
       }
-      (beta.doubleValue - 1.0) * log(1.0 - realization.doubleValue)
+      (beta - 1.0) * log(1.0 - realization)
     }
         
     logf(alpha, beta) {
-      lnGamma(alpha.doubleValue + beta.doubleValue)
+      lnGamma(alpha + beta)
     }
     
     logf(alpha) {
-      - lnGamma(alpha.doubleValue)
+      - lnGamma(alpha)
     }
     
     logf(beta) {
-      - lnGamma(beta.doubleValue)
+      - lnGamma(beta)
     }
     
     indicator(alpha) {
-      alpha.doubleValue > 0.0
+      alpha > 0.0
     }
     
     indicator(beta) {
-      beta.doubleValue > 0.0
+      beta > 0.0
     }
     
     indicator(realization) {
-      realization.doubleValue >= 0.0 && realization.doubleValue <= 1.0
+      realization >= 0.0 && realization <= 1.0
     }
     
   }

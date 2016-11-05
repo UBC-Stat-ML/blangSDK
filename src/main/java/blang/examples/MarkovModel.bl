@@ -1,6 +1,6 @@
 package blang.examples
 
-import blang.types.IntVar
+import blang.core.IntVar
 import blang.types.Simplex
 import blang.types.TransitionMatrix
 import java.util.List
@@ -28,7 +28,7 @@ model MarkovModel {
       chain.get(step) |
         IntVar previous = chain.get(step - 1),
         transitionProbabilities
-        ~ Categorical(transitionProbabilities.row(previous.intValue)) 
+        ~ Categorical(transitionProbabilities.row(previous)) 
     }
   }
 }

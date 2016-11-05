@@ -1,6 +1,6 @@
 package blang.distributions
 
-import blang.types.RealVar
+import blang.core.RealVar
 import static bayonet.math.SpecialFunctions.lnGamma
 import static java.lang.Math.log
 
@@ -14,31 +14,31 @@ model Gamma {
   laws {
     
     logf(shape, rate, realization) {
-      (shape.doubleValue - 1.0) * log(realization.doubleValue * rate.doubleValue)
+      (shape - 1.0) * log(realization * rate)
     }
     
     logf(realization, rate) {
-      - realization.doubleValue * rate.doubleValue
+      - realization * rate
     }
     
     logf(shape) {
-      - lnGamma(shape.doubleValue)
+      - lnGamma(shape)
     }
     
     logf(rate) {
-      log(rate.doubleValue)
+      log(rate)
     }
     
     indicator(shape) {
-      shape.doubleValue > 0.0
+      shape > 0.0
     }
     
     indicator(rate) {
-      rate.doubleValue > 0.0
+      rate > 0.0
     }
     
     indicator(realization) {
-      realization.doubleValue > 0.0
+      realization > 0.0
     }
     
   }

@@ -1,13 +1,15 @@
 package blang.examples
 
-import blang.types.*
 import java.util.*
 import xlinear.*
 
 import static extension blang.utils.ExtensionUtils.* 
 import static extension xlinear.MatrixExtensions.* 
 import static blang.utils.StaticUtils.*
-import static xlinear.MatrixOperations.* import blang.types.RealVar.RealScalar
+import static xlinear.MatrixOperations.* 
+import blang.types.RealScalar
+import blang.core.RealVar
+import blang.core.IntVar
 
 model SimpleMixtures { 
   
@@ -19,7 +21,7 @@ model SimpleMixtures {
   laws {
     
     for (int k : 0 .. 1) {
-      means.get(k) ~ Normal([0.0], [1.0])
+      means.get(k) ~ Normal(0.0, 1.0)
     }
     
     for (int i : 0 .. Ys.size) {

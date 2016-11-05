@@ -1,7 +1,7 @@
 package blang.examples
 
-import blang.types.IntVar
-import blang.types.RealVar
+import blang.core.IntVar
+import blang.core.RealVar
 import blang.types.Simplex
 import java.util.List
 import xlinear.Matrix
@@ -26,8 +26,8 @@ model MixtureModel {
     
     // priors on each mixture component mean and variance
     for (int mixIdx : 0 ..< means.size) { 
-      means.get(mixIdx)     ~ Normal([0.0], [1.0])
-      variances.get(mixIdx) ~ Gamma([1.0], [1.0])
+      means.get(mixIdx)     ~ Normal(0.0, 1.0)
+      variances.get(mixIdx) ~ Gamma(1.0, 1.0)
     }
     
     for (int obsIdx : 0 ..< observations.size) {

@@ -2,7 +2,7 @@ package blang.mcmc;
 
 import java.util.Random;
 
-import blang.types.RealVar.WritableRealVar;
+import blang.types.WritableRealVar;
 
 
 

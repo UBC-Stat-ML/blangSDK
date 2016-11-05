@@ -1,6 +1,6 @@
 package blang.distributions
 
-import blang.types.RealVar
+import blang.core.RealVar
 import blang.types.Simplex
 import xlinear.Matrix
 
@@ -23,15 +23,15 @@ model Dirichlet {
         RealVar concentration = concentrations.getRealVar(dim),
         RealVar x = realization.getRealVar(dim)
       ) {
-        (concentration.doubleValue - 1.0) * log(x.doubleValue)
+        (concentration - 1.0) * log(x)
       }
       
       logf(RealVar concentration = concentrations.getRealVar(dim)) {
-        - lnGamma(concentration.doubleValue)
+        - lnGamma(concentration)
       }
       
       indicator(RealVar concentration = concentrations.getRealVar(dim)) {
-        concentration.doubleValue > 0.0
+        concentration > 0.0
       }
     }
     

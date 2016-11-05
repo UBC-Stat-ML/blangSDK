@@ -1,6 +1,7 @@
 package blang.examples
 
 import blang.types.*
+import blang.core.*
 import java.util.*
 import xlinear.*
 
@@ -13,12 +14,12 @@ import static xlinear.MatrixOperations.*
 model Doomsday { 
   
   random RealVar Y 
-  random RealVar N          ?: realVar(Y.doubleValue + 1.0)
+  random RealVar N          ?: realVar(Y + 1.0)
   
   param  RealVar priorRate  ?: realVar(1.0/10.0)
   
   laws {
     N | priorRate ~ Exponential(priorRate) 
-    Y | N ~ ContinuousUniform([0.0], N)    
+    Y | N ~ ContinuousUniform(0.0, N)    
   }
 }

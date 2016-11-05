@@ -9,10 +9,10 @@ import static xlinear.MatrixOperations.*
 import static extension xlinear.MatrixExtensions.*
 import bayonet.math.NumericalUtils
 import blang.types.TransitionMatrix
-import blang.types.RealVar
-import blang.types.RealVar.RealScalar
-import blang.types.IntVar
-import blang.types.IntVar.IntScalar
+import blang.core.RealVar
+import blang.types.RealScalar
+import blang.core.IntVar
+import blang.types.IntScalar
 import java.util.Collections
 
 class StaticUtils {

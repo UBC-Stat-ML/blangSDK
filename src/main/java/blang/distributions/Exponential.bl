@@ -1,6 +1,6 @@
 package blang.distributions
 
-import blang.types.RealVar
+import blang.core.RealVar
 
 model Exponential {
   
@@ -10,7 +10,7 @@ model Exponential {
   
   laws {
     
-    realization | rate ~ Gamma([1.0], rate)
+    realization | rate ~ Gamma(1.0, rate)
     
   }
 }

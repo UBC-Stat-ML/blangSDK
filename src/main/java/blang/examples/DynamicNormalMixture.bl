@@ -1,7 +1,7 @@
 package blang.examples
 
-import blang.types.IntVar
-import blang.types.RealVar
+import blang.core.IntVar
+import blang.core.RealVar
 import blang.types.Simplex
 import blang.types.TransitionMatrix
 import java.util.List
@@ -22,10 +22,10 @@ model DynamicNormalMixture  {
   random List<RealVar>     means                    ?: listOfRealVars(nLatentStates),
                            variances                ?: listOfRealVars(nLatentStates)
            
-  param  RealVar           hyperMean                ?: [0.0], 
-                           hyperVariance            ?: [1.0]
-  param  RealVar           hyperShape               ?: [1.0],
-                           hyperRate                ?: [1.0]
+  param  RealVar           hyperMean                ?: 0.0, 
+                           hyperVariance            ?: 1.0
+  param  RealVar           hyperShape               ?: 1.0,
+                           hyperRate                ?: 1.0
   
   param  Matrix            concentrations           ?: {
     val Matrix result = dense(nLatentStates) // TODO: fix and add ones(..)
@@ -57,7 +57,7 @@ model DynamicNormalMixture  {
         means, 
         variances, 
         IntVar curIndic = states.get(obsIdx)
-      ~ Normal(means.get(curIndic.intValue), variances.get(curIndic.intValue))
+      ~ Normal(means.get(curIndic), variances.get(curIndic))
     }
   }
 }

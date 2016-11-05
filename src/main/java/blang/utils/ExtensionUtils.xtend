@@ -1,21 +1,13 @@
 package blang.utils
 
-import blang.types.IntVar
+import blang.core.IntVar
 import java.util.List
-import blang.types.RealVar
-import java.util.ArrayList
-import blang.types.IntVar.IntScalar
-import blang.types.RealVar.RealScalar
+import blang.core.RealVar
 import xlinear.Matrix
-import blang.types.RealVar.RealMatrixComponent
-import blang.types.Simplex
-import xlinear.DenseMatrix
-import static extension xlinear.MatrixOperations.*
-import blang.types.TransitionMatrix
-import bayonet.math.NumericalUtils
-import java.util.Collections
+import blang.types.RealMatrixComponent
 
 class ExtensionUtils {
+  
   
   def static RealVar getRealVar(Matrix m, int row, int col) {
     return new RealMatrixComponent(row, col, m)
@@ -36,6 +28,36 @@ class ExtensionUtils {
   
   def static double exp(RealVar realVar) {
     return Math::exp(realVar.doubleValue)
+  }
+  
+  //// Workaround for stuff not covered by the auto-boxing / de-boxing
+  
+  def static double +(RealVar v1, RealVar v2) {
+    return v1.doubleValue + v2.doubleValue
+  }
+  
+  def static boolean ==(RealVar v1, RealVar v2) {
+    return v1.doubleValue === v2.doubleValue
+  }
+  
+  def static boolean ==(RealVar v1, Number v2) {
+    return v1.doubleValue === v2.doubleValue
+  }
+  
+  def static boolean ==(Number v1, RealVar v2) {
+    return v1.doubleValue === v2.doubleValue
+  }
+  
+  def static boolean ==(IntVar v1, IntVar v2) {
+    return v1.intValue === v2.intValue
+  }
+  
+  def static boolean ==(IntVar v1, Number v2) {
+    return v1.intValue === v2.intValue
+  }
+  
+  def static boolean ==(Number v1, IntVar v2) {
+    return v1.intValue === v2.intValue
   }
   
   private new() {}

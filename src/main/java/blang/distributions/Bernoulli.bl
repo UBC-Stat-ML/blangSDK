@@ -1,8 +1,10 @@
 package blang.distributions
 
 import static java.lang.Math.log
-import blang.types.IntVar
-import blang.types.RealVar
+import blang.core.IntVar
+import blang.core.RealVar
+
+import static extension blang.utils.ExtensionUtils.*
 
 model Bernoulli {
   
@@ -13,20 +15,19 @@ model Bernoulli {
   laws {
     
     logf(probability, realization)  {
-      switch (realization.intValue) {
-        case 0  : log(1.0 -  probability.doubleValue)
-        case 1  : log(probability.doubleValue)
-        default :
-          throw new RuntimeException("Not supported")
+      if (realization == 0) {
+        log(1.0 -  probability)
+      } else {
+        log(probability)
       }
     }
     
     indicator(realization)  {
-      realization.intValue == 0 || realization.intValue == 1
+      realization == 0 || realization.intValue == 1
     }
     
     indicator(probability)  {
-      probability.doubleValue >= 0.0 && probability.doubleValue <= 1.0
+      probability >= 0.0 && probability <= 1.0
     }
     
   }

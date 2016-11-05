@@ -3,7 +3,7 @@ package blang.distributions
 import static java.lang.Math.log
 
 
-import blang.types.RealVar
+import blang.core.RealVar
 
 model ContinuousUniform {
   
@@ -16,12 +16,12 @@ model ContinuousUniform {
   laws {
     
     logf(min, max) {
-      - log(max.doubleValue - min.doubleValue)
+      - log(max - min)
     }
     
     indicator(realization, min, max) {
-      min.doubleValue <= realization.doubleValue &&
-      realization.doubleValue <= max.doubleValue
+      min <= realization &&
+      realization <= max
     }
     
   }

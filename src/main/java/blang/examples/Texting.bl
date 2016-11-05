@@ -1,7 +1,7 @@
 package blang.examples
 
-import blang.types.IntVar
-import blang.types.RealVar
+import blang.core.IntVar
+import blang.core.RealVar
 import blang.types.Simplex
 import blang.types.TransitionMatrix
 import java.util.List
@@ -22,8 +22,8 @@ model Texting {
       #[0.01, 0.99]
     ])   
   
-  param  RealVar          shape         ?: [1.0], 
-                          rate          ?: [1.0]
+  param  RealVar          shape         ?: 1.0, 
+                          rate          ?: 1.0
   
   laws {
     
@@ -36,7 +36,7 @@ model Texting {
     for (int obsIdx : 0 ..< data.size) {
       data.get(obsIdx) | IntVar curLatent = chain.get(obsIdx), 
                                 means
-                       ~ Poisson(means.get(curLatent.intValue))
+                       ~ Poisson(means.get(curLatent))
     }
     
   }

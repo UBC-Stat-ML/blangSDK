@@ -12,7 +12,6 @@ import blang.core.SupportFactor
 import blang.examples.MarkovModel
 import blang.runtime.objectgraph.GraphAnalysis
 import blang.runtime.objectgraph.ObjectNode
-import blang.types.IntVar
 import java.util.LinkedHashSet
 import java.util.List
 import java.util.Map
@@ -20,6 +19,7 @@ import java.util.Random
 import blang.inits.GlobalArg
 import java.util.ArrayList
 import xlinear.MatrixExtensions
+import blang.types.IntScalar
 
 /**
  * Assumes there are no cycles in the observation links.
@@ -88,7 +88,7 @@ class BaumWelch implements Sampler {
   }
   
   def private getVar(int chainIndex) {
-    return model.chain.get(chainIndex) as IntVar.IntScalar
+    return model.chain.get(chainIndex) as IntScalar
   }
   
   override boolean setup() {

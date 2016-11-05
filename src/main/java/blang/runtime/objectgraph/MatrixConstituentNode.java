@@ -2,7 +2,7 @@ package blang.runtime.objectgraph;
 
 import org.eclipse.xtext.xbase.lib.Pair;
  
-import blang.types.RealVar;
+import blang.types.RealMatrixComponent;
 import xlinear.Matrix;
 import xlinear.internals.Slice;
 
@@ -19,7 +19,7 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
   @Override
   public Object resolve()
   {
-    return new RealVar.RealMatrixComponent(key.getKey(), key.getValue(), (Matrix) container);
+    return new RealMatrixComponent(key.getKey(), key.getValue(), (Matrix) container);
   }
   
   @Override
