@@ -1,12 +1,5 @@
 package blang.distributions
 
-import static bayonet.math.SpecialFunctions.lnGamma
-import static java.lang.Math.log
-
-import static extension blang.utils.ExtensionUtils.*
-
-import blang.core.RealVar
-
 model Beta {
    
   random RealVar realization

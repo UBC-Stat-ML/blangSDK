@@ -1,10 +1,5 @@
 package blang.distributions
 
-import blang.core.IntVar
-import static java.lang.Math.log
-
-import blang.types.Simplex
-
 model Categorical {
   
   random IntVar realization

@@ -1,14 +1,8 @@
 package blang.distributions
 
-import static java.lang.Math.log
-import blang.core.IntVar
-import blang.core.RealVar
-
-import static extension blang.utils.ExtensionUtils.*
-
 model Bernoulli {
   
-  random IntVar realization
+  random IntVar realization   
   
   param RealVar probability   
   
@@ -22,7 +16,7 @@ model Bernoulli {
       }
     }
     
-    indicator(realization)  {
+    indicator(realization)  { 
       realization == 0 || realization.intValue == 1
     }
     

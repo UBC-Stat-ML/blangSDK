@@ -1,16 +1,5 @@
 package blang.examples
 
-import blang.core.IntVar
-import blang.core.RealVar
-import blang.types.Simplex
-import java.util.List
-import xlinear.Matrix
-
-import static blang.utils.StaticUtils.*
-import static xlinear.MatrixOperations.*
-
-import static extension blang.utils.ExtensionUtils.*
-
 model MixtureModel { 
   
   random  List<RealVar>  observations 

@@ -15,7 +15,6 @@ import bayonet.graphs.GraphUtils;
 import blang.core.Factor;
 import blang.mcmc.SamplerBuilder;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;
-import blang.utils.TypeProvider;
 import briefj.BriefCollections;
 import briefj.collections.UnorderedPair;
 

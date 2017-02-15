@@ -1,15 +1,5 @@
 package blang.examples
 
-import java.util.*
-import xlinear.*
-
-import static extension blang.utils.ExtensionUtils.* 
-import static extension xlinear.MatrixExtensions.* 
-import static blang.utils.StaticUtils.*
-import static xlinear.MatrixOperations.* 
-import blang.core.RealVar
-import blang.core.IntVar
-
 model SimpleMixture { 
   
   random RealVar Y   
@@ -18,7 +8,7 @@ model SimpleMixture {
   param List<RealVar> means 
   
   laws {
-    Z ~ Bernoulli([0.5])
+    Z ~ Bernoulli(0.5)
     Y | Z, means ~ Normal(means.get(Z), 1.0)
   }
 }

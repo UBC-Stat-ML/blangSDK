@@ -1,7 +1,5 @@
 package blang.distributions
 
-import blang.core.RealVar
-
 model Exponential {
   
   random RealVar realization

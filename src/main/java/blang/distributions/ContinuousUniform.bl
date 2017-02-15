@@ -1,17 +1,11 @@
 package blang.distributions
 
-import static java.lang.Math.log
-
-
-import blang.core.RealVar
-
 model ContinuousUniform {
   
   random RealVar realization
    
   param  RealVar min, 
                  max
-  
   
   laws {
     

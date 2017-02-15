@@ -1,11 +1,5 @@
 package blang.distributions
 
-import blang.core.IntVar
-import blang.core.RealVar
-import static org.apache.commons.math3.util.CombinatoricsUtils.factorialLog
-
-import static java.lang.Math.log
-
 model Poisson {
   
   random IntVar realization

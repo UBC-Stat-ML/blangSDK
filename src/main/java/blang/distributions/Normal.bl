@@ -1,8 +1,5 @@
 package blang.distributions
 
-import blang.core.RealVar
-import static java.lang.Math.log
-
 model Normal {
   
   random RealVar realization 

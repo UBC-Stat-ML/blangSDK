@@ -11,7 +11,6 @@ import java.util.ArrayList
 import java.io.File
 import blang.runtime.Runner
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics
-import blang.types.NA
 
 class GenerateTempTestData implements Runnable {
   
