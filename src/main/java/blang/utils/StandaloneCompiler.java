@@ -16,6 +16,7 @@ import java.util.List;
 import com.google.common.base.Joiner;
 
 import binc.Command;
+import binc.Command.BinaryExecutionException;
 import briefj.BriefIO;
 import briefj.BriefStrings;
 import briefj.repo.RepositoryUtils;
@@ -31,9 +32,7 @@ public class StandaloneCompiler  {
   
   public StandaloneCompiler() {
     
-    // TODO: document that the SDK must preserves its .git folder
-    // TODO: change this to not depend on the .git stuff (seems to call bash and hence might not be portable to windows)
-    this.blangHome = new File(RepositoryUtils.findRepository(RepositoryUtils.findSourceFile(this)).getLocalAddress());
+    this.blangHome = findBlangHome();
     this.projectHome = new File(".");
     this.compilationFolder = Results.getFolderInResultFolder(COMPILATION_DIR_NAME);
     this.compilationPool = compilationFolder.getParentFile().getParentFile();
@@ -41,11 +40,16 @@ public class StandaloneCompiler  {
     init();
   }
   
+  File findBlangHome() {
+    File sourceFile = RepositoryUtils.findSourceFile(this);
+    return sourceFile.getParentFile();
+  }
+  
   /**
    * 
    * @return classpath-formatted list of jars created and depended by the compilation task
    */
-  public String compile() {
+  public String compile() throws BinaryExecutionException {
     runGradle("build");
     return "" +
         parseClasspath(runGradle("printClasspath")) + // dependencies
@@ -55,8 +59,11 @@ public class StandaloneCompiler  {
   }
   
   
-  private String runGradle(String gradleTaskName) {
-    Command gradleCmd = Command.byName("gradle").withArg(gradleTaskName).ranIn(compilationFolder);
+  private String runGradle(String gradleTaskName) throws BinaryExecutionException  {
+    Command gradleCmd = 
+        Command.byName("gradle").withArg(gradleTaskName)
+        .ranIn(compilationFolder)
+        .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
   }
   
