@@ -13,7 +13,7 @@ class Main {
       compiler.compile()
     } catch (BinaryExecutionException bee) {
       System.err.println("Compilation error:")
-      System.err.println(bee.output)
+      System.err.println(clean(bee.output.toString()))
       System.exit(1)
       throw new RuntimeException
     }
@@ -29,4 +29,16 @@ class Main {
     }
     Command.call(runnerCmd)
   }
+  
+  def static String clean(String string) {
+    val StringBuilder result = new StringBuilder
+    for (String line : string.split("\n")) {
+      if (line.contains("FAILED")) {
+        return result.toString
+      }
+      result.append(line.replace(":generateXtextERROR:", "") + "\n")
+    }
+    return result.toString()
+  }
+  
 }
