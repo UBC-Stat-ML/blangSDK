@@ -16,6 +16,10 @@ class Main {
       System.err.println(clean(bee.output.toString()))
       System.exit(1)
       throw new RuntimeException
+    } catch (Exception e) {
+      System.err.println(e)
+      System.exit(1)
+      throw new RuntimeException
     }
     
     // run

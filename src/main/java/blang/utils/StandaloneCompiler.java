@@ -41,9 +41,18 @@ public class StandaloneCompiler  {
   }
   
   File findBlangHome() {
-    File sourceFile = RepositoryUtils.findSourceFile(this);
-    return sourceFile.getParentFile();
+    File file = RepositoryUtils.findSourceFile(this);
+    while (!new File(file, BUILD_FILE).exists() && file.getParent() != null) {
+      file = file.getParentFile();
+    }
+    if (new File(file, BUILD_FILE).exists()) {
+      return file;
+    } else {
+      throw new RuntimeException("Blang home cannot be located.");
+    }
   }
+  
+  final static String BUILD_FILE = "build.gradle";
   
   /**
    * 
@@ -112,7 +121,7 @@ public class StandaloneCompiler  {
 
   String sdkVersion;
   private void setupBuildFiles() {
-    final String buildFileName = "build.gradle";
+    final String buildFileName = BUILD_FILE;
     String buildFileContents = BriefIO.fileToString(new File(blangHome, buildFileName));
     // find version
     sdkVersion = processDirective(buildFileContents, Directive.EXTRACT_VERSION);
