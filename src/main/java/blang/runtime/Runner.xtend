@@ -48,8 +48,10 @@ class Runner implements Runnable {
         description = "The model to run (technically, an inner class builder for it, " + 
           "but the suffix '$Builder' can be skipped)"
       ) ModelBuilder builder,
+      
       @ConstructorArg(value = "printAccessibilityGraph", description = "printAccessibilityGraph (default: false)")
       Optional<Boolean> printAccessibilityGraphOptional
+      
     ) {
       this.model = builder.build()
       this.printAccessibilityGraph = printAccessibilityGraphOptional.orElse(false)
@@ -64,12 +66,16 @@ class Runner implements Runnable {
     
     @DesignatedConstructor
     def static MCMCOptions build(
+      
       @ConstructorArg(value = "random", description = "Random seed (defaults to 1)")
       Optional<Random> random,
+      
       @ConstructorArg(value = "nIterations", description = "Number of MCMC passes (defaults to 1000)")
       Optional<Integer> nIterations,
+      
       @ConstructorArg(value = "thinningPeriod", description = "Thinning period. Should be great or equal to 1 (1 means no thinning)") 
       Optional<Integer> thinningPeriod
+      
     ) {
       return new MCMCOptions(
         random.orElse(new Random(1)),

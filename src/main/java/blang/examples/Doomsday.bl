@@ -3,9 +3,9 @@ package blang.examples
 model Doomsday { 
   
   random RealVar Y 
-  random RealVar N          ?: Y + 1.0
+  random RealVar N 
   
-  param  RealVar priorRate  ?: 1.0/10.0
+  param  RealVar priorRate  ?: 1.0/10.0  
   
   laws {
     N | priorRate ~ Exponential(priorRate) 

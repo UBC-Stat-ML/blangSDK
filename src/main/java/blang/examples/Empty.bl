@@ -1,6 +1,6 @@
 model Empty {
   
-  laws {
+  laws { 
     
   }
 }

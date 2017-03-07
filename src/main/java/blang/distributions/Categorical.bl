@@ -9,13 +9,13 @@ model Categorical {
   laws {
     
     logf(probabilities, realization)  {
-      log(probabilities.get(realization))
+      log(probabilities.get(realization)) 
     }
     
     indicator(probabilities, realization)  {
       realization >= 0 && realization < probabilities.nEntries
     }
-    
+     
     probabilities ~ new blang.core.ConstrainedFactor() 
   }
 }
