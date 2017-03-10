@@ -5,7 +5,7 @@ model MultivariateNormal {
   random Matrix realization
   
   param Matrix mean
-  param Matrix precision
+  param CholeskyDecomposition precision
   
   laws {
     
@@ -14,13 +14,13 @@ model MultivariateNormal {
     }
     
     logf(precision) {
-      // TODO: - INF if chol fail from not being pos def
-      0.5 * precision.cholesky.logDet
+      0.5 * precision.logDet
     }
     
     logf(mean, precision, realization)  {
       val Matrix centered = mean - realization
-      return - 0.5 * (centered.transpose * precision * centered).doubleValue
+      val Matrix L = precision.L
+      return - 0.5 * (centered.transpose * L * L.transpose * centered).doubleValue
     }
     
   }
