@@ -16,6 +16,6 @@ model Categorical {
       realization >= 0 && realization < probabilities.nEntries
     }
      
-    probabilities ~ new blang.core.ConstrainedFactor() 
+    probabilities ~ new ConstrainedFactor() 
   }
 }

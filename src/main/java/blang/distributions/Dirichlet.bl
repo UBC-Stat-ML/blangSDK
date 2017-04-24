@@ -29,6 +29,6 @@ model Dirichlet {
       lnGamma(concentrations.sum) 
     }
     
-    realization ~ new blang.core.ConstrainedFactor() 
+    realization ~ new ConstrainedFactor()
   }
 }
