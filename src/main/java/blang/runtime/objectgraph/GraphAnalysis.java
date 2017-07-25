@@ -39,8 +39,8 @@ public class GraphAnalysis
 {
   DirectedGraph<ObjectNode<ModelComponent>,?> modelComponentsHierachy;
   AccessibilityGraph accessibilityGraph;
-  LinkedHashSet<Node> observedNodesClosure;
-  LinkedHashSet<Node> unobservedMutableNodes;
+  LinkedHashSet<Node> frozenNodesClosure;
+  LinkedHashSet<Node> freeMutableNodes;
   LinkedHashSet<ObjectNode<?>> latentVariables;
   public LinkedHashSet<ObjectNode<?>> getLatentVariables() {
     return latentVariables;
@@ -56,34 +56,35 @@ public class GraphAnalysis
     buildModelComponentsHierarchy(model);
     buildAccessibilityGraph(model);
     
+    // frozen variables are either observed or the top level param's
     LinkedHashSet<Node> frozenRoots = buildFrozenRoots(model, observations);
     
     isVariablePredicate = c -> 
       !SamplerBuilder.SAMPLER_PROVIDER_1.getProducts(c).isEmpty() ||
       !SamplerBuilder.SAMPLER_PROVIDER_2.getProducts(c).isEmpty();
     
-    // 1- compute the closure of observed variables
-    observedNodesClosure = new LinkedHashSet<>();
-    observedNodesClosure.addAll(closure(accessibilityGraph.graph, frozenRoots, true));
+    // 1- compute the closure of the frozen variables
+    frozenNodesClosure = new LinkedHashSet<>();
+    frozenNodesClosure.addAll(closure(accessibilityGraph.graph, frozenRoots, true));
     
-    // 2- find the unobserved mutable nodes
-    unobservedMutableNodes = new LinkedHashSet<>();
+    // 2- find the free mutable nodes, i.e. those mutable (i.e. non-final fields, array entries, etc)  and not frozen
+    freeMutableNodes = new LinkedHashSet<>();
     accessibilityGraph.getAccessibleNodes()
         .filter(node -> node.isMutable())
-        .filter(node -> !observedNodesClosure.contains(node))
-        .forEachOrdered(unobservedMutableNodes::add);
+        .filter(node -> !frozenNodesClosure.contains(node))
+        .forEachOrdered(freeMutableNodes::add);
     
-    // 3- identify the latent variables
+    // 3- identify the latent variables, i.e 
     latentVariables = latentVariables(
         accessibilityGraph, 
-        unobservedMutableNodes, 
+        freeMutableNodes, 
         isVariablePredicate);
     
     // 4- prepare the cache
     mutableToFactorCache = LinkedHashMultimap.create();
     for (ObjectNode<Factor> factorNode : factorNodes) 
       accessibilityGraph.getAccessibleNodes(factorNode)
-        .filter(node -> unobservedMutableNodes.contains(node))
+        .filter(node -> freeMutableNodes.contains(node))
         .forEachOrdered(node -> mutableToFactorCache.put(node, factorNode));
     
     // 5- create the directed factor graph and use it to linearize factor order
@@ -260,7 +261,7 @@ public class GraphAnalysis
   {
     LinkedHashSet<ObjectNode<Factor>> result = new LinkedHashSet<>();
     accessibilityGraph.getAccessibleNodes(latentVariable)
-        .filter(node -> unobservedMutableNodes.contains(node))
+        .filter(node -> freeMutableNodes.contains(node))
         .forEachOrdered(node -> result.addAll(mutableToFactorCache.get(node)));
     return result;
   }
@@ -279,18 +280,18 @@ public class GraphAnalysis
   
   /**
    * A latent variable is an ObjectNode which has:
-   * 1. some unobserved mutable nodes under it 
+   * 1. some free mutable nodes under it 
    * 2. AND a class identified to be a variable (i.e. such that samplers can attach to them)
    */
   private static LinkedHashSet<ObjectNode<?>> latentVariables(
       AccessibilityGraph accessibilityGraph,
-      final Set<Node> unobservedMutableNodes,
+      final Set<Node> freeMutableNodes,
       Predicate<Class<?>> isVariablePredicate
       )
   {
     // find the ObjectNode's which have some unobserved mutable nodes under them
     LinkedHashSet<ObjectNode<?>> ancestorsOfUnobservedMutableNodes = new LinkedHashSet<>();
-    closure(accessibilityGraph.graph, unobservedMutableNodes, false).stream()
+    closure(accessibilityGraph.graph, freeMutableNodes, false).stream()
         .filter(node -> node instanceof ObjectNode<?>)
         .map(node -> (ObjectNode<?>) node)
         .forEachOrdered(ancestorsOfUnobservedMutableNodes::add);
