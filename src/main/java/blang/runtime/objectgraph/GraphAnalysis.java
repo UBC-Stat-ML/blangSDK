@@ -1,8 +1,11 @@
 package blang.runtime.objectgraph;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -10,108 +13,228 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.ext.VertexNameProvider;
 
+import com.google.common.collect.LinkedHashMultimap;
+
 import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
 import blang.core.Factor;
+import blang.core.Model;
+import blang.core.ModelComponent;
+import blang.core.ModelComponents;
+import blang.core.Param;
 import blang.mcmc.SamplerBuilder;
+import blang.runtime.ObservationProcessor;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;
-import briefj.BriefCollections;
+import briefj.ReflexionUtils;
 import briefj.collections.UnorderedPair;
-
-import com.google.common.collect.LinkedHashMultimap;
 
 
 /**
- * Analysis of an accessibility graph for the purpose of building a factor graph.
+ * Low-level analysis of an accessibility graph for the purpose of building a factor graph.
  * 
  * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
  *
  */
 public class GraphAnalysis
 {
+  DirectedGraph<ObjectNode<ModelComponent>,?> modelComponentsHierachy;
+  AccessibilityGraph accessibilityGraph;
+  LinkedHashSet<Node> observedNodesClosure;
+  LinkedHashSet<Node> unobservedMutableNodes;
+  LinkedHashSet<ObjectNode<?>> latentVariables;
+  public LinkedHashSet<ObjectNode<?>> getLatentVariables() {
+    return latentVariables;
+  }
+
+  LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
+  LinkedHashSet<ObjectNode<Factor>> factorNodes;
+  Predicate<Class<?>> isVariablePredicate;
+  Map<ObjectNode<ModelComponent>,String> factorDescriptions;
   
-  public static GraphAnalysis create(Inputs inputs)
+  public GraphAnalysis(Model model, ObservationProcessor observations)
   {
-    GraphAnalysis result = new GraphAnalysis();
-    result.accessibilityGraph = inputs.accessibilityGraph;
-    result.factorNodes = inputs.factors;
-    result.isVariablePredicate = c -> 
+    buildModelComponentsHierarchy(model);
+    buildAccessibilityGraph(model);
+    
+    LinkedHashSet<Node> frozenRoots = buildFrozenRoots(model, observations);
+    
+    isVariablePredicate = c -> 
       !SamplerBuilder.SAMPLER_PROVIDER_1.getProducts(c).isEmpty() ||
       !SamplerBuilder.SAMPLER_PROVIDER_2.getProducts(c).isEmpty();
     
-    if (!inputs.accessibilityGraph.graph.vertexSet().containsAll(inputs.nonRecursiveObservedNodes) ||
-        !inputs.accessibilityGraph.graph.vertexSet().containsAll(inputs.recursiveObservedNodes))
-      throw new RuntimeException("Observed variables should be subsets of the accessibility graph");
-    
-    if (BriefCollections.intersects(inputs.nonRecursiveObservedNodes, inputs.recursiveObservedNodes))
-      throw new RuntimeException("A variable should be either recursively observable, observable, or neither");
-    
     // 1- compute the closure of observed variables
-    result.observedNodesClosure = new LinkedHashSet<>();
-    result.observedNodesClosure.addAll(inputs.nonRecursiveObservedNodes);
-    result.observedNodesClosure.addAll(closure(inputs.accessibilityGraph.graph, inputs.recursiveObservedNodes, true));
+    observedNodesClosure = new LinkedHashSet<>();
+    observedNodesClosure.addAll(closure(accessibilityGraph.graph, frozenRoots, true));
     
     // 2- find the unobserved mutable nodes
-    result.unobservedMutableNodes = new LinkedHashSet<>();
-    inputs.accessibilityGraph.getAccessibleNodes()
+    unobservedMutableNodes = new LinkedHashSet<>();
+    accessibilityGraph.getAccessibleNodes()
         .filter(node -> node.isMutable())
-        .filter(node -> !result.observedNodesClosure.contains(node))
-        .forEachOrdered(result.unobservedMutableNodes::add);
+        .filter(node -> !observedNodesClosure.contains(node))
+        .forEachOrdered(unobservedMutableNodes::add);
     
     // 3- identify the latent variables
-    result.latentVariables = latentVariables(
-        inputs.accessibilityGraph, 
-        result.unobservedMutableNodes, 
-        result.isVariablePredicate);
+    latentVariables = latentVariables(
+        accessibilityGraph, 
+        unobservedMutableNodes, 
+        isVariablePredicate);
     
     // 4- prepare the cache
-    result.mutableToFactorCache = LinkedHashMultimap.create();
-    for (ObjectNode<Factor> factorNode : inputs.factors) 
-      inputs.accessibilityGraph.getAccessibleNodes(factorNode)
-        .filter(node -> result.unobservedMutableNodes.contains(node))
-        .forEachOrdered(node -> result.mutableToFactorCache.put(node, factorNode));
+    mutableToFactorCache = LinkedHashMultimap.create();
+    for (ObjectNode<Factor> factorNode : factorNodes) 
+      accessibilityGraph.getAccessibleNodes(factorNode)
+        .filter(node -> unobservedMutableNodes.contains(node))
+        .forEachOrdered(node -> mutableToFactorCache.put(node, factorNode));
+    
+    // 5- create the directed factor graph and use it to linearize factor order
+//    createDirectedFactorGraph();
+//    linearization = GraphUtils.linearization(directedFactorGraph).stream().map(node -> node.object).collect(Collectors.toList());
+  }
+  
+  private void buildAccessibilityGraph(Model model) 
+  {
+    accessibilityGraph = new AccessibilityGraph();
+    accessibilityGraph.add(model); 
+    for (ObjectNode<Factor> factorNode : factorNodes)
+      accessibilityGraph.add(factorNode);
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  LinkedHashSet<Node> buildFrozenRoots(Model model, ObservationProcessor observations) 
+  {
+    LinkedHashSet<Node> result = new LinkedHashSet<>();
+    result.addAll(observations.getObservationRoots());
+    // mark params in top level model as frozen
+    for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true)) 
+      if (f.getAnnotation(Param.class) != null) 
+        result.add(new ObjectNode(ReflexionUtils.getFieldValue(f, model)));
+    
+    if (!accessibilityGraph.graph.vertexSet().containsAll(result))
+      throw new RuntimeException("Observed variables should be subsets of the accessibility graph");
     
     return result;
   }
-  
-  public AccessibilityGraph accessibilityGraph;
-  public LinkedHashSet<Node> observedNodesClosure;
-  public LinkedHashSet<Node> unobservedMutableNodes;
-  public LinkedHashSet<ObjectNode<?>> latentVariables;
-  private LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
-  public LinkedHashSet<ObjectNode<Factor>> factorNodes;
-  public Predicate<Class<?>> isVariablePredicate;
-  
-  private GraphAnalysis() 
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  void buildModelComponentsHierarchy(Model model)
   {
+    factorDescriptions = new LinkedHashMap<>();
+    modelComponentsHierachy = GraphUtils.newDirectedGraph();
+    buildModelComponentsHierarchy(model, factorDescriptions, modelComponentsHierachy);
+    factorNodes = new LinkedHashSet<>();
+    for (ObjectNode<ModelComponent> node : modelComponentsHierachy.vertexSet())
+      if (node.object instanceof Factor)
+        factorNodes.add((ObjectNode) node);
   }
   
-//  next: 
-//    - instead of a factor graph object, use injections to annotated fields in the sampler?
-//    - use dot stuff to create a factor graph viz based on getConnFactor
-//    - naming facilities (based on AccessibilityGraph)
-//    - mcmc matching (reuse blang2's NodeMoveUtils)
-//    - parsing stuff (to make things observed, etc)
-//    - question: how to deal with gradients?
-//    - need to think about RF vs MH infrastructure
-  
-  @SuppressWarnings("unchecked")
-  public void exportFactorGraphVisualization(File file, 
-      @SuppressWarnings("rawtypes") VertexNameProvider /* Type erasure used here to work around some weird bug with xtend (builds fine in eclipse, crashed in gradle with error:
-        "The method exportFactorGraphVisualization(File, VertexNameProvider<Object>) from the type GraphAnalysis refers to the missing type Object (file:/Users/bouchard/w/blangSDK/src/main/java/blang/runtime/ModelUtils.xtend line : 62 column : 19)"
-       */ vertexNameProvider) 
+  static void buildModelComponentsHierarchy(
+      ModelComponent modelComponent, 
+      Map<ObjectNode<ModelComponent>,String> descriptions, 
+      DirectedGraph<ObjectNode<ModelComponent>,?> result)
   {
-    factorGraphVisualization(vertexNameProvider).export(file);
+    ObjectNode<ModelComponent> currentNode = new ObjectNode<>(modelComponent);
+    result.addVertex(currentNode);
+    if (modelComponent instanceof Model)
+    {
+      Model model = (Model) modelComponent;
+      ModelComponents subComponents = model.components();
+      for (ModelComponent subComponent : model.components().get())
+      {
+        ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);
+        descriptions.put(childNode, subComponents.description(subComponent));
+        buildModelComponentsHierarchy(subComponent, descriptions, result);
+        result.addEdge(currentNode, childNode);
+      }
+    }
+  }
+  
+//  private Optional<List<ForwardSimulator>> createForwardSimulator(Model model)
+//  {
+//    if (model instanceof ForwardSimulator)
+//      return Optional.of(Collections.singletonList((ForwardSimulator) model));
+//    
+//    DirectedGraph<Model,?> subModels = GraphUtils.newDirectedGraph(); BROKEN, NEED TO KEEP MODEL HIERARCHY
+//    for (ObjectNode<Factor> factorNode : factorNodes)
+//    {
+//      for (Field field : ReflexionUtils.getDeclaredFields(factorNode.object.getClass(), true))
+//        if (field.getAnnotation(Param.class) == null)
+//        {
+//          Object parentVariable = ReflexionUtils.getFieldValue(field, factorNode.object);
+//          accessibilityGraph.getAccessibleNodes(parentVariable) // cannot use the cache directly here (this makes this loop a bottleneck)
+//            .filter(node -> unobservedMutableNodes.contains(node))
+//            .forEachOrdered(node -> {
+//              for (ObjectNode<Factor> connectedFactor : mutableToFactorCache.get(node))
+//                if (connectedFactor != factorNode)
+//                  addDirectedLink(factorNode, connectedFactor);
+//            });
+//        }
+//    }
+//    
+//  }
+  
+  /*
+   * CHANGE TO:
+   * Input:  a Model
+   * Output: a sorted list of ForwardSimulator's
+   * 
+   * Rules: if the Model is a ForwardSimulator, just use that
+   * If not, look at list of components, if they are all Models, sort them and recurse, otherwise no gen possible
+   * 
+   * To sort, use something similar to current, 
+   */
+//  private void createDirectedFactorGraph() 
+//  {
+//    directedFactorGraph = GraphUtils.newDirectedGraph();
+//    for (ObjectNode<Factor> factorNode : factorNodes)
+//    {
+//      for (Field field : ReflexionUtils.getDeclaredFields(factorNode.object.getClass(), true))
+//        if (field.getAnnotation(Param.class) == null)
+//        {
+//          Object parentVariable = ReflexionUtils.getFieldValue(field, factorNode.object);
+//          accessibilityGraph.getAccessibleNodes(parentVariable) // cannot use the cache directly here (this makes this loop a bottleneck)
+//            .filter(node -> unobservedMutableNodes.contains(node))
+//            .forEachOrdered(node -> {
+//              for (ObjectNode<Factor> connectedFactor : mutableToFactorCache.get(node))
+//                if (connectedFactor != factorNode)
+//                  addDirectedLink(factorNode, connectedFactor);
+//            });
+//        }
+//    }
+//  }
+
+//  private void addDirectedLink(ObjectNode<Factor> f0, ObjectNode<Factor> f1) 
+//  {
+//    if (!directedFactorGraph.containsVertex(f0)) directedFactorGraph.addVertex(f0);
+//    if (!directedFactorGraph.containsVertex(f1)) directedFactorGraph.addVertex(f1);
+//    if (!directedFactorGraph.containsEdge(f0, f1))
+//      directedFactorGraph.addEdge(f0, f1);
+//  }
+  
+  public void exportAccessibilityGraphVisualization(File file)
+  {
+    accessibilityGraph.exportDot(file); 
+  }
+  
+  public void exportFactorGraphVisualization(File file) 
+  {
+    factorGraphVisualization().export(file);
   }
   
   public DotExporter<Node, UnorderedPair<Node, Node>> factorGraphVisualization() 
   {
-    return factorGraphVisualization(node -> node.toStringSummary());
+    return factorGraphVisualization(node -> {
+      if (node instanceof ObjectNode) 
+      {
+        Object o = ((ObjectNode<?>) node).object;
+        if (factorDescriptions.containsKey(o))
+          return factorDescriptions.get(o);
+      }
+      return node.toStringSummary();
+    });
   }
   
   public DotExporter<Node, UnorderedPair<Node, Node>> factorGraphVisualization(VertexNameProvider<Node> vertexNameProvider)
   {
-    
     UndirectedGraph<Node, UnorderedPair<Node, Node>> factorGraph = GraphUtils.newUndirectedGraph();
     
     // add factors
@@ -178,13 +301,6 @@ public class GraphAnalysis
       .map(node -> node.object.getClass())
       .filter(isVariablePredicate)
       .forEachOrdered(matchedVariableClasses::add);
-//    {
-//      LinkedHashSet<Class<?>> associatedClasses = new LinkedHashSet<>();
-//      ancestorsOfUnobservedMutableNodes.stream()
-//          .map(node -> node.object.getClass())
-//          .forEachOrdered(associatedClasses::add);
-//      
-//    }
     
     // return the ObjectNode's which have some unobserved mutable nodes under them 
     // AND which have a class identified to be a variable (i.e. such that samplers can attach to them)

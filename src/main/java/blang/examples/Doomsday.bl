@@ -3,7 +3,7 @@ package blang.examples
 model Doomsday { 
   
   random RealVar Y 
-  random RealVar N 
+  random RealVar N ?: realVar(0)
   
   param  RealVar priorRate  ?: 1.0/10.0  
   

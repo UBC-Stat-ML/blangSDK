@@ -3,6 +3,7 @@ package blang.types
 import org.eclipse.xtend.lib.annotations.Data
 import blang.runtime.objectgraph.SkipDependency
 import xlinear.Matrix
+import blang.core.WritableRealVar
 
 @Data
 class RealMatrixComponent implements WritableRealVar {

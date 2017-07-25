@@ -1,0 +1,37 @@
+package blang.distributions
+
+
+model Binomial {
+  
+  random IntVar numberOfSuccesses
+  
+  param IntVar numberOfTrials
+  param RealVar probabilityOfSuccess
+  
+  laws {
+    
+    logf(numberOfSuccesses, numberOfTrials, probabilityOfSuccess) {
+      numberOfSuccesses * probabilityOfSuccess + (numberOfTrials - numberOfSuccesses) * (1.0 - probabilityOfSuccess)
+    }
+    
+    logf(numberOfTrials, numberOfSuccesses) {
+      logBinomial(numberOfTrials, numberOfTrials)
+    }
+    
+    indicator(probabilityOfSuccess) {
+      probabilityOfSuccess >= 0.0 && probabilityOfSuccess <= 1.0
+    }
+    
+    indicator(numberOfSuccesses, numberOfTrials) {
+      numberOfSuccesses <= numberOfTrials
+    }
+    
+    indicator(numberOfSuccesses) {
+      0 <= numberOfSuccesses
+    }
+    
+    indicator(numberOfTrials) {
+      0 < numberOfTrials
+    }
+  }
+}

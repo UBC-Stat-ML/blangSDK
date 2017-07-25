@@ -2,7 +2,6 @@ package blang.mcmc;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,7 +18,7 @@ import briefj.ReflexionUtils;
 
 public class SamplerBuilder
 {
-  public static TypeProvider<Class<? extends Sampler>> SAMPLER_PROVIDER_1 = RecursiveAnnotationProducer.ofClasses(Samplers.class,     true);
+  public static TypeProvider<Class<? extends Sampler>>  SAMPLER_PROVIDER_1 = RecursiveAnnotationProducer.ofClasses(Samplers.class,     true);
   public static TypeProvider<String>                    SAMPLER_PROVIDER_2 = new RecursiveAnnotationProducer<>(SamplerTypes.class, String.class, true, "value");
   
   public static List<Sampler> instantiateSamplers(
@@ -28,7 +27,7 @@ public class SamplerBuilder
       Set<Class<Sampler>> excludedSamplers)
   {
     List<Sampler> result = new ArrayList<Sampler>();
-    for (ObjectNode<?> latent : graphAnalysis.latentVariables)
+    for (ObjectNode<?> latent : graphAnalysis.getLatentVariables())
     {
       // add samplers coming from Samplers annotations
       innerLoop:for (Class<? extends Sampler> product : SAMPLER_PROVIDER_1.getProducts(latent.object.getClass())) 

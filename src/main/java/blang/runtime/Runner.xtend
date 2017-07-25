@@ -137,10 +137,11 @@ class Runner implements Runnable {
     creator.addGlobal(ObservationProcessor, initContext)
     val Optional<Options> options = initModel(creator, parsedArgs) 
     if (options.present) {
-      val GraphAnalysis graphAnalysis = ModelUtils::graphAnalysis(options.get().model, initContext.graphAnalysisInputs)
-      if (options.get.printAccessibilityGraph)
-        graphAnalysis.accessibilityGraph.exportDot(Results.getFileInResultFolder("accessibility-graph.dot"))
-//      ModelUtils::visualizeGraphAnalysis(graphAnalysis, instantiator)
+      val GraphAnalysis graphAnalysis = new GraphAnalysis(options.get().model, initContext)
+      if (options.get.printAccessibilityGraph) {
+        graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
+        graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
+      }
       new Runner(options.get, graphAnalysis)
         .run()
     } else {
