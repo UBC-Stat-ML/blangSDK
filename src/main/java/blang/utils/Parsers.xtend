@@ -14,7 +14,6 @@ import blang.inits.parsing.SimpleParser
 import blang.core.IntVar
 import blang.inits.Input
 import blang.inits.GlobalArg
-import blang.runtime.ObservationProcessor
 import java.util.Optional
 import blang.types.IntScalar
 import blang.types.NA
@@ -27,13 +26,14 @@ import xlinear.MatrixOperations
 import xlinear.DenseMatrix
 import xlinear.SparseMatrix
 import blang.types.TransitionMatrix
+import blang.runtime.Observations
 
 class Parsers {
   
   @ProvidesFactory
   def static RealVar parseRealVar(    
     @Input(formatDescription = "A number or NA") String str,
-    @GlobalArg ObservationProcessor initContext
+    @GlobalArg Observations initContext
   ) {
     return
       if (str == NA::SYMBOL) {
@@ -46,7 +46,7 @@ class Parsers {
   @ProvidesFactory
   def static IntVar parseIntVar(
     @Input(formatDescription = "An integer or NA") String str,
-    @GlobalArg ObservationProcessor initContext
+    @GlobalArg Observations initContext
   ) {
     return
       if (str == NA::SYMBOL) {
@@ -59,7 +59,7 @@ class Parsers {
   @ProvidesFactory
   def static Matrix parseMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
-    @GlobalArg ObservationProcessor initContext,
+    @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") int nRows,
     @ConstructorArg(value = "nCols") int nCols,
     @ConstructorArg(value = "sparse", description = "Use a sparse matrix, else, a dense one (default is false)") Optional<Boolean> sparseOptional
@@ -93,7 +93,7 @@ class Parsers {
   @ProvidesFactory
   def static DenseMatrix parseDenseMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
-    @GlobalArg ObservationProcessor initContext,
+    @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") int nRows,
     @ConstructorArg(value = "nCols") int nCols
   ) {
@@ -103,7 +103,7 @@ class Parsers {
   @ProvidesFactory
   def static SparseMatrix parseSparseMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
-    @GlobalArg ObservationProcessor initContext,
+    @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") int nRows,
     @ConstructorArg(value = "nCols") int nCols
   ) {
@@ -113,7 +113,7 @@ class Parsers {
   @ProvidesFactory
   def static Simplex parseSimplex(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the value. Include the redundant one.") File file,
-    @GlobalArg ObservationProcessor initContext,
+    @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") int nRows,
     @ConstructorArg(value = "nCols") int nCols
   ) {
@@ -124,7 +124,7 @@ class Parsers {
   @ProvidesFactory
   def static TransitionMatrix parseTransitionMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value. Include the redundant ones.") File file,
-    @GlobalArg ObservationProcessor initContext,
+    @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") int nRows,
     @ConstructorArg(value = "nCols") int nCols
   ) {

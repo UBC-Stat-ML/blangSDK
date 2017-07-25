@@ -23,7 +23,7 @@ import blang.core.ModelComponent;
 import blang.core.ModelComponents;
 import blang.core.Param;
 import blang.mcmc.SamplerBuilder;
-import blang.runtime.ObservationProcessor;
+import blang.runtime.Observations;
 import blang.runtime.objectgraph.AccessibilityGraph.Node;
 import briefj.ReflexionUtils;
 import briefj.collections.UnorderedPair;
@@ -51,7 +51,7 @@ public class GraphAnalysis
   Predicate<Class<?>> isVariablePredicate;
   Map<ObjectNode<ModelComponent>,String> factorDescriptions;
   
-  public GraphAnalysis(Model model, ObservationProcessor observations)
+  public GraphAnalysis(Model model, Observations observations)
   {
     buildModelComponentsHierarchy(model);
     buildAccessibilityGraph(model);
@@ -100,7 +100,7 @@ public class GraphAnalysis
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  LinkedHashSet<Node> buildFrozenRoots(Model model, ObservationProcessor observations) 
+  LinkedHashSet<Node> buildFrozenRoots(Model model, Observations observations) 
   {
     LinkedHashSet<Node> result = new LinkedHashSet<>();
     result.addAll(observations.getObservationRoots());

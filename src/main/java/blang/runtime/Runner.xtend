@@ -133,8 +133,8 @@ class Runner implements Runnable {
     val Creator creator = Creators::empty()
     creator.addFactories(CoreProviders)
     creator.addFactories(Parsers)
-    val ObservationProcessor initContext = new ObservationProcessor
-    creator.addGlobal(ObservationProcessor, initContext)
+    val Observations initContext = new Observations
+    creator.addGlobal(Observations, initContext)
     val Optional<Options> options = initModel(creator, parsedArgs) 
     if (options.present) {
       val GraphAnalysis graphAnalysis = new GraphAnalysis(options.get().model, initContext)
