@@ -2,9 +2,12 @@ package blang.runtime.objectgraph;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -14,10 +17,13 @@ import org.jgrapht.UndirectedGraph;
 import org.jgrapht.ext.VertexNameProvider;
 
 import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
 import blang.core.Factor;
+import blang.core.ForwardSimulator;
 import blang.core.Model;
 import blang.core.ModelComponent;
 import blang.core.ModelComponents;
@@ -37,15 +43,26 @@ import briefj.collections.UnorderedPair;
  */
 public class GraphAnalysis
 {
-  DirectedGraph<ObjectNode<ModelComponent>,?> modelComponentsHierachy;
+  public LinkedHashSet<ObjectNode<?>> getLatentVariables() 
+  {
+    return latentVariables;
+  }
+        
+  public LinkedHashSet<ObjectNode<Factor>> getConnectedFactor(ObjectNode<?> latentVariable)
+  {
+    LinkedHashSet<ObjectNode<Factor>> result = new LinkedHashSet<>();
+    accessibilityGraph.getAccessibleNodes(latentVariable)
+        .filter(node -> freeMutableNodes.contains(node))
+        .forEachOrdered(node -> result.addAll(mutableToFactorCache.get(node)));
+    return result;
+  }
+  
+  Model model;
+  Multimap<ObjectNode<Model>,ObjectNode<ModelComponent>> model2ModelComponents;
   AccessibilityGraph accessibilityGraph;
   LinkedHashSet<Node> frozenNodesClosure;
   LinkedHashSet<Node> freeMutableNodes;
   LinkedHashSet<ObjectNode<?>> latentVariables;
-  public LinkedHashSet<ObjectNode<?>> getLatentVariables() {
-    return latentVariables;
-  }
-
   LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
   LinkedHashSet<ObjectNode<Factor>> factorNodes;
   Predicate<Class<?>> isVariablePredicate;
@@ -53,8 +70,9 @@ public class GraphAnalysis
   
   public GraphAnalysis(Model model, Observations observations)
   {
-    buildModelComponentsHierarchy(model);
-    buildAccessibilityGraph(model);
+    this.model = model;
+    buildModelComponentsHierarchy();
+    buildAccessibilityGraph();
     
     // frozen variables are either observed or the top level param's
     LinkedHashSet<Node> frozenRoots = buildFrozenRoots(model, observations);
@@ -74,7 +92,7 @@ public class GraphAnalysis
         .filter(node -> !frozenNodesClosure.contains(node))
         .forEachOrdered(freeMutableNodes::add);
     
-    // 3- identify the latent variables, i.e 
+    // 3- identify the latent variables
     latentVariables = latentVariables(
         accessibilityGraph, 
         freeMutableNodes, 
@@ -92,7 +110,7 @@ public class GraphAnalysis
 //    linearization = GraphUtils.linearization(directedFactorGraph).stream().map(node -> node.object).collect(Collectors.toList());
   }
   
-  private void buildAccessibilityGraph(Model model) 
+  void buildAccessibilityGraph() 
   {
     accessibilityGraph = new AccessibilityGraph();
     accessibilityGraph.add(model); 
@@ -116,25 +134,24 @@ public class GraphAnalysis
     return result;
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  void buildModelComponentsHierarchy(Model model)
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  void buildModelComponentsHierarchy()
   {
     factorDescriptions = new LinkedHashMap<>();
-    modelComponentsHierachy = GraphUtils.newDirectedGraph();
-    buildModelComponentsHierarchy(model, factorDescriptions, modelComponentsHierachy);
+    model2ModelComponents = Multimaps.newMultimap(new LinkedHashMap<>(), () -> new LinkedHashSet<>());
+    buildModelComponentsHierarchy(model);
     factorNodes = new LinkedHashSet<>();
-    for (ObjectNode<ModelComponent> node : modelComponentsHierachy.vertexSet())
+    for (ObjectNode<ModelComponent> node : model2ModelComponents.values())
       if (node.object instanceof Factor)
         factorNodes.add((ObjectNode) node);
   }
   
-  static void buildModelComponentsHierarchy(
-      ModelComponent modelComponent, 
-      Map<ObjectNode<ModelComponent>,String> descriptions, 
-      DirectedGraph<ObjectNode<ModelComponent>,?> result)
+  @SuppressWarnings("unchecked")
+  void buildModelComponentsHierarchy(
+      ModelComponent modelComponent)
   {
-    ObjectNode<ModelComponent> currentNode = new ObjectNode<>(modelComponent);
-    result.addVertex(currentNode);
+    @SuppressWarnings("rawtypes")
+    ObjectNode currentNode = new ObjectNode<>(modelComponent);
     if (modelComponent instanceof Model)
     {
       Model model = (Model) modelComponent;
@@ -142,75 +159,52 @@ public class GraphAnalysis
       for (ModelComponent subComponent : model.components().get())
       {
         ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);
-        descriptions.put(childNode, subComponents.description(subComponent));
-        buildModelComponentsHierarchy(subComponent, descriptions, result);
-        result.addEdge(currentNode, childNode);
+        factorDescriptions.put(childNode, subComponents.description(subComponent));
+        buildModelComponentsHierarchy(subComponent);
+        model2ModelComponents.put(currentNode, childNode);
       }
     }
   }
   
-//  private Optional<List<ForwardSimulator>> createForwardSimulator(Model model)
-//  {
-//    if (model instanceof ForwardSimulator)
-//      return Optional.of(Collections.singletonList((ForwardSimulator) model));
-//    
-//    DirectedGraph<Model,?> subModels = GraphUtils.newDirectedGraph(); BROKEN, NEED TO KEEP MODEL HIERARCHY
-//    for (ObjectNode<Factor> factorNode : factorNodes)
-//    {
-//      for (Field field : ReflexionUtils.getDeclaredFields(factorNode.object.getClass(), true))
-//        if (field.getAnnotation(Param.class) == null)
-//        {
-//          Object parentVariable = ReflexionUtils.getFieldValue(field, factorNode.object);
-//          accessibilityGraph.getAccessibleNodes(parentVariable) // cannot use the cache directly here (this makes this loop a bottleneck)
-//            .filter(node -> unobservedMutableNodes.contains(node))
-//            .forEachOrdered(node -> {
-//              for (ObjectNode<Factor> connectedFactor : mutableToFactorCache.get(node))
-//                if (connectedFactor != factorNode)
-//                  addDirectedLink(factorNode, connectedFactor);
-//            });
-//        }
-//    }
-//    
-//  }
+  public List<ForwardSimulator> createForwardSimulator()
+  {
+    return createForwardSimulator(model);
+  }
   
-  /*
-   * CHANGE TO:
-   * Input:  a Model
-   * Output: a sorted list of ForwardSimulator's
-   * 
-   * Rules: if the Model is a ForwardSimulator, just use that
-   * If not, look at list of components, if they are all Models, sort them and recurse, otherwise no gen possible
-   * 
-   * To sort, use something similar to current, 
-   */
-//  private void createDirectedFactorGraph() 
-//  {
-//    directedFactorGraph = GraphUtils.newDirectedGraph();
-//    for (ObjectNode<Factor> factorNode : factorNodes)
-//    {
-//      for (Field field : ReflexionUtils.getDeclaredFields(factorNode.object.getClass(), true))
-//        if (field.getAnnotation(Param.class) == null)
-//        {
-//          Object parentVariable = ReflexionUtils.getFieldValue(field, factorNode.object);
-//          accessibilityGraph.getAccessibleNodes(parentVariable) // cannot use the cache directly here (this makes this loop a bottleneck)
-//            .filter(node -> unobservedMutableNodes.contains(node))
-//            .forEachOrdered(node -> {
-//              for (ObjectNode<Factor> connectedFactor : mutableToFactorCache.get(node))
-//                if (connectedFactor != factorNode)
-//                  addDirectedLink(factorNode, connectedFactor);
-//            });
-//        }
-//    }
-//  }
-
-//  private void addDirectedLink(ObjectNode<Factor> f0, ObjectNode<Factor> f1) 
-//  {
-//    if (!directedFactorGraph.containsVertex(f0)) directedFactorGraph.addVertex(f0);
-//    if (!directedFactorGraph.containsVertex(f1)) directedFactorGraph.addVertex(f1);
-//    if (!directedFactorGraph.containsEdge(f0, f1))
-//      directedFactorGraph.addEdge(f0, f1);
-//  }
-  
+  @SuppressWarnings("unchecked")
+  private List<ForwardSimulator> createForwardSimulator(Model model)
+  {
+    if (model instanceof ForwardSimulator)
+      return Collections.singletonList((ForwardSimulator) model);
+    
+    ObjectNode<Model> modelNode = new ObjectNode<>(model);
+    DirectedGraph<Node,?> graph = GraphUtils.newDirectedGraph(); 
+    for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
+    {
+      ModelComponent component = componentNode.object;
+      if (!(component instanceof Model))
+        throw new RuntimeException("If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed");
+      
+      for (Field field : ReflexionUtils.getDeclaredFields(component.getClass(), true))
+      {
+        boolean isParam = field.getAnnotation(Param.class) != null;
+        Object dependencyRoot = ReflexionUtils.getFieldValue(field, component);
+        accessibilityGraph.getAccessibleNodes(dependencyRoot)
+          .filter(node -> freeMutableNodes.contains(node))
+          .forEachOrdered(node -> graph.addEdge(
+              isParam ? node          : componentNode, 
+              isParam ? componentNode : node));
+      }
+    }
+    List<ForwardSimulator> result = new ArrayList<>();
+    List<Node> linearization = GraphUtils.linearization(graph);
+    for (Node node : linearization)
+      if (model2ModelComponents.get(modelNode).contains(node))
+        result.addAll(createForwardSimulator((Model) ((ObjectNode<Model>) node).object));
+    
+    return result;  
+  }
+ 
   public void exportAccessibilityGraphVisualization(File file)
   {
     accessibilityGraph.exportDot(file); 
@@ -256,15 +250,8 @@ public class GraphAnalysis
     
     return result;
   }
-        
-  public LinkedHashSet<ObjectNode<Factor>> getConnectedFactor(ObjectNode<?> latentVariable)
-  {
-    LinkedHashSet<ObjectNode<Factor>> result = new LinkedHashSet<>();
-    accessibilityGraph.getAccessibleNodes(latentVariable)
-        .filter(node -> freeMutableNodes.contains(node))
-        .forEachOrdered(node -> result.addAll(mutableToFactorCache.get(node)));
-    return result;
-  }
+  
+  
   
   public String toStringSummary()
   {

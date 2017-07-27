@@ -4,8 +4,11 @@ import org.eclipse.xtend.lib.annotations.Data
 import blang.runtime.objectgraph.SkipDependency
 import xlinear.Matrix
 import blang.core.WritableRealVar
+import blang.mcmc.RealNaiveMHSampler
+import blang.mcmc.Samplers
 
 @Data
+@Samplers(RealNaiveMHSampler) 
 class RealMatrixComponent implements WritableRealVar {
   val int rowIndex
   val int colIndex

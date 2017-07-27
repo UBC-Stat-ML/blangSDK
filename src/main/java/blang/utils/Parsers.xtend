@@ -27,6 +27,7 @@ import xlinear.DenseMatrix
 import xlinear.SparseMatrix
 import blang.types.TransitionMatrix
 import blang.runtime.Observations
+import blang.inits.DefaultValue
 
 class Parsers {
   
@@ -60,11 +61,25 @@ class Parsers {
   def static Matrix parseMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
     @GlobalArg Observations initContext,
-    @ConstructorArg(value = "nRows") int nRows,
-    @ConstructorArg(value = "nCols") int nCols,
-    @ConstructorArg(value = "sparse", description = "Use a sparse matrix, else, a dense one (default is false)") Optional<Boolean> sparseOptional
+    @ConstructorArg(value = "nRows") Optional<Integer> providedNRows,
+    @ConstructorArg(value = "nCols") Optional<Integer> providedNCols,
+    @ConstructorArg(value = "sparse") @DefaultValue("false") boolean sparse
   ) {
-    val boolean sparse = sparseOptional.orElse(false)
+    if (sparse && (!providedNRows.present || !providedNCols.present)) {
+      throw new RuntimeException("If a sparse matrix is used, then the number of rows and columns must be specified")
+    }
+    var nRows = providedNRows.orElse(0)
+    var nCols = providedNCols.orElse(0)
+    if (!providedNRows.present || !providedNCols.present) {
+      for (List<String> line : BriefIO.readLines(file).splitCSV()) {
+      if (!line.isEmpty()) {
+        val int row = Integer.parseInt(line.get(0))
+        val int col = Integer.parseInt(line.get(1))
+        if (!providedNRows.present) { nRows = Math.max(nRows, row + 1) }
+        if (!providedNCols.present) { nCols = Math.max(nCols, col + 1) }
+      }
+    }
+    }
     val Matrix result = 
       if (sparse) {
         MatrixOperations::sparse(nRows, nCols)
@@ -94,28 +109,28 @@ class Parsers {
   def static DenseMatrix parseDenseMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
     @GlobalArg Observations initContext,
-    @ConstructorArg(value = "nRows") int nRows,
-    @ConstructorArg(value = "nCols") int nCols
+    @ConstructorArg(value = "nRows") Optional<Integer> nRows,
+    @ConstructorArg(value = "nCols") Optional<Integer> nCols
   ) {
-    return parseMatrix(file, initContext, nRows, nCols, Optional.of(false)) as DenseMatrix
+    return parseMatrix(file, initContext, nRows, nCols, false) as DenseMatrix
   }
   
   @ProvidesFactory
   def static SparseMatrix parseSparseMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value.") File file,
     @GlobalArg Observations initContext,
-    @ConstructorArg(value = "nRows") int nRows,
-    @ConstructorArg(value = "nCols") int nCols
+    @ConstructorArg(value = "nRows") Optional<Integer> nRows,
+    @ConstructorArg(value = "nCols") Optional<Integer> nCols
   ) {
-    return parseMatrix(file, initContext, nRows, nCols, Optional.of(true)) as SparseMatrix
+    return parseMatrix(file, initContext, nRows, nCols, true) as SparseMatrix
   }
   
   @ProvidesFactory
   def static Simplex parseSimplex(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the value. Include the redundant one.") File file,
     @GlobalArg Observations initContext,
-    @ConstructorArg(value = "nRows") int nRows,
-    @ConstructorArg(value = "nCols") int nCols
+    @ConstructorArg(value = "nRows") Optional<Integer> nRows,
+    @ConstructorArg(value = "nCols") Optional<Integer> nCols
   ) {
     val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
     return StaticUtils::simplex(m)
@@ -125,8 +140,8 @@ class Parsers {
   def static TransitionMatrix parseTransitionMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value. Include the redundant ones.") File file,
     @GlobalArg Observations initContext,
-    @ConstructorArg(value = "nRows") int nRows,
-    @ConstructorArg(value = "nCols") int nCols
+    @ConstructorArg(value = "nRows") Optional<Integer> nRows,
+    @ConstructorArg(value = "nCols") Optional<Integer> nCols
   ) {
     val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
     return StaticUtils::transitionMatrix(m)

@@ -102,9 +102,9 @@ public class ExplorationRules
    * @param object
    * @return
    */
-  public static List<FieldConstituentNode> standardObjects(Object object)
+  public static List<ConstituentNode<?>> standardObjects(Object object)
   {
-    ArrayList<FieldConstituentNode> result = new ArrayList<>();
+    ArrayList<ConstituentNode<?>> result = new ArrayList<>();
     
     // note: outer class and anonymous fields handled by the generated fields "x$y"
   
@@ -112,6 +112,8 @@ public class ExplorationRules
     for (Field f : ReflexionUtils.getDeclaredFields(object.getClass(), true))
       if (f.getAnnotationsByType(SkipDependency.class).length == 0) // skip those annotated by @SkipDependency
         result.add(new FieldConstituentNode(object, f));
+      else
+        result.add(new SkippedFieldConstituentNode(object, f));
     
     return result;
   }

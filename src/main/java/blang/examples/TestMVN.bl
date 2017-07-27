@@ -1,0 +1,13 @@
+package blang.examples
+
+model TestMVN {
+  
+  random Matrix variables ?: dense(2,1) 
+  
+  laws {
+    variables | Matrix mean = dense(2,1), 
+                CholeskyDecomposition precision = identity(2).denseCopy.cholesky 
+              ~ MultivariateNormal(mean, precision)
+  }
+  
+}
