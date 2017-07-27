@@ -20,7 +20,13 @@ public class SkippedFieldConstituentNode extends ConstituentNode<Field>
   @Override
   public boolean isMutable()
   {
-    return true; // if it is skipped, it is to hide mutable stuff See Issue #62
+    /*
+     * If the field is skipped, it is to hide mutable stuff, so stating that 
+     * the field is modifiable will have the correct behavior when doing recursive 
+     * analysis of mutability. 
+     * See Issue #62 in blang DSL project.
+     */
+    return true; 
   }
   
   @Override

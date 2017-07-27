@@ -30,7 +30,7 @@ import org.eclipse.xtend.lib.annotations.Data
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.inits.parsing.ConfigFile
 import blang.inits.parsing.QualifiedName
-import blang.mcmc.SamplerBuilder.BuiltSamplers
+import blang.mcmc.BuiltSamplers
 
 class Runner implements Runnable {
   

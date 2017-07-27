@@ -1,14 +1,10 @@
 package blang.mcmc;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Joiner;
 
 import blang.core.Factor;
 import blang.core.SamplerTypes;
@@ -115,62 +111,5 @@ public class SamplerBuilder
   
   public static TypeProvider<Class<? extends Sampler>>  SAMPLER_PROVIDER_1 = RecursiveAnnotationProducer.ofClasses(Samplers.class, true);
   public static TypeProvider<String>                    SAMPLER_PROVIDER_2 = new RecursiveAnnotationProducer<>(SamplerTypes.class, String.class, true, "value");
-  
-  public static class BuiltSamplers
-  {
-    public final List<Sampler> list = new ArrayList<Sampler>();
-    public final Set<SamplerMatch> matchingReport = new LinkedHashSet<>();
-    
-    @Override
-    public String toString() 
-    {
-      return Joiner.on("\n").join(matchingReport);
-    }
-  }
-  
-  public static class SamplerMatch
-  {
-    public final Class<?> latentClass;
-    public final Set<Class<? extends Sampler>> matchedSamplers;
-    public SamplerMatch(ObjectNode<?> node) {
-      this.latentClass = node.object.getClass();
-      this.matchedSamplers = new LinkedHashSet<>();
-    }
-    
-    @Override
-    public String toString() {
-      return latentClass.getSimpleName() + " sampled via: " + matchedSamplers.stream().map(c -> c.getSimpleName()).collect(Collectors.toList());
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((latentClass == null) ? 0 : latentClass.hashCode());
-      result = prime * result + ((matchedSamplers == null) ? 0 : matchedSamplers.hashCode());
-      return result;
-    }
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      SamplerMatch other = (SamplerMatch) obj;
-      if (latentClass == null) {
-        if (other.latentClass != null)
-          return false;
-      } else if (!latentClass.equals(other.latentClass))
-        return false;
-      if (matchedSamplers == null) {
-        if (other.matchedSamplers != null)
-          return false;
-      } else if (!matchedSamplers.equals(other.matchedSamplers))
-        return false;
-      return true;
-    }
-  }
   
 }
