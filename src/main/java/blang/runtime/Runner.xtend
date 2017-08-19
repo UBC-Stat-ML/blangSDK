@@ -31,6 +31,7 @@ import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.inits.parsing.ConfigFile
 import blang.inits.parsing.QualifiedName
 import blang.mcmc.BuiltSamplers
+import blang.io.GlobalDataSourceStore
 
 class Runner implements Runnable {
   
@@ -136,6 +137,8 @@ class Runner implements Runnable {
     creator.addFactories(Parsers)
     val Observations initContext = new Observations
     creator.addGlobal(Observations, initContext)
+    val GlobalDataSourceStore globalDS = new GlobalDataSourceStore
+    creator.addGlobal(GlobalDataSourceStore, globalDS)
     val Optional<Options> options = initModel(creator, parsedArgs) 
     if (options.present) {
       val GraphAnalysis graphAnalysis = new GraphAnalysis(options.get().model, initContext)

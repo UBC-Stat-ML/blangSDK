@@ -76,6 +76,7 @@ interface Plate<K> {
    */
   @DesignatedConstructor
   def static <T> Plate<T> parse(
+    @ConstructorArg("name") Optional<ColumnName> name,
     @ConstructorArg("maxSize") Optional<Integer> maxSize,
     @ConstructorArg("dataSource") DataSource dataSource,
     @GlobalArg GlobalDataSourceStore globalDataSourceStore,
@@ -83,7 +84,7 @@ interface Plate<K> {
     @InitService TypeLiteral<T> typeLiteral,
     @InitService Creator creator 
   ) {
-    val ColumnName columnName = new ColumnName(qualifiedName.simpleName())
+    val ColumnName columnName = name.orElse(new ColumnName(qualifiedName.simpleName()))
     val TypeLiteral<T> typeArgument = 
       TypeLiteral.get((typeLiteral.type as ParameterizedType).actualTypeArguments.get(0))
       as TypeLiteral<T>
@@ -98,6 +99,6 @@ interface Plate<K> {
     val Parser<T> parser = [String string | 
       creator.init(typeArgument, SimpleParser.parse(string))
     ] 
-    return new HashPlate(columnName, dataSource, parser, maxSize)
+    return new HashPlate(columnName, scopedDataSource, parser, maxSize)
   }
 }

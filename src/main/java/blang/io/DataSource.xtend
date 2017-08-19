@@ -27,8 +27,8 @@ class DataSource {
   @Accessors(PUBLIC_SETTER)
   DataSourceReader reader = new CSV
  
-  @DesignatedConstructor
-  new(@Input Optional<String> path) {
+  @DesignatedConstructor 
+  new(@Input(formatDescription = "Path to the DataSource.") Optional<String> path) {
     this.path = path
   }
   

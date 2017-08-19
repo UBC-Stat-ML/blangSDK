@@ -11,7 +11,7 @@ import blang.inits.GlobalArg
 class GlobalDataSource extends DataSource { 
   @DesignatedConstructor
   new(
-    @Input Optional<String> path, 
+    @Input(formatDescription = "Path to the DataSource.") Optional<String> path, 
     @GlobalArg GlobalDataSourceStore store
   ) {
     super(path)

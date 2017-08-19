@@ -1,6 +1,7 @@
 package blang.types.internals
 
-import org.eclipse.xtend.lib.annotations.Data 
+import org.eclipse.xtend.lib.annotations.Data import blang.inits.DesignatedConstructor
+import blang.inits.Input
 
 /**
  * Column names for data set read from files or databases.
@@ -9,7 +10,8 @@ import org.eclipse.xtend.lib.annotations.Data
 @Data
 class ColumnName {
   public val String string
-  new(String string) {
+  @DesignatedConstructor
+  new(@Input String string) {
     this.string = string.replaceAll("\\s+", "").toLowerCase
   }
 }

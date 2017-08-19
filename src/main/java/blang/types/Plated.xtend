@@ -16,6 +16,7 @@ import blang.inits.parsing.SimpleParser
 import blang.types.internals.HashPlated
 import blang.types.internals.Query
 import blang.types.internals.PlatedSlice
+import java.util.Optional
 
 /**
  * A random variable or parameter of type T enclosed in one or more Plates.
@@ -43,13 +44,14 @@ interface Plated<T> {
    */
   @DesignatedConstructor
   def public static <T> Plated<T> parse(
+    @ConstructorArg("name") Optional<ColumnName> name,
     @ConstructorArg("dataSource") DataSource dataSource,
     @GlobalArg GlobalDataSourceStore globalDataSourceStore,
     @InitService QualifiedName qualifiedName,
     @InitService TypeLiteral<T> typeLiteral,
     @InitService Creator creator 
   ) {
-    val ColumnName columnName = new ColumnName(qualifiedName.simpleName())
+    val ColumnName columnName = name.orElse(new ColumnName(qualifiedName.simpleName()))
     // data source
     var DataSource scopedDataSource = DataSource::scopedDataSource(dataSource, globalDataSourceStore)
     if (scopedDataSource.present && !scopedDataSource.columnNames.contains(columnName)) {
@@ -62,6 +64,6 @@ interface Plated<T> {
     val Parser<T> parser = [String string | 
       creator.init(typeArgument, SimpleParser.parse(string))
     ] 
-    return new HashPlated(columnName, dataSource, parser)
+    return new HashPlated(columnName, scopedDataSource, parser)
   }
 }

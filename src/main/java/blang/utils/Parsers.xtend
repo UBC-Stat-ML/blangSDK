@@ -32,7 +32,7 @@ import blang.inits.DefaultValue
 class Parsers {
   
   @ProvidesFactory
-  def static RealVar parseRealVar(    
+  def static RealVar parseRealVar(     // NOTE: we use Input here so that parsing Lists, etc works
     @Input(formatDescription = "A number or NA") String str,
     @GlobalArg Observations initContext
   ) {

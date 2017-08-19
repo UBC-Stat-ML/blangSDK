@@ -1,18 +1,18 @@
 package blang.examples.rockets
 
 model Simple {
-  
+
   param GlobalDataSource data
-  
   param Plate<String> rocketTypes
+  
   param Plated<IntVar> numberOfLaunches
   
   random Plated<RealVar> failureProbabilities
   random Plated<IntVar> numberOfFailures
-  random RealVar alpha, beta
+  random RealVar alpha ?: realVar(0.0), beta ?: realVar(0.0)
   
   laws {
-
+    
     alpha ~ Gamma(1.0, 1.0) 
     beta  ~ Gamma(1.0, 1.0)
 
@@ -23,6 +23,5 @@ model Simple {
           IntVar numberOfLaunch = numberOfLaunches.get(rocketType)
         ~ Binomial(numberOfLaunch, failureProbability)
     }
-    
   }
 }
