@@ -17,16 +17,18 @@ import blang.types.internals.HashPlated
 import blang.types.internals.Query
 import blang.types.internals.PlatedSlice
 import java.util.Optional
+import java.util.Map.Entry
 
 /**
  * A random variable or parameter of type T enclosed in one or more Plates.
  */
-interface Plated<T> {
+interface Plated<T> extends Iterable<Entry<Query, T>> {
   
   /**
    * The random variable or parameter indexed by the provided indices.
    */
   def T get(Index<?> ... indices) 
+  
   
   def Plated<T> slice(Index<?> ... indices) {
     return new PlatedSlice(this, Query::build(indices)) 

@@ -27,6 +27,10 @@ class PlatedSlice<T> implements Plated<T> {
     return result
   }
   
+  override iterator() {
+    return variables.entrySet.iterator
+  }
+  
   new(Plated<T> parent, Query sliceIndices) {
     this.parent = parent
     this.sliceIndices = sliceIndices

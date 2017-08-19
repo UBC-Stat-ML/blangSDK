@@ -6,7 +6,12 @@ import java.util.LinkedList
 import java.util.List
 import java.util.Map
 import xlinear.Matrix
+import java.util.Map.Entry
+import blang.types.Plated
 
+/**
+ * TODO: refactor this to be extensible and use subdirectory structures instead.
+ */
 class SimpleCSVWriter {
   
   val Deque<String> prefixes = new LinkedList()
@@ -49,6 +54,12 @@ class SimpleCSVWriter {
   def dispatch void write(Map<?,?> map) {
     for (Object key : map.keySet()) {
       recurse(key, map.get(key))
+    }
+  }
+  
+  def dispatch void write(Plated<?> plated) {
+    for (entry : plated) {
+      recurse(entry.key, entry.value)
     }
   }
   

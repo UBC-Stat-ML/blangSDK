@@ -7,6 +7,7 @@ import blang.types.Index
 import blang.types.Plate
 import java.util.Set
 import org.eclipse.xtend.lib.annotations.Accessors
+import briefj.CSV
 
 /**
  * Utility for HashPlate and HashPlated.
@@ -15,6 +16,13 @@ import org.eclipse.xtend.lib.annotations.Accessors
 class Query {
   @SkipDependency
   val Set<Index<?>> indices
+  override String toString() {
+    if (cachedToString == null) {
+      cachedToString = CSV.toCSV(indices.map[it.key])
+    }
+    return cachedToString
+  }
+  var transient String cachedToString = null
   def static Query build(Index<?> ... indices) {
     return new Query(new LinkedHashSet(indices))
   }

@@ -46,4 +46,8 @@ class HashPlated<T> implements Plated<T> {
     this.index = new IndexedDataSource(columnName, dataSource, false)
     this.parser = parser
   }
+  
+  override iterator() {
+    return variables.entrySet.iterator
+  }
 }

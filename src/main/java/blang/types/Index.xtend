@@ -16,5 +16,5 @@ class Index<K> {
   public val Plate<K> plate 
   
   @SkipDependency
-  public val K value
+  public val K key 
 }
