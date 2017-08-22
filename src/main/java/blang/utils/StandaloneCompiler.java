@@ -2,6 +2,7 @@ package blang.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -13,10 +14,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.lib.Repository;
+
 import com.google.common.base.Joiner;
 
 import binc.Command;
 import binc.Command.BinaryExecutionException;
+import blang.runtime.Runner;
 import briefj.BriefIO;
 import briefj.BriefStrings;
 import briefj.repo.RepositoryUtils;
@@ -52,28 +57,79 @@ public class StandaloneCompiler  {
     }
   }
   
+  public Repository getBlangSDKRepository() {
+    try {
+      return new FileRepository(new File(blangHome, ".git"));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
   final static String BUILD_FILE = "build.gradle";
+  
+  public String compileProject() {
+    return compile(compilationFolder);
+  }
   
   /**
    * 
    * @return classpath-formatted list of jars created and depended by the compilation task
    */
-  public String compile() throws BinaryExecutionException {
-    runGradle("build");
+  public static String compile(File folder) throws BinaryExecutionException {
+    runGradle("build", folder);
     return "" +
-        parseClasspath(runGradle("printClasspath")) + // dependencies
+        parseClasspath(runGradle("printClasspath", folder)) + // dependencies
         File.pathSeparator +                             
                                                       // plus newly compiled file:
-        Paths.get(compilationFolder.getPath(), "build", "libs", COMPILATION_DIR_NAME + ".jar").toAbsolutePath();
+        Paths.get(folder.getPath(), "build", "libs", COMPILATION_DIR_NAME + ".jar").toAbsolutePath();
   }
   
   
-  private String runGradle(String gradleTaskName) throws BinaryExecutionException  {
+  private static String runGradle(String gradleTaskName, File folder) throws BinaryExecutionException  {
     Command gradleCmd = 
         Command.byName("gradle").withArg(gradleTaskName)
-        .ranIn(compilationFolder)
+        .ranIn(folder)
         .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
+  }
+  
+  public void runCompiledModel(String classpath, String [] args) {
+    Command runnerCmd = javaCommand().withStandardOutMirroring()
+        .appendArg("-cp").appendArg(classpath)
+        .appendArg(Runner.class.getTypeName());
+    for (String arg : args) {
+      runnerCmd = runnerCmd.appendArg(arg);
+    }
+    Command.call(runnerCmd);
+  }
+  
+  public Runnable getBlangRestarter(String [] args) {
+    return () -> {
+      // build and collect classpath
+      String classPath = compile(blangHome);
+      // restart
+      Command restart = javaCommand()
+          .throwOnNonZeroReturnCode()
+          .withStandardOutMirroring()
+          .appendArg("-classpath").appendArg(classPath)
+          .appendArg(Main.class.getTypeName());
+      for (String arg : args) {
+        restart = restart.appendArg(arg);
+      }
+      Command.call(restart);
+    };
+  }
+  
+  public static Command javaCommand()
+  {
+    Command javaCmd = Command.byPath(Paths.get(System.getProperty("java.home"), "bin", "java").toFile());
+    
+    // get Xmx options such as -Xmx1g, etc
+    for (String jvmArgument : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+      javaCmd = javaCmd.appendArg(jvmArgument);
+    }
+    
+    return javaCmd;
   }
   
   private static String parseClasspath(String gradleOutput) {

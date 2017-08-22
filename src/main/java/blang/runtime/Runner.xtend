@@ -38,6 +38,10 @@ class Runner implements Runnable {
   static class Options {
     val Model model
     
+    @Arg(description = "Version of the blang SDK to use (see https://github.com/UBC-Stat-ML/blangSDK/releases), of the form of a git tag x.y.z where x >= 2. If omitted, use the local SDK's 'master' version.")
+    Optional<String> version 
+    public static final String VERSION_FIELD_NAME = "version" 
+    
     @Arg
     MCMCOptions mcmc
     

@@ -1,16 +1,39 @@
 package blang.utils
 
-import binc.Command
-import blang.runtime.Runner
 import binc.Command.BinaryExecutionException
+import blang.utils.internals.Versions
+import java.util.Optional
+import blang.inits.parsing.Arguments
+import blang.inits.parsing.Posix
+import blang.runtime.Runner.Options import blang.inits.Creators
+import com.google.inject.TypeLiteral
 
 class Main {
 
   def static void main(String[] args) {
-    // compile 
+    
+    // read args to find version, if specified
+    val Optional<String> requestedVersion = requestedVersion(args)
+    
+    // check that the tag is not too ancient (to avoid absorbing states)
+    // TODO
+    
+    // call Versions::updateIfNeeded(..)
     val StandaloneCompiler compiler = new StandaloneCompiler
+    
+    try {
+      Versions::updateIfNeeded(requestedVersion, compiler.blangSDKRepository, compiler.getBlangRestarter(args))
+    } catch (BinaryExecutionException bee) {
+      System.err.println("Stopped because of a blang version error")
+      System.exit(1)
+    }
+    
+    println("Blang SDK version " + Versions::resolveVersion(requestedVersion, compiler.blangSDKRepository))
+    
+    println("1.0.29")
+    
     val String classpath = try {
-      compiler.compile()
+      compiler.compileProject()
     } catch (BinaryExecutionException bee) {
       System.err.println("Compilation error:")
       System.err.println(clean(bee.output.toString()))
@@ -23,15 +46,15 @@ class Main {
     }
     
     // run
-    var Command runnerCmd = 
-      Command.byName("java")
-        .appendArg("-cp").appendArg(classpath).appendArg(Runner.typeName)
-        .withStandardOutMirroring()
-    
-    for (String arg : args) {
-      runnerCmd = runnerCmd.appendArg(arg)
-    }
-    Command.call(runnerCmd)
+    compiler.runCompiledModel(classpath, args)
+  }
+  
+  def static Optional<String> requestedVersion(String[] strings) {
+    val Arguments parsed = Posix.parse(strings)
+    val Arguments subArg = parsed.child(Options::VERSION_FIELD_NAME)
+    val TypeLiteral<Optional<String>> optionalStringTypeLit
+     = new TypeLiteral<Optional<String>>() {};
+    return Creators::conventional.init(optionalStringTypeLit, subArg) 
   }
   
   def static String clean(String string) {
@@ -44,5 +67,4 @@ class Main {
     }
     return result.toString()
   }
-  
 }
