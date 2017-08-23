@@ -8,7 +8,6 @@ import java.util.List
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.LogCommand
-import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.xtend.lib.annotations.Data
 
 class Versions {
@@ -95,9 +94,7 @@ class Versions {
       } else {
         log.add(ref.getObjectId());
       }
-      for (RevCommit rev : log.call()) {
-        result.put(ref.getName.replace("refs/tags/", ""), rev.getName) 
-      }
+      result.put(ref.getName.replace("refs/tags/", ""), log.call.iterator.next.getName)
     }
     return result
   }

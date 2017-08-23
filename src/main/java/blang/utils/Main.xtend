@@ -7,6 +7,7 @@ import blang.inits.parsing.Arguments
 import blang.inits.parsing.Posix
 import blang.runtime.Runner.Options import blang.inits.Creators
 import com.google.inject.TypeLiteral
+import blang.utils.internals.Versions.BadVersion
 
 class Main {
 
@@ -25,13 +26,16 @@ class Main {
     try {
       Versions::updateIfNeeded(requestedVersion, compiler.blangSDKRepository, compiler.getBlangRestarter(args))
     } catch (BinaryExecutionException bee) {
-      System.err.println("Stopped because of a blang version error")
+      // don't print: mirroring showed it already
+      System.exit(1)
+    } catch (BadVersion bv) {
+      System.err.println(bv.message)
       System.exit(1)
     }
     
     println("Blang SDK version " + Versions::resolveVersion(requestedVersion, compiler.blangSDKRepository))
     
-    println("1.0.33")
+    println("1.0.34")
     
     val String classpath = try {
       compiler.compileProject()
