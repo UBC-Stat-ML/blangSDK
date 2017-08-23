@@ -19,9 +19,10 @@ class Main {
     // check that the tag is not too ancient (to avoid absorbing states)
     // TODO
     
+    // TODO: test case to check integrity of git tag and build file
+    
     // call Versions::updateIfNeeded(..)
     val StandaloneCompiler compiler = new StandaloneCompiler
-    println(compiler.toString)
     
     try {
       Versions::updateIfNeeded(requestedVersion, compiler.blangSDKRepository, compiler.getBlangRestarter(args))
@@ -34,8 +35,6 @@ class Main {
     }
     
     println("Blang SDK version " + Versions::resolveVersion(requestedVersion, compiler.blangSDKRepository))
-    
-    println("1.0.42")
     
     val String classpath = try {
       compiler.compileProject()
