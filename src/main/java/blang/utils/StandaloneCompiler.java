@@ -137,6 +137,8 @@ public class StandaloneCompiler  {
     };
   }
   
+  // test
+  
   public static Command javaCommand()
   {
     Command javaCmd = Command.byPath(Paths.get(System.getProperty("java.home"), "bin", "java").toFile());
