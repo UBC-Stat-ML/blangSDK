@@ -20,7 +20,7 @@ class Main {
     
     // call Versions::updateIfNeeded(..)
     val StandaloneCompiler compiler = new StandaloneCompiler
-    println(compiler.findBlangHome)
+    println(compiler.toString)
     
     try {
       Versions::updateIfNeeded(requestedVersion, compiler.blangSDKRepository, compiler.getBlangRestarter(args))
@@ -31,7 +31,7 @@ class Main {
     
     println("Blang SDK version " + Versions::resolveVersion(requestedVersion, compiler.blangSDKRepository))
     
-    println("1.0.31")
+    println("1.0.32")
     
     val String classpath = try {
       compiler.compileProject()
