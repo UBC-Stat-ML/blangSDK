@@ -1,0 +1,19 @@
+
+
+model HierachicalModel {
+    
+    random List<IntVar> successes
+    random List<Integer> trials 
+    
+    random List<RealVar> reliabilities ?: listOfRealVars(trials.size)
+    
+    laws {
+        
+        for (int i : 0 ..< reliabilities.size) {
+            successes.get(i) | int nTrial = trials.get(i), RealVar reliability = reliabilities.get(i) 
+                ~ Binomial(nTrial, reliability)
+        }  
+        
+    }
+    
+}

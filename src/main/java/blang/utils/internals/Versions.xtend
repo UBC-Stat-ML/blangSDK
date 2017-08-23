@@ -69,8 +69,8 @@ class Versions {
         git.fetch().setCheckFetchedObjects(true).call;
         tag2commit = tag2commit(codeRepository) // refresh tag2commit index after pull
         if (!tag2commit.keySet.contains(optionalVersion.get)) {
-          throw new BadVersion("Version not found: " + optionalVersion.get + "\n" +
-            "Versions available: " + tag2commit.keySet
+          throw new BadVersion("Version not found: " + optionalVersion.get + '\n' +
+            "Versions available: " + tag2commit.keySet.join(", ")
           )
         }
       }
@@ -93,7 +93,7 @@ class Versions {
         log.add(ref.getObjectId());
       }
       for (RevCommit rev : log.call()) {
-        result.put(ref.toString, rev.getName)
+        result.put(ref.getName, rev.getName)
       }
     }
     return result

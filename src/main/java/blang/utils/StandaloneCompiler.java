@@ -45,6 +45,13 @@ public class StandaloneCompiler  {
     init();
   }
   
+  @Override
+  public String toString() {
+    return 
+      "Blang home folder: " + blangHome.getAbsolutePath() + "\n" +
+      "Project folder: " + compilationFolder.getAbsolutePath();
+  }
+
   File findBlangHome() {
     File file = RepositoryUtils.findSourceFile(this);
     while (!new File(file, BUILD_FILE).exists() && file.getParent() != null) {

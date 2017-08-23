@@ -1,0 +1,33 @@
+package blang.examples
+
+import static extension blang.examples.SpikedRealVar.*
+
+model GLM {
+  
+  param Matrix designMatrix // n by p
+  random List<IntVar> output // size n
+  random List<SpikedRealVar> coefficients ?: {
+    val p = designMatrix.nCols
+    return new ArrayList(p) => [
+      for (int i : 0 ..< p) 
+        add(new SpikedRealVar(0,0))
+    ]
+  } 
+  
+  random RealVar zeroProbability ?: realVar(0.5)
+  
+  laws {
+    
+    zeroProbability ~ Beta(1,1)
+    
+    coefficients | zeroProbability ~ SpikeAndSlab(zeroProbability, [value | -value * value])
+    
+    for (int index : 0 ..< output.size) {
+      output.get(index) | coefficients, 
+                          Matrix predictors = designMatrix.row(index) 
+                        ~ Bernoulli(logistic(coefficients * predictors))
+    }
+    
+  }
+  
+}
