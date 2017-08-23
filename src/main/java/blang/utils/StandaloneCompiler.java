@@ -75,20 +75,24 @@ public class StandaloneCompiler  {
   final static String BUILD_FILE = "build.gradle";
   
   public String compileProject() {
-    return compile(compilationFolder);
+    return compile(compilationFolder, COMPILATION_DIR_NAME);
+  }
+  
+  public String compileBlang() {
+    return compile(blangHome, "blang");
   }
   
   /**
    * 
    * @return classpath-formatted list of jars created and depended by the compilation task
    */
-  public static String compile(File folder) throws BinaryExecutionException {
+  public static String compile(File folder, String projectName) throws BinaryExecutionException {
     runGradle("build", folder);
     return "" +
         parseClasspath(runGradle("printClasspath", folder)) + // dependencies
         File.pathSeparator +                             
                                                       // plus newly compiled file:
-        Paths.get(folder.getPath(), "build", "libs", COMPILATION_DIR_NAME + ".jar").toAbsolutePath();
+        Paths.get(folder.getPath(), "build", "libs", projectName + ".jar").toAbsolutePath();
   }
   
   
@@ -113,8 +117,7 @@ public class StandaloneCompiler  {
   public Runnable getBlangRestarter(String [] args) {
     return () -> {
       // build and collect classpath
-      String classPath = compile(blangHome);
-      System.out.println(classPath);
+      String classPath = compileBlang();
       // restart
       Command restart = javaCommand()
           .throwOnNonZeroReturnCode()
