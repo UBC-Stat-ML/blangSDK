@@ -114,6 +114,7 @@ public class StandaloneCompiler  {
     return () -> {
       // build and collect classpath
       String classPath = compile(blangHome);
+      System.out.println(classPath);
       // restart
       Command restart = javaCommand()
           .throwOnNonZeroReturnCode()

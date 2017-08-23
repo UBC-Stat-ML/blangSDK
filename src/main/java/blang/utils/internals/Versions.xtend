@@ -64,8 +64,9 @@ class Versions {
     if (optionalVersion.present) {
       // a "git pull" might be needed
       if (requestedCommit === null) {
-        // try pulling
-        git.fetch().setCheckFetchedObjects(true).call;
+        // try pulling: go to master, then pull
+        git.checkout().setName(codeRepository.resolve("master").getName).call
+        git.pull.call;
         tag2commit = tag2commit(codeRepository) // refresh tag2commit index after pull
         if (!tag2commit.keySet.contains(optionalVersion.get)) {
           throw new BadVersion(
