@@ -35,7 +35,7 @@ class Main {
     
     println("Blang SDK version " + Versions::resolveVersion(requestedVersion, compiler.blangSDKRepository))
     
-    println("1.0.35")
+    println("1.0.36")
     
     val String classpath = try {
       compiler.compileProject()
