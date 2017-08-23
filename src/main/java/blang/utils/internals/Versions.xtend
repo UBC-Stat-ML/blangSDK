@@ -77,6 +77,7 @@ class Versions {
             '''
           )
         }
+        requestedCommit = tag2commit.get(optionalVersion.get) 
       }
     }
     git.checkout().setName(requestedCommit).call
