@@ -9,6 +9,7 @@ import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.LogCommand
 import org.eclipse.xtend.lib.annotations.Data
+import java.util.function.Supplier
 
 class Versions {
   
@@ -42,7 +43,7 @@ class Versions {
   def static updateIfNeeded(
     Optional<String> optionalVersion, 
     Repository codeRepository,
-    Runnable restart
+    Supplier<Integer> restart
   ) { 
     val Git git = new Git(codeRepository)
     val String currentCommit = codeRepository.resolve("HEAD").getName
@@ -79,7 +80,7 @@ class Versions {
       }
     }
     git.checkout().setName(requestedCommit).call
-    restart.run
+    System.exit(restart.get) 
   }
   
   def static Map<String,String> tag2commit(Repository repository) {

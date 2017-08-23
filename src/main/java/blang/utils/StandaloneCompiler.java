@@ -13,6 +13,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
@@ -114,7 +115,7 @@ public class StandaloneCompiler  {
     Command.call(runnerCmd);
   }
   
-  public Runnable getBlangRestarter(String [] args) {
+  public Supplier<Integer> getBlangRestarter(String [] args) {
     return () -> {
       // build and collect classpath
       String classPath = compileBlang();
@@ -127,7 +128,12 @@ public class StandaloneCompiler  {
       for (String arg : args) {
         restart = restart.appendArg(arg);
       }
-      Command.call(restart);
+      try {
+        Command.call(restart);
+        return 0;
+      } catch (BinaryExecutionException bee) {
+        return 1;
+      }
     };
   }
   
