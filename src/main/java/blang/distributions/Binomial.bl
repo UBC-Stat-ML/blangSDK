@@ -11,11 +11,11 @@ model Binomial {
   laws {
     
     logf(numberOfSuccesses, numberOfTrials, probabilityOfSuccess) {
-      numberOfSuccesses * probabilityOfSuccess + (numberOfTrials - numberOfSuccesses) * (1.0 - probabilityOfSuccess)
+      numberOfSuccesses * log(probabilityOfSuccess) + (numberOfTrials - numberOfSuccesses) * log(1.0 - probabilityOfSuccess)
     }
     
     logf(numberOfTrials, numberOfSuccesses) {
-      logBinomial(numberOfTrials, numberOfTrials)
+      logBinomial(numberOfTrials, numberOfSuccesses)
     }
     
     indicator(probabilityOfSuccess) {
