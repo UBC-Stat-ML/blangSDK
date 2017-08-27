@@ -11,13 +11,15 @@ model Simple {
   random Plated<IntVar> numberOfFailures
   random RealVar alpha ?: realVar(1.0), beta ?: realVar(1.0)
   
+  
+  
   laws {
     
     alpha ~ ContinuousUniform(0, 1000)
     beta  ~ ContinuousUniform(0, 1000)
 
     for (Index<String> rocketType : rocketTypes.indices) {
-      failureProbabilities.get(rocketType) | alpha, beta ~ Beta(alpha/100, beta/100)
+      failureProbabilities.get(rocketType) | alpha, beta ~ Beta(alpha, beta) // OK found problem: sticky init at zero - will be solved by anneled
       numberOfFailures.get(rocketType) 
         | RealVar failureProbability = failureProbabilities.get(rocketType),
           IntVar numberOfLaunch = numberOfLaunches.get(rocketType)

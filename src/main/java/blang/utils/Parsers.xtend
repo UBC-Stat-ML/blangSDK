@@ -38,7 +38,7 @@ class Parsers {
   ) {
     return
       if (str == NA::SYMBOL) {
-        new RealScalar(0.0)
+        new RealScalar(0.1)
       } else {
         initContext.markAsObserved(new RealScalar(Double.parseDouble(str)))
       }
