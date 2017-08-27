@@ -13,8 +13,8 @@ model Simple {
   
   laws {
     
-    alpha ~ Gamma(1.0, 1.0) 
-    beta  ~ Gamma(1.0, 1.0)
+    alpha ~ ContinuousUniform(0, 1000)
+    beta  ~ ContinuousUniform(0, 1000)
 
     for (Index<String> rocketType : rocketTypes.indices) {
       failureProbabilities.get(rocketType) | alpha, beta ~ Beta(alpha, beta)
