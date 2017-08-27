@@ -21,6 +21,25 @@ class Main {
     
     // TODO: test case to check integrity of git tag and build file
     
+    // TODO Versions::updateIfNeeded should be aware of the version bounds? otherwise will print invalid tags!
+    
+    /*
+     * TODO: change so that the repo is not actually changed, create a compilation pool instead
+     * 
+     * TODO: Versions::updateIfNeeded is inefficient in the sense that any run which is not calling the 
+     * version produced by the call of installDist initially made by the user will result in starting a 
+     * child process.. maybe that's ok?
+     * 
+     * TODO: Perhaps move to deamonized architecture?
+     * 
+     * TODO: can for sure do some caching: after compilation, keep the produced jar + list of paths for the 
+     * gradle-cached dependencies
+     */
+     
+    /*
+     * TODO: use https://docs.gradle.org/current/userguide/embedding.html
+     */
+    
     // call Versions::updateIfNeeded(..)
     val StandaloneCompiler compiler = new StandaloneCompiler
     

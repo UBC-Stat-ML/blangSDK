@@ -9,7 +9,7 @@ model Simple {
   
   random Plated<RealVar> failureProbabilities
   random Plated<IntVar> numberOfFailures
-  random RealVar alpha ?: realVar(0.0), beta ?: realVar(0.0)
+  random RealVar alpha ?: realVar(1.0), beta ?: realVar(1.0)
   
   laws {
     

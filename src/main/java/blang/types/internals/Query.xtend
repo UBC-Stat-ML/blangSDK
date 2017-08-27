@@ -18,7 +18,12 @@ class Query {
   val Set<Index<?>> indices
   override String toString() {
     if (cachedToString == null) {
-      cachedToString = CSV.toCSV(indices.map[it.key])
+      val String [] items = newArrayOfSize(indices.size) 
+      var i = 0
+      for (item : indices.map[it.key]) {
+        items.set(i++, item.toString)
+      }
+      cachedToString = CSV.toCSV(items)
     }
     return cachedToString
   }
