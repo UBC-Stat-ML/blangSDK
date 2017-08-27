@@ -14,7 +14,7 @@ model Beta {
         // avoid return +INFINITY so that INF - INF does not occur
         return Double.NEGATIVE_INFINITY
       }
-      (alpha.doubleValue - 1.0) * log(realization)
+      (alpha - 1.0) * log(realization)
     }
     
     logf(beta, realization) {
