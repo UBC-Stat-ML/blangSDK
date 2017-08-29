@@ -22,6 +22,7 @@ import com.google.common.collect.Multimaps;
 
 import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
+import blang.core.Annealed;
 import blang.core.Factor;
 import blang.core.ForwardSimulator;
 import blang.core.Model;
@@ -104,13 +105,9 @@ public class GraphAnalysis
       accessibilityGraph.getAccessibleNodes(factorNode)
         .filter(node -> freeMutableNodes.contains(node))
         .forEachOrdered(node -> mutableToFactorCache.put(node, factorNode));
-    
-    // 5- create the directed factor graph and use it to linearize factor order
-//    createDirectedFactorGraph();
-//    linearization = GraphUtils.linearization(directedFactorGraph).stream().map(node -> node.object).collect(Collectors.toList());
   }
   
-  void buildAccessibilityGraph() 
+  private void buildAccessibilityGraph() 
   {
     accessibilityGraph = new AccessibilityGraph();
     accessibilityGraph.add(model); 
@@ -119,7 +116,7 @@ public class GraphAnalysis
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  LinkedHashSet<Node> buildFrozenRoots(Model model, Observations observations) 
+  private LinkedHashSet<Node> buildFrozenRoots(Model model, Observations observations) 
   {
     LinkedHashSet<Node> result = new LinkedHashSet<>();
     result.addAll(observations.getObservationRoots());
@@ -135,7 +132,7 @@ public class GraphAnalysis
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  void buildModelComponentsHierarchy()
+  private void buildModelComponentsHierarchy()
   {
     factorDescriptions = new LinkedHashMap<>();
     model2ModelComponents = Multimaps.newMultimap(new LinkedHashMap<>(), () -> new LinkedHashSet<>());
@@ -147,7 +144,7 @@ public class GraphAnalysis
   }
   
   @SuppressWarnings("unchecked")
-  void buildModelComponentsHierarchy(
+  private void buildModelComponentsHierarchy(
       ModelComponent modelComponent)
   {
     @SuppressWarnings("rawtypes")
@@ -166,6 +163,40 @@ public class GraphAnalysis
     }
   }
   
+  /**
+   * Anneal only the factors emitting observed values.
+   */
+  public Annealed createLikelihoodAnnealer()
+  {
+    final List<Annealed> annealedComponents = createLikelihoodAnnealer(model);
+    return (double exponent) -> {
+      for (Annealed component : annealedComponents)
+        component.setExponent(exponent);
+    };
+  }
+  
+  public List<Annealed> createLikelihoodAnnealer(Model model)
+  {
+    if (model instanceof ForwardSimulator)
+    {
+      if (allRandomNodesObserved(model))
+        return Collections.emptyList();
+      else
+        return Collections.singletonList((Annealed) model);
+    }
+    List<Annealed> result = new ArrayList<>();
+    ObjectNode<Model> modelNode = new ObjectNode<>(model);
+    for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
+    {
+      ModelComponent component = componentNode.object;
+      if (!(component instanceof Model))
+        throw new RuntimeException("If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed");
+      Model submodel = (Model) component;
+      result.addAll(createLikelihoodAnnealer(submodel));
+    }
+    return result;
+  }
+  
   public List<ForwardSimulator> createForwardSimulator()
   {
     return createForwardSimulator(model);
@@ -175,10 +206,15 @@ public class GraphAnalysis
   private List<ForwardSimulator> createForwardSimulator(Model model)
   {
     if (model instanceof ForwardSimulator)
-      return Collections.singletonList((ForwardSimulator) model);
+    {
+      if (allRandomNodesObserved(model))
+        return Collections.emptyList();
+      else
+        return Collections.singletonList((ForwardSimulator) model);
+    }
     
     ObjectNode<Model> modelNode = new ObjectNode<>(model);
-    DirectedGraph<Node,?> graph = GraphUtils.newDirectedGraph(); 
+    DirectedGraph<Node,?> graph = GraphUtils.newDirectedGraph(); // a bipartite graph over the children componentNodes and their fields
     for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
     {
       ModelComponent component = componentNode.object;
@@ -199,12 +235,31 @@ public class GraphAnalysis
     List<ForwardSimulator> result = new ArrayList<>();
     List<Node> linearization = GraphUtils.linearization(graph);
     for (Node node : linearization)
-      if (model2ModelComponents.get(modelNode).contains(node))
+      if (model2ModelComponents.get(modelNode).contains(node)) // recall that the graph is bipartite (see above)
         result.addAll(createForwardSimulator((Model) ((ObjectNode<Model>) node).object));
     
     return result;  
   }
  
+  private boolean allRandomNodesObserved(Model model) 
+  {
+    Boolean result = null;
+    for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true))
+      if (f.getAnnotation(Param.class) == null) 
+      {
+        Object randomVariable = ReflexionUtils.getFieldValue(f, model);
+        Node node = new ObjectNode<>(randomVariable);
+        boolean isObserved = frozenNodesClosure.contains(node);
+        if (result == null)
+          result = isObserved;
+        if (result.booleanValue() != isObserved)
+          throw new RuntimeException("For forward simulation, the random variable of all sub models should all be observed or all unobserved.");
+      }
+    if (result == null)
+      return false;
+    return result;
+  }
+
   public void exportAccessibilityGraphVisualization(File file)
   {
     accessibilityGraph.exportDot(file); 

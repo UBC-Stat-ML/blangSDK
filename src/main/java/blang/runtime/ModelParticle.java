@@ -4,7 +4,7 @@ import blang.core.Model;
 import blang.mcmc.Sampler;
 
 // name something else!
-public class CompiledModel<M extends Model>
+public class ModelParticle<M extends Model>
 {
 //  public  final M       model;
 //  private final Sampler sampler;
@@ -19,6 +19,19 @@ public class CompiledModel<M extends Model>
   // convenience method to create writer
   
   // forward generation (?) <- NO
+  
+  
+  // ---
+  
+  // Particle?
+  
+  // clone
+  
+  // set temperature
+  
+  // sample - if temp = 0, use forward, else mcmc scheme
+  
+  // density`
   
   
 }

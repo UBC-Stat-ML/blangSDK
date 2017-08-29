@@ -9,6 +9,9 @@ plugins {
 
 repositories {
   maven {
+    url "file:///${System.properties['user.home']}/artifacts/"
+  }
+  maven {
     url "https://ubc-stat-ml.github.io/artifacts/"
   }
   maven {
@@ -23,7 +26,7 @@ xtend {
   }
 }
 
-def blangVersion = '3.11.3'
+def blangVersion = '3.12.1'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
@@ -35,6 +38,7 @@ dependencies {
   compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.2'
   compile group: 'ca.ubc.stat', name: 'xlinear', version: '2.0.0'
   compile group: 'org.jgrapht', name: 'jgrapht-dist', version: '0.9.0'
+  compile 'uk.com.robust-it:cloning:1.9.0'
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
 }
 
