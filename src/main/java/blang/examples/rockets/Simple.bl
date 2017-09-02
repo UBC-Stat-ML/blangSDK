@@ -19,7 +19,7 @@ model Simple {
     beta  ~ ContinuousUniform(0, 1000)
 
     for (Index<String> rocketType : rocketTypes.indices) {
-      failureProbabilities.get(rocketType) | alpha, beta ~ Beta(alpha, beta) // OK found problem: sticky init at zero - will be solved by anneled
+      failureProbabilities.get(rocketType) | alpha, beta ~ Beta(alpha, beta) // OK found problem: sticky init at zero - will be solved by annealing 
       numberOfFailures.get(rocketType) 
         | RealVar failureProbability = failureProbabilities.get(rocketType),
           IntVar numberOfLaunch = numberOfLaunches.get(rocketType)

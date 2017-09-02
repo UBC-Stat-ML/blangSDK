@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.ext.VertexNameProvider;
@@ -22,9 +23,10 @@ import com.google.common.collect.Multimaps;
 
 import bayonet.graphs.DotExporter;
 import bayonet.graphs.GraphUtils;
-import blang.core.Annealed;
+import blang.core.AnnealedFactor;
 import blang.core.Factor;
 import blang.core.ForwardSimulator;
+import blang.core.LogScaleFactor;
 import blang.core.Model;
 import blang.core.ModelComponent;
 import blang.core.ModelComponents;
@@ -58,7 +60,7 @@ public class GraphAnalysis
     return result;
   }
   
-  Model model;
+  public Model model;
   Multimap<ObjectNode<Model>,ObjectNode<ModelComponent>> model2ModelComponents;
   AccessibilityGraph accessibilityGraph;
   LinkedHashSet<Node> frozenNodesClosure;
@@ -72,7 +74,9 @@ public class GraphAnalysis
   public GraphAnalysis(Model model, Observations observations)
   {
     this.model = model;
-    buildModelComponentsHierarchy();
+    
+    // 0- setup first layer of data structures
+    buildModelComponentsHierarchy(true);
     buildAccessibilityGraph();
     
     // frozen variables are either observed or the top level param's
@@ -132,11 +136,11 @@ public class GraphAnalysis
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  private void buildModelComponentsHierarchy()
+  private void buildModelComponentsHierarchy(boolean wrapInAnnealableFactors)
   {
     factorDescriptions = new LinkedHashMap<>();
     model2ModelComponents = Multimaps.newMultimap(new LinkedHashMap<>(), () -> new LinkedHashSet<>());
-    buildModelComponentsHierarchy(model);
+    buildModelComponentsHierarchy(model, wrapInAnnealableFactors);
     factorNodes = new LinkedHashSet<>();
     for (ObjectNode<ModelComponent> node : model2ModelComponents.values())
       if (node.object instanceof Factor)
@@ -145,7 +149,7 @@ public class GraphAnalysis
   
   @SuppressWarnings("unchecked")
   private void buildModelComponentsHierarchy(
-      ModelComponent modelComponent)
+      ModelComponent modelComponent, boolean wrapInAnnealableFactors)
   {
     @SuppressWarnings("rawtypes")
     ObjectNode currentNode = new ObjectNode<>(modelComponent);
@@ -155,9 +159,11 @@ public class GraphAnalysis
       ModelComponents subComponents = model.components();
       for (ModelComponent subComponent : model.components().get())
       {
+        if (subComponent instanceof LogScaleFactor && wrapInAnnealableFactors)
+          subComponent = new AnnealedFactor((LogScaleFactor) subComponent);
         ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);
         factorDescriptions.put(childNode, subComponents.description(subComponent));
-        buildModelComponentsHierarchy(subComponent);
+        buildModelComponentsHierarchy(subComponent, wrapInAnnealableFactors);
         model2ModelComponents.put(currentNode, childNode);
       }
     }
@@ -165,26 +171,29 @@ public class GraphAnalysis
   
   /**
    * Anneal only the factors emitting observed values.
+   * 
+   * @return (set of annealed factors, set of non-annealed (fixed) factors)
    */
-  public Annealed createLikelihoodAnnealer()
+  public Pair<List<AnnealedFactor>, List<Factor>> createLikelihoodAnnealer()
   {
-    final List<Annealed> annealedComponents = createLikelihoodAnnealer(model);
-    return (double exponent) -> {
-      for (Annealed component : annealedComponents)
-        component.setExponent(exponent);
-    };
+    List<AnnealedFactor> annealedFactors = new ArrayList<>(); 
+    List<Factor>  fixedFactors = new ArrayList<>();
+    createLikelihoodAnnealer(model, annealedFactors, fixedFactors);
+    return Pair.of(annealedFactors, fixedFactors);
   }
   
-  public List<Annealed> createLikelihoodAnnealer(Model model)
+  private void createLikelihoodAnnealer(Model model, List<AnnealedFactor> annealedFactors, List<Factor> fixedFactors)
   {
     if (model instanceof ForwardSimulator)
     {
       if (allRandomNodesObserved(model))
-        return Collections.emptyList();
+        addAllRecursively(model, annealedFactors); 
       else
-        return Collections.singletonList((Annealed) model);
+        addAllRecursively(model, fixedFactors); 
+      return;
     }
-    List<Annealed> result = new ArrayList<>();
+    
+    // recurse
     ObjectNode<Model> modelNode = new ObjectNode<>(model);
     for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
     {
@@ -192,9 +201,22 @@ public class GraphAnalysis
       if (!(component instanceof Model))
         throw new RuntimeException("If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed");
       Model submodel = (Model) component;
-      result.addAll(createLikelihoodAnnealer(submodel));
+      createLikelihoodAnnealer(submodel, annealedFactors, fixedFactors);
     }
-    return result;
+  }
+  
+  @SuppressWarnings("unchecked")
+  private <T> void addAllRecursively(Model model, List<T> factors)
+  {
+    ObjectNode<Model> modelNode = new ObjectNode<>(model);
+    for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
+    {
+      ModelComponent component = componentNode.object;
+      if (component instanceof Model)
+        addAllRecursively((Model) component, factors);
+      else
+        factors.add((T) component);
+    }
   }
   
   public List<ForwardSimulator> createForwardSimulator()

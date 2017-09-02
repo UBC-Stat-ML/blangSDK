@@ -28,9 +28,9 @@ import blang.types.IntScalar
 class BaumWelch implements Sampler {
   
   @SampledVariable MarkovModel model
-  
-  @ConnectedFactor
-  protected List<SupportFactor> supportFactors
+//  
+//  @ConnectedFactor
+//  protected List<SupportFactor> supportFactors
   
   @ConnectedFactor
   protected List<LogScaleFactor> numericFactors

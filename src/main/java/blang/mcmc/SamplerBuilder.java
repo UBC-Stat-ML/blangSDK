@@ -36,7 +36,7 @@ public class SamplerBuilder
           continue innerLoop;
         Sampler o = tryInstantiate(product, latent, graphAnalysis);
         if (o != null)
-          add(result, current, o);
+          add(result, current, o, latent);
       }
       
       // add samplers coming from SamplerTypes annotations
@@ -50,7 +50,7 @@ public class SamplerBuilder
         @SuppressWarnings("unchecked")
         Sampler o = tryInstantiate(opClass, latent, graphAnalysis);
         if (o != null)
-          add(result, current, o);
+          add(result, current, o, latent);
       }
       
       // add sampler from additional list
@@ -59,7 +59,7 @@ public class SamplerBuilder
         {
           Sampler o = tryInstantiate(additionalSamplerClass, latent, graphAnalysis);
           if (o != null) 
-            add(result, current, o);
+            add(result, current, o, latent);
         }
       
       result.matchingReport.add(current);
@@ -69,10 +69,11 @@ public class SamplerBuilder
   
   private SamplerBuilder() {}
   
-  private static void add(BuiltSamplers result, SamplerMatch match, Sampler product)
+  private static void add(BuiltSamplers result, SamplerMatch match, Sampler product, ObjectNode<?> variable)
   {
     result.list.add(product);
     match.matchedSamplers.add(product.getClass());
+    result.correspondingVariables.add(variable);
   }
   
   public static <O extends Sampler> O tryInstantiate(

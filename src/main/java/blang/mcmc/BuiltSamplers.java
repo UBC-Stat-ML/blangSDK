@@ -7,9 +7,12 @@ import java.util.Set;
 
 import com.google.common.base.Joiner;
 
+import blang.runtime.objectgraph.ObjectNode;
+
 public class BuiltSamplers
 {
   public final List<Sampler> list = new ArrayList<Sampler>();
+  public final List<ObjectNode<?>> correspondingVariables = new ArrayList<>();
   public final Set<SamplerMatch> matchingReport = new LinkedHashSet<>();
   
   @Override
