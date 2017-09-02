@@ -179,6 +179,7 @@ class Runner extends Experiment {
     engine.sampledModel = sampledModel
     engine.performInference
     
+    
 //    val SimpleCSVWriters writers = createCSVWriters(options.model) { 
 //      val BuiltSamplers builtSamplers = SamplerBuilder.build(graphAnalysis)
 //      println(builtSamplers)
