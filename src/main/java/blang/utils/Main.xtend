@@ -5,7 +5,8 @@ import blang.utils.internals.Versions
 import java.util.Optional
 import blang.inits.parsing.Arguments
 import blang.inits.parsing.Posix
-import blang.runtime.Runner.Options import blang.inits.Creators
+import blang.runtime.Runner 
+import blang.inits.Creators
 import com.google.inject.TypeLiteral
 import blang.utils.internals.Versions.BadVersion
 
@@ -74,7 +75,7 @@ class Main {
   
   def static Optional<String> requestedVersion(String[] strings) {
     val Arguments parsed = Posix.parse(strings)
-    val Arguments subArg = parsed.child(Options::VERSION_FIELD_NAME)
+    val Arguments subArg = parsed.child(Runner::VERSION_FIELD_NAME)
     val TypeLiteral<Optional<String>> optionalStringTypeLit
      = new TypeLiteral<Optional<String>>() {};
     return Creators::conventional.init(optionalStringTypeLit, subArg) 

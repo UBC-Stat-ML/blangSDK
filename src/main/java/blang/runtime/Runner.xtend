@@ -25,82 +25,47 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Optional
-import java.util.Random
 import org.eclipse.xtend.lib.annotations.Data
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.inits.parsing.ConfigFile
 import blang.inits.parsing.QualifiedName
 import blang.mcmc.BuiltSamplers
 import blang.io.GlobalDataSourceStore
+import blang.inits.experiments.Experiment
+import blang.inits.experiments.ParsingConfigs
+import blang.inits.DefaultValue
+import blang.inits.GlobalArg
+import blang.engines.PosteriorInferenceEngine
+import blang.engines.SMC
+import java.util.Random
 
-class Runner implements Runnable {
+class Runner extends Experiment {
   
-  static class Options {
-    val Model model
-    
-    @Arg(description = "Version of the blang SDK to use (see https://github.com/UBC-Stat-ML/blangSDK/releases), of the form of a git tag x.y.z where x >= 2. If omitted, use the local SDK's 'master' version.")
-    public Optional<String> version 
-    public static final String VERSION_FIELD_NAME = "version" 
-    
-    @Arg
-    MCMCOptions mcmc
-    
-    val boolean printAccessibilityGraph
-    
-    @DesignatedConstructor
-    new(
-      @ConstructorArg(
-        value = "model", 
-        description = "The model to run (technically, an inner class builder for it, " + 
-          "but the suffix '$Builder' can be skipped)"
-      ) ModelBuilder builder,
-      
-      @ConstructorArg(value = "printAccessibilityGraph", description = "printAccessibilityGraph (default: false)")
-      Optional<Boolean> printAccessibilityGraphOptional
-      
-    ) {
-      this.model = builder.build()
-      this.printAccessibilityGraph = printAccessibilityGraphOptional.orElse(false)
-    }
-  }
+  Model model
   
-  @Data
-  static class MCMCOptions {
-    val Random random
-    val int nIterations
-    val int thinningPeriod
-    
-    @DesignatedConstructor
-    def static MCMCOptions build(
-      
-      @ConstructorArg(value = "random", description = "Random seed (defaults to 1)")
-      Optional<Random> random,
-      
-      @ConstructorArg(value = "nIterations", description = "Number of MCMC passes (defaults to 1000)")
-      Optional<Integer> nIterations,
-      
-      @ConstructorArg(value = "thinningPeriod", description = "Thinning period. Should be great or equal to 1 (1 means no thinning)") 
-      Optional<Integer> thinningPeriod
-      
-    ) {
-      return new MCMCOptions(
-        random.orElse(new Random(1)),
-        nIterations.orElse(1000),
-        thinningPeriod.orElse(1)
-      )
-    }
-  }
+  @Arg                   @DefaultValue("SMC")
+  PosteriorInferenceEngine engine = new SMC
   
-  val Options options
-  val GraphAnalysis graphAnalysis
+  @Arg               @DefaultValue("false")
+  boolean printAccessibilityGraph = false
   
+  @GlobalArg
+  Observations observations
+  
+  @Arg(description = "Version of the blang SDK to use (see https://github.com/UBC-Stat-ML/blangSDK/releases), of the form of a git tag x.y.z where x >= 2. If omitted, use the local SDK's 'master' version.")
+  public Optional<String> version // Only used when called from Main 
+  public static final String VERSION_FIELD_NAME = "version" 
+  
+  @DesignatedConstructor
   new(
-    Options options, 
-    GraphAnalysis graphAnalysis
+    @ConstructorArg(
+      value = "model", 
+      description = "The model to run (technically, an inner class builder for it, " + 
+        "but the suffix '$Builder' can be skipped)"
+    ) ModelBuilder builder
   ) {
-    this.options = options
-    this.graphAnalysis = graphAnalysis
-  }
+    this.model = builder.build()
+  } 
   
   /**
    * Two syntaxes:
@@ -139,26 +104,52 @@ class Runner implements Runnable {
     val Creator creator = Creators::empty()
     creator.addFactories(CoreProviders)
     creator.addFactories(Parsers)
-    val Observations initContext = new Observations
-    creator.addGlobal(Observations, initContext)
+    val Observations observations = new Observations
+    creator.addGlobal(Observations, observations)
     val GlobalDataSourceStore globalDS = new GlobalDataSourceStore
     creator.addGlobal(GlobalDataSourceStore, globalDS)
-    val Optional<Options> options = initModel(creator, parsedArgs) 
-    if (options.present) {
-      val GraphAnalysis graphAnalysis = new GraphAnalysis(options.get().model, initContext)
-      if (options.get.printAccessibilityGraph) {
-        graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
-        graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
-      }
-      new Runner(options.get, graphAnalysis)
-        .run()
-    } else {
-      if (useSimplifiedArguments(args) && !new File(CONFIG_FILE_NAME).exists) {
-        println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:")
-      } else {
-        println("Error(s) in provided arguments. Report:")
-      }
-      println(creator.fullReport)
+    
+    val ParsingConfigs parsingConfigs = new ParsingConfigs
+    parsingConfigs.creator = creator
+    
+    printExplationsIfNeeded(args, parsedArgs, creator)
+    
+    System::exit(Experiment::start(args, parsedArgs, parsingConfigs))
+    
+//    System.exit(Experiment::start2(args, parsedArgs, parsingConfigs))  
+//     
+//    
+//    val Optional<Options> options = initModel(creator, parsedArgs) 
+//    if (options.present) {
+//      val GraphAnalysis graphAnalysis = new GraphAnalysis(options.get().model, observations)
+//      if (options.get.printAccessibilityGraph) {
+//        graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
+//        graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
+//      }
+//      new Runner(options.get, graphAnalysis)
+//        .run()
+//    } else {
+//      if (useSimplifiedArguments(args) && !new File(CONFIG_FILE_NAME).exists) {
+//        println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:")
+//      } else {
+//        println("Error(s) in provided arguments. Report:")
+//      }
+//      println(creator.fullReport)
+//    }
+  }
+  
+  def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs, Creator creator) {
+    if (!useSimplifiedArguments(rawArguments)) {
+      return
+    }
+    val boolean parsedSuccessfully = try {
+      creator.init(Runner, parsedArgs)
+      true
+    } catch (Exception e) {
+      false
+    }
+    if (!parsedSuccessfully && !new File(CONFIG_FILE_NAME).exists) {
+      println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:\n\n")
     }
   }
   
@@ -176,31 +167,31 @@ class Runner implements Runnable {
     }
   }
   
-  def static Optional<Options> initModel(Creator instantiator, Arguments parseArgs) {
-    val Optional<Options> result = 
-      try {
-        Optional.of(instantiator.init(Options, parseArgs))
-      } catch (Exception e) {
-        Optional.empty
-      }
-    return result 
-  }
-  
   val public static final String SAMPLE_FILE = "samples.csv"
   override void run() {
-    val SimpleCSVWriters writers = createCSVWriters(options.model) { 
-      val BuiltSamplers builtSamplers = SamplerBuilder.build(graphAnalysis)
-      println(builtSamplers)
-      var List<Sampler> samplers = builtSamplers.list 
-      for (var int i=0; i < options.mcmc.nIterations; i++) {
-        Collections.shuffle(samplers, options.mcmc.random) 
-        for (Sampler s : samplers) s.execute(options.mcmc.random) 
-        if (i % options.mcmc.thinningPeriod === 0) {
-          System.out.println('''Pass «i» (computed «i*samplers.size()» moves so far)''')  
-          writers.write(i)
-        } 
-      }
-    } writers.close()
+    val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations)
+    if (printAccessibilityGraph) {
+      graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
+      graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
+    }
+    val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis)
+    val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, new Random(1))
+    engine.sampledModel = sampledModel
+    engine.performInference
+    
+//    val SimpleCSVWriters writers = createCSVWriters(options.model) { 
+//      val BuiltSamplers builtSamplers = SamplerBuilder.build(graphAnalysis)
+//      println(builtSamplers)
+//      var List<Sampler> samplers = builtSamplers.list 
+//      for (var int i=0; i < options.mcmc.nIterations; i++) {
+//        Collections.shuffle(samplers, options.mcmc.random) 
+//        for (Sampler s : samplers) s.execute(options.mcmc.random) 
+//        if (i % options.mcmc.thinningPeriod === 0) {
+//          System.out.println('''Pass «i» (computed «i*samplers.size()» moves so far)''')  
+//          writers.write(i)
+//        } 
+//      }
+//    } writers.close()
   }
   
   def static SimpleCSVWriters createCSVWriters(Model model) {

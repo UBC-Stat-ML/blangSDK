@@ -1,6 +1,7 @@
 package blang.runtime;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -11,8 +12,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.rits.cloning.Cloner;
+import com.esotericsoftware.kryo.Kryo;
 
+import blang.algo.AnnealedParticle;
 import blang.core.AnnealedFactor;
 import blang.core.Factor;
 import blang.core.ForwardSimulator;
@@ -22,8 +24,9 @@ import blang.mcmc.BuiltSamplers;
 import blang.mcmc.Sampler;
 import blang.runtime.objectgraph.GraphAnalysis;
 import blang.runtime.objectgraph.ObjectNode;
+import briefj.BriefLists;
 
-public class SampledModel
+public class SampledModel implements AnnealedParticle
 {
   public final Model model;
   private final List<Sampler> posteriorInvariantSamplers;
@@ -46,7 +49,10 @@ public class SampledModel
   private double sumPreannealedFiniteDensities, sumFixedDensities;
   private int nOutOfSupport;
   
-  public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers) 
+  private List<Integer> currentSamplingOrder = null;
+  private int currentPosition = -1;
+  
+  public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers, Random initRandom) 
   {
     this.model = graphAnalysis.model;
     this.posteriorInvariantSamplers = samplers.list;
@@ -65,7 +71,12 @@ public class SampledModel
     for (int i = 0; i < factors.size(); i++)
       (annealedFactors.contains(factors.get(i)) ? allAnnealedFactors : allFixedFactors).add(i);
     
-    forwardSample(new Random(1)); 
+    forwardSample(initRandom); 
+  }
+  
+  public int nPosteriorSamplers()
+  {
+    return posteriorInvariantSamplers.size();
   }
 
   public double logDensity()
@@ -76,17 +87,42 @@ public class SampledModel
         // ?: to avoid 0 * -INF
         + (nOutOfSupport == 0 ? 0.0 : nOutOfSupport * AnnealedFactor.annealedMinusInfinity(annealingExponent));
   }
+  
+  @Override
+  public double logDensityRatio(double temperature, double nextTemperature) 
+  {
+    double delta = nextTemperature - temperature;
+    return 
+      delta * sumPreannealedFiniteDensities
+        // ?: to avoid 0 * -INF
+        + (nOutOfSupport == 0 ? 
+            0.0 : 
+            nOutOfSupport * (AnnealedFactor.annealedMinusInfinity(nextTemperature) - AnnealedFactor.annealedMinusInfinity(temperature)));
+  }
    
   public SampledModel duplicate()
   {
-    Cloner cloner = new Cloner();
-    return cloner.deepClone(this);
+    Kryo kryo = new Kryo();
+    return kryo.copy(this);
   }
   
-  public void posteriorInvariantStep(Random random, int kernelIndex)
+  public void posteriorSamplingStep(Random random, int kernelIndex)
   {
     posteriorInvariantSamplers.get(kernelIndex).execute(random);  
     update(kernelIndex);
+  }
+  
+  public void posteriorSamplingStep_deterministicScanAndShuffle(Random random)
+  {
+    if (currentSamplingOrder == null)
+      currentSamplingOrder = new ArrayList<>(BriefLists.integers(nPosteriorSamplers()).asList());
+    if (currentPosition == -1)
+    {
+      Collections.shuffle(currentSamplingOrder, random);
+      currentPosition = nPosteriorSamplers() - 1;
+    }
+    int samplerIndex = currentSamplingOrder.get(currentPosition--);
+    posteriorSamplingStep(random, samplerIndex);
   }
   
   public void forwardSample(Random random)
