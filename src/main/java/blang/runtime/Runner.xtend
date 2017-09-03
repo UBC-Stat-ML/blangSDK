@@ -110,7 +110,7 @@ class Runner extends Experiment {
     creator.addGlobal(GlobalDataSourceStore, globalDS)
     
     val ParsingConfigs parsingConfigs = new ParsingConfigs
-    parsingConfigs.creator = creator
+    parsingConfigs.setCreator(creator) 
     
     printExplationsIfNeeded(args, parsedArgs, creator)
     

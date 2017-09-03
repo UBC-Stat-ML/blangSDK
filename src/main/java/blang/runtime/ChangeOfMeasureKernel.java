@@ -25,7 +25,7 @@ public class ChangeOfMeasureKernel implements AnnealingKernels<SampledModel>
   public SampledModel sampleNext(Random random, SampledModel current, double temperature) 
   {
     current.setExponent(temperature);
-    current.forwardSample(random); 
+    current.posteriorSamplingStep_deterministicScanAndShuffle(random); 
     return current;
   }
 

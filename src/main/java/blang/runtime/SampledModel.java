@@ -11,8 +11,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.objenesis.strategy.StdInstantiatorStrategy;
 
-import com.esotericsoftware.kryo.Kryo;
+import com.rits.cloning.Cloner;
 
 import blang.algo.AnnealedParticle;
 import blang.core.AnnealedFactor;
@@ -102,8 +103,13 @@ public class SampledModel implements AnnealedParticle
    
   public SampledModel duplicate()
   {
-    Kryo kryo = new Kryo();
-    return kryo.copy(this);
+    Cloner cloner = new Cloner();
+    return cloner.deepClone(this);
+//    Kryo kryo = new Kryo();
+//    DefaultInstantiatorStrategy defaultInstantiatorStrategy = new Kryo.DefaultInstantiatorStrategy();
+//    defaultInstantiatorStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
+//    kryo.setInstantiatorStrategy(defaultInstantiatorStrategy);
+//    return kryo.copy(this);
   }
   
   public void posteriorSamplingStep(Random random, int kernelIndex)

@@ -1,6 +1,12 @@
+package blang.examples
+
 model Empty {
   
+  random IntVar test ?: intVar(4) 
+  
   laws { 
-    
+     
   }
+  
+  generate(rand) {5}  
 }

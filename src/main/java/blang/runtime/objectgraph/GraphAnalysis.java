@@ -3,6 +3,7 @@ package blang.runtime.objectgraph;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -29,7 +30,6 @@ import blang.core.ForwardSimulator;
 import blang.core.LogScaleFactor;
 import blang.core.Model;
 import blang.core.ModelComponent;
-import blang.core.ModelComponents;
 import blang.core.Param;
 import blang.mcmc.SamplerBuilder;
 import blang.runtime.Observations;
@@ -156,13 +156,15 @@ public class GraphAnalysis
     if (modelComponent instanceof Model)
     {
       Model model = (Model) modelComponent;
-      ModelComponents subComponents = model.components();
-      for (ModelComponent subComponent : model.components().get())
+      Collection<ModelComponent> subComponents = model.components();
+      for (ModelComponent subComponent : subComponents)
       {
+        String description = subComponent.toString();
         if (subComponent instanceof LogScaleFactor && wrapInAnnealableFactors)
           subComponent = new AnnealedFactor((LogScaleFactor) subComponent);
         ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);
-        factorDescriptions.put(childNode, subComponents.description(subComponent));
+        if (subComponent instanceof Factor)
+          factorDescriptions.put(childNode, description);
         buildModelComponentsHierarchy(subComponent, wrapInAnnealableFactors);
         model2ModelComponents.put(currentNode, childNode);
       }
