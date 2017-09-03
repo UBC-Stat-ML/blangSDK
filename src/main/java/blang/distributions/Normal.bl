@@ -26,4 +26,7 @@ model Normal {
     }
   }
   
+  generate(rand) {
+    rand.nextGaussian * sqrt(variance) + mean
+  }
 }

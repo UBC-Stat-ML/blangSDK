@@ -5,6 +5,7 @@ import xlinear.Matrix
 import blang.types.RealMatrixComponent
 import blang.core.IntVar
 import java.util.List
+import bayonet.distributions.Random
 
 class ExtensionUtils {
   
@@ -27,5 +28,17 @@ class ExtensionUtils {
   
   def static double exp(RealVar realVar) {
     return Math::exp(realVar.doubleValue)
+  }
+  
+  /**
+   * Convert into a Random object compatible with both 
+   * Apache common's RandomGenerator and bayonet's 
+   * Random.
+   */
+  def static Random generator(java.util.Random random) {
+    if (random instanceof Random) {
+      return random
+    }
+    return new Random(random)
   }
 }

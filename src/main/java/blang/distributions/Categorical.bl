@@ -18,4 +18,8 @@ model Categorical {
      
     probabilities ~ new ConstrainedFactor() 
   }
+  
+  generate(rand) {
+    rand.generator.nextCategorical(probabilities.vectorToArray)
+  }
 }

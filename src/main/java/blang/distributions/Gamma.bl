@@ -1,5 +1,8 @@
 package blang.distributions
 
+import org.apache.commons.math3.distribution.GammaDistribution
+
+
 model Gamma {
   
   random RealVar realization
@@ -37,5 +40,9 @@ model Gamma {
       realization > 0.0
     }
     
+  }
+  
+  generate(rand) {
+    new GammaDistribution(rand.generator, shape, rate).sample
   }
 }

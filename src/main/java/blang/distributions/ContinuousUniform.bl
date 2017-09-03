@@ -1,5 +1,6 @@
 package blang.distributions
 
+
 model ContinuousUniform {
   
   random RealVar realization
@@ -18,5 +19,9 @@ model ContinuousUniform {
       realization <= max
     }
     
+  }
+  
+  generate(rand) {
+    min + (max-min) * rand.nextDouble
   }
 }

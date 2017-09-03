@@ -239,9 +239,11 @@ public class GraphAnalysis
     DirectedGraph<Node,?> graph = GraphUtils.newDirectedGraph(); // a bipartite graph over the children componentNodes and their fields
     for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
     {
+      graph.addVertex(componentNode);
+      
       ModelComponent component = componentNode.object;
       if (!(component instanceof Model))
-        throw new RuntimeException("If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed");
+        throw new RuntimeException(model.getClass().getSimpleName() + ": If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed");
       
       for (Field field : ReflexionUtils.getDeclaredFields(component.getClass(), true))
       {
@@ -249,9 +251,12 @@ public class GraphAnalysis
         Object dependencyRoot = ReflexionUtils.getFieldValue(field, component);
         accessibilityGraph.getAccessibleNodes(dependencyRoot)
           .filter(node -> freeMutableNodes.contains(node))
-          .forEachOrdered(node -> graph.addEdge(
+          .forEachOrdered(node -> {
+            graph.addVertex(node);
+            graph.addEdge(
               isParam ? node          : componentNode, 
-              isParam ? componentNode : node));
+              isParam ? componentNode : node);
+            });
       }
     }
     List<ForwardSimulator> result = new ArrayList<>();

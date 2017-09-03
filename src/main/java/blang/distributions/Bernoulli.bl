@@ -26,4 +26,11 @@ model Bernoulli {
     
   }
   
+  generate(rand) {
+    if (rand.generator.nextBernoulli(probability)) {
+      return 1
+    } else {
+      return 0
+    }
+  }
 }
