@@ -10,10 +10,12 @@ import blang.types.Plate
 import blang.types.Index
 import briefj.BriefMaps
 import org.eclipse.xtend.lib.annotations.Accessors
+import com.rits.cloning.Immutable
 
 /**
  * Utility to quickly access entries in DataSource.
  */
+@Immutable
 class IndexedDataSource {
   
   val ColumnName columnName

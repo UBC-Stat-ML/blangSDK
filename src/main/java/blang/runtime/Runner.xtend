@@ -175,6 +175,7 @@ class Runner extends Experiment {
       graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
     }
     val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis)
+    println(kernels)
     val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, new Random(1))
     engine.sampledModel = sampledModel
     engine.performInference

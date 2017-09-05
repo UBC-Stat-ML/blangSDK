@@ -1,23 +1,22 @@
 package blang.types
 
-import blang.inits.DesignatedConstructor
 import blang.inits.ConstructorArg
-import blang.io.DataSource
+import blang.inits.Creator
+import blang.inits.DesignatedConstructor
 import blang.inits.GlobalArg
-import blang.io.GlobalDataSourceStore
 import blang.inits.InitService
 import blang.inits.parsing.QualifiedName
-import com.google.inject.TypeLiteral
-import blang.inits.Creator
+import blang.io.DataSource
+import blang.io.GlobalDataSourceStore
 import blang.types.internals.ColumnName
-import java.lang.reflect.ParameterizedType
-import blang.types.internals.Parser
-import blang.inits.parsing.SimpleParser
 import blang.types.internals.HashPlated
-import blang.types.internals.Query
 import blang.types.internals.PlatedSlice
-import java.util.Optional
+import blang.types.internals.Query
+import blang.types.internals.SimpleParser
+import com.google.inject.TypeLiteral
+import java.lang.reflect.ParameterizedType
 import java.util.Map.Entry
+import java.util.Optional
 
 /**
  * A random variable or parameter of type T enclosed in one or more Plates.
@@ -63,9 +62,8 @@ interface Plated<T> extends Iterable<Entry<Query, T>> {
     val TypeLiteral<T> typeArgument = 
       TypeLiteral.get((typeLiteral.type as ParameterizedType).actualTypeArguments.get(0))
       as TypeLiteral<T>
-    val Parser<T> parser = [String string | 
-      creator.init(typeArgument, SimpleParser.parse(string))
-    ] 
-    return new HashPlated(columnName, scopedDataSource, parser)
+    return new HashPlated(columnName, scopedDataSource, new SimpleParser(creator, typeArgument))
   }
+  
+  
 }

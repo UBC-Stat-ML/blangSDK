@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Kryo.DefaultInstantiatorStrategy;
 import com.rits.cloning.Cloner;
 
 import blang.algo.AnnealedParticle;
@@ -101,15 +103,41 @@ public class SampledModel implements AnnealedParticle
             nOutOfSupport * (AnnealedFactor.annealedMinusInfinity(nextTemperature) - AnnealedFactor.annealedMinusInfinity(temperature)));
   }
    
-  public SampledModel duplicate()
-  {
-    Cloner cloner = new Cloner();
-    return cloner.deepClone(this);
-//    Kryo kryo = new Kryo();
+//  static Kryo kryo = new Kryo(); {
 //    DefaultInstantiatorStrategy defaultInstantiatorStrategy = new Kryo.DefaultInstantiatorStrategy();
 //    defaultInstantiatorStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
 //    kryo.setInstantiatorStrategy(defaultInstantiatorStrategy);
-//    return kryo.copy(this);
+//    kryo.getFieldSerializerConfig().setCopyTransient(false); 
+//  }
+  
+//  static Cloner cloner = new Cloner(); {
+//    cloner.setNullTransient(true);
+//  }
+  
+  private static Cloner cloner = new Cloner(); // Thread safe
+  {
+    cloner.setNullTransient(true);
+//    cloner.setDumpClonedClasses(true); 
+  }
+  
+  private static ThreadLocal<Kryo> duplicator = new ThreadLocal<Kryo>()
+  {
+    @Override
+    protected Kryo initialValue() 
+    {
+      Kryo kryo = new Kryo();
+      DefaultInstantiatorStrategy defaultInstantiatorStrategy = new Kryo.DefaultInstantiatorStrategy();
+      defaultInstantiatorStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
+      kryo.setInstantiatorStrategy(defaultInstantiatorStrategy);
+      kryo.getFieldSerializerConfig().setCopyTransient(false); 
+      return kryo;
+    }
+  };
+  
+  public SampledModel duplicate() 
+  {
+    return cloner.deepClone(this);
+//    return duplicator.get().copy(this);
   }
   
   public void posteriorSamplingStep(Random random, int kernelIndex)

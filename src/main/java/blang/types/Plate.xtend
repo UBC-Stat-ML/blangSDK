@@ -12,8 +12,7 @@ import blang.inits.parsing.QualifiedName
 import blang.inits.Creator
 import java.util.Optional
 import java.lang.reflect.ParameterizedType
-import blang.types.internals.Parser
-import blang.inits.parsing.SimpleParser
+import blang.types.internals.SimpleParser
 import blang.types.internals.HashPlate
 import blang.types.internals.SimplePlate
 
@@ -96,9 +95,6 @@ interface Plate<K> {
       }
       return simplePlate(columnName, typeArgument, maxSize.get)
     }
-    val Parser<T> parser = [String string | 
-      creator.init(typeArgument, SimpleParser.parse(string))
-    ] 
-    return new HashPlate(columnName, scopedDataSource, parser, maxSize)
+    return new HashPlate(columnName, scopedDataSource, new SimpleParser(creator, typeArgument), maxSize)
   }
 }

@@ -12,7 +12,6 @@ import briefj.BriefParallel;
 import blang.algo.schedules.AdaptiveTemperatureSchedule;
 import blang.algo.schedules.TemperatureSchedule;
 
-// TODO: move to separate project
 public class ChangeOfMeasureSMC<P extends AnnealedParticle> 
 {
   @Arg                    @DefaultValue("0.5")
@@ -21,8 +20,8 @@ public class ChangeOfMeasureSMC<P extends AnnealedParticle>
   @Arg                                  @DefaultValue("AdaptiveTemperatureSchedule")
   public TemperatureSchedule temperatureSchedule = new AdaptiveTemperatureSchedule();
   
-  @Arg                                         @DefaultValue("MULTINOMIAL")            
-  public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;
+  @Arg                                         @DefaultValue("STRATIFIED")            
+  public ResamplingScheme resamplingScheme = ResamplingScheme.STRATIFIED;
 
   @Arg     @DefaultValue("1_000")
   public int nSamplesPerTemperature = 1_000;
@@ -44,13 +43,19 @@ public class ChangeOfMeasureSMC<P extends AnnealedParticle>
     ParticlePopulation<P> population = initialize(parallelRandomStreams);
     
     double temperature = 0.0;
+    int iter = 0;
     while (temperature < 1.0)
     {
+      System.out.println("Iteration " + iter + ": exponent=" + temperature + ", ESS=" + population.getRelativeESS());
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature); 
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
       if (population.getRelativeESS() < resamplingESSThreshold && nextTemperature < 1.0)
-        population = resample(random, population); 
+      {
+        System.out.println("Resampling");
+        population = resample(random, population);
+      }
       temperature = nextTemperature;
+      iter++;
     }
     return population;
   }
