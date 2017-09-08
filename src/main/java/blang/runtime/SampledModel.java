@@ -1,11 +1,14 @@
 package blang.runtime;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,11 +26,14 @@ import blang.core.Factor;
 import blang.core.ForwardSimulator;
 import blang.core.LogScaleFactor;
 import blang.core.Model;
+import blang.core.Param;
+import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.mcmc.BuiltSamplers;
 import blang.mcmc.Sampler;
 import blang.runtime.objectgraph.GraphAnalysis;
 import blang.runtime.objectgraph.ObjectNode;
 import briefj.BriefLists;
+import briefj.ReflexionUtils;
 
 public class SampledModel implements AnnealedParticle
 {
@@ -40,6 +46,7 @@ public class SampledModel implements AnnealedParticle
   
   private final List<AnnealedFactor> factors; 
   
+  // TODO: make sure the index-based data structures are shallowly cloned
   // sampler index -> factor indices (using array since inner might have lots of small arrays)
   private final int [][] 
       sampler2annealed, // for the factors undergoing annealing
@@ -54,6 +61,8 @@ public class SampledModel implements AnnealedParticle
   
   private List<Integer> currentSamplingOrder = null;
   private int currentPosition = -1;
+  
+  private final Map<String, Object> objectsToOutput;
   
   public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers, Random initRandom) 
   {
@@ -73,6 +82,11 @@ public class SampledModel implements AnnealedParticle
     Set<AnnealedFactor> annealedFactors = new HashSet<>(annealingStructure.getLeft());
     for (int i = 0; i < factors.size(); i++)
       (annealedFactors.contains(factors.get(i)) ? allAnnealedFactors : allFixedFactors).add(i);
+    
+    this.objectsToOutput = new LinkedHashMap<String, Object>();
+    for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true)) 
+      if (f.getAnnotation(Param.class) == null) // TODO: filter out fully observed stuff too
+        objectsToOutput.put(f.getName(), ReflexionUtils.getFieldValue(f, model));
     
     forwardSample(initRandom); 
   }
@@ -103,12 +117,12 @@ public class SampledModel implements AnnealedParticle
             nOutOfSupport * (AnnealedFactor.annealedMinusInfinity(nextTemperature) - AnnealedFactor.annealedMinusInfinity(temperature)));
   }
    
-//  static Kryo kryo = new Kryo(); {
-//    DefaultInstantiatorStrategy defaultInstantiatorStrategy = new Kryo.DefaultInstantiatorStrategy();
-//    defaultInstantiatorStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
-//    kryo.setInstantiatorStrategy(defaultInstantiatorStrategy);
-//    kryo.getFieldSerializerConfig().setCopyTransient(false); 
-//  }
+  static Kryo kryo = new Kryo(); {
+    DefaultInstantiatorStrategy defaultInstantiatorStrategy = new Kryo.DefaultInstantiatorStrategy();
+    defaultInstantiatorStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
+    kryo.setInstantiatorStrategy(defaultInstantiatorStrategy);
+    kryo.getFieldSerializerConfig().setCopyTransient(false); 
+  }
   
 //  static Cloner cloner = new Cloner(); {
 //    cloner.setNullTransient(true);
@@ -136,8 +150,9 @@ public class SampledModel implements AnnealedParticle
   
   public SampledModel duplicate() 
   {
-    return cloner.deepClone(this);
-//    return duplicator.get().copy(this);
+//    SampledModel result = cloner.deepClone(this);
+    SampledModel result =  duplicator.get().copy(this);
+    return result;
   }
   
   public void posteriorSamplingStep(Random random, int kernelIndex)
@@ -186,6 +201,27 @@ public class SampledModel implements AnnealedParticle
   public double getExponent()
   {
     return annealingExponent;
+  }
+  
+  public static class SampleWriter
+  {
+    final Map<String, Object> objectsToOutput;
+    final TidySerializer serializer;
+    public SampleWriter(Map<String, Object> objectsToOutput, TidySerializer serializer) 
+    {
+      this.objectsToOutput = objectsToOutput;
+      this.serializer = serializer; 
+    }
+    public void write(org.eclipse.xtext.xbase.lib.Pair<Object,Object> ... sampleContext)
+    {
+      for (Entry<String,Object> entry : objectsToOutput.entrySet()) 
+        serializer.serialize(entry.getValue(), entry.getKey(), sampleContext);
+    }
+  }
+  
+  public SampleWriter getSampleWriter(TidySerializer serializer)
+  {
+    return new SampleWriter(objectsToOutput, serializer);
   }
   
   //// Cache management

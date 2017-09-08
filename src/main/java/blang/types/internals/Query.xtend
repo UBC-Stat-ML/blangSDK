@@ -14,8 +14,10 @@ import briefj.CSV
  */
 @Data // important! this is used in hash tables
 class Query {
+  
   @SkipDependency
   val Set<Index<?>> indices
+  
   override String toString() {
     if (cachedToString == null) {
       val String [] items = newArrayOfSize(indices.size) 

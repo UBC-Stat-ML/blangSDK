@@ -2,41 +2,32 @@ package blang.runtime
 
 import blang.core.Model
 import blang.core.ModelBuilder
-import blang.core.Param
+import blang.engines.PosteriorInferenceEngine
+import blang.engines.SMC
 import blang.inits.Arg
 import blang.inits.ConstructorArg
 import blang.inits.Creator
 import blang.inits.Creators
+import blang.inits.DefaultValue
 import blang.inits.DesignatedConstructor
-import blang.inits.parsing.Arguments
-import blang.inits.parsing.Posix
-import blang.inits.providers.CoreProviders
-import blang.mcmc.Sampler
-import blang.mcmc.SamplerBuilder
-import blang.processing.SimpleCSVWriter
-import blang.runtime.objectgraph.GraphAnalysis
-import blang.utils.Parsers
-import briefj.BriefIO
-import briefj.ReflexionUtils
-import briefj.run.Results
-import java.io.File
-import java.lang.reflect.Field
-import java.util.ArrayList
-import java.util.Collections
-import java.util.List
-import java.util.Optional
-import org.eclipse.xtend.lib.annotations.Data
-import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
-import blang.inits.parsing.ConfigFile
-import blang.inits.parsing.QualifiedName
-import blang.mcmc.BuiltSamplers
-import blang.io.GlobalDataSourceStore
+import blang.inits.GlobalArg
 import blang.inits.experiments.Experiment
 import blang.inits.experiments.ParsingConfigs
-import blang.inits.DefaultValue
-import blang.inits.GlobalArg
-import blang.engines.PosteriorInferenceEngine
-import blang.engines.SMC
+import blang.inits.parsing.Arguments
+import blang.inits.parsing.ConfigFile
+import blang.inits.parsing.Posix
+import blang.inits.parsing.QualifiedName
+import blang.inits.providers.CoreProviders
+import blang.io.GlobalDataSourceStore
+import blang.mcmc.BuiltSamplers
+import blang.mcmc.SamplerBuilder
+import blang.runtime.objectgraph.GraphAnalysis
+import blang.utils.Parsers
+import briefj.run.Results
+import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
+import java.io.File
+import java.util.Collections
+import java.util.Optional
 import java.util.Random
 
 class Runner extends Experiment {
@@ -179,55 +170,5 @@ class Runner extends Experiment {
     val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, new Random(1))
     engine.sampledModel = sampledModel
     engine.performInference
-    
-    
-//    val SimpleCSVWriters writers = createCSVWriters(options.model) { 
-//      val BuiltSamplers builtSamplers = SamplerBuilder.build(graphAnalysis)
-//      println(builtSamplers)
-//      var List<Sampler> samplers = builtSamplers.list 
-//      for (var int i=0; i < options.mcmc.nIterations; i++) {
-//        Collections.shuffle(samplers, options.mcmc.random) 
-//        for (Sampler s : samplers) s.execute(options.mcmc.random) 
-//        if (i % options.mcmc.thinningPeriod === 0) {
-//          System.out.println('''Pass «i» (computed «i*samplers.size()» moves so far)''')  
-//          writers.write(i)
-//        } 
-//      }
-//    } writers.close()
-  }
-  
-  def static SimpleCSVWriters createCSVWriters(Model model) {
-    val List<SimpleCSVWriter> writers = new ArrayList
-    val List<Object> objects = new ArrayList
-    val File variablesFolder = Results.getFolderInResultFolder("samples")
-    for (Field f : model.class.declaredFields) {
-      if (f.getAnnotation(Param) == null) {
-        val File sampleFile = new File(variablesFolder, f.name + ".csv")
-        val SimpleCSVWriter writer = new SimpleCSVWriter(BriefIO.output(sampleFile))
-        writers.add(writer)
-        objects.add(ReflexionUtils.getFieldValue(f, model))
-      }
-    }
-    return new SimpleCSVWriters(writers, objects)
-  }
-  
-  @Data
-  static class SimpleCSVWriters {
-    val List<SimpleCSVWriter> writers
-    val List<Object> objects
-    
-    def void close() {
-      for (writer : writers) {
-        writer.close()
-      }
-    }
-    
-    def void write(int mcmcIteration) {
-      for (var int i = 0; i < writers.size(); i++) {
-        val SimpleCSVWriter writer = writers.get(i)
-        writer.setPrefix(#[mcmcIteration])
-        writer.write(objects.get(i))
-      }
-    }
   }
 }

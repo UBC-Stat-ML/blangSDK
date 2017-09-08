@@ -14,4 +14,14 @@ class Observations {
     observationRoots.add(new ObjectNode(object))
     return object
   }
+  
+  // Catch some possible mistakes:
+  
+  def void markAsObserved(double object) {
+    throw new RuntimeException
+  }
+  
+  def void markAsObserved(int object) {
+    throw new RuntimeException
+  }
 }
