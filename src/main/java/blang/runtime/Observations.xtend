@@ -3,7 +3,7 @@ package blang.runtime
 import org.eclipse.xtend.lib.annotations.Data
 import java.util.LinkedHashSet
 import blang.runtime.objectgraph.ObjectNode
-import blang.runtime.objectgraph.AccessibilityGraph.Node
+import blang.runtime.objectgraph.Node
 
 @Data
 class Observations {
@@ -12,7 +12,9 @@ class Observations {
    */
   val LinkedHashSet<Node> observationRoots = new LinkedHashSet<Node>()
   def <T> T markAsObserved(T object) {
-    observationRoots.add(new ObjectNode(object))
+    // ?
+    val Node node = new ObjectNode(object)
+    observationRoots.add(node)
     return object
   }
   

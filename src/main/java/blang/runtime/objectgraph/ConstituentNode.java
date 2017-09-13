@@ -1,10 +1,5 @@
 package blang.runtime.objectgraph;
 
-import blang.runtime.objectgraph.AccessibilityGraph.Node;
-
-
-
-
 public abstract class ConstituentNode<K> implements Node
 {
   /**

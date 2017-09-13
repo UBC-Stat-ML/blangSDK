@@ -1,10 +1,5 @@
 package blang.runtime.objectgraph;
 
-import blang.runtime.objectgraph.AccessibilityGraph.Node;
-
-
-
-
 /**
  * TODO: This comment block is development note, to be erased later.
  * Example of how to create a slice:

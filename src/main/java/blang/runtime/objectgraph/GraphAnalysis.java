@@ -33,7 +33,6 @@ import blang.core.ModelComponent;
 import blang.core.Param;
 import blang.mcmc.SamplerBuilder;
 import blang.runtime.Observations;
-import blang.runtime.objectgraph.AccessibilityGraph.Node;
 import briefj.ReflexionUtils;
 import briefj.collections.UnorderedPair;
 
