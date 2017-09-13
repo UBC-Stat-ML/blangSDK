@@ -14,6 +14,7 @@ import blang.types.RealScalar
 import blang.core.IntVar
 import blang.types.IntScalar
 import java.util.Collections
+import xlinear.MatrixOperations
 
 class StaticUtils {
   
@@ -41,6 +42,14 @@ class StaticUtils {
       result.add(realVar(0.0))
     }
     return Collections::unmodifiableList(result)
+  }
+  
+  def static List<DenseMatrix> listOfDenseVectors(int size, int dim) {
+    val List<DenseMatrix> result = new ArrayList
+    for (var int i = 0; i < size; i++) {
+      result.add(MatrixOperations::dense(dim))
+    }
+    return result
   }
   
   def static Simplex simplex(int nStates) {

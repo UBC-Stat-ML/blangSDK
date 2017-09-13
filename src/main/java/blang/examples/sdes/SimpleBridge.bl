@@ -1,0 +1,32 @@
+package blang.examples.sdes
+
+import static briefj.BriefLists.last
+
+model SimpleBridge {
+  
+  param DenseMatrix  firstState 
+  param SDEParams    params
+  param Mesh         mesh
+  
+  random List<DenseMatrix> intermediateStates ?: listOfDenseVectors(mesh.totalNumberOfPoints - 2, firstState.nEntries)
+  random DenseMatrix lastState
+  
+  laws {
+    for (int i : 0 ..< min(1, intermediateStates.size)) { // hack to cover case with no intermediate states
+      intermediateStates.get(0) 
+        | firstState, params, mesh
+        ~ MultivariateNormal(params.mean(firstState, mesh.time(0), mesh.time(1)), params.precision(firstState, mesh.time(0), mesh.time(1)))
+    }
+    
+    for (int i : 1 ..< intermediateStates.size) { 
+      intermediateStates.get(i) 
+        | DenseMatrix previous = intermediateStates.get(i-1), params, mesh, int index = i
+        ~ MultivariateNormal(params.mean(previous, mesh.time(index-1), mesh.time(index)), params.precision(previous, mesh.time(index-1), mesh.time(index))) 
+    }
+    
+    lastState
+      | DenseMatrix previous = {if (intermediateStates.empty) firstState else last(intermediateStates)}, params, mesh, int index = mesh.totalNumberOfPoints - 1
+      ~ MultivariateNormal(params.mean(previous, mesh.time(index-1), mesh.time(index)), params.precision(previous, mesh.time(index-1), mesh.time(index))) 
+  }
+  
+}
