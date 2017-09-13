@@ -63,7 +63,7 @@ class Runner extends Experiment {
    * - simplified: just one args, the model, rest is read from config file
    * - standard
    */
-  def private static Arguments parseArguments(String ... args) {
+  def public static Arguments parseArguments(String ... args) {
     if (useSimplifiedArguments(args)) {
       // try to read in (else empty)
       val File configFile = new File(CONFIG_FILE_NAME)
