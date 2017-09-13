@@ -59,22 +59,13 @@ public class ExplorationRules
       return null;
     ArrayList<MatrixConstituentNode> result = new ArrayList<>();
     Matrix matrix = (Matrix) object;
-    Matrix rootMatrix = matrix;
-    int rowOffSet = 0;
-    int colOffSet = 0;
-    if (rootMatrix instanceof Slice)
-    {
-      rowOffSet = ((Slice) rootMatrix).row0Incl;
-      colOffSet = ((Slice) rootMatrix).col0Incl;
-      rootMatrix = ((Slice) matrix).rootMatrix;
-    }
     // TODO: special behavior for sparse matrix : use a 'locked' support
     if      (matrix instanceof SparseMatrix) 
       throw new RuntimeException("Sparse matrices not yet supported");
     else if (matrix instanceof DenseMatrix)
       for (int r = 0; r < matrix.nRows(); r++) 
         for (int c = 0; c < matrix.nCols(); c++)
-          result.add(new MatrixConstituentNode(rootMatrix, Pair.of(rowOffSet + r, colOffSet + c)));
+          result.add(new MatrixConstituentNode(matrix, r, c));
     else
       throw new RuntimeException();
     return result;

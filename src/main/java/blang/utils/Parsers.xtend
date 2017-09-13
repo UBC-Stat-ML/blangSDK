@@ -28,6 +28,7 @@ import xlinear.SparseMatrix
 import blang.types.TransitionMatrix
 import blang.runtime.Observations
 import blang.inits.DefaultValue
+import blang.runtime.objectgraph.MatrixConstituentNode
 
 class Parsers {
   
@@ -97,7 +98,7 @@ class Parsers {
         if (str == NA::SYMBOL) {
           // nothing, leave set to 0
         } else {
-          initContext.markAsObserved(ExtensionUtils::getRealVar(result, row, col))
+          initContext.markAsObserved(new MatrixConstituentNode(result, row, col))
           result.set(row, col, Double.parseDouble(str))
         }
       }

@@ -33,6 +33,7 @@ import blang.mcmc.Sampler;
 import blang.runtime.objectgraph.GraphAnalysis;
 import blang.runtime.objectgraph.ObjectNode;
 import briefj.BriefLists;
+import briefj.BriefLog;
 import briefj.ReflexionUtils;
 
 public class SampledModel implements AnnealedParticle
@@ -163,6 +164,11 @@ public class SampledModel implements AnnealedParticle
   
   public void posteriorSamplingStep_deterministicScanAndShuffle(Random random)
   {
+    if (posteriorInvariantSamplers.isEmpty()) 
+    {
+      BriefLog.warnOnce("WARNING: no posterior sampler defined");
+      return;
+    }
     if (currentSamplingOrder == null)
       currentSamplingOrder = new ArrayList<>(BriefLists.integers(nPosteriorSamplers()).asList());
     if (currentPosition == -1)

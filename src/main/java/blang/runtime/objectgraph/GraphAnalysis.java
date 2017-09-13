@@ -130,7 +130,11 @@ public class GraphAnalysis
         result.add(new ObjectNode(ReflexionUtils.getFieldValue(f, model)));
     
     if (!accessibilityGraph.graph.vertexSet().containsAll(result))
-      throw new RuntimeException("Observed variables should be subsets of the accessibility graph");
+    {
+      LinkedHashSet<Node> copy = new LinkedHashSet<>(result);
+      copy.removeAll(accessibilityGraph.graph.vertexSet());
+      throw new RuntimeException("Observed variables should be subsets of the accessibility graph: " + copy);
+    }
     
     return result;
   }
@@ -277,11 +281,11 @@ public class GraphAnalysis
       if (f.getAnnotation(Param.class) == null) 
       {
         Object randomVariable = ReflexionUtils.getFieldValue(f, model);
-        Node node = new ObjectNode<>(randomVariable);
-        boolean isObserved = frozenNodesClosure.contains(node);
+        // check that all accessible mutables are unobserved
+        boolean hasNoObservedChildren = accessibilityGraph.getAccessibleNodes(randomVariable).filter(current -> current.isMutable()).noneMatch(current -> frozenNodesClosure.contains(current));
         if (result == null)
-          result = isObserved;
-        if (result.booleanValue() != isObserved)
+          result = !hasNoObservedChildren;
+        if (result.booleanValue() != !hasNoObservedChildren)
           throw new RuntimeException("For forward simulation, the random variable of all sub models should all be observed or all unobserved.");
       }
     if (result == null)

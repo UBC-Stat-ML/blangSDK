@@ -6,9 +6,10 @@ import xlinear.Matrix
 import blang.core.WritableRealVar
 import blang.mcmc.RealNaiveMHSampler
 import blang.mcmc.Samplers
+import blang.mcmc.RealOverRelaxedSlice
 
 @Data
-@Samplers(RealNaiveMHSampler) 
+@Samplers(RealNaiveMHSampler, RealOverRelaxedSlice) 
 class RealMatrixComponent implements WritableRealVar {
   val int rowIndex
   val int colIndex
