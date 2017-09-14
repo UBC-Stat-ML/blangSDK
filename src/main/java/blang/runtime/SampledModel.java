@@ -18,7 +18,6 @@ import org.objenesis.strategy.StdInstantiatorStrategy;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Kryo.DefaultInstantiatorStrategy;
-import com.rits.cloning.Cloner;
 
 import blang.algo.AnnealedParticle;
 import blang.core.AnnealedFactor;
@@ -125,16 +124,6 @@ public class SampledModel implements AnnealedParticle
     kryo.getFieldSerializerConfig().setCopyTransient(false); 
   }
   
-//  static Cloner cloner = new Cloner(); {
-//    cloner.setNullTransient(true);
-//  }
-  
-  private static Cloner cloner = new Cloner(); // Thread safe
-  {
-    cloner.setNullTransient(true);
-//    cloner.setDumpClonedClasses(true); 
-  }
-  
   private static ThreadLocal<Kryo> duplicator = new ThreadLocal<Kryo>()
   {
     @Override
@@ -151,9 +140,7 @@ public class SampledModel implements AnnealedParticle
   
   public SampledModel duplicate() 
   {
-//    SampledModel result = cloner.deepClone(this);
-    SampledModel result =  duplicator.get().copy(this);
-    return result;
+    return duplicator.get().copy(this);
   }
   
   public void posteriorSamplingStep(Random random, int kernelIndex)
@@ -218,7 +205,7 @@ public class SampledModel implements AnnealedParticle
       this.objectsToOutput = objectsToOutput;
       this.serializer = serializer; 
     }
-    public void write(org.eclipse.xtext.xbase.lib.Pair<Object,Object> ... sampleContext)
+    public void write(@SuppressWarnings("unchecked") org.eclipse.xtext.xbase.lib.Pair<Object,Object> ... sampleContext)
     {
       for (Entry<String,Object> entry : objectsToOutput.entrySet()) 
         serializer.serialize(entry.getValue(), entry.getKey(), sampleContext);

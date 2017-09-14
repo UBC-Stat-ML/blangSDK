@@ -10,12 +10,10 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.LinkedHashSet
 import blang.io.DataSource
 import java.util.Optional
-import com.rits.cloning.Immutable
 
 /**
  * A Plate using a DataSource to load and store indices in a hash table.
  */
-@Immutable
 class HashPlate<K> implements Plate<K> {
   
   @Accessors(PUBLIC_GETTER)
