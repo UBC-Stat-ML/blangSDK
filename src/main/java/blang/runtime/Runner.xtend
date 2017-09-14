@@ -102,31 +102,11 @@ class Runner extends Experiment {
     
     val ParsingConfigs parsingConfigs = new ParsingConfigs
     parsingConfigs.setCreator(creator) 
+    parsingConfigs.experimentClass = Runner // needed when called via generated main 
     
     printExplationsIfNeeded(args, parsedArgs, creator)
     
     System::exit(Experiment::start(args, parsedArgs, parsingConfigs))
-    
-//    System.exit(Experiment::start2(args, parsedArgs, parsingConfigs))  
-//     
-//    
-//    val Optional<Options> options = initModel(creator, parsedArgs) 
-//    if (options.present) {
-//      val GraphAnalysis graphAnalysis = new GraphAnalysis(options.get().model, observations)
-//      if (options.get.printAccessibilityGraph) {
-//        graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
-//        graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
-//      }
-//      new Runner(options.get, graphAnalysis)
-//        .run()
-//    } else {
-//      if (useSimplifiedArguments(args) && !new File(CONFIG_FILE_NAME).exists) {
-//        println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:")
-//      } else {
-//        println("Error(s) in provided arguments. Report:")
-//      }
-//      println(creator.fullReport)
-//    }
   }
   
   def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs, Creator creator) {
