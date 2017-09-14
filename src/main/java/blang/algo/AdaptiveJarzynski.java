@@ -49,7 +49,7 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
       System.out.println("Iteration " + iter + ": exponent=" + temperature + ", ESS=" + population.getRelativeESS());
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature); 
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
-      if (population.getRelativeESS() < resamplingESSThreshold && nextTemperature < 1.0)
+      if (resamplingNeeded(population, nextTemperature))
       {
         System.out.println("Resampling");
         population = resample(random, population);
@@ -60,6 +60,14 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     return population;
   }
   
+  private boolean resamplingNeeded(ParticlePopulation<P> population, double nextTemperature) 
+  {
+    for (int i = 0; i < population.nParticles(); i++)
+      if (population.getNormalizedWeight(i) == 0.0)
+        return true;
+    return population.getRelativeESS() < resamplingESSThreshold && nextTemperature < 1.0;
+  }
+
   private ParticlePopulation<P> resample(Random random, ParticlePopulation<P> population)
   {
     if (kernels.inPlace() && random instanceof ExhaustiveDebugRandom)

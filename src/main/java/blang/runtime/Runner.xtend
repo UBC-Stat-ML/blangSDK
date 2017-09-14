@@ -49,11 +49,7 @@ class Runner extends Experiment {
   
   @DesignatedConstructor
   new(
-    @ConstructorArg(
-      value = "model", 
-      description = "The model to run (technically, an inner class builder for it, " + 
-        "but the suffix '$Builder' can be skipped)"
-    ) ModelBuilder builder
+    @ConstructorArg(value = "model") ModelBuilder builder
   ) {
     this.model = builder.build()
   } 

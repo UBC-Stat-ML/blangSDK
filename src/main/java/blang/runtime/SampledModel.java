@@ -259,7 +259,11 @@ public class SampledModel implements AnnealedParticle
   private void update(int samplerIndex)
   {
     if (sumPreannealedFiniteDensities == Double.NEGATIVE_INFINITY || sumFixedDensities == Double.NEGATIVE_INFINITY)
-      throw new RuntimeException("Updating particle weights when they have -INF density currently not supported."); // can work around with updateAll(); return; if becomes necessary, but inefficient
+    {
+      System.err.println("WARNING: forward simulation generated a particle of probability zero. This could happen infrequently due to numerical precision but could lead to performance problems if it happens frequently (e.g. due to determinism in likelihood).");
+      updateAll();
+      return;
+    }
     
     for (int fixedIndex : sampler2fixed[samplerIndex])
     {
