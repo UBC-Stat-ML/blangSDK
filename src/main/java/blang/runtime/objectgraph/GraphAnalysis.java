@@ -69,10 +69,12 @@ public class GraphAnalysis
   LinkedHashSet<ObjectNode<Factor>> factorNodes;
   Predicate<Class<?>> isVariablePredicate;
   Map<ObjectNode<ModelComponent>,String> factorDescriptions;
+  Observations observations;
   
   public GraphAnalysis(Model model, Observations observations)
   {
     this.model = model;
+    this.observations = observations;
     
     // 0- setup first layer of data structures
     buildModelComponentsHierarchy(true);
@@ -222,6 +224,11 @@ public class GraphAnalysis
       else
         factors.add((T) component);
     }
+  }
+  
+  public boolean hasObservations()
+  {
+    return !observations.getObservationRoots().isEmpty();
   }
   
   public List<ForwardSimulator> createForwardSimulator()

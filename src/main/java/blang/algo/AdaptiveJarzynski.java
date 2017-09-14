@@ -12,7 +12,7 @@ import briefj.BriefParallel;
 import blang.algo.schedules.AdaptiveTemperatureSchedule;
 import blang.algo.schedules.TemperatureSchedule;
 
-public class ChangeOfMeasureSMC<P extends AnnealedParticle> 
+public class AdaptiveJarzynski<P extends AnnealedParticle> 
 {
   @Arg                    @DefaultValue("0.5")
   public double resamplingESSThreshold = 0.5;

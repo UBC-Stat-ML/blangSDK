@@ -3,7 +3,6 @@ package blang.runtime
 import blang.core.Model
 import blang.core.ModelBuilder
 import blang.engines.PosteriorInferenceEngine
-import blang.engines.SMC
 import blang.inits.Arg
 import blang.inits.ConstructorArg
 import blang.inits.Creator
@@ -29,13 +28,14 @@ import java.io.File
 import java.util.Collections
 import java.util.Optional
 import java.util.Random
+import blang.engines.SCM
 
 class Runner extends Experiment {
   
   Model model
   
   @Arg                   @DefaultValue("SMC")
-  PosteriorInferenceEngine engine = new SMC
+  PosteriorInferenceEngine engine = new SCM
   
   @Arg               @DefaultValue("false")
   boolean printAccessibilityGraph = false
@@ -161,6 +161,7 @@ class Runner extends Experiment {
   val public static final String SAMPLE_FILE = "samples.csv"
   override void run() {
     val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations)
+    engine.check(graphAnalysis)
     if (printAccessibilityGraph) {
       graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
       graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))

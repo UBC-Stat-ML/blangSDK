@@ -3,14 +3,18 @@ package blang.engines;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.smc.ParticlePopulation;
-import blang.algo.ChangeOfMeasureSMC;
+import blang.algo.AdaptiveJarzynski;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.runtime.BlangTidySerializer;
 import blang.runtime.ChangeOfMeasureKernel;
 import blang.runtime.SampledModel;
+import blang.runtime.objectgraph.GraphAnalysis;
 
-public class SMC extends ChangeOfMeasureSMC<SampledModel> implements PosteriorInferenceEngine
+/**
+ * Sequential Change of Measure implementation.
+ */
+public class SCM extends AdaptiveJarzynski<SampledModel> implements PosteriorInferenceEngine
 {
   @GlobalArg ExperimentResults results;
   
@@ -31,9 +35,16 @@ public class SMC extends ChangeOfMeasureSMC<SampledModel> implements PosteriorIn
     approximation = approximation.resample(random, resamplingScheme);
     
     // write samples
-    BlangTidySerializer tidySerializer = new BlangTidySerializer(results);
+    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples")); 
     int i = 0;
     for (SampledModel model : approximation.particles)  
       model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++)); 
+  }
+
+  @Override
+  public void check(GraphAnalysis analysis) 
+  {
+    // TODO: may want to check forward simulators ok
+    return;
   }
 }
