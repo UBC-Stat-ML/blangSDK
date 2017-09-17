@@ -20,8 +20,8 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   @Arg             @DefaultValue("true")
   public boolean useConditional = true;
   
-  @Arg       @DefaultValue("0.999")
-  public double threshold = 0.999;
+  @Arg       @DefaultValue("0.9999")
+  public double threshold = 0.9999;
   
   final Writer log;
   int iter = 0;

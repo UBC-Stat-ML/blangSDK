@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.ext.VertexNameProvider;
@@ -31,8 +30,10 @@ import blang.core.LogScaleFactor;
 import blang.core.Model;
 import blang.core.ModelComponent;
 import blang.core.Param;
+import blang.mcmc.ExponentiatedFactor;
 import blang.mcmc.SamplerBuilder;
 import blang.runtime.Observations;
+import blang.types.RealScalar;
 import briefj.ReflexionUtils;
 import briefj.collections.UnorderedPair;
 
@@ -70,6 +71,7 @@ public class GraphAnalysis
   Predicate<Class<?>> isVariablePredicate;
   Map<ObjectNode<ModelComponent>,String> factorDescriptions;
   Observations observations;
+  RealScalar annealingParameter = new RealScalar(1.0);
   
   public GraphAnalysis(Model model, Observations observations)
   {
@@ -165,8 +167,10 @@ public class GraphAnalysis
       for (ModelComponent subComponent : subComponents)
       {
         String description = subComponent.toString();
-        if (subComponent instanceof LogScaleFactor && wrapInAnnealableFactors)
-          subComponent = new AnnealedFactor((LogScaleFactor) subComponent);
+        if (   wrapInAnnealableFactors  // we asked to wrap things in annealers
+            && subComponent instanceof LogScaleFactor  // and it's numeric (not a constraint-based factor)
+            && !(subComponent instanceof AnnealedFactor))  // and it's not already annealed via custom mechanism
+          subComponent = new ExponentiatedFactor((LogScaleFactor) subComponent);
         ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);
         if (subComponent instanceof Factor)
           factorDescriptions.put(childNode, description);
@@ -181,12 +185,29 @@ public class GraphAnalysis
    * 
    * @return (set of annealed factors, set of non-annealed (fixed) factors)
    */
-  public Pair<List<AnnealedFactor>, List<Factor>> createLikelihoodAnnealer()
+  public AnnealingStructure createLikelihoodAnnealer()
   {
     List<AnnealedFactor> annealedFactors = new ArrayList<>(); 
-    List<Factor>  fixedFactors = new ArrayList<>();
+    List<Factor> fixedFactors = new ArrayList<>(); 
     createLikelihoodAnnealer(model, annealedFactors, fixedFactors);
-    return Pair.of(annealedFactors, fixedFactors);
+    
+    AnnealingStructure result = new AnnealingStructure(annealingParameter);
+    for (AnnealedFactor annealed : annealedFactors)
+    {
+      annealed.setAnnealingParameter(annealingParameter); 
+      if (annealed instanceof ExponentiatedFactor)
+        result.exponentiatedFactors.add((ExponentiatedFactor) annealed);
+      else
+        result.otherAnnealedFactors.add(annealed);
+    }
+    for (Factor fixed : fixedFactors)
+    {
+      if (fixed instanceof LogScaleFactor)
+        result.fixedLogScaleFactors.add((LogScaleFactor) fixed);
+      else
+        result.otherFixedFactors.add(fixed);
+    }
+    return result;
   }
   
   private void createLikelihoodAnnealer(Model model, List<AnnealedFactor> annealedFactors, List<Factor> fixedFactors)
@@ -344,8 +365,6 @@ public class GraphAnalysis
     
     return result;
   }
-  
-  
   
   public String toStringSummary()
   {

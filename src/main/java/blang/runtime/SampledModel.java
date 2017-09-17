@@ -13,7 +13,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -28,9 +27,12 @@ import blang.core.Model;
 import blang.core.Param;
 import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.mcmc.BuiltSamplers;
+import blang.mcmc.ExponentiatedFactor;
 import blang.mcmc.Sampler;
+import blang.runtime.objectgraph.AnnealingStructure;
 import blang.runtime.objectgraph.GraphAnalysis;
 import blang.runtime.objectgraph.ObjectNode;
+import blang.types.RealScalar;
 import briefj.BriefLists;
 import briefj.BriefLog;
 import briefj.ReflexionUtils;
@@ -40,24 +42,39 @@ public class SampledModel implements AnnealedParticle
   public final Model model;
   private final List<Sampler> posteriorInvariantSamplers;
   private List<ForwardSimulator> forwardSamplers;
-  private double annealingExponent;
+  private final RealScalar annealingExponent;
   
   //// Various caches to make it quick to compute the global density
   
-  private final List<AnnealedFactor> factors; 
+  /*
+   * Factors that can be updated lazily. Contains those in (1) AnnealingStructure.fixedLogScaleFactors 
+   * (enclosing them in a trivial ExponentiatedFactor if necessary)
+   * and (2) AnnealingStructure.exponentiatedFactors.
+   * 
+   * Excludes otherAnnealedFactors which need to be all computed explicitly at all times.
+   */
+  private final List<ExponentiatedFactor> sparseUpdateFactors; 
+  
+  /*
+   * Indices for (1) and (2) described above
+   */
+  private final ArrayList<Integer> sparseUpdateFixedIndices = new ArrayList<>();    // (1)
+  private final ArrayList<Integer> sparseUpdateAnnealedIndices = new ArrayList<>(); // (2)
   
   // TODO: make sure the index-based data structures are shallowly cloned
   // sampler index -> factor indices (using array since inner might have lots of small arrays)
   private final int [][] 
-      sampler2annealed, // for the factors undergoing annealing
-      sampler2fixed;    // and the others ones
-  
-  private final ArrayList<Integer> allAnnealedFactors = new ArrayList<>();
-  private final ArrayList<Integer> allFixedFactors = new ArrayList<>();
+      sampler2sparseUpdateFixed,    // (1)
+      sampler2sparseUpdateAnnealed; // (2)
   
   private final double [] caches;
   private double sumPreannealedFiniteDensities, sumFixedDensities;
   private int nOutOfSupport;
+  
+  /*
+   * Those need to be recomputed each time
+   */
+  private final List<AnnealedFactor> otherAnnealedFactors;
   
   private List<Integer> currentSamplingOrder = null;
   private int currentPosition = -1;
@@ -69,19 +86,21 @@ public class SampledModel implements AnnealedParticle
     this.model = graphAnalysis.model;
     this.posteriorInvariantSamplers = samplers.list;
     this.forwardSamplers = graphAnalysis.createForwardSimulator();
-    this.annealingExponent = 1.0;
+    AnnealingStructure annealingStructure = graphAnalysis.createLikelihoodAnnealer();
+    this.annealingExponent = annealingStructure.annealingParameter;
     
-    Pair<List<AnnealedFactor>, List<Factor>> annealingStructure = graphAnalysis.createLikelihoodAnnealer();
-    factors = initFactors(annealingStructure);
-    caches = new double[factors.size()];
+    otherAnnealedFactors = annealingStructure.otherAnnealedFactors;
     
-    sampler2annealed = new int[samplers.list.size()][];
-    sampler2fixed = new int[samplers.list.size()][];
+    sparseUpdateFactors = initSparseUpdateFactors(annealingStructure);
+    caches = new double[sparseUpdateFactors.size()];
+    
+    sampler2sparseUpdateAnnealed = new int[samplers.list.size()][];
+    sampler2sparseUpdateFixed = new int[samplers.list.size()][];
     initSampler2FactorIndices(graphAnalysis, samplers, annealingStructure);
     
-    Set<AnnealedFactor> annealedFactors = new HashSet<>(annealingStructure.getLeft());
-    for (int i = 0; i < factors.size(); i++)
-      (annealedFactors.contains(factors.get(i)) ? allAnnealedFactors : allFixedFactors).add(i);
+    Set<ExponentiatedFactor> exponentiatedFactorsSet = new HashSet<>(annealingStructure.exponentiatedFactors);
+    for (int i = 0; i < sparseUpdateFactors.size(); i++)
+      (exponentiatedFactorsSet.contains(sparseUpdateFactors.get(i)) ? sparseUpdateAnnealedIndices : sparseUpdateFixedIndices).add(i);
     
     this.objectsToOutput = new LinkedHashMap<String, Object>();
     for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true)) 
@@ -95,33 +114,50 @@ public class SampledModel implements AnnealedParticle
   {
     return posteriorInvariantSamplers.size();
   }
-
+  
   public double logDensity()
   {
+    final double exponentValue = annealingExponent.doubleValue();
     return 
-      sumFixedDensities 
-        + annealingExponent * sumPreannealedFiniteDensities
+      sumOtherAnnealed() 
+        + sumFixedDensities 
+        + exponentValue * sumPreannealedFiniteDensities
         // ?: to avoid 0 * -INF
-        + (nOutOfSupport == 0 ? 0.0 : nOutOfSupport * AnnealedFactor.annealedMinusInfinity(annealingExponent));
+        + (nOutOfSupport == 0 ? 0.0 : nOutOfSupport * ExponentiatedFactor.annealedMinusInfinity(exponentValue));
   }
   
   @Override
   public double logDensityRatio(double temperature, double nextTemperature) 
   {
+    double otherAnnealedDiff = 0.0;
+    if (!otherAnnealedFactors.isEmpty())
+    {
+      final double currentExp = getExponent();
+      
+      annealingExponent.set(nextTemperature);
+      otherAnnealedDiff += sumOtherAnnealed();
+      annealingExponent.set(temperature);
+      otherAnnealedDiff -= sumOtherAnnealed();
+      
+      annealingExponent.set(currentExp);
+    }
+    
     double delta = nextTemperature - temperature;
-    return 
-      delta * sumPreannealedFiniteDensities
+    return
+      otherAnnealedDiff
+        + delta * sumPreannealedFiniteDensities
         // ?: to avoid 0 * -INF
         + (nOutOfSupport == 0 ? 
             0.0 : 
-            nOutOfSupport * (AnnealedFactor.annealedMinusInfinity(nextTemperature) - AnnealedFactor.annealedMinusInfinity(temperature)));
+            nOutOfSupport * (ExponentiatedFactor.annealedMinusInfinity(nextTemperature) - ExponentiatedFactor.annealedMinusInfinity(temperature)));
   }
-   
-  static Kryo kryo = new Kryo(); {
-    DefaultInstantiatorStrategy defaultInstantiatorStrategy = new Kryo.DefaultInstantiatorStrategy();
-    defaultInstantiatorStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
-    kryo.setInstantiatorStrategy(defaultInstantiatorStrategy);
-    kryo.getFieldSerializerConfig().setCopyTransient(false); 
+  
+  private double sumOtherAnnealed()
+  {
+    double sum = 0.0;
+    for (AnnealedFactor factor : otherAnnealedFactors)
+      sum += factor.logDensity();
+    return sum;
   }
   
   private static ThreadLocal<Kryo> duplicator = new ThreadLocal<Kryo>()
@@ -186,14 +222,12 @@ public class SampledModel implements AnnealedParticle
   
   public void setExponent(double value)
   {
-    annealingExponent = value;
-    for (int annealedIndex : allAnnealedFactors)
-      factors.get(annealedIndex).setExponent(value); 
+    annealingExponent.set(value);
   }
   
   public double getExponent()
   {
-    return annealingExponent;
+    return annealingExponent.doubleValue(); 
   }
   
   public static class SampleWriter
@@ -222,18 +256,18 @@ public class SampledModel implements AnnealedParticle
   private void updateAll()
   {
     sumFixedDensities = 0.0;
-    for (int fixedIndex : allFixedFactors)
+    for (int fixedIndex : sparseUpdateFixedIndices)
     {
-      double newCache = factors.get(fixedIndex).logDensity();
+      double newCache = sparseUpdateFactors.get(fixedIndex).logDensity();
       sumFixedDensities += newCache;
       caches[fixedIndex] = newCache;
     }
     
     sumPreannealedFiniteDensities = 0.0;
     nOutOfSupport = 0;
-    for (int annealedIndex : allAnnealedFactors)
+    for (int annealedIndex : sparseUpdateAnnealedIndices)
     {
-      double newPreAnnealedCache = factors.get(annealedIndex).enclosed.logDensity();
+      double newPreAnnealedCache = sparseUpdateFactors.get(annealedIndex).enclosed.logDensity();
       caches[annealedIndex] = newPreAnnealedCache;
       
       if (newPreAnnealedCache == Double.NEGATIVE_INFINITY)
@@ -252,14 +286,14 @@ public class SampledModel implements AnnealedParticle
       return;
     }
     
-    for (int fixedIndex : sampler2fixed[samplerIndex])
+    for (int fixedIndex : sampler2sparseUpdateFixed[samplerIndex])
     {
-      double newCache = factors.get(fixedIndex).logDensity();
+      double newCache = sparseUpdateFactors.get(fixedIndex).logDensity();
       sumFixedDensities += newCache - caches[fixedIndex];
       caches[fixedIndex] = newCache;
     }
     
-    for (int annealedIndex : sampler2annealed[samplerIndex])
+    for (int annealedIndex : sampler2sparseUpdateAnnealed[samplerIndex])
     {
       {
         double oldPreAnneledCache = caches[annealedIndex];
@@ -271,7 +305,7 @@ public class SampledModel implements AnnealedParticle
       }
       
       {
-        double newPreAnnealedCache = factors.get(annealedIndex).enclosed.logDensity();
+        double newPreAnnealedCache = sparseUpdateFactors.get(annealedIndex).enclosed.logDensity();
         caches[annealedIndex] = newPreAnnealedCache;
         
         if (newPreAnnealedCache == Double.NEGATIVE_INFINITY)
@@ -284,10 +318,10 @@ public class SampledModel implements AnnealedParticle
   
   //// Utility methods setting up caches
   
-  private void initSampler2FactorIndices(GraphAnalysis graphAnalysis, BuiltSamplers samplers, Pair<List<AnnealedFactor>, List<Factor>> annealingStructure) 
+  private void initSampler2FactorIndices(GraphAnalysis graphAnalysis, BuiltSamplers samplers, AnnealingStructure annealingStructure) 
   {
-    Map<AnnealedFactor, Integer> factor2Index = factor2index(factors);
-    Set<Factor> annealedFactors = new HashSet<>(annealingStructure.getLeft());
+    Map<ExponentiatedFactor, Integer> factor2Index = factor2index(sparseUpdateFactors);
+    Set<ExponentiatedFactor> annealedFactors = new HashSet<>(annealingStructure.exponentiatedFactors);
     for (int samplerIndex = 0; samplerIndex < samplers.list.size(); samplerIndex++)
     {
       ObjectNode<?> sampledVariable = samplers.correspondingVariables.get(samplerIndex);
@@ -300,14 +334,14 @@ public class SampledModel implements AnnealedParticle
         fixedIndices = new ArrayList<>();
       for (Factor f : factors)
         (annealedFactors.contains(factors) ? annealedIndices : fixedIndices).add(factor2Index.get(f));
-      sampler2annealed[samplerIndex] = annealedIndices.stream().mapToInt(i->i).toArray();
-      sampler2fixed   [samplerIndex] = fixedIndices   .stream().mapToInt(i->i).toArray();
+      sampler2sparseUpdateAnnealed[samplerIndex] = annealedIndices.stream().mapToInt(i->i).toArray();
+      sampler2sparseUpdateFixed   [samplerIndex] = fixedIndices   .stream().mapToInt(i->i).toArray();
     }
   }
 
-  private static Map<AnnealedFactor, Integer> factor2index(List<AnnealedFactor> factors) 
+  private static Map<ExponentiatedFactor, Integer> factor2index(List<ExponentiatedFactor> factors) 
   {
-    Map<AnnealedFactor, Integer> result = new IdentityHashMap<>();
+    Map<ExponentiatedFactor, Integer> result = new IdentityHashMap<>();
     for (int i = 0; i < factors.size(); i++)
       result.put(factors.get(i), i);
     return result;
@@ -316,17 +350,16 @@ public class SampledModel implements AnnealedParticle
   /**
    * Ignore factors that are not LogScaleFactor's (e.g. constraints), make sure everything else are AnnealedFactors.
    */
-  private static List<AnnealedFactor> initFactors(Pair<List<AnnealedFactor>, List<Factor>> annealingStructure) 
+  private static List<ExponentiatedFactor> initSparseUpdateFactors(AnnealingStructure structure) 
   {
-    ArrayList<AnnealedFactor> result = new ArrayList<>();
-    result.addAll(annealingStructure.getLeft());
-    for (Factor f : annealingStructure.getRight())
-      if (f instanceof LogScaleFactor)
-      {
-        if (!(f instanceof AnnealedFactor))
-          throw new RuntimeException("Currently assuming even fixed factors are of type annealedFactor, their exponent is just not changed.");
-        result.add((AnnealedFactor) f);
-      }
+    ArrayList<ExponentiatedFactor> result = new ArrayList<>();
+    result.addAll(structure.exponentiatedFactors);
+    for (LogScaleFactor f : structure.fixedLogScaleFactors)
+    {
+      if (!(f instanceof ExponentiatedFactor))
+        f = new ExponentiatedFactor(f);
+      result.add((ExponentiatedFactor) f);
+    }
     return result;
   }
 }
