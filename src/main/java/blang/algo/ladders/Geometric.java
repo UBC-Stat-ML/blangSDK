@@ -13,8 +13,8 @@ public class Geometric<P extends TemperedParticle> implements TemperatureLadder<
   @Arg(description = "Number of chains, set to the number of threads if unspecified.") 
   public Optional<Integer> nChains = Optional.empty();
   
-  @Arg              @DefaultValue("0.5")
-  public double annealingScaling = 0.5;
+  @Arg              @DefaultValue("0.8")
+  public double annealingScaling = 0.8;
   
   @Override
   public void temperingParameters(

@@ -3,6 +3,8 @@ package blang.algo;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
 import bayonet.distributions.Random;
 import blang.algo.ladders.Geometric;
 import blang.algo.ladders.TemperatureLadder;
@@ -25,6 +27,7 @@ public class ParallelTempering<P extends TemperedParticle>
   private P [] states;
   private List<Double> temperingParameters;
   private Random [] parallelRandomStreams;
+  protected SummaryStatistics [] swapAcceptPrs;
   
   public P getTargetState()
   {
@@ -37,19 +40,24 @@ public class ParallelTempering<P extends TemperedParticle>
   }
   
   @SuppressWarnings("unchecked")
-  public void initialize(AnnealingKernels<P> kernels)
+  public void initialize(AnnealingKernels<P> kernels, Random random)
   {
     this.kernels = kernels;
     temperingParameters = new ArrayList<>();
     List<P> initStates = new ArrayList<>();
     ladder.temperingParameters(kernels, temperingParameters, initStates, nThreads.available);
+    System.out.println("Temperatures: " + temperingParameters);
     int nChains = temperingParameters.size();
-    states = initStates.isEmpty() ? defaultInit(kernels, nChains) : (P[]) initStates.toArray();
+    states = initStates.isEmpty() ? defaultInit(kernels, nChains, random) : (P[]) initStates.toArray();
+    swapAcceptPrs = new SummaryStatistics[nChains - 1];
+    for (int i = 0; i < nChains - 1; i++)
+      swapAcceptPrs[i] = new SummaryStatistics();
+    parallelRandomStreams =  Random.parallelRandomStreams(random, nChains);
   }
   
-  private static <P> P [] defaultInit(AnnealingKernels<P> kernels, int nChains)
+  private static <P> P [] defaultInit(AnnealingKernels<P> kernels, int nChains, Random random)
   {
-    P oneCopy = kernels.sampleInitial(new Random(1));
+    P oneCopy = kernels.sampleInitial(random);
     @SuppressWarnings({ "unchecked" })
     P [] result = (P []) new TemperedParticle[nChains];
     for (int i = 0; i < nChains; i++)
@@ -58,39 +66,40 @@ public class ParallelTempering<P extends TemperedParticle>
   }
   
   private int iterationIndex = 0;
-  public void swapKernel(Random random)
+  public void swapKernel()
   {
-    int offset = iterationIndex % 2;
+    int offset = iterationIndex++ % 2;
     BriefParallel.process((nChains() - offset) / 2, nThreads.available, swapIndex ->
     {
       int chainIndex = offset + 2 * swapIndex;
-      swapKernel(parallelRandomStreams[chainIndex], chainIndex);
+      boolean accepted = swapKernel(parallelRandomStreams[chainIndex], chainIndex);
+      swapAcceptPrs[chainIndex].addValue(accepted ? 1.0 : 0.0);
     });
   }
   
-  public void moveKernel(Random random, int nPasses)
+  public void moveKernel(int nPasses)
   {
     if (kernels.inPlace())
-      moveKernelInPlace(random, nPasses);
+      moveKernelInPlace(nPasses);
     else
-      moveKernelAndAssign(random, nPasses);
+      moveKernelAndAssign(nPasses);
   }
   
-  private void moveKernelInPlace(Random random, int nPasses) 
+  private void moveKernelInPlace(int nPasses) 
   {
     BriefParallel.process(nChains(), nThreads.available, chainIndex -> 
     {
       for (int i = 0; i < nPasses; i++)
-        kernels.sampleNext(random, states[chainIndex], temperingParameters.get(chainIndex));
+        kernels.sampleNext(parallelRandomStreams[chainIndex], states[chainIndex], temperingParameters.get(chainIndex));
     });
   }
   
-  private void moveKernelAndAssign(Random random, int nPasses) 
+  private void moveKernelAndAssign(int nPasses) 
   {
     BriefParallel.process(nChains(), nThreads.available, chainIndex -> 
     {
       for (int i = 0; i < nPasses; i++)
-        states[chainIndex] = kernels.sampleNext(random, states[chainIndex], temperingParameters.get(chainIndex));
+        states[chainIndex] = kernels.sampleNext(parallelRandomStreams[chainIndex], states[chainIndex], temperingParameters.get(chainIndex));
     });
   }
   
@@ -100,14 +109,25 @@ public class ParallelTempering<P extends TemperedParticle>
     System.out.println(nc);
   }
   
-  public void swapKernel(Random random, int i)
+  /**
+   * 
+   * @param random
+   * @param i
+   * @return If accepted.
+   */
+  public boolean swapKernel(Random random, int i)
   {
     int j = i + 1;
     double logRatio = 
         states[i].logDensity(temperingParameters.get(j)) + states[j].logDensity(temperingParameters.get(i))
       - states[i].logDensity(temperingParameters.get(i)) + states[j].logDensity(temperingParameters.get(j));
     if (random.nextBernoulli(Math.min(1.0, Math.log(logRatio))))
+    {
       doSwap(i);
+      return true;
+    }
+    else
+      return false;
   }
   
   private void doSwap(int i) 

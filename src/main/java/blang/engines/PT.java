@@ -1,5 +1,7 @@
 package blang.engines;
 
+import java.io.PrintWriter;
+
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.Random;
@@ -8,6 +10,7 @@ import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
+import blang.inits.experiments.tabwriters.TabularWriter;
 import blang.runtime.BlangTidySerializer;
 import blang.runtime.ChangeOfMeasureKernel;
 import blang.runtime.SampledModel;
@@ -29,7 +32,7 @@ public class PT extends ParallelTempering<SampledModel> implements PosteriorInfe
   @Override
   public void setSampledModel(SampledModel model) 
   {
-    initialize(new ChangeOfMeasureKernel(model));
+    initialize(new ChangeOfMeasureKernel(model), random);
   }
 
   @SuppressWarnings("unchecked")
@@ -39,10 +42,18 @@ public class PT extends ParallelTempering<SampledModel> implements PosteriorInfe
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples")); 
     for (int iter = 0; iter < nScans; iter++)
     {
-      moveKernel(random, nScans);
+      moveKernel(nScans);
       getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
-      swapKernel(random);
+      swapKernel();
     }
+    reportAcceptanceRatios();
+  }
+
+  private void reportAcceptanceRatios() 
+  {
+    TabularWriter tabularWriter = results.getTabularWriter("swapPrs");
+    for (int i = 0; i < nChains() - 1; i++)
+      tabularWriter.write(Pair.of("chain", i), Pair.of("pr", swapAcceptPrs[i].getMean()));
   }
 
   @Override
