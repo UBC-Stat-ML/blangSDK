@@ -27,7 +27,7 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
   public int nSamplesPerTemperature = 1_000;
 
   @Arg   @DefaultValue("1")
-  public int nThreads = 1;
+  public int nThreads = 1;  
   
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
@@ -74,17 +74,24 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
       throw new RuntimeException();
     population = population.resample(random, resamplingScheme);
     if (kernels.inPlace())
-    {
-      P previous = null;
-      for (int i = 0; i < nSamplesPerTemperature; i++)
-      {
-        P current = population.particles.get(i);
-        if (current == previous)
-          population.particles.set(i, kernels.deepCopy(current)); 
-        previous = current;
-      }
-    }
+      deepCopyParticles(population);
     return population;
+  }
+
+  private void deepCopyParticles(final ParticlePopulation<P> population) 
+  {
+    @SuppressWarnings("unchecked")
+    P [] cloned = (P[]) new AnnealedParticle[nSamplesPerTemperature];
+    
+    BriefParallel.process(nSamplesPerTemperature, nThreads, particleIndex ->
+    {
+      boolean needsCloning = particleIndex > 1 && population.particles.get(particleIndex) == population.particles.get(particleIndex - 1);
+      P current = population.particles.get(particleIndex);
+      cloned[particleIndex] = needsCloning ? kernels.deepCopy(current) : current;
+    });
+    
+    for (int i = 0; i < nSamplesPerTemperature; i++)
+      population.particles.set(i, cloned[i]);
   }
 
   private ParticlePopulation<P> propose(Random [] randoms, final ParticlePopulation<P> currentPopulation, double temperature, double nextTemperature)
