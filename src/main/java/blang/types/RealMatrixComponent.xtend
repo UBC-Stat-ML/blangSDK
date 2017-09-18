@@ -6,7 +6,6 @@ import xlinear.Matrix
 import blang.core.WritableRealVar
 import blang.mcmc.RealNaiveMHSampler
 import blang.mcmc.Samplers
-import blang.mcmc.RealOverRelaxedSlice
 
 @Data
 @Samplers(RealNaiveMHSampler) 

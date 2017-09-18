@@ -3,7 +3,6 @@ package blang.types
 import blang.mcmc.RealNaiveMHSampler
 import blang.mcmc.Samplers
 import blang.core.WritableRealVar
-import blang.mcmc.RealOverRelaxedSlice
 
 @Samplers(RealNaiveMHSampler)
 class RealScalar implements WritableRealVar { 
