@@ -8,6 +8,7 @@ import bayonet.smc.ParticlePopulation;
 import bayonet.smc.ResamplingScheme;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
+import blang.inits.experiments.Cores;
 import briefj.BriefParallel;
 import blang.algo.schedules.AdaptiveTemperatureSchedule;
 import blang.algo.schedules.TemperatureSchedule;
@@ -23,11 +24,11 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
   @Arg                                         @DefaultValue("STRATIFIED")            
   public ResamplingScheme resamplingScheme = ResamplingScheme.STRATIFIED;
 
-  @Arg     @DefaultValue("1_000")
-  public int nSamplesPerTemperature = 1_000;
+  @Arg                 @DefaultValue("10_000")
+  public int nSamplesPerTemperature = 10_000;
 
-  @Arg   @DefaultValue("1")
-  public int nThreads = 1;  
+  @Arg   
+  public Cores nThreads = Cores.maxAvailable(); 
   
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
@@ -37,8 +38,9 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
   /**
    * @return The particle population at the last step
    */
-  public ParticlePopulation<P> getApproximation()
+  public ParticlePopulation<P> getApproximation(AnnealingKernels<P> kernels)
   {
+    this.kernels = kernels;
     Random [] parallelRandomStreams = Random.parallelRandomStreams(random, nSamplesPerTemperature);
     ParticlePopulation<P> population = initialize(parallelRandomStreams);
     
@@ -83,7 +85,7 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     @SuppressWarnings("unchecked")
     P [] cloned = (P[]) new AnnealedParticle[nSamplesPerTemperature];
     
-    BriefParallel.process(nSamplesPerTemperature, nThreads, particleIndex ->
+    BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
     {
       boolean needsCloning = particleIndex > 1 && population.particles.get(particleIndex) == population.particles.get(particleIndex - 1);
       P current = population.particles.get(particleIndex);
@@ -102,7 +104,7 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     @SuppressWarnings("unchecked")
     final P [] particles = (P[]) new AnnealedParticle[nSamplesPerTemperature];
     
-    BriefParallel.process(nSamplesPerTemperature, nThreads, particleIndex ->
+    BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
     {
       P proposed = isInitial ?
         kernels.sampleInitial(randoms[particleIndex]) :
@@ -121,10 +123,5 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
   private ParticlePopulation<P> initialize(Random [] randoms)
   {
     return propose(randoms, null, Double.NaN, Double.NaN);
-  }
-
-  public void setKernels(AnnealingKernels<P> kernels)
-  {
-    this.kernels = kernels;
   }
 }

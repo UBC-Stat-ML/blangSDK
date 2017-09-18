@@ -18,10 +18,12 @@ public class SCM extends AdaptiveJarzynski<SampledModel> implements PosteriorInf
 {
   @GlobalArg ExperimentResults results;
   
+  ChangeOfMeasureKernel kernel;
+  
   @Override
   public void setSampledModel(SampledModel model) 
   { 
-    setKernels(new ChangeOfMeasureKernel(model));
+    this.kernel = new ChangeOfMeasureKernel(model);
   }
 
   @SuppressWarnings("unchecked")
@@ -29,16 +31,16 @@ public class SCM extends AdaptiveJarzynski<SampledModel> implements PosteriorInf
   public void performInference() 
   {
     // create approx
-    ParticlePopulation<SampledModel> approximation = getApproximation();
+    ParticlePopulation<SampledModel> approximation = getApproximation(kernel);
     
     // resample for now the last iteration to simplify processing downstream
     approximation = approximation.resample(random, resamplingScheme);
     
     // write samples
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples")); 
-    int i = 0;
+    int particleIndex = 0;
     for (SampledModel model : approximation.particles)  
-      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++)); 
+      model.getSampleWriter(tidySerializer).write(Pair.of("sample", particleIndex++)); 
   }
 
   @Override

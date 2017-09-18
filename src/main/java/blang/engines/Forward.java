@@ -29,6 +29,7 @@ public class Forward implements PosteriorInferenceEngine
     this.model = model;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public void performInference() 
   {
@@ -46,5 +47,4 @@ public class Forward implements PosteriorInferenceEngine
     if (analysis.hasObservations())
       throw new RuntimeException();
   }
-
 }

@@ -2,7 +2,7 @@ package blang.algo;
 
 import bayonet.distributions.Random;
 
-public interface AnnealingKernels<P extends AnnealedParticle>
+public interface AnnealingKernels<P>
 {
   /**
    * These are assumed to be exact samples. E.g. prior or a unique pseudo-state.

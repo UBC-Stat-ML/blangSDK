@@ -19,6 +19,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Kryo.DefaultInstantiatorStrategy;
 
 import blang.algo.AnnealedParticle;
+import blang.algo.TemperedParticle;
 import blang.core.AnnealedFactor;
 import blang.core.Factor;
 import blang.core.ForwardSimulator;
@@ -37,7 +38,7 @@ import briefj.BriefLists;
 import briefj.BriefLog;
 import briefj.ReflexionUtils;
 
-public class SampledModel implements AnnealedParticle
+public class SampledModel implements AnnealedParticle, TemperedParticle
 {
   public final Model model;
   private final List<Sampler> posteriorInvariantSamplers;
@@ -124,6 +125,16 @@ public class SampledModel implements AnnealedParticle
         + exponentValue * sumPreannealedFiniteDensities
         // ?: to avoid 0 * -INF
         + (nOutOfSupport == 0 ? 0.0 : nOutOfSupport * ExponentiatedFactor.annealedMinusInfinity(exponentValue));
+  }
+  
+  @Override
+  public double logDensity(double temperingParameter) 
+  {
+    final double previousValue = annealingExponent.doubleValue();
+    annealingExponent.set(temperingParameter);
+    final double result = logDensity();
+    annealingExponent.set(previousValue);
+    return result;
   }
   
   @Override
