@@ -68,27 +68,29 @@ public class ParallelTempering<P extends TemperedParticle>
     });
   }
   
-  public void moveKernel(Random random)
+  public void moveKernel(Random random, int nPasses)
   {
     if (kernels.inPlace())
-      moveKernelInPlace(random);
+      moveKernelInPlace(random, nPasses);
     else
-      moveKernelAndAssign(random);
+      moveKernelAndAssign(random, nPasses);
   }
   
-  private void moveKernelInPlace(Random random) 
+  private void moveKernelInPlace(Random random, int nPasses) 
   {
     BriefParallel.process(nChains(), nThreads.available, chainIndex -> 
     {
-      kernels.sampleNext(random, states[chainIndex], temperingParameters.get(chainIndex));
+      for (int i = 0; i < nPasses; i++)
+        kernels.sampleNext(random, states[chainIndex], temperingParameters.get(chainIndex));
     });
   }
   
-  private void moveKernelAndAssign(Random random) 
+  private void moveKernelAndAssign(Random random, int nPasses) 
   {
     BriefParallel.process(nChains(), nThreads.available, chainIndex -> 
     {
-      states[chainIndex] = kernels.sampleNext(random, states[chainIndex], temperingParameters.get(chainIndex));
+      for (int i = 0; i < nPasses; i++)
+        states[chainIndex] = kernels.sampleNext(random, states[chainIndex], temperingParameters.get(chainIndex));
     });
   }
   

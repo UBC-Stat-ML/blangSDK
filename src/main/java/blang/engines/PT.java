@@ -39,8 +39,7 @@ public class PT extends ParallelTempering<SampledModel> implements PosteriorInfe
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples")); 
     for (int iter = 0; iter < nScans; iter++)
     {
-      for (int inner = 0; inner < nPassesPerScan; inner++)
-        moveKernel(random);
+      moveKernel(random, nScans);
       getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
       swapKernel(random);
     }
