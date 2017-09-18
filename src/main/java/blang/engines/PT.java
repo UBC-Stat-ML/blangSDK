@@ -20,6 +20,9 @@ public class PT extends ParallelTempering<SampledModel> implements PosteriorInfe
   @Arg @DefaultValue("10_000")
   public int nScans = 10_000;
   
+  @Arg         @DefaultValue("10")
+  public int nPassesPerScan = 10;
+  
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
   
@@ -36,7 +39,8 @@ public class PT extends ParallelTempering<SampledModel> implements PosteriorInfe
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples")); 
     for (int iter = 0; iter < nScans; iter++)
     {
-      moveKernel(random);
+      for (int inner = 0; inner < nPassesPerScan; inner++)
+        moveKernel(random);
       getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
       swapKernel(random);
     }
