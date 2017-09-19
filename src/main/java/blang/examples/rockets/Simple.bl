@@ -15,8 +15,8 @@ model Simple {
   
   laws {
     
-    alpha ~ ContinuousUniform(0, 1000)
-    beta  ~ ContinuousUniform(0, 1000)
+    alpha ~ ContinuousUniform(0, 10_000)
+    beta  ~ ContinuousUniform(0, 10_000)
 
     for (Index<String> rocketType : rocketTypes.indices) {
       failureProbabilities.get(rocketType) | alpha, beta ~ Beta(alpha, beta) // OK found problem: sticky init at zero - will be solved by annealing 

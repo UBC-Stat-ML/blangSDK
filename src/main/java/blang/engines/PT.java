@@ -22,8 +22,8 @@ public class PT extends ParallelTempering<SampledModel> implements PosteriorInfe
   @Arg @DefaultValue("10_000")
   public int nScans = 10_000;
   
-  @Arg         @DefaultValue("10")
-  public int nPassesPerScan = 10;
+  @Arg         @DefaultValue("100")
+  public int nPassesPerScan = 100;
   
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
