@@ -5,14 +5,11 @@ import bayonet.distributions.Random;
 public interface AnnealingKernels<P>
 {
   /**
-   * These are assumed to be exact samples. E.g. prior or a unique pseudo-state.
-   */
-  P sampleInitial(Random random);
-  
-  /**
    * Sample from a pi_t invariant kernel where t = temperature
+   * 
+   * If current is null sampled exactly (usually only possible if annealingParameter = 0)
    */
-  P sampleNext(Random random, P current, double temperature);
+  P sampleNext(Random random, P current, double annealingParameter);
   
   /**
    * Whether sampleNext(.) changes the current state in place.

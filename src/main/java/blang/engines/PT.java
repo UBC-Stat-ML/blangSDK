@@ -1,7 +1,5 @@
 package blang.engines;
 
-import java.io.PrintWriter;
-
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.Random;
@@ -13,6 +11,7 @@ import blang.inits.experiments.ExperimentResults;
 import blang.inits.experiments.tabwriters.TabularWriter;
 import blang.runtime.BlangTidySerializer;
 import blang.runtime.ChangeOfMeasureKernel;
+import blang.runtime.ExactSamplerKernel;
 import blang.runtime.SampledModel;
 import blang.runtime.objectgraph.GraphAnalysis;
 
@@ -32,7 +31,7 @@ public class PT extends ParallelTempering<SampledModel> implements PosteriorInfe
   @Override
   public void setSampledModel(SampledModel model) 
   {
-    initialize(new ChangeOfMeasureKernel(model), random);
+    initialize(new ChangeOfMeasureKernel(model), new ExactSamplerKernel(model), random);
   }
 
   @SuppressWarnings("unchecked")

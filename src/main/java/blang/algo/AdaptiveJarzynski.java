@@ -107,7 +107,7 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
     {
       P proposed = isInitial ?
-        kernels.sampleInitial(randoms[particleIndex]) :
+        kernels.sampleNext(randoms[particleIndex], null, 0.0) :
         kernels.sampleNext(randoms[particleIndex], currentPopulation.particles.get(particleIndex), nextTemperature);
       logWeights[particleIndex] = 
         (isInitial ? 0.0 : currentPopulation.particles.get(particleIndex).logDensityRatio(temperature, nextTemperature) + Math.log(currentPopulation.getNormalizedWeight(particleIndex)));

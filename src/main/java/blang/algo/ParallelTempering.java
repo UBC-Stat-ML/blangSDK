@@ -21,7 +21,7 @@ public class ParallelTempering<P extends TemperedParticle>
   @Arg                      @DefaultValue("Geometric")
   public TemperatureLadder<P> ladder = new Geometric<P>();
   
-  AnnealingKernels<P> kernels; 
+  AnnealingKernels<P> invariantKernels, exactBaseKernel;
   
   // convention: state index 0 is room temperature (target of interest)
   private P [] states;
@@ -40,28 +40,29 @@ public class ParallelTempering<P extends TemperedParticle>
   }
   
   @SuppressWarnings("unchecked")
-  public void initialize(AnnealingKernels<P> kernels, Random random)
+  public void initialize(AnnealingKernels<P> invariantKernels, AnnealingKernels<P> exactBaseKernel, Random random)
   {
-    this.kernels = kernels;
+    this.exactBaseKernel = exactBaseKernel;
+    this.invariantKernels = invariantKernels;
     temperingParameters = new ArrayList<>();
     List<P> initStates = new ArrayList<>();
-    ladder.temperingParameters(kernels, temperingParameters, initStates, nThreads.available);
+    ladder.temperingParameters(invariantKernels, temperingParameters, initStates, nThreads.available);
     System.out.println("Temperatures: " + temperingParameters);
     int nChains = temperingParameters.size();
-    states = initStates.isEmpty() ? defaultInit(kernels, nChains, random) : (P[]) initStates.toArray();
+    states = initStates.isEmpty() ? defaultInit(invariantKernels, exactBaseKernel, nChains, random) : (P[]) initStates.toArray();
     swapAcceptPrs = new SummaryStatistics[nChains - 1];
     for (int i = 0; i < nChains - 1; i++)
       swapAcceptPrs[i] = new SummaryStatistics();
     parallelRandomStreams =  Random.parallelRandomStreams(random, nChains);
   }
   
-  private static <P> P [] defaultInit(AnnealingKernels<P> kernels, int nChains, Random random)
+  private static <P> P [] defaultInit(AnnealingKernels<P> invariantKernels, AnnealingKernels<P> exactBaseKernel, int nChains, Random random)
   {
-    P oneCopy = kernels.sampleInitial(random);
+    P oneCopy = (exactBaseKernel == null ? invariantKernels : exactBaseKernel).sampleNext(random, null, 0.0);
     @SuppressWarnings({ "unchecked" })
     P [] result = (P []) new TemperedParticle[nChains];
     for (int i = 0; i < nChains; i++)
-      result[i] = kernels.deepCopy(oneCopy);
+      result[i] = invariantKernels.deepCopy(oneCopy);
     return result;
   }
   
@@ -79,7 +80,7 @@ public class ParallelTempering<P extends TemperedParticle>
   
   public void moveKernel(int nPasses)
   {
-    if (kernels.inPlace())
+    if (invariantKernels.inPlace())
       moveKernelInPlace(nPasses);
     else
       moveKernelAndAssign(nPasses);
@@ -89,9 +90,21 @@ public class ParallelTempering<P extends TemperedParticle>
   {
     BriefParallel.process(nChains(), nThreads.available, chainIndex -> 
     {
-      for (int i = 0; i < nPasses; i++)
-        kernels.sampleNext(parallelRandomStreams[chainIndex], states[chainIndex], temperingParameters.get(chainIndex));
+      if (usePriorOnlyChain(chainIndex))
+        exactBaseKernel.sampleNext(parallelRandomStreams[chainIndex], states[chainIndex], temperingParameters.get(chainIndex));
+      else
+        for (int i = 0; i < nPasses; i++)
+          invariantKernels.sampleNext(parallelRandomStreams[chainIndex], states[chainIndex], temperingParameters.get(chainIndex));
     });
+  }
+  
+  private boolean usePriorOnlyChain(int index)
+  {
+    if (exactBaseKernel == null)
+      return false;
+    if (nChains() == 1)
+      return false;
+    return index == nChains() - 1;
   }
   
   private void moveKernelAndAssign(int nPasses) 
@@ -99,14 +112,8 @@ public class ParallelTempering<P extends TemperedParticle>
     BriefParallel.process(nChains(), nThreads.available, chainIndex -> 
     {
       for (int i = 0; i < nPasses; i++)
-        states[chainIndex] = kernels.sampleNext(parallelRandomStreams[chainIndex], states[chainIndex], temperingParameters.get(chainIndex));
+        states[chainIndex] = invariantKernels.sampleNext(parallelRandomStreams[chainIndex], states[chainIndex], temperingParameters.get(chainIndex));
     });
-  }
-  
-  public static void main(String [] args)
-  {
-    int nc = Runtime.getRuntime().availableProcessors();
-    System.out.println(nc);
   }
   
   /**
@@ -121,7 +128,7 @@ public class ParallelTempering<P extends TemperedParticle>
     double logRatio = 
         states[i].logDensity(temperingParameters.get(j)) + states[j].logDensity(temperingParameters.get(i))
       - states[i].logDensity(temperingParameters.get(i)) + states[j].logDensity(temperingParameters.get(j));
-    if (random.nextBernoulli(Math.min(1.0, Math.log(logRatio))))
+    if (random.nextBernoulli(Math.min(1.0, Math.exp(logRatio))))
     {
       doSwap(i);
       return true;
