@@ -1,6 +1,6 @@
 package blang.examples.rockets
 
-model Simple {
+model Simple  {
 
   param GlobalDataSource data
   param Plate<String> rocketTypes
