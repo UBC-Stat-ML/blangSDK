@@ -34,7 +34,7 @@ class Runner extends Experiment {
   
   Model model
   
-  @Arg                   @DefaultValue("SMC")
+  @Arg                   @DefaultValue("SCM")
   PosteriorInferenceEngine engine = new SCM
   
   @Arg               @DefaultValue("false")
