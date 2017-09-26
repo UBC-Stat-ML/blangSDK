@@ -69,7 +69,12 @@ class Main {
     }
     
     // run
-    compiler.runCompiledModel(classpath, args)
+    try {
+      compiler.runCompiledModel(classpath, args)
+    } catch (BinaryExecutionException bee) {
+      // don't print: mirroring showed it already
+      System.exit(1)
+    }
   }
   
   def static Optional<String> requestedVersion(String[] strings) {

@@ -106,7 +106,9 @@ public class StandaloneCompiler  {
   }
   
   public void runCompiledModel(String classpath, String [] args) {
-    Command runnerCmd = javaCommand().withStandardOutMirroring()
+    Command runnerCmd = javaCommand()
+        .withStandardOutMirroring()
+        .throwOnNonZeroReturnCode()
         .appendArg("-cp").appendArg(classpath)
         .appendArg(Runner.class.getTypeName());
     for (String arg : args) {
