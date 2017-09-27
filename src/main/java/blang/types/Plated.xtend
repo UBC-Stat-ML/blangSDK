@@ -7,7 +7,6 @@ import blang.inits.GlobalArg
 import blang.inits.InitService
 import blang.inits.parsing.QualifiedName
 import blang.io.DataSource
-import blang.io.GlobalDataSourceStore
 import blang.types.internals.ColumnName
 import blang.types.internals.HashPlated
 import blang.types.internals.PlatedSlice
@@ -17,6 +16,7 @@ import com.google.inject.TypeLiteral
 import java.lang.reflect.ParameterizedType
 import java.util.Map.Entry
 import java.util.Optional
+import blang.io.internals.GlobalDataSourceStore
 
 /**
  * A random variable or parameter of type T enclosed in one or more Plates.

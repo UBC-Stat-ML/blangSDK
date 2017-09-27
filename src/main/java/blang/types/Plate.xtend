@@ -5,7 +5,6 @@ import blang.inits.DesignatedConstructor
 import blang.inits.ConstructorArg
 import blang.io.DataSource
 import blang.inits.GlobalArg
-import blang.io.GlobalDataSourceStore
 import blang.inits.InitService
 import com.google.inject.TypeLiteral
 import blang.inits.parsing.QualifiedName
@@ -15,6 +14,7 @@ import java.lang.reflect.ParameterizedType
 import blang.types.internals.SimpleParser
 import blang.types.internals.HashPlate
 import blang.types.internals.SimplePlate
+import blang.io.internals.GlobalDataSourceStore
 
 /**
  * A plate in a graphical mode. 

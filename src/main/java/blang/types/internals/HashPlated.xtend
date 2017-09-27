@@ -2,7 +2,7 @@ package blang.types.internals
 
 import blang.types.Plated
 import blang.types.Index
-import blang.runtime.objectgraph.SkipDependency
+import blang.runtime.internals.objectgraph.SkipDependency
 import blang.io.DataSource
 import java.util.Map
 import blang.types.NA

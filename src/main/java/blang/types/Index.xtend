@@ -1,7 +1,7 @@
 package blang.types
 
 import org.eclipse.xtend.lib.annotations.Data
-import blang.runtime.objectgraph.SkipDependency
+import blang.runtime.internals.objectgraph.SkipDependency
 
 /**
  * An Index of type K in a specified Plate.

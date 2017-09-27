@@ -2,7 +2,6 @@ package blang.runtime
 
 import blang.core.Model
 import blang.core.ModelBuilder
-import blang.engines.PosteriorInferenceEngine
 import blang.inits.Arg
 import blang.inits.ConstructorArg
 import blang.inits.Creator
@@ -17,20 +16,21 @@ import blang.inits.parsing.ConfigFile
 import blang.inits.parsing.Posix
 import blang.inits.parsing.QualifiedName
 import blang.inits.providers.CoreProviders
-import blang.io.GlobalDataSourceStore
-import blang.mcmc.BuiltSamplers
-import blang.mcmc.SamplerBuilder
-import blang.runtime.objectgraph.GraphAnalysis
-import blang.utils.Parsers
+import blang.mcmc.internals.BuiltSamplers
+import blang.mcmc.internals.SamplerBuilder
+import blang.io.Parsers
 import briefj.run.Results
-import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import java.io.File
 import java.util.Collections
 import java.util.Optional
 import java.util.Random
-import blang.engines.SCM
+import blang.engines.internals.PosteriorInferenceEngine
+import blang.engines.internals.factories.SCM
+import blang.io.internals.GlobalDataSourceStore
+import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
+import blang.runtime.internals.objectgraph.GraphAnalysis
 
-class Runner extends Experiment {
+class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
   Model model
   

@@ -4,6 +4,7 @@ import blang.types.Simplex
 import java.util.Random
 import blang.core.ConstrainedFactor
 import java.util.List
+import blang.mcmc.internals.Callback
 
 class SimplexSampler extends MHSampler<Simplex> {
   

@@ -1,7 +1,7 @@
 package blang.types.internals
 
 import org.eclipse.xtend.lib.annotations.Data
-import blang.runtime.objectgraph.SkipDependency
+import blang.runtime.internals.objectgraph.SkipDependency
 import java.util.LinkedHashSet
 import blang.types.Index
 import blang.types.Plate

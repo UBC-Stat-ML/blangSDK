@@ -3,6 +3,7 @@ package blang.mcmc;
 import java.util.Random;
 
 import blang.core.WritableIntVar;
+import blang.mcmc.internals.Callback;
 
 
 

@@ -2,8 +2,8 @@ package blang.runtime
 
 import org.eclipse.xtend.lib.annotations.Data
 import java.util.LinkedHashSet
-import blang.runtime.objectgraph.ObjectNode
-import blang.runtime.objectgraph.Node
+import blang.runtime.internals.objectgraph.Node
+import blang.runtime.internals.objectgraph.ObjectNode
 
 @Data
 class Observations {
@@ -11,6 +11,7 @@ class Observations {
    * All nodes accessible from these roots will be marked as observed in the accessibility graph analysis.
    */
   val LinkedHashSet<Node> observationRoots = new LinkedHashSet<Node>()
+  
   def <T> T markAsObserved(T object) {
     // ?
     val Node node = new ObjectNode(object)

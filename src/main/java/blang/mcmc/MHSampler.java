@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 import blang.core.LogScaleFactor;
+import blang.mcmc.internals.Callback;
 
 
 

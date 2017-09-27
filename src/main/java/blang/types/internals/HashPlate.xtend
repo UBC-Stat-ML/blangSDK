@@ -4,7 +4,7 @@ import blang.types.Plate
 import java.util.Map
 import java.util.LinkedHashMap
 import java.util.Set
-import blang.runtime.objectgraph.SkipDependency
+import blang.runtime.internals.objectgraph.SkipDependency
 import blang.types.Index
 import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.LinkedHashSet

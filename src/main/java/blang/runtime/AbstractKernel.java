@@ -1,7 +1,7 @@
 package blang.runtime;
 
 import bayonet.distributions.Random;
-import blang.algo.AnnealingKernels;
+import blang.engines.internals.AnnealingKernels;
 
 public abstract class AbstractKernel implements AnnealingKernels<SampledModel> 
 {

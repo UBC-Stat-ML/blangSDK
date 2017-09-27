@@ -4,7 +4,6 @@ import blang.types.Simplex
 import blang.types.TransitionMatrix
 import java.util.List
 
-import static blang.utils.StaticUtils.*
 
 model Texting {
   

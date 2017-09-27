@@ -5,12 +5,14 @@ import java.util.Optional
 import blang.inits.DesignatedConstructor
 import blang.inits.Arg
 import blang.inits.DefaultValue
-import blang.io.formats.CSV
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.Set
 import java.util.Collections
 import blang.types.internals.ColumnName
+import blang.io.internals.CSV
+import blang.io.internals.GlobalDataSourceStore
+import blang.io.internals.DataSourceReader
 
 /**
  * Description of an optional data source.

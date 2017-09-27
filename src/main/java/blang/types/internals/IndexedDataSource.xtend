@@ -1,6 +1,6 @@
 package blang.types.internals
 
-import blang.runtime.objectgraph.SkipDependency
+import blang.runtime.internals.objectgraph.SkipDependency
 import blang.io.DataSource
 import java.util.Map
 import java.util.Set
