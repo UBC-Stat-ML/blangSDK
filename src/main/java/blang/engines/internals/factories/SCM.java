@@ -8,8 +8,8 @@ import blang.engines.internals.PosteriorInferenceEngine;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.io.BlangTidySerializer;
-import blang.runtime.ChangeOfMeasureKernel;
 import blang.runtime.SampledModel;
+import blang.runtime.internals.model2kernel.ChangeOfMeasureKernel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 
 /**

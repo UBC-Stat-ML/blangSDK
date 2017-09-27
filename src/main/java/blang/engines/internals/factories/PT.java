@@ -11,9 +11,9 @@ import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.inits.experiments.tabwriters.TabularWriter;
 import blang.io.BlangTidySerializer;
-import blang.runtime.ChangeOfMeasureKernel;
-import blang.runtime.ExactSamplerKernel;
 import blang.runtime.SampledModel;
+import blang.runtime.internals.model2kernel.ChangeOfMeasureKernel;
+import blang.runtime.internals.model2kernel.ExactSamplerKernel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 
 public class PT extends ParallelTempering<SampledModel> implements PosteriorInferenceEngine  

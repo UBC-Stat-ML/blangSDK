@@ -1,6 +1,7 @@
-package blang.runtime;
+package blang.runtime.internals.model2kernel;
 
 import bayonet.distributions.Random;
+import blang.runtime.SampledModel;
 
 public class ExactSamplerKernel extends AbstractKernel
 {
