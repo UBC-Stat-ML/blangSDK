@@ -1,6 +1,5 @@
 package blang.examples
 
-@SamplerTypes(blang.mcmc.BaumWelch)
 model MarkovModel {  
   
   param Simplex initialDistribution     ?: simplex(2)
