@@ -1,4 +1,4 @@
-package blang.examples.mcmc
+package blang.examples
 
 import bayonet.distributions.Multinomial
 import bayonet.graphs.GraphUtils
@@ -8,7 +8,6 @@ import bayonet.marginal.algo.ExactSampler
 import bayonet.marginal.algo.SumProduct
 import blang.core.Factor
 import blang.core.LogScaleFactor
-import blang.core.SupportFactor 
 import blang.examples.MarkovModel
 import java.util.LinkedHashSet
 import java.util.List
