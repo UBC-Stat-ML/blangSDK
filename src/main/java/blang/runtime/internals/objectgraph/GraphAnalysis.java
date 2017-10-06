@@ -46,6 +46,19 @@ import briefj.collections.UnorderedPair;
  */
 public class GraphAnalysis
 {
+  public final Model model;
+  private Multimap<ObjectNode<Model>,ObjectNode<ModelComponent>> model2ModelComponents;
+  private AccessibilityGraph accessibilityGraph;
+  private final LinkedHashSet<Node> frozenNodesClosure;
+  private final LinkedHashSet<Node> freeMutableNodes;
+  private final LinkedHashSet<ObjectNode<?>> latentVariables;
+  private final LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
+  private final LinkedHashSet<ObjectNode<Factor>> factorNodes = new LinkedHashSet<>();
+  private final Predicate<Class<?>> isVariablePredicate;
+  private final Map<ObjectNode<ModelComponent>,String> factorDescriptions = new LinkedHashMap<>();
+  private final Observations observations;
+  private final RealScalar annealingParameter = new RealScalar(1.0);
+  
   public LinkedHashSet<ObjectNode<?>> getLatentVariables() 
   {
     return latentVariables;
@@ -60,18 +73,45 @@ public class GraphAnalysis
     return result;
   }
   
-  public Model model;
-  Multimap<ObjectNode<Model>,ObjectNode<ModelComponent>> model2ModelComponents;
-  AccessibilityGraph accessibilityGraph;
-  LinkedHashSet<Node> frozenNodesClosure;
-  LinkedHashSet<Node> freeMutableNodes;
-  LinkedHashSet<ObjectNode<?>> latentVariables;
-  LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
-  LinkedHashSet<ObjectNode<Factor>> factorNodes;
-  Predicate<Class<?>> isVariablePredicate;
-  Map<ObjectNode<ModelComponent>,String> factorDescriptions;
-  Observations observations;
-  RealScalar annealingParameter = new RealScalar(1.0);
+  public boolean hasObservations()
+  {
+    return !observations.getObservationRoots().isEmpty();
+  }
+  
+  public List<ForwardSimulator> createForwardSimulator()
+  {
+    return createForwardSimulator(model);
+  }
+  
+  /**
+   * Anneal only the factors emitting observed values.
+   * 
+   * @return (set of annealed factors, set of non-annealed (fixed) factors)
+   */
+  public AnnealingStructure createLikelihoodAnnealer()
+  {
+    List<AnnealedFactor> annealedFactors = new ArrayList<>(); 
+    List<Factor> fixedFactors = new ArrayList<>(); 
+    createLikelihoodAnnealer(model, annealedFactors, fixedFactors);
+    
+    AnnealingStructure result = new AnnealingStructure(annealingParameter);
+    for (AnnealedFactor annealed : annealedFactors)
+    {
+      annealed.setAnnealingParameter(annealingParameter); 
+      if (annealed instanceof ExponentiatedFactor)
+        result.exponentiatedFactors.add((ExponentiatedFactor) annealed);
+      else
+        result.otherAnnealedFactors.add(annealed);
+    }
+    for (Factor fixed : fixedFactors)
+    {
+      if (fixed instanceof LogScaleFactor)
+        result.fixedLogScaleFactors.add((LogScaleFactor) fixed);
+      else
+        result.otherFixedFactors.add(fixed);
+    }
+    return result;
+  }
   
   public GraphAnalysis(Model model, Observations observations)
   {
@@ -145,10 +185,8 @@ public class GraphAnalysis
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private void buildModelComponentsHierarchy(boolean wrapInAnnealableFactors)
   {
-    factorDescriptions = new LinkedHashMap<>();
     model2ModelComponents = Multimaps.newMultimap(new LinkedHashMap<>(), () -> new LinkedHashSet<>());
     buildModelComponentsHierarchy(model, wrapInAnnealableFactors);
-    factorNodes = new LinkedHashSet<>();
     for (ObjectNode<ModelComponent> node : model2ModelComponents.values())
       if (node.object instanceof Factor)
         factorNodes.add((ObjectNode) node);
@@ -178,36 +216,6 @@ public class GraphAnalysis
         model2ModelComponents.put(currentNode, childNode);
       }
     }
-  }
-  
-  /**
-   * Anneal only the factors emitting observed values.
-   * 
-   * @return (set of annealed factors, set of non-annealed (fixed) factors)
-   */
-  public AnnealingStructure createLikelihoodAnnealer()
-  {
-    List<AnnealedFactor> annealedFactors = new ArrayList<>(); 
-    List<Factor> fixedFactors = new ArrayList<>(); 
-    createLikelihoodAnnealer(model, annealedFactors, fixedFactors);
-    
-    AnnealingStructure result = new AnnealingStructure(annealingParameter);
-    for (AnnealedFactor annealed : annealedFactors)
-    {
-      annealed.setAnnealingParameter(annealingParameter); 
-      if (annealed instanceof ExponentiatedFactor)
-        result.exponentiatedFactors.add((ExponentiatedFactor) annealed);
-      else
-        result.otherAnnealedFactors.add(annealed);
-    }
-    for (Factor fixed : fixedFactors)
-    {
-      if (fixed instanceof LogScaleFactor)
-        result.fixedLogScaleFactors.add((LogScaleFactor) fixed);
-      else
-        result.otherFixedFactors.add(fixed);
-    }
-    return result;
   }
   
   private void createLikelihoodAnnealer(Model model, List<AnnealedFactor> annealedFactors, List<Factor> fixedFactors)
@@ -245,16 +253,6 @@ public class GraphAnalysis
       else
         factors.add((T) component);
     }
-  }
-  
-  public boolean hasObservations()
-  {
-    return !observations.getObservationRoots().isEmpty();
-  }
-  
-  public List<ForwardSimulator> createForwardSimulator()
-  {
-    return createForwardSimulator(model);
   }
   
   @SuppressWarnings("unchecked")
