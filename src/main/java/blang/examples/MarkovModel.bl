@@ -2,14 +2,10 @@ package blang.examples
 
 model MarkovModel {  
   
-  param Simplex initialDistribution     ?: simplex(2)
-  param TransitionMatrix transitionProbabilities  ?: 
-    transitionMatrix(#[
-      #[0.99,  0.01],
-      #[0.01,  0.99]
-    ])
+  param Simplex initialDistribution     
+  param TransitionMatrix transitionProbabilities  
   
-  random List<IntVar> chain             ?: listOfIntVars(5)
+  random List<IntVar> chain             
    
   laws { 
     // Initial distribution:

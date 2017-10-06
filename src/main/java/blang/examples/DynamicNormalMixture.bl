@@ -3,27 +3,15 @@ package blang.examples
 model DynamicNormalMixture  { 
   
   random List<RealVar>     observations 
-  random List<IntVar>      states                   ?: listOfIntVars(observations.size)
+  random List<IntVar>      states                   
   
-  param  int               nLatentStates            ?: 2
+  param  int               nLatentStates            
   
-  random Simplex           initialDistribution      ?: simplex(nLatentStates)
-  random TransitionMatrix  transitionProbabilities  ?: transitionMatrix(nLatentStates)
-  random List<RealVar>     means                    ?: listOfRealVars(nLatentStates),
-                           variances                ?: listOfRealVars(nLatentStates)
+  random Simplex           initialDistribution      
+  random TransitionMatrix  transitionProbabilities  
+  random List<RealVar>     means, variances 
            
-  param  RealVar           hyperMean                ?: 0.0, 
-                           hyperVariance            ?: 1.0
-  param  RealVar           hyperShape               ?: 1.0,
-                           hyperRate                ?: 1.0
-  
-  param  Matrix            concentrations           ?: {
-    val Matrix result = dense(nLatentStates) // TODO: fix and add ones(..)
-    for (i : 0 ..< nLatentStates) {
-      result.set(i, 0, 1.0)
-    }
-    return result
-  }        
+  param  Matrix            concentrations    
   
   laws {
     // Priors on initial and transition probabilities
@@ -34,8 +22,8 @@ model DynamicNormalMixture  {
     
     // Priors on means and variances
     for (int latentStateIdx : 0 ..< means.size) {
-      means.get(latentStateIdx)     | hyperMean,  hyperVariance ~ Normal(hyperMean, hyperVariance)
-      variances.get(latentStateIdx) | hyperShape, hyperRate     ~ Gamma(hyperShape, hyperRate)
+      means.get(latentStateIdx)  ~ Normal(0.0, 1.0)
+      variances.get(latentStateIdx) ~ Gamma(1.0, 1.0)
     }
     
     states | initialDistribution, transitionProbabilities  
