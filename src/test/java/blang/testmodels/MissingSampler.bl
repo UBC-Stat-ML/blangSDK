@@ -1,8 +1,0 @@
-package blang.testmodels
-
-import blang.testmodels.UnsamplableType
-
-model MissingSampler {
-  random UnsamplableType offender ?: new UnsamplableType
-  laws {}
-}
