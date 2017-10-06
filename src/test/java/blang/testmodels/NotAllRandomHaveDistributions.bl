@@ -1,0 +1,12 @@
+package blang.testmodels
+
+model NotAllRandomHaveDistributions {
+  
+  random RealVar x1 ?: realVar(1.0), x2 ?: realVar(1.0)
+  
+  laws {
+    
+    x1 ~ Normal(0.0, 1.0)
+  }
+  
+}

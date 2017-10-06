@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.ext.VertexNameProvider;
 
 import com.google.common.collect.LinkedHashMultimap;
@@ -255,6 +256,33 @@ public class GraphAnalysis
     }
   }
   
+  public void checkDAG()
+  {
+    for (ObjectNode<Model> model : model2ModelComponents.keySet())
+      checkDAG(model.object);
+  }
+  
+  private void checkDAG(Model model) 
+  {
+    boolean allComponentsAreFactor = true;
+    ObjectNode<Model> modelNode = new ObjectNode<>(model);
+    loop : for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
+      if (!(componentNode.object instanceof Factor))
+      {
+        allComponentsAreFactor = false;
+        break loop;
+      }
+    if (allComponentsAreFactor)
+      return;
+    DirectedGraph<Node, ?> directedGraph = null;
+    try { directedGraph = directedGraph(model); }
+    catch (NotAllComponentsAreModels nacam) { throw new RuntimeException(model.getClass().getSimpleName() + ": cannot be checked for DAG status as its components contains a mix of factors and models"); }
+    
+    CycleDetector<Node, ?> cycleDetector = new CycleDetector<>(directedGraph);
+    if (cycleDetector.detectCycles())
+      throw new RuntimeException("Cycle detected in " + model.getClass().getSimpleName());
+  }
+  
   @SuppressWarnings("unchecked")
   private List<ForwardSimulator> createForwardSimulator(Model model)
   {
@@ -266,20 +294,53 @@ public class GraphAnalysis
         return Collections.singletonList((ForwardSimulator) model);
     }
     
+    DirectedGraph<Node,?> graph = null;
+    try { graph = directedGraph(model); }
+    catch (NotAllComponentsAreModels nacam) { throw new RuntimeException(model.getClass().getSimpleName() + ": If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed"); }
+    List<ForwardSimulator> result = new ArrayList<>();
+    List<Node> linearization = GraphUtils.linearization(graph);
     ObjectNode<Model> modelNode = new ObjectNode<>(model);
-    DirectedGraph<Node,?> graph = GraphUtils.newDirectedGraph(); // a bipartite graph over the children componentNodes and their fields
+    for (Node node : linearization)
+      if (model2ModelComponents.get(modelNode).contains(node)) // recall that the graph is bipartite (see above)
+        result.addAll(createForwardSimulator((Model) ((ObjectNode<Model>) node).object));
+    
+    return result;  
+  }
+  
+  @SuppressWarnings("serial")
+  private static class NotAllComponentsAreModels extends RuntimeException {}
+ 
+  /**
+   * Create a directed bipartite graph between the free mutable nodes and the components. 
+   * 
+   * Assume all the components of the Model provided are themselves Model's
+   * 
+   * Also check each random variable is exactly once at the RHS of a ~ statement.
+   */
+  private DirectedGraph<Node, ?> directedGraph(Model model) 
+  {
+    Set<ObjectNode<?>> generatedRandomVariables = new LinkedHashSet<>();
+    ObjectNode<Model> modelNode = new ObjectNode<>(model);
+    DirectedGraph<Node, ?> graph = GraphUtils.newDirectedGraph(); // a bipartite graph over the children componentNodes and their fields
     for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
     {
       graph.addVertex(componentNode);
       
       ModelComponent component = componentNode.object;
       if (!(component instanceof Model))
-        throw new RuntimeException(model.getClass().getSimpleName() + ": If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed");
+        throw new NotAllComponentsAreModels();
       
       for (Field field : ReflexionUtils.getDeclaredFields(component.getClass(), true))
       {
         boolean isParam = field.getAnnotation(Param.class) != null;
         Object dependencyRoot = ReflexionUtils.getFieldValue(field, component);
+        if (!isParam) 
+        {
+          ObjectNode<?> randomVariableNode = new ObjectNode<>(dependencyRoot);
+          if (generatedRandomVariables.contains(randomVariableNode)) 
+            throw new RuntimeException("The component " + component.getClass().getSimpleName() + " generated a random variable that already had a distribution");
+          generatedRandomVariables.add(randomVariableNode);
+        }
         accessibilityGraph.getAccessibleNodes(dependencyRoot)
           .filter(node -> freeMutableNodes.contains(node))
           .forEachOrdered(node -> {
@@ -290,15 +351,25 @@ public class GraphAnalysis
             });
       }
     }
-    List<ForwardSimulator> result = new ArrayList<>();
-    List<Node> linearization = GraphUtils.linearization(graph);
-    for (Node node : linearization)
-      if (model2ModelComponents.get(modelNode).contains(node)) // recall that the graph is bipartite (see above)
-        result.addAll(createForwardSimulator((Model) ((ObjectNode<Model>) node).object));
-    
-    return result;  
+    if (!generatedRandomVariables.equals(allRandomVariableNodes(model)))
+      throw new RuntimeException("Not all random variables were provided with a distribution in " + model.getClass().getSimpleName());
+    return graph;
   }
- 
+
+  private Object allRandomVariableNodes(Model model) 
+  {
+    Set<ObjectNode<?>> result = new LinkedHashSet<>();
+    for (Field field : ReflexionUtils.getDeclaredFields(model.getClass(), true))
+    {
+      boolean isParam = field.getAnnotation(Param.class) != null;
+      Object dependencyRoot = ReflexionUtils.getFieldValue(field, model);
+      ObjectNode<?> randomVariableNode = new ObjectNode<>(dependencyRoot);
+      if (isParam)
+        result.add(randomVariableNode);
+    }
+    return result;
+  }
+
   private boolean allRandomNodesObserved(Model model) 
   {
     Boolean result = null;

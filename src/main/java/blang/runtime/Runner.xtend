@@ -32,7 +32,7 @@ import blang.runtime.internals.objectgraph.GraphAnalysis
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
-  Model model
+  val Model model
   
   @Arg                   @DefaultValue("SCM")
   PosteriorInferenceEngine engine = new SCM
@@ -40,12 +40,15 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   @Arg               @DefaultValue("false")
   boolean printAccessibilityGraph = false
   
-  @GlobalArg
-  Observations observations = new Observations
+  @Arg  @DefaultValue("true")
+  boolean checkIsDAG = true
   
   @Arg(description = "Version of the blang SDK to use (see https://github.com/UBC-Stat-ML/blangSDK/releases), of the form of a git tag x.y.z where x >= 2. If omitted, use the local SDK's 'master' version.")
   public Optional<String> version // Only used when called from Main 
   public static final String VERSION_FIELD_NAME = "version" 
+  
+  @GlobalArg
+  Observations observations = new Observations
   
   @DesignatedConstructor
   new(
@@ -134,6 +137,8 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     }
   }
   
+  public static class NotDAG extends RuntimeException { new(String s) { super(s) }}
+  
   val public static final String SAMPLE_FILE = "samples.csv"
   override void run() {
     val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations)
@@ -144,6 +149,13 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     }
     val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis)
     println(kernels)
+    if (checkIsDAG) {
+      try {
+        graphAnalysis.checkDAG
+      } catch (RuntimeException re) {
+        throw new NotDAG(re.toString + "\nTo disable check for DAG, use the option --checkIsDAG")
+      }
+    }
     val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, new Random(1))
     engine.sampledModel = sampledModel
     engine.performInference
