@@ -17,7 +17,7 @@ import blang.runtime.internals.objectgraph.GraphAnalysis;
  */
 public class SCM extends AdaptiveJarzynski<SampledModel> implements PosteriorInferenceEngine
 {
-  @GlobalArg ExperimentResults results;
+  @GlobalArg ExperimentResults results = new ExperimentResults();
   
   ChangeOfMeasureKernel kernel;
   

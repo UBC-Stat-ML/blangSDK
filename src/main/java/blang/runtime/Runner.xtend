@@ -29,6 +29,8 @@ import blang.engines.internals.factories.SCM
 import blang.io.internals.GlobalDataSourceStore
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.runtime.internals.objectgraph.GraphAnalysis
+import java.util.Set
+import blang.runtime.internals.UncoveredVariables
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
@@ -41,11 +43,14 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   boolean printAccessibilityGraph = false
   
   @GlobalArg
-  Observations observations
+  Observations observations = new Observations
   
   @Arg(description = "Version of the blang SDK to use (see https://github.com/UBC-Stat-ML/blangSDK/releases), of the form of a git tag x.y.z where x >= 2. If omitted, use the local SDK's 'master' version.")
   public Optional<String> version // Only used when called from Main 
   public static final String VERSION_FIELD_NAME = "version" 
+  
+  @Arg            @DefaultValue("true")
+  boolean checkSamplerCoverage = true
   
   @DesignatedConstructor
   new(
@@ -144,6 +149,12 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     }
     val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis)
     println(kernels)
+    if (checkSamplerCoverage) {
+      val Set<Class<?>> offenders = graphAnalysis.uncoveredVariableTypes(kernels.correspondingVariables)
+      if (!offenders.empty) {
+        throw new UncoveredVariables(offenders)
+      }
+    }
     val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, new Random(1))
     engine.sampledModel = sampledModel
     engine.performInference

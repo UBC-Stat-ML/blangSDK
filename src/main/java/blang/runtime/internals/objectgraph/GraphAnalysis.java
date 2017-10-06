@@ -113,6 +113,17 @@ public class GraphAnalysis
     return result;
   }
   
+  public Set<Class<?>> uncoveredVariableTypes(List<ObjectNode<?>> sampledVariables)
+  {
+    Set<Class<?>> result = new LinkedHashSet<>();
+    LinkedHashSet<ObjectNode<?>> latentVariables = new LinkedHashSet<>(this.latentVariables);
+    for (ObjectNode<?> sampledVariable : sampledVariables)
+      accessibilityGraph.getAccessibleNodes(sampledVariable).forEach(connected -> latentVariables.remove(connected));
+    for (ObjectNode<?> remaining : latentVariables)
+      result.add(remaining.object.getClass());
+    return result;
+  }
+  
   public GraphAnalysis(Model model, Observations observations)
   {
     this.model = model;
