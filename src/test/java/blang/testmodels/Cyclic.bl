@@ -1,5 +1,7 @@
 package blang.testmodel
 
+//import blang.distributions.Normal
+
 model Cyclic {
   
   random RealVar 

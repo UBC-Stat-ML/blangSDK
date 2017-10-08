@@ -21,4 +21,12 @@ public class BuiltSamplers
   {
     return Joiner.on("\n").join(matchingReport);
   }
+  
+  public BuiltSamplers restrict(int i)
+  {
+    BuiltSamplers result = new BuiltSamplers();
+    result.list.add(this.list.get(i));
+    result.correspondingVariables.add(this.correspondingVariables.get(i));
+    return result;
+  }
 }
