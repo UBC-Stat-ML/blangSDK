@@ -109,16 +109,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs, Creator creator) {
-    if (!useSimplifiedArguments(rawArguments)) {
-      return
-    }
-    val boolean parsedSuccessfully = try {
-      creator.init(Runner, parsedArgs)
-      true
-    } catch (Exception e) {
-      false
-    }
-    if (!parsedSuccessfully && !new File(CONFIG_FILE_NAME).exists) {
+    if (useSimplifiedArguments(rawArguments) && !new File(CONFIG_FILE_NAME).exists) {
       println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:\n\n")
     }
   }
