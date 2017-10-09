@@ -1,8 +1,8 @@
-package blang.runtime
+package blang.validation.internals
 
 import org.junit.Assert
 
-class TestSupport {
+class Helpers {
   def static void assertThrownExceptionMatches(Runnable code, Throwable expectedException) {
     assertThrownExceptionMatches(code, expectedException, true)
   }

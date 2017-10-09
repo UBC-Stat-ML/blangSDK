@@ -1,10 +1,11 @@
-package blang.distributions;
+package blang.validation.internals.tests;
 
 import org.junit.Test;
 
-import blang.runtime.ExactTest;
-import blang.runtime.TestSupport;
 import blang.types.StaticUtils;
+import blang.validation.ExactTest;
+import blang.validation.internals.Helpers;
+import blang.validation.internals.fixtures.BadNormal;
 
 /**
  * A test for the exact test, to make sure 
@@ -14,7 +15,7 @@ public class TestExactTest
   @Test
   public void checkBadNormalDetected()
   {
-    TestSupport.setOkToUseDefectiveImplementation();
+    Helpers.setOkToUseDefectiveImplementation();
     
     ExactTest exact = new ExactTest();
     

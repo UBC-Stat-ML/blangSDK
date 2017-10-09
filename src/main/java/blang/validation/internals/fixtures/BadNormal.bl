@@ -1,6 +1,6 @@
-package blang.distributions
+package blang.validation.internals.fixtures
 
-import blang.runtime.TestSupport
+import blang.validation.internals.Helpers
 
 model BadNormal {
   
@@ -20,7 +20,7 @@ model BadNormal {
     }
     
     logf(mean, variance, realization)  {
-      TestSupport::checkOkToUseDefectiveImplementation 
+      Helpers::checkOkToUseDefectiveImplementation 
       return - ((mean - realization) ** 2) / variance
     }
     

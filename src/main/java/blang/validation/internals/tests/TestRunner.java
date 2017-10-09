@@ -1,12 +1,14 @@
-package blang.runtime;
+package blang.validation.internals.tests;
 
 import org.junit.Test;
 
 import blang.core.ModelBuilder;
+import blang.runtime.Runner;
+import blang.runtime.Runner.NotDAG;
 import blang.testmodel.Cyclic;
-import blang.testmodel.Cyclic.Builder;
 import blang.testmodels.GenerateTwice;
 import blang.testmodels.NotAllRandomHaveDistributions;
+import blang.validation.internals.Helpers;
 
 public class TestRunner 
 {
@@ -33,6 +35,6 @@ public class TestRunner
   public void checkDAGViolation(ModelBuilder builder)
   {
     Runner runner = new Runner(builder);
-    TestSupport.assertTypeOfThrownExceptionMatches(() -> runner.run(), new Runner.NotDAG(""));
+    Helpers.assertTypeOfThrownExceptionMatches(() -> runner.run(), new Runner.NotDAG(""));
   }
 }

@@ -1,4 +1,4 @@
-package blang.runtime;
+package blang.validation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,8 @@ import blang.inits.Implementations;
 import blang.mcmc.Sampler;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.mcmc.internals.SamplerBuilder;
+import blang.runtime.Observations;
+import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import briefj.BriefCollections;
 

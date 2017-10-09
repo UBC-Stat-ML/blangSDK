@@ -1,9 +1,11 @@
-package blang.distributions;
+package blang.validation.internals.tests;
 
 import org.junit.Test;
 
-import blang.runtime.ExactTest;
+import blang.distributions.Normal;
+import blang.distributions.Normal.Builder;
 import blang.types.StaticUtils;
+import blang.validation.ExactTest;
 
 public class TestExactSDKDistributions 
 {
