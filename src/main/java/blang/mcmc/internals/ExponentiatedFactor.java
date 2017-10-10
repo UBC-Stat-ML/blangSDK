@@ -3,6 +3,7 @@ package blang.mcmc.internals;
 import blang.core.AnnealedFactor;
 import blang.core.LogScaleFactor;
 import blang.core.RealVar;
+import blang.runtime.internals.objectgraph.SkipDependency;
 
 
 public class ExponentiatedFactor implements AnnealedFactor
@@ -15,6 +16,7 @@ public class ExponentiatedFactor implements AnnealedFactor
    * 
    * If null, use exponent = 1
    */
+  @SkipDependency 
   private RealVar exponent = null;
   
   /*
@@ -52,7 +54,7 @@ public class ExponentiatedFactor implements AnnealedFactor
   }
   
   /**
-   * @return -EXP if exponent is one, o.w., - (0.5 + 0.5 * exponent) * 1E100
+   * @return -INF if exponent is one, o.w., - (0.5 + 0.5 * exponent) * 1E100
    * 
    * RATIONALE: during annealing (exp < 1), we want to strongly discourage hard constraint 
    * violation, but setting gamma to -INF prevents us from e.g. comparing particles with 

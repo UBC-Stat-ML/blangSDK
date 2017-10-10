@@ -31,6 +31,7 @@ import blang.core.LogScaleFactor;
 import blang.core.Model;
 import blang.core.ModelComponent;
 import blang.core.Param;
+import blang.core.SupportFactor;
 import blang.mcmc.internals.ExponentiatedFactor;
 import blang.mcmc.internals.SamplerBuilder;
 import blang.runtime.Observations;
@@ -55,10 +56,14 @@ public class GraphAnalysis
   private final LinkedHashSet<ObjectNode<?>> latentVariables;
   private final LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
   private final LinkedHashSet<ObjectNode<Factor>> factorNodes = new LinkedHashSet<>();
-  private final Predicate<Class<?>> isVariablePredicate;
+  private final Predicate<Class<?>> isVariablePredicate = c -> 
+    !SamplerBuilder.SAMPLER_PROVIDER_1.getProducts(c).isEmpty() ||
+    !SamplerBuilder.SAMPLER_PROVIDER_2.getProducts(c).isEmpty();
   private final Map<ObjectNode<ModelComponent>,String> factorDescriptions = new LinkedHashMap<>();
   private final Observations observations;
   private final RealScalar annealingParameter = new RealScalar(1.0);
+  private final boolean wrapInAnnealableFactors = true;
+  private final boolean wrapInSafeFactor = true;
   
   public LinkedHashSet<ObjectNode<?>> getLatentVariables() 
   {
@@ -71,6 +76,14 @@ public class GraphAnalysis
     accessibilityGraph.getAccessibleNodes(latentVariable)
         .filter(node -> freeMutableNodes.contains(node))
         .forEachOrdered(node -> result.addAll(mutableToFactorCache.get(node)));
+    return result;
+  }
+  
+  public LinkedHashSet<Node> getFreeMutableNodes(ObjectNode<?> root)
+  {
+    LinkedHashSet<Node> result = new LinkedHashSet<>();
+    accessibilityGraph.getAccessibleNodes(root)
+      .filter(node -> freeMutableNodes.contains(node)).forEachOrdered(result::add);
     return result;
   }
   
@@ -119,42 +132,93 @@ public class GraphAnalysis
     this.model = model;
     this.observations = observations;
     
-    // 0- setup first layer of data structures
-    buildModelComponentsHierarchy(true);
+    // setup first layer of data structures
+    buildModelComponentsHierarchy();
     buildAccessibilityGraph();
     
     // frozen variables are either observed or the top level param's
     LinkedHashSet<Node> frozenRoots = buildFrozenRoots(model, observations);
     
-    isVariablePredicate = c -> 
-      !SamplerBuilder.SAMPLER_PROVIDER_1.getProducts(c).isEmpty() ||
-      !SamplerBuilder.SAMPLER_PROVIDER_2.getProducts(c).isEmpty();
-    
-    // 1- compute the closure of the frozen variables
+    // compute the closure of the frozen variables
     frozenNodesClosure = new LinkedHashSet<>();
     frozenNodesClosure.addAll(closure(accessibilityGraph.graph, frozenRoots, true));
     
-    // 2- find the free mutable nodes, i.e. those mutable (i.e. non-final fields, array entries, etc)  and not frozen
+    // find the free mutable nodes, i.e. those mutable (i.e. non-final fields, array entries, etc)  and not frozen
     freeMutableNodes = new LinkedHashSet<>();
     accessibilityGraph.getAccessibleNodes()
         .filter(node -> node.isMutable())
         .filter(node -> !frozenNodesClosure.contains(node))
         .forEachOrdered(freeMutableNodes::add);
     
-    // 3- identify the latent variables
+    // identify the latent variables (those with specified samplers and free mutable nodes under)
     latentVariables = latentVariables(
         accessibilityGraph, 
         freeMutableNodes, 
         isVariablePredicate);
     
-    // 4- prepare the cache
+    // prepare the cache mutable -> factors having access to it
     mutableToFactorCache = LinkedHashMultimap.create();
     for (ObjectNode<Factor> factorNode : factorNodes) 
       accessibilityGraph.getAccessibleNodes(factorNode)
         .filter(node -> freeMutableNodes.contains(node))
         .forEachOrdered(node -> mutableToFactorCache.put(node, factorNode));
+    
+    if (wrapInSafeFactor)
+      initializeSafeFactors();
   }
   
+  private void initializeSafeFactors() 
+  {
+    for (ObjectNode<Factor> factorNode : factorNodes)
+    {
+      Factor factor = factorNode.object;
+      SafeFactor safe = getSafeFactor(factor);
+      if (safe != null)
+      {
+        Set<ObjectNode<SupportFactor>> supports = new LinkedHashSet<>();
+        Set<Node> accessibilityConstraint = getFreeMutableNodes(factorNode);
+        
+        for (Node node : accessibilityConstraint)
+        {
+          Set<ObjectNode<Factor>> candidates = mutableToFactorCache.get(node);
+          for (ObjectNode<Factor> candidateNode : candidates)
+          {
+            SupportFactor candidate = getSupportFactor(candidateNode.object);
+            if (candidate != null)
+            {
+              LinkedHashSet<Node> candidateAccessible = getFreeMutableNodes(candidateNode);
+              candidateAccessible.removeAll(accessibilityConstraint);
+              if (candidateAccessible.size() == 1) // the only one allowed is the exponent dependency
+                supports.add(new ObjectNode<SupportFactor>(candidate));
+            }
+          }
+        }
+        for (ObjectNode<SupportFactor> supportNode : supports)
+          safe.preconditions.add(supportNode.object);
+      }
+    }
+  }
+
+  private SupportFactor getSupportFactor(Factor factor) 
+  {
+    if (factor instanceof SupportFactor)
+      return (SupportFactor) factor;
+    if (factor instanceof ExponentiatedFactor)
+      return getSupportFactor(((ExponentiatedFactor) factor).enclosed);
+    if (factor instanceof SafeFactor)
+      return getSupportFactor(((SafeFactor) factor).enclosed);
+    return null;
+  }
+
+  private SafeFactor getSafeFactor(Factor factor) 
+  {
+    if (factor instanceof SafeFactor)
+      return (SafeFactor) factor;
+    if (factor instanceof ExponentiatedFactor)
+      return getSafeFactor(((ExponentiatedFactor) factor).enclosed);
+    return null;
+  }
+
   private void buildAccessibilityGraph() 
   {
     accessibilityGraph = new AccessibilityGraph();
@@ -184,10 +248,10 @@ public class GraphAnalysis
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  private void buildModelComponentsHierarchy(boolean wrapInAnnealableFactors)
+  private void buildModelComponentsHierarchy()
   {
     model2ModelComponents = Multimaps.newMultimap(new LinkedHashMap<>(), () -> new LinkedHashSet<>());
-    buildModelComponentsHierarchy(model, wrapInAnnealableFactors);
+    buildModelComponentsHierarchy(model);
     for (ObjectNode<ModelComponent> node : model2ModelComponents.values())
       if (node.object instanceof Factor)
         factorNodes.add((ObjectNode) node);
@@ -195,7 +259,7 @@ public class GraphAnalysis
   
   @SuppressWarnings("unchecked")
   private void buildModelComponentsHierarchy(
-      ModelComponent modelComponent, boolean wrapInAnnealableFactors)
+      ModelComponent modelComponent)
   {
     @SuppressWarnings("rawtypes")
     ObjectNode currentNode = new ObjectNode<>(modelComponent);
@@ -206,14 +270,18 @@ public class GraphAnalysis
       for (ModelComponent subComponent : subComponents)
       {
         String description = subComponent.toString();
+        boolean isLogScale = subComponent instanceof LogScaleFactor;
+        boolean isCustomAnneal = subComponent instanceof AnnealedFactor;
+        if (wrapInSafeFactor && isLogScale && !(subComponent instanceof SupportFactor))
+          subComponent = new SafeFactor((LogScaleFactor) subComponent);
         if (   wrapInAnnealableFactors  // we asked to wrap things in annealers
-            && subComponent instanceof LogScaleFactor  // and it's numeric (not a constraint-based factor)
-            && !(subComponent instanceof AnnealedFactor))  // and it's not already annealed via custom mechanism
+            && isLogScale  // and it's numeric (not a measure-zero constraint-based factor)
+            && !isCustomAnneal)  // and it's not already annealed via custom mechanism
           subComponent = new ExponentiatedFactor((LogScaleFactor) subComponent);
         ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);
         if (subComponent instanceof Factor)
           factorDescriptions.put(childNode, description);
-        buildModelComponentsHierarchy(subComponent, wrapInAnnealableFactors);
+        buildModelComponentsHierarchy(subComponent);
         model2ModelComponents.put(currentNode, childNode);
       }
     }
@@ -343,7 +411,7 @@ public class GraphAnalysis
         }
         accessibilityGraph.getAccessibleNodes(dependencyRoot)
           .filter(node -> freeMutableNodes.contains(node))
-          .forEachOrdered(node -> {
+          .forEachOrdered((Node node) -> {
             graph.addVertex(node);
             graph.addEdge(
               isParam ? node          : componentNode, 

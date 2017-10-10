@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.stat.inference.TestUtils;
+import org.junit.Assert;
 
 import com.google.common.primitives.Doubles;
 
@@ -36,13 +38,11 @@ public class ExactTest
   @Arg             @DefaultValue("10")
   int nPosteriorSamplesPerIndep = 10;
   
+  @Arg      @DefaultValue("0.005")
+  double familyWiseError = 0.005;
+  
   private List<TestResult> results = new ArrayList<>();
-  
-  public List<Double> pValues()
-  {
-    return results.stream().map(result -> test.pValue(result.fStats, result.fpStats)).collect(Collectors.toList());
-  }
-  
+
   public <M extends Model> void addTest(M model, Function<M, Double> testFunction) 
   {
     GraphAnalysis analysis = new GraphAnalysis(model, new Observations());
@@ -59,22 +59,73 @@ public class ExactTest
     }
   }
   
-  public static class TestResult
+  public double correctedPValue()
+  {
+    if (results.isEmpty())
+      throw new RuntimeException("Need to add tests first.");
+    return 1.0 - Math.pow(1.0 - familyWiseError, 1.0/((double) results.size()));
+  }
+  
+  public List<TestResult> failedTests()
+  {
+    // compute via Sidak since tests are independent by construction
+    List<TestResult> offenders = new ArrayList<>();
+    double corrected = correctedPValue();
+    for (TestResult result : results)
+      if (result.pValue < corrected)
+        offenders.add(result);
+    return offenders;
+  }
+  
+  public void check()
+  {
+    List<TestResult> failedTests = failedTests();
+    if (!failedTests.isEmpty())
+      Assert.fail("Some test(s) failed:\n" + format(failedTests));
+    else
+      System.out.println("All tests passed:\n" + format(results));
+  }
+  
+  public static String format(List<TestResult> failedTests) 
+  {
+    return 
+        
+        failedTests.stream().map(t -> t.toString()).collect(Collectors.joining("\n"));
+  }
+
+  public class TestResult
   {
     public final Model model;
     public final Function<?,Double> testFunction;
     public final Sampler sampler;
     public final List<Double> fStats, fpStats;
-    public TestResult(Model model, Function<?, Double> testFunction, Sampler sampler, List<Double> fStats,
-        List<Double> fpStats) {
+    public final SummaryStatistics fSummary, fpSummary;
+    public final double pValue;
+    public TestResult(
+        Model model, 
+        Function<?, Double> testFunction, 
+        Sampler sampler, List<Double> fStats,
+        List<Double> fpStats) 
+    {
       super();
       this.model = model;
       this.testFunction = testFunction;
       this.sampler = sampler;
       this.fStats = fStats;
       this.fpStats = fpStats;
+      this.pValue = test.pValue(fStats, fpStats);
+      if (Double.isNaN(pValue))
+        throw new RuntimeException();
+      this.fSummary  = new SummaryStatistics(); for (double v : fStats)  fSummary.addValue(v);
+      this.fpSummary = new SummaryStatistics(); for (double v : fpStats) fpSummary.addValue(v); 
     }
-
+    @Override
+    public String toString()
+    {
+      return "" + model.getClass().getSimpleName() + '\t' + testFunction.getClass().getSimpleName() + '\t' + pValue + '\t' 
+          + fSummary.getMean()  + "(" + fSummary.getStandardDeviation() + ")" + '\t'
+          + fpSummary.getMean() + "(" + fpSummary.getStandardDeviation() + ")"; 
+    }
   }
   
   private <M> List<Double> sample(SampledModel sampledModel, M model, Function<M, Double> testFunction, boolean withPosterior) 

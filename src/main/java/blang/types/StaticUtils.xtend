@@ -20,6 +20,14 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   
   //// Initialization utilities
   
+  def static IntVar intVar() {
+    return intVar(Integer::MIN_VALUE)
+  }
+  
+  def static RealVar realVar() {
+    return realVar(Double::NaN)
+  }
+  
   def static IntVar intVar(int initialValue) {
     return new IntScalar(initialValue)
   }
