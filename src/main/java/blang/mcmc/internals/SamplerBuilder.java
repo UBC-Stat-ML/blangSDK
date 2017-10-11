@@ -14,7 +14,7 @@ import blang.mcmc.Samplers;
 import blang.runtime.internals.RecursiveAnnotationProducer;
 import blang.runtime.internals.TypeProvider;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
-import blang.runtime.internals.objectgraph.ObjectNode;
+import blang.runtime.internals.objectgraph.Node;
 import briefj.ReflexionUtils;
 
 
@@ -29,21 +29,22 @@ public class SamplerBuilder
   public static BuiltSamplers build(GraphAnalysis graphAnalysis, Set<Class<Sampler>> additionalSamplers, Set<Class<Sampler>> excludedSamplers)
   {
     BuiltSamplers result = new BuiltSamplers();
-    for (ObjectNode<?> latent : graphAnalysis.getLatentVariables())
+    for (Node latentNode : graphAnalysis.getLatentVariables())
     {
+      Object latent = GraphAnalysis.getLatentObject(latentNode);
       SamplerMatch current = new SamplerMatch(latent);
       // add samplers coming from Samplers annotations
-      innerLoop:for (Class<? extends Sampler> product : SAMPLER_PROVIDER_1.getProducts(latent.object.getClass())) 
+      innerLoop:for (Class<? extends Sampler> product : SAMPLER_PROVIDER_1.getProducts(latent.getClass())) 
       {
         if (excludedSamplers.contains(product)) 
           continue innerLoop;
-        Sampler o = tryInstantiate(product, latent, graphAnalysis);
+        Sampler o = tryInstantiate(product, latentNode, graphAnalysis);
         if (o != null)
-          add(result, current, o, latent);
+          add(result, current, o, latentNode);
       }
       
       // add samplers coming from SamplerTypes annotations
-      innerLoop:for (String product : SAMPLER_PROVIDER_2.getProducts(latent.object.getClass()))
+      innerLoop:for (String product : SAMPLER_PROVIDER_2.getProducts(latent.getClass()))
       {
         @SuppressWarnings("rawtypes")
         Class opClass = null;
@@ -51,18 +52,18 @@ public class SamplerBuilder
         if (excludedSamplers.contains(opClass)) 
           continue innerLoop;
         @SuppressWarnings("unchecked")
-        Sampler o = tryInstantiate(opClass, latent, graphAnalysis);
+        Sampler o = tryInstantiate(opClass, latentNode, graphAnalysis);
         if (o != null)
-          add(result, current, o, latent);
+          add(result, current, o, latentNode);
       }
       
       // add sampler from additional list
       for (Class<Sampler> additionalSamplerClass : additionalSamplers)
         if (!excludedSamplers.contains(additionalSamplerClass)) 
         {
-          Sampler o = tryInstantiate(additionalSamplerClass, latent, graphAnalysis);
+          Sampler o = tryInstantiate(additionalSamplerClass, latentNode, graphAnalysis);
           if (o != null) 
-            add(result, current, o, latent);
+            add(result, current, o, latentNode);
         }
       
       result.matchingReport.add(current);
@@ -72,7 +73,7 @@ public class SamplerBuilder
   
   private SamplerBuilder() {}
   
-  private static void add(BuiltSamplers result, SamplerMatch match, Sampler product, ObjectNode<?> variable)
+  private static void add(BuiltSamplers result, SamplerMatch match, Sampler product, Node variable)
   {
     result.list.add(product);
     match.matchedSamplers.add(product.getClass());
@@ -81,7 +82,7 @@ public class SamplerBuilder
   
   public static <O extends Sampler> O tryInstantiate(
       Class<O> operatorClass, 
-      ObjectNode<?> variable,
+      Node variable,
       GraphAnalysis graphAnalysis)
   {
     List<? extends Factor> factors = 
@@ -101,7 +102,7 @@ public class SamplerBuilder
     NodeMoveUtils.assignFactorConnections(instantiated, factors, fieldsToPopulate);
     
     // fill the variable node too; make sure there is only one such field
-    NodeMoveUtils.assignVariable(instantiated, variable.object);
+    NodeMoveUtils.assignVariable(instantiated, GraphAnalysis.getLatentObject(variable));
     
     // fill other injected variables
     NodeMoveUtils.assignGraphAnalysis(instantiated, graphAnalysis);

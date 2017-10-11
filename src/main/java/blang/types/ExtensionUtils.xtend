@@ -2,15 +2,15 @@ package blang.types
 
 import blang.core.RealVar
 import xlinear.Matrix
-import blang.types.RealMatrixComponent
 import blang.core.IntVar
 import java.util.List
 import bayonet.distributions.Random
+import blang.runtime.internals.objectgraph.MatrixConstituentNode
 
 class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
   def static RealVar getRealVar(Matrix m, int row, int col) {
-    return new RealMatrixComponent(row, col, m)
+    return new MatrixConstituentNode(m, row, col)
   }
   
   def static RealVar getRealVar(Matrix m, int index) {

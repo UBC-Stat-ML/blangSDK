@@ -5,14 +5,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import blang.mcmc.Sampler;
-import blang.runtime.internals.objectgraph.ObjectNode;
 
 public class SamplerMatch
 {
   public final Class<?> latentClass;
   public final Set<Class<? extends Sampler>> matchedSamplers;
-  public SamplerMatch(ObjectNode<?> node) {
-    this.latentClass = node.object.getClass();
+  public SamplerMatch(Object latentObject) {
+    this.latentClass = latentObject.getClass();
     this.matchedSamplers = new LinkedHashSet<>();
   }
   

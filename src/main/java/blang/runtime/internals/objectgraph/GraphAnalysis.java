@@ -1,7 +1,6 @@
 package blang.runtime.internals.objectgraph;
 
 import java.io.File;
-import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +37,6 @@ import blang.mcmc.internals.ExponentiatedFactor;
 import blang.mcmc.internals.SamplerBuilder;
 import blang.runtime.Observations;
 import blang.types.RealScalar;
-import briefj.BriefIO;
 import briefj.ReflexionUtils;
 import briefj.collections.UnorderedPair;
 
@@ -56,7 +54,7 @@ public class GraphAnalysis
   private AccessibilityGraph accessibilityGraph;
   private final LinkedHashSet<Node> frozenNodesClosure;
   private final LinkedHashSet<Node> freeMutableNodes;
-  private final LinkedHashSet<ObjectNode<?>> latentVariables;
+  private final LinkedHashSet<Node> latentVariables;
   private final LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
   private final LinkedHashSet<ObjectNode<Factor>> factorNodes = new LinkedHashSet<>();
   private final Predicate<Class<?>> isVariablePredicate = c -> 
@@ -68,12 +66,12 @@ public class GraphAnalysis
   private final boolean wrapInAnnealableFactors = true;
   private final boolean wrapInSafeFactor = true;
   
-  public LinkedHashSet<ObjectNode<?>> getLatentVariables() 
+  public LinkedHashSet<Node> getLatentVariables() 
   {
     return latentVariables;
   }
         
-  public LinkedHashSet<ObjectNode<Factor>> getConnectedFactor(ObjectNode<?> latentVariable)
+  public LinkedHashSet<ObjectNode<Factor>> getConnectedFactor(Node latentVariable)
   {
     LinkedHashSet<ObjectNode<Factor>> result = new LinkedHashSet<>();
     accessibilityGraph.getAccessibleNodes(latentVariable)
@@ -489,7 +487,7 @@ public class GraphAnalysis
       factorGraph.addVertex(f);
     
     // add latent variables and connect them
-    for (ObjectNode<?> l : latentVariables)
+    for (Node l : latentVariables)
     {
       factorGraph.addVertex(l);
       for (Node n : getConnectedFactor(l))
@@ -506,7 +504,7 @@ public class GraphAnalysis
   public String toStringSummary()
   {
     StringBuilder result = new StringBuilder();
-    for (ObjectNode<?> latentVar : latentVariables)
+    for (Node latentVar : latentVariables)
     {
       result.append(latentVar.toStringSummary() + "\n");
       for (ObjectNode<Factor> connectedFactor : getConnectedFactor(latentVar))
@@ -520,33 +518,39 @@ public class GraphAnalysis
    * 1. some free mutable nodes under it 
    * 2. AND a class identified to be a variable (i.e. such that samplers can attach to them)
    */
-  private static LinkedHashSet<ObjectNode<?>> latentVariables(
+  private static LinkedHashSet<Node> latentVariables(
       AccessibilityGraph accessibilityGraph,
       final Set<Node> freeMutableNodes,
       Predicate<Class<?>> isVariablePredicate
       )
   {
     // find the ObjectNode's which have some unobserved mutable nodes under them
-    LinkedHashSet<ObjectNode<?>> ancestorsOfUnobservedMutableNodes = new LinkedHashSet<>();
-    closure(accessibilityGraph.graph, freeMutableNodes, false).stream()
-        .filter(node -> node instanceof ObjectNode<?>)
-        .map(node -> (ObjectNode<?>) node)
-        .forEachOrdered(ancestorsOfUnobservedMutableNodes::add);
+    LinkedHashSet<Node> ancestorsOfUnobservedMutableNodes = closure(accessibilityGraph.graph, freeMutableNodes, false);
     
     // for efficiency, apply the predicate on the set of the associated classes
     LinkedHashSet<Class<?>> matchedVariableClasses = new LinkedHashSet<>();
     ancestorsOfUnobservedMutableNodes.stream()
-      .map(node -> node.object.getClass())
+      .map(GraphAnalysis::getLatentClass)
       .filter(isVariablePredicate)
       .forEachOrdered(matchedVariableClasses::add);
     
     // return the ObjectNode's which have some unobserved mutable nodes under them 
     // AND which have a class identified to be a variable (i.e. such that samplers can attach to them)
-    LinkedHashSet<ObjectNode<?>> result = new LinkedHashSet<>();
+    LinkedHashSet<Node> result = new LinkedHashSet<>();
     ancestorsOfUnobservedMutableNodes.stream()
-        .filter(node -> matchedVariableClasses.contains(node.object.getClass()))
+        .filter(node -> matchedVariableClasses.contains(getLatentClass(node)))
         .forEachOrdered(result::add);  
     return result;
+  }
+  
+  private static Class<?> getLatentClass(Node node)
+  {
+    return getLatentObject(node).getClass();
+  }
+  
+  public static Object getLatentObject(Node node)
+  {
+    return node instanceof ObjectNode<?> ? ((ObjectNode<?>) node).object : node;
   }
   
   static <V,E> LinkedHashSet<V> closure(

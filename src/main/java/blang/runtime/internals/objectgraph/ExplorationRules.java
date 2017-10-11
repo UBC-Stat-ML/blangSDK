@@ -7,13 +7,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.xtext.xbase.lib.Pair;
 
 import briefj.ReflexionUtils;
 import xlinear.DenseMatrix;
 import xlinear.Matrix;
 import xlinear.SparseMatrix;
-import xlinear.internals.Slice;
 
 
 

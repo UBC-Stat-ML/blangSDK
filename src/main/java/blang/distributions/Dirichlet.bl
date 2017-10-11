@@ -1,11 +1,9 @@
 package blang.distributions
 
-import org.apache.commons.math3.distribution.GammaDistribution
-
 
 model Dirichlet {
   
-  random Simplex realization
+  random Simplex realization 
   
   param  Matrix concentrations 
   
@@ -36,11 +34,10 @@ model Dirichlet {
   }
   
   generate(rand) { 
-    val randomGenerator = rand.generator
     var double sum = 0.0
     for (var int d = 0; d < concentrations.nEntries; d++)
     {
-      val double gammaVariate = new GammaDistribution(randomGenerator, 1.0, 1.0 / concentrations.get(d)).sample
+      val double gammaVariate = Gamma.distribution(concentrations.get(d), 1.0).sample(rand)
       realization.set(d, gammaVariate)
       sum += gammaVariate
     }

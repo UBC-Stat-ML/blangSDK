@@ -156,7 +156,7 @@ public class AccessibilityGraph
     return getAccessibleNodes(new ObjectNode<>(from));
   }
   
-  public Stream<Node> getAccessibleNodes(ObjectNode<?> from)
+  public Stream<Node> getAccessibleNodes(Node from)
   {
     return toStream(new BreadthFirstIterator<>(graph, from));
   }

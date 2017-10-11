@@ -32,7 +32,7 @@ import blang.mcmc.internals.BuiltSamplers;
 import blang.mcmc.internals.ExponentiatedFactor;
 import blang.runtime.internals.objectgraph.AnnealingStructure;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
-import blang.runtime.internals.objectgraph.ObjectNode;
+import blang.runtime.internals.objectgraph.Node;
 import blang.types.RealScalar;
 import briefj.BriefLists;
 import briefj.BriefLog;
@@ -335,7 +335,7 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
     Set<ExponentiatedFactor> annealedFactors = new HashSet<>(annealingStructure.exponentiatedFactors);
     for (int samplerIndex = 0; samplerIndex < samplers.list.size(); samplerIndex++)
     {
-      ObjectNode<?> sampledVariable = samplers.correspondingVariables.get(samplerIndex);
+      Node sampledVariable = samplers.correspondingVariables.get(samplerIndex);
       List<? extends Factor> factors = 
           graphAnalysis.getConnectedFactor(sampledVariable).stream()
             .map(node -> node.object)

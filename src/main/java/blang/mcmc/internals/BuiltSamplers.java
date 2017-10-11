@@ -8,12 +8,12 @@ import java.util.Set;
 import com.google.common.base.Joiner;
 
 import blang.mcmc.Sampler;
-import blang.runtime.internals.objectgraph.ObjectNode;
+import blang.runtime.internals.objectgraph.Node;
 
 public class BuiltSamplers
 {
   public final List<Sampler> list = new ArrayList<Sampler>();
-  public final List<ObjectNode<?>> correspondingVariables = new ArrayList<>();
+  public final List<Node> correspondingVariables = new ArrayList<>();
   public final Set<SamplerMatch> matchingReport = new LinkedHashSet<>();
   
   @Override
