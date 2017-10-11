@@ -16,7 +16,7 @@ public class ExponentiatedFactor implements AnnealedFactor
    * 
    * If null, use exponent = 1
    */
-  @SkipDependency 
+  @SkipDependency(isMutable = false)
   private RealVar exponent = null;
   
   /*

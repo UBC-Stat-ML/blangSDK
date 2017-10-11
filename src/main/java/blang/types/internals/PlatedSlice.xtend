@@ -10,10 +10,10 @@ class PlatedSlice<T> implements Plated<T> {
   
   val Map<Query, T> variables = new LinkedHashMap
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   val Query sliceIndices
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   val Plated<T> parent
   
   override T get(Index<?>... indices) {

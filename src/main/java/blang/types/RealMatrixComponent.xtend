@@ -17,7 +17,7 @@ class RealMatrixComponent implements WritableRealVar {
    * We skip because there is a special exploration rule 
    * with Matrix that creates canonical components.
    */
-  @SkipDependency
+  @SkipDependency(isMutable = true)
   val Matrix containerMatrix
   
   override set(double value) {

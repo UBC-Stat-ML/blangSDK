@@ -18,10 +18,10 @@ class HashPlated<T> implements Plated<T> {
   
   val Map<Query, T> variables = new LinkedHashMap
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   transient val IndexedDataSource index
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   transient val Parser<T> parser
   
   override T get(Index<?>... indices) {

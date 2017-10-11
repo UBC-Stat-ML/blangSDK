@@ -15,7 +15,7 @@ import briefj.CSV
 @Data // important! this is used in hash tables
 class Query {
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   val Set<Index<?>> indices
   
   override String toString() {

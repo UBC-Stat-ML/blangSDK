@@ -12,9 +12,9 @@ import blang.runtime.internals.objectgraph.SkipDependency
 @Data // important! this is used in hash tables
 class Index<K> {  
 
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   public val Plate<K> plate 
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   public val K key 
 }

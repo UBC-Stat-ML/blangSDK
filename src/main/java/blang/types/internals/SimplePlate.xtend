@@ -15,7 +15,7 @@ class SimplePlate<T> implements Plate<T> {
   @Accessors(PUBLIC_GETTER)
   val ColumnName name
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   val Set<Index<T>> indices
   
   /**

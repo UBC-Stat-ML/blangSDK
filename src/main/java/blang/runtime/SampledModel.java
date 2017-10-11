@@ -339,6 +339,7 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
       List<? extends Factor> factors = 
           graphAnalysis.getConnectedFactor(sampledVariable).stream()
             .map(node -> node.object)
+            .filter(factor -> factor instanceof LogScaleFactor)
             .collect(Collectors.toList());
       List<Integer> 
         annealedIndices = new ArrayList<>(),

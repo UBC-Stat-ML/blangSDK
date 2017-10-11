@@ -19,10 +19,10 @@ class IndexedDataSource {
   val ColumnName columnName
   
   @Accessors(PUBLIC_GETTER)
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   val DataSource dataSource
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   val Map<QueryType, Map<Query, Set<String>>> cache = new LinkedHashMap
   
   val boolean allowManyQueryTypes

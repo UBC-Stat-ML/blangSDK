@@ -29,6 +29,4 @@ class SimplexSampler extends MHSampler<Simplex> {
       variable.set(lastDim, lastValue)
     }
   }
-  
-  
 }

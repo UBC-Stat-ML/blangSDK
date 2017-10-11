@@ -101,9 +101,9 @@ public class ExplorationRules
   
     // find all fields (including those of super class(es), recursively, if any
     for (Field f : ReflexionUtils.getDeclaredFields(object.getClass(), true))
-      if (f.getAnnotationsByType(SkipDependency.class).length == 0) // skip those annotated by @SkipDependency
+      if (f.getAnnotation(SkipDependency.class) == null) // skip those annotated by @SkipDependency
         result.add(new FieldConstituentNode(object, f));
-      else
+      else if (f.getAnnotation(SkipDependency.class).isMutable())
         result.add(new SkippedFieldConstituentNode(object, f));
     
     return result;

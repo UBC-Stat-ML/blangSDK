@@ -1,6 +1,7 @@
 package blang.runtime.internals.objectgraph;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.CycleDetector;
@@ -36,6 +38,7 @@ import blang.mcmc.internals.ExponentiatedFactor;
 import blang.mcmc.internals.SamplerBuilder;
 import blang.runtime.Observations;
 import blang.types.RealScalar;
+import briefj.BriefIO;
 import briefj.ReflexionUtils;
 import briefj.collections.UnorderedPair;
 
@@ -184,13 +187,8 @@ public class GraphAnalysis
           for (ObjectNode<Factor> candidateNode : candidates)
           {
             SupportFactor candidate = getSupportFactor(candidateNode.object);
-            if (candidate != null)
-            {
-              LinkedHashSet<Node> candidateAccessible = getFreeMutableNodes(candidateNode);
-              candidateAccessible.removeAll(accessibilityConstraint);
-              if (candidateAccessible.size() == 1) // the only one allowed is the exponent dependency
-                supports.add(new ObjectNode<SupportFactor>(candidate));
-            }
+            if (candidate != null && accessibilityConstraint.containsAll(getFreeMutableNodes(candidateNode))) // the only one allowed is the exponent dependency
+              supports.add(new ObjectNode<SupportFactor>(candidate));
           }
         }
         for (ObjectNode<SupportFactor> supportNode : supports)
@@ -459,7 +457,9 @@ public class GraphAnalysis
 
   public void exportAccessibilityGraphVisualization(File file)
   {
-    accessibilityGraph.exportDot(file); 
+    DotExporter<Node, Pair<Node, Node>> dotExporter = accessibilityGraph.toDotExporter();
+    dotExporter.addVertexAttribute("fillcolor", node -> frozenNodesClosure.contains(node) ? "grey" : ""); 
+    dotExporter.export(file);
   }
   
   public void exportFactorGraphVisualization(File file) 

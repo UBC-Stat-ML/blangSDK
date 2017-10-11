@@ -24,13 +24,13 @@ class HashPlate<K> implements Plate<K> {
    */
   val int maxSize
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   val Map<Query, Set<Index<K>>> indices = new LinkedHashMap
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   transient val IndexedDataSource index
   
-  @SkipDependency
+  @SkipDependency(isMutable = false)
   transient val Parser<K> parser
   
   override Iterable<Index<K>> indices(Index<?>... parentIndices) {

@@ -88,9 +88,7 @@ public class ExactTest
   
   public static String format(List<TestResult> failedTests) 
   {
-    return 
-        
-        failedTests.stream().map(t -> t.toString()).collect(Collectors.joining("\n"));
+    return failedTests.stream().map(t -> t.toString()).collect(Collectors.joining("\n"));
   }
 
   public class TestResult
