@@ -5,18 +5,23 @@ import org.eclipse.xtext.xbase.lib.Pair;
 import blang.core.WritableRealVar;
 import blang.mcmc.RealNaiveMHSampler;
 import blang.mcmc.Samplers;
+import blang.mcmc.SimplexSampler;
 import xlinear.Matrix;
 import xlinear.internals.Slice;
 
-@Samplers({RealNaiveMHSampler.class}) 
+@Samplers({RealNaiveMHSampler.class, SimplexSampler.class}) 
 public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>> implements WritableRealVar
 {
-  protected final Matrix container;
+  public final Matrix container;
+  public final int row;
+  public final int col;
   
   public MatrixConstituentNode(Matrix matrix, int row, int col) 
   {
     super(findRoot(matrix), getRootKey(matrix, row, col));
     this.container = findRoot(matrix);
+    this.row = row;
+    this.col = col;
   }
   
   private static Pair<Integer,Integer> getRootKey(Matrix matrix, int row, int col)
