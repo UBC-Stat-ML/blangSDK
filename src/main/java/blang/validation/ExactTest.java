@@ -49,6 +49,8 @@ public class ExactTest
   {
     GraphAnalysis analysis = new GraphAnalysis(model, new Observations());
     BuiltSamplers kernels = SamplerBuilder.build(analysis);
+    if (kernels.list.isEmpty())
+      throw new RuntimeException("No kernels produced by model to be tested");
     for (int samplerIndex = 0; samplerIndex < kernels.list.size(); samplerIndex++)
     {
       BuiltSamplers currentKernel = kernels.restrict(samplerIndex);

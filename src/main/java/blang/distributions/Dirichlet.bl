@@ -3,9 +3,9 @@ package blang.distributions
 
 model Dirichlet {
   
-  random Simplex realization 
+  random Simplex realization ?: simplex(2)
   
-  param  Matrix concentrations 
+  param  Matrix concentrations ?: denseCopy(#[1,2])
   
   laws {
     
@@ -35,6 +35,7 @@ model Dirichlet {
   
   generate(rand) { 
     var double sum = 0.0
+    
     for (var int d = 0; d < concentrations.nEntries; d++)
     {
       val double gammaVariate = Gamma.distribution(concentrations.get(d), 1.0).sample(rand)

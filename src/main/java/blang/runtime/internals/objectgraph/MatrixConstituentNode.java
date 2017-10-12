@@ -5,11 +5,10 @@ import org.eclipse.xtext.xbase.lib.Pair;
 import blang.core.WritableRealVar;
 import blang.mcmc.RealNaiveMHSampler;
 import blang.mcmc.Samplers;
-import blang.mcmc.SimplexSampler;
 import xlinear.Matrix;
 import xlinear.internals.Slice;
 
-@Samplers({RealNaiveMHSampler.class, SimplexSampler.class}) 
+@Samplers({RealNaiveMHSampler.class}) 
 public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>> implements WritableRealVar
 {
   public final Matrix container;

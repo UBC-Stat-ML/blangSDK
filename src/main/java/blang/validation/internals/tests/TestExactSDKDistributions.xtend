@@ -30,16 +30,16 @@ class TestExactSDKDistributions {
   
   
   @Test def void test() {
-    var ExactTest exact = new ExactTest => [
+    var ExactTest exact = new ExactTest => [ 
       
-//      addTest(new Normal.Builder().setMean([0.2]).setVariance([0.1]).setRealization(realVar).build, realRealizationSquared)
-//      addTest(new Bernoulli.Builder().setProbability([0.2]).setRealization(intVar).build,           intRealizationSquared)
-//      addTest(new Beta.Builder().setAlpha([0.1]).setBeta([0.3]).setRealization(realVar).build,      realRealizationSquared)
-//      addTest(new Binomial.Builder().setProbabilityOfSuccess([0.3]).setNumberOfTrials([3]).setNumberOfSuccesses(intVar).build,   intRealizationSquared)
-//      addTest(new Categorical.Builder().setProbabilities(simplex(#[0.2, 0.3, 0.5])).setRealization(intVar).build,   intRealizationSquared)
-//      addTest(new ContinuousUniform.Builder().setMin([-1.1]).setMax([-0.05]).setRealization(realVar).build,      realRealizationSquared)
-      addTest(new Dirichlet.Builder().setConcentrations(denseCopy(#[1.0, 2.0])).setRealization(simplex(2)).build, [getRealization().get(0)])
-
+      addTest(new Normal.Builder().setMean([0.2]).setVariance([0.1]).setRealization(realVar).build, realRealizationSquared)
+      addTest(new Bernoulli.Builder().setProbability([0.2]).setRealization(intVar).build,           intRealizationSquared)
+      addTest(new Beta.Builder().setAlpha([0.1]).setBeta([0.3]).setRealization(realVar).build,      realRealizationSquared)
+      addTest(new Binomial.Builder().setProbabilityOfSuccess([0.3]).setNumberOfTrials([3]).setNumberOfSuccesses(intVar).build,   intRealizationSquared)
+      addTest(new Categorical.Builder().setProbabilities(simplex(#[0.2, 0.3, 0.5])).setRealization(intVar).build,   intRealizationSquared)
+      addTest(new ContinuousUniform.Builder().setMin([-1.1]).setMax([-0.05]).setRealization(realVar).build,      realRealizationSquared)
+      addTest(new Dirichlet.Builder().setConcentrations(denseCopy(#[0.2, 3.1, 5.0])).setRealization(simplex(3)).build, vectorHash) 
+ 
 //      addTest(new Exponential.Builder().setRate([2.3]).setRealization(realVar).build, realRealizationSquared)
 //      addTest(new Gamma.Builder().setRate([2.1]).setShape([0.9]).setRealization(realVar).build, realRealizationSquared)
 //      addTest(new MultivariateNormal.Builder().setMean(denseCopy(#[-3.1, 0.0, 1.2])).setPrecision(precision.cholesky).setRealization(dense(3)).build,      vectorHash)
