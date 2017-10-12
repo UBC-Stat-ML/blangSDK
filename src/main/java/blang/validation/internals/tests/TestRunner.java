@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import blang.core.ModelBuilder;
 import blang.runtime.Runner;
-import blang.runtime.Runner.NotDAG;
 import blang.testmodel.Cyclic;
 import blang.testmodels.GenerateTwice;
 import blang.testmodels.NotAllRandomHaveDistributions;
@@ -12,8 +11,6 @@ import blang.validation.internals.Helpers;
 
 public class TestRunner 
 {
-
-  
   @Test
   public void checkCyclesDetected()
   {

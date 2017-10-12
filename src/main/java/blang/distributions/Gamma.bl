@@ -43,6 +43,6 @@ model Gamma {
   }
   
   generate(rand) {
-    new GammaDistribution(rand.generator, shape, rate).sample
+    new GammaDistribution(rand.generator, shape, 1.0/rate).sample
   }
 }

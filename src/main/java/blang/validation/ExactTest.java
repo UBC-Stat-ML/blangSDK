@@ -32,8 +32,8 @@ public class ExactTest
   @Arg @DefaultValue("TTest")
   Test test     = new TTest();
   
-  @Arg       @DefaultValue("1000")
-  int nIndependentSamples = 1000;
+  @Arg       @DefaultValue("10_000")
+  int nIndependentSamples = 10_000;
   
   @Arg             @DefaultValue("10")
   int nPosteriorSamplesPerIndep = 10;
@@ -42,6 +42,8 @@ public class ExactTest
   double familyWiseError = 0.005;
   
   private List<TestResult> results = new ArrayList<>();
+  
+  // TODO: add a test with all samplers 
 
   public <M extends Model> void addTest(M model, Function<M, Double> testFunction) 
   {
@@ -120,9 +122,9 @@ public class ExactTest
     @Override
     public String toString()
     {
-      return "" + model.getClass().getSimpleName() + '\t' + testFunction.getClass().getSimpleName() + '\t' + pValue + '\t' 
-          + fSummary.getMean()  + "(" + fSummary.getStandardDeviation() + ")" + '\t'
-          + fpSummary.getMean() + "(" + fpSummary.getStandardDeviation() + ")"; 
+      return "" + model.getClass().getSimpleName() + '\t' + sampler.getClass().getSimpleName() + "\t" + testFunction.getClass().getSimpleName() + '\t' + pValue + '\t' 
+          + fSummary.getMean()  + "(" + fSummary.getStandardDeviation() /Math.sqrt(fSummary.getN()) + ")" + '\t'
+          + fpSummary.getMean() + "(" + fpSummary.getStandardDeviation()/Math.sqrt(fpSummary.getN()) + ")"; 
     }
   }
   

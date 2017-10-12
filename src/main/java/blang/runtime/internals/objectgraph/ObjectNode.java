@@ -1,25 +1,5 @@
 package blang.runtime.internals.objectgraph;
 
-/**
- * TODO: This comment block is development note, to be erased later.
- * Example of how to create a slice:
- * 
- * class MyArrayView implements ArrayView
- * {
- *   @PartiallyAccessedArray
- *   private double [] theArray;
- *   
- *   @Override
- *   public Collection<Integer> getAccessibleIndices()
- *   {
- *     ...
- *   }
- * }
- * 
- * with a custom rule that by passes the array reference.
- * 
- * Same for sublist, etc.
- */
 
 public class ObjectNode<T> implements Node
 {

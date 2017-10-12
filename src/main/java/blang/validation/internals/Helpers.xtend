@@ -3,13 +3,13 @@ package blang.validation.internals
 import org.junit.Assert
 import blang.validation.internals.fixtures.RealRealizationSquared
 import blang.validation.internals.fixtures.IntRealizationSquared
-import blang.validation.internals.fixtures.SimplexHash
+import blang.validation.internals.fixtures.VectorHash
 
 class Helpers {
   
   public val static RealRealizationSquared realRealizationSquared = new RealRealizationSquared()
   public val static IntRealizationSquared intRealizationSquared = new IntRealizationSquared()
-  public val static SimplexHash simplexHash = new SimplexHash()
+  public val static VectorHash vectorHash = new VectorHash()
   
   def static void assertThrownExceptionMatches(Runnable code, Throwable expectedException) {
     assertThrownExceptionMatches(code, expectedException, true)

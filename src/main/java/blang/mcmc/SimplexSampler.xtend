@@ -2,16 +2,19 @@ package blang.mcmc
 
 import java.util.Random
 import blang.core.ConstrainedFactor
-import java.util.List
 import blang.mcmc.internals.Callback
 import blang.runtime.internals.objectgraph.MatrixConstituentNode
+import blang.types.Simplex
 
 class SimplexSampler extends MHSampler<MatrixConstituentNode> {
   
   @ConnectedFactor
-  protected List<ConstrainedFactor> constrained
+  protected ConstrainedFactor constrained
   
   override boolean setup() {
+    if (constrained === null || !(constrained.object instanceof Simplex)) {
+      return false // do not use if not constrained
+    }
     // no need to resample last entry
     return index !== variable.container.nEntries - 1
   }
@@ -21,7 +24,6 @@ class SimplexSampler extends MHSampler<MatrixConstituentNode> {
   }
   
   override void propose(Random random, Callback callback) {
-
     val int sampledDim = index
     val int lastDim = variable.container.nEntries - 1
     val double oldValue = variable.container.get(sampledDim)

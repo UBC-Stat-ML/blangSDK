@@ -50,22 +50,23 @@ public class AccessibilityGraph
   /**
    * The root of the graph, i.e. where the accessibility analysis was initiated
    */
-  public final LinkedHashSet<ObjectNode<?>> roots = new LinkedHashSet<>();
+  public final LinkedHashSet<Node> roots = new LinkedHashSet<>();
   
   /**
-   * Note that in the graph, object nodes points to constituent nodes only; and constituent nodes points to object nodes only. 
+   * Note that in the graph, object nodes points to constituent nodes only. 
    * Constituent nodes always have at most one outgoing edge (zero in the case of primitives), and object nodes can have zero, one, or 
    * more constituents. 
    */
-  private <K> void addEdgeAndVertices(ObjectNode<?> objectNode, ConstituentNode<K> constituentNode)
+  private void addEdgeAndVertices(ObjectNode<?> objectNode, ConstituentNode<?> constituentNode)
   {
     _addEdgeAndVertices(objectNode, constituentNode);
   }
   
   /**
-   * See addEdgeAndVertices(ObjectNode objectNode, ConstituentNode<K> constituentNode)
+   * Constituents nodes generally point to ObjectNode, except in the cases where the ObjectNode encapsulates a 
+   * ConstituentNode (e.g. for matrix view into a cell).
    */
-  private <K> void addEdgeAndVertices(ConstituentNode<K> constituentNode, ObjectNode<?> objectNode)
+  private void addEdgeAndVertices(ConstituentNode<?> constituentNode, Node objectNode)
   {
     _addEdgeAndVertices(constituentNode, objectNode);
   }
@@ -91,49 +92,58 @@ public class AccessibilityGraph
   
   private final List<ExplorationRule> explorationRules;
   
-  public void add(Object root)
+  public void add(Object object)
   {
-    add(new ObjectNode<>(root));
-  }
-  
-  public void add(ObjectNode<?> root)
-  {
+    Node root = Node.get(object);
     roots.add(root);
     
     if (graph.vertexSet().contains(root))
       return; // in case a root is a subset of another
     
-    final LinkedList<ObjectNode<?>> toExploreQueue = new LinkedList<>();
+    final LinkedList<Node> toExploreQueue = new LinkedList<>();
     toExploreQueue.add(root);
     
     while (!toExploreQueue.isEmpty())
     {
-      ObjectNode<?> current = toExploreQueue.poll();
+      Node current = toExploreQueue.poll();
       graph.addVertex(current); // in case there are no constituent
       
-      List<? extends ConstituentNode<?>> constituents = null;
-      ruleApplication : for (ExplorationRule rule : explorationRules)
+      if (current instanceof ObjectNode<?>)
       {
-        constituents = rule.explore(current.object);
-        if (constituents != null)
-          break ruleApplication;
-      }
-      if (constituents == null)
-        throw new RuntimeException("No rule found to apply to object " + current.object);
-      
-      for (ConstituentNode<?> constituent : constituents)
-      {
-        addEdgeAndVertices(current, constituent);
-        if (constituent.resolvesToObject()) 
+        ObjectNode<?> objectNode = (ObjectNode<?>) current;
+        List<? extends ConstituentNode<?>> constituents = constituents(objectNode.object);
+        for (ConstituentNode<?> constituent : constituents)
         {
-          ObjectNode<?> next = new ObjectNode<>(constituent.resolve());
+          if (!graph.vertexSet().contains(constituent))
+            toExploreQueue.add(constituent);
+          addEdgeAndVertices(objectNode, constituent);
+        }
+      }
+      else
+      {
+        ConstituentNode<?> constituent = (ConstituentNode<?>) current;
+        if (constituent.resolvesToObject())
+        {
+          Node next = Node.get(constituent.resolve());
           if (!graph.vertexSet().contains(next))
             toExploreQueue.add(next);
           addEdgeAndVertices(constituent, next);
         }
-      } // of constituent loop
+      }
     } // of exploration
   } // of method
+  
+  private List<? extends ConstituentNode<?>> constituents(Object object)
+  {
+    List<? extends ConstituentNode<?>> constituents = null;
+    for (ExplorationRule rule : explorationRules)
+    {
+      constituents = rule.explore(object);
+      if (constituents != null)
+        return constituents;
+    }
+      throw new RuntimeException("No rule found to apply to object " + object);
+  }
   
   public DotExporter<Node, Pair<Node,Node>> toDotExporter()
   {
@@ -151,14 +161,9 @@ public class AccessibilityGraph
     toDotExporter().export(file);
   }
 
-  public Stream<Node> getAccessibleNodes(Object from)
+  public Stream<Node> getAccessibleNodes(Object object)
   {
-    return getAccessibleNodes(new ObjectNode<>(from));
-  }
-  
-  public Stream<Node> getAccessibleNodes(Node from)
-  {
-    return toStream(new BreadthFirstIterator<>(graph, from));
+    return toStream(new BreadthFirstIterator<>(graph, Node.get(object)));
   }
   
   public Stream<Node> getAccessibleNodes()

@@ -223,7 +223,6 @@ public class GraphAnalysis
       accessibilityGraph.add(factorNode);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   private LinkedHashSet<Node> buildFrozenRoots(Model model, Observations observations) 
   {
     LinkedHashSet<Node> result = new LinkedHashSet<>();
@@ -231,7 +230,7 @@ public class GraphAnalysis
     // mark params in top level model as frozen
     for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true)) 
       if (f.getAnnotation(Param.class) != null) 
-        result.add(new ObjectNode(ReflexionUtils.getFieldValue(f, model)));
+        result.add(Node.get(ReflexionUtils.getFieldValue(f, model))); 
     
     if (!accessibilityGraph.graph.vertexSet().containsAll(result))
     {
@@ -383,7 +382,7 @@ public class GraphAnalysis
    */
   private DirectedGraph<Node, ?> directedGraph(Model model) 
   {
-    Set<ObjectNode<?>> generatedRandomVariables = new LinkedHashSet<>();
+    Set<Node> generatedRandomVariables = new LinkedHashSet<>();
     ObjectNode<Model> modelNode = new ObjectNode<>(model);
     DirectedGraph<Node, ?> graph = GraphUtils.newDirectedGraph(); // a bipartite graph over the children componentNodes and their fields
     for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
@@ -400,7 +399,7 @@ public class GraphAnalysis
         Object dependencyRoot = ReflexionUtils.getFieldValue(field, component);
         if (!isParam) 
         {
-          ObjectNode<?> randomVariableNode = new ObjectNode<>(dependencyRoot);
+          Node randomVariableNode = Node.get(dependencyRoot); 
           if (generatedRandomVariables.contains(randomVariableNode)) 
             throw new RuntimeException("The component " + component.getClass().getSimpleName() + " generated a random variable that already had a distribution");
           generatedRandomVariables.add(randomVariableNode);
@@ -415,23 +414,7 @@ public class GraphAnalysis
             });
       }
     }
-    if (!generatedRandomVariables.equals(allRandomVariableNodes(model)))
-      throw new RuntimeException("Not all random variables were provided with a distribution in " + model.getClass().getSimpleName());
     return graph;
-  }
-
-  private Object allRandomVariableNodes(Model model) 
-  {
-    Set<ObjectNode<?>> result = new LinkedHashSet<>();
-    for (Field field : ReflexionUtils.getDeclaredFields(model.getClass(), true))
-    {
-      boolean isParam = field.getAnnotation(Param.class) != null;
-      Object dependencyRoot = ReflexionUtils.getFieldValue(field, model);
-      ObjectNode<?> randomVariableNode = new ObjectNode<>(dependencyRoot);
-      if (isParam)
-        result.add(randomVariableNode);
-    }
-    return result;
   }
 
   private boolean allRandomNodesObserved(Model model) 

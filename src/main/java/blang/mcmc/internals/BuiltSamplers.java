@@ -19,7 +19,7 @@ public class BuiltSamplers
   @Override
   public String toString() 
   {
-    return Joiner.on("\n").join(matchingReport);
+    return "" + list.size() + " samplers constructed with following prototypes:\n" + Joiner.on("\n").join(matchingReport);
   }
   
   public BuiltSamplers restrict(int i)

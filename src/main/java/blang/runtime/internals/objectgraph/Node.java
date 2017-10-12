@@ -30,4 +30,12 @@ public interface Node
     return toString();
   }
   public boolean isMutable();
+  
+  public static <T> Node get(T object)
+  {
+    if (object instanceof Node)
+      return (Node) object;
+    else
+      return new ObjectNode<T>(object);
+  }
 }

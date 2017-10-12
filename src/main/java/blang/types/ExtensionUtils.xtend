@@ -22,6 +22,7 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
       return getRealVar(m, index, 0)
   }
 
+
   def static <T> T get(List<T> list, IntVar intVar) {
     return list.get(intVar.intValue)
   }
