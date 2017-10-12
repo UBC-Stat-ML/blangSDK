@@ -27,9 +27,7 @@ model MultivariateNormal {
   }
   
   generate(rand) {
-    val DenseMatrix newSample = sampleNormalByPrecision(rand, precision)
-    realization *= 0.0
-    realization += newSample
+    realization.setTo(sampleNormalByPrecision(rand, precision) + mean)
   }
   
 }

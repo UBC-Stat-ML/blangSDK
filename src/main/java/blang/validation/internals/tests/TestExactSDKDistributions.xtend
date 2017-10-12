@@ -39,10 +39,9 @@ class TestExactSDKDistributions {
       addTest(new Categorical.Builder().setProbabilities(simplex(#[0.2, 0.3, 0.5])).setRealization(intVar).build,   intRealizationSquared)
       addTest(new ContinuousUniform.Builder().setMin([-1.1]).setMax([-0.05]).setRealization(realVar).build,      realRealizationSquared)
       addTest(new Dirichlet.Builder().setConcentrations(denseCopy(#[0.2, 3.1, 5.0])).setRealization(simplex(3)).build, vectorHash) 
- 
-//      addTest(new Exponential.Builder().setRate([2.3]).setRealization(realVar).build, realRealizationSquared)
-//      addTest(new Gamma.Builder().setRate([2.1]).setShape([0.9]).setRealization(realVar).build, realRealizationSquared)
-//      addTest(new MultivariateNormal.Builder().setMean(denseCopy(#[-3.1, 0.0, 1.2])).setPrecision(precision.cholesky).setRealization(dense(3)).build,      vectorHash)
+      addTest(new Exponential.Builder().setRate([2.3]).setRealization(realVar).build, realRealizationSquared)
+      addTest(new Gamma.Builder().setRate([2.1]).setShape([0.9]).setRealization(realVar).build, realRealizationSquared)
+      addTest(new MultivariateNormal.Builder().setMean(denseCopy(#[-3.1, 0.0, 1.2])).setPrecision(precision.cholesky).setRealization(dense(3)).build,    [getRealization.get(0)])
       
       
     ]

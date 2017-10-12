@@ -11,9 +11,11 @@ import xlinear.internals.Slice;
 @Samplers({RealNaiveMHSampler.class}) 
 public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>> implements WritableRealVar
 {
-  public final Matrix container;
-  public final int row;
-  public final int col;
+  // These should stay private and without getter/setter 
+  // Making them accessible is probably symptom of a bug, see e.g. commit b8c2f2f6df416c2d64527c373356965b1daec583
+  private final Matrix container;
+  private final int row;
+  private final int col;
   
   public MatrixConstituentNode(Matrix matrix, int row, int col) 
   {
@@ -64,12 +66,12 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
   @Override
   public double doubleValue() 
   {
-    return container.get(key.getKey(), key.getValue());
+    return container.get(row, col);
   }
 
   @Override
   public void set(double value) 
   {
-    container.set(key.getKey(), key.getValue());
+    container.set(row, col, value);
   }
 }

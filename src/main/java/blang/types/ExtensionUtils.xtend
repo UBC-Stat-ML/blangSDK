@@ -42,4 +42,12 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
     }
     return new Random(random)
   }
+  
+  def static void setTo(Matrix one, Matrix another) {
+    if (one.nRows != another.nRows || one.nCols != another.nCols) {
+      throw new RuntimeException
+    }
+    one *= 0.0
+    one += another
+  }
 }

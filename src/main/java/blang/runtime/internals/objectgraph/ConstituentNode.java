@@ -13,6 +13,8 @@ public abstract class ConstituentNode<K> implements Node
     return resolve() != null;
   }
   
+  // These should stay protected and without getter/setter 
+  // Making them accessible is probably symptom of a bug, see e.g. commit b8c2f2f6df416c2d64527c373356965b1daec583
   protected final Object container;
   protected final K key;
   
