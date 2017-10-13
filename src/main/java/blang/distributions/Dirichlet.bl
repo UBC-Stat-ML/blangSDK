@@ -1,5 +1,6 @@
 package blang.distributions
 
+import org.apache.commons.math3.distribution.GammaDistribution
 
 model Dirichlet {
   
@@ -35,10 +36,9 @@ model Dirichlet {
   
   generate(rand) { 
     var double sum = 0.0
-    
     for (var int d = 0; d < concentrations.nEntries; d++)
     {
-      val double gammaVariate = Gamma.distribution(concentrations.get(d), 1.0).sample(rand)
+      val double gammaVariate = new GammaDistribution(rand.generator, concentrations.get(d), 1.0).sample 
       realization.set(d, gammaVariate)
       sum += gammaVariate
     }

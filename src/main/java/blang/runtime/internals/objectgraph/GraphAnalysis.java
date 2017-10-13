@@ -230,7 +230,7 @@ public class GraphAnalysis
     // mark params in top level model as frozen
     for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true)) 
       if (f.getAnnotation(Param.class) != null) 
-        result.add(Node.get(ReflexionUtils.getFieldValue(f, model))); 
+        result.add(NodeUtils.get(ReflexionUtils.getFieldValue(f, model))); 
     
     if (!accessibilityGraph.graph.vertexSet().containsAll(result))
     {
@@ -399,7 +399,7 @@ public class GraphAnalysis
         Object dependencyRoot = ReflexionUtils.getFieldValue(field, component);
         if (!isParam) 
         {
-          Node randomVariableNode = Node.get(dependencyRoot); 
+          Node randomVariableNode = NodeUtils.get(dependencyRoot); 
           if (generatedRandomVariables.contains(randomVariableNode)) 
             throw new RuntimeException("The component " + component.getClass().getSimpleName() + " generated a random variable that already had a distribution");
           generatedRandomVariables.add(randomVariableNode);

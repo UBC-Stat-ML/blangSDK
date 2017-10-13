@@ -22,13 +22,10 @@ import static xlinear.MatrixOperations.dense
 import blang.distributions.Exponential
 import blang.distributions.Gamma
 import blang.distributions.MultivariateNormal
-import xlinear.CholeskyDecomposition
 import xlinear.Matrix
 
-class TestExactSDKDistributions {
-  
-  
-  
+class TestExactSDKDistributions { 
+
   @Test def void test() {
     var ExactTest exact = new ExactTest => [ 
       
@@ -42,7 +39,6 @@ class TestExactSDKDistributions {
       addTest(new Exponential.Builder().setRate([2.3]).setRealization(realVar).build, realRealizationSquared)
       addTest(new Gamma.Builder().setRate([2.1]).setShape([0.9]).setRealization(realVar).build, realRealizationSquared)
       addTest(new MultivariateNormal.Builder().setMean(denseCopy(#[-3.1, 0.0, 1.2])).setPrecision(precision.cholesky).setRealization(dense(3)).build,    [getRealization.get(0)])
-      
       
     ]
     println("Corrected pValue = " + exact.correctedPValue)
