@@ -7,10 +7,10 @@ import org.eclipse.xtend.lib.annotations.Delegate
 @Data class TransitionMatrix implements DenseMatrix {
   
   @Delegate
-  val DenseMatrix probabilities
+  val public DenseMatrix probabilityMatrix
   
   override Simplex row(int i) {
-    return new Simplex(probabilities.row(i))
+    return new Simplex(probabilityMatrix.row(i))
   }
   
 }

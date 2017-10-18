@@ -5,12 +5,11 @@ model DynamicNormalMixture  {
   random List<RealVar>     observations 
   random List<IntVar>      states                   
   
-  param  int               nLatentStates            
-  
   random Simplex           initialDistribution      
   random TransitionMatrix  transitionProbabilities  
   random List<RealVar>     means, variances 
            
+  param  int               nLatentStates        
   param  Matrix            concentrations    
   
   laws {
@@ -22,12 +21,12 @@ model DynamicNormalMixture  {
     
     // Priors on means and variances
     for (int latentStateIdx : 0 ..< means.size) {
-      means.get(latentStateIdx)  ~ Normal(0.0, 1.0)
+      means.get(latentStateIdx) ~ Normal(0.0, 1.0)
       variances.get(latentStateIdx) ~ Gamma(1.0, 1.0)
     }
     
     states | initialDistribution, transitionProbabilities  
-      ~ MarkovModel(initialDistribution, transitionProbabilities)
+      ~ MarkovChain(initialDistribution, transitionProbabilities)
       
     // Gaussian emissions
     for (int obsIdx : 0 ..< observations.size) {

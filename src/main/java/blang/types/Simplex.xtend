@@ -10,6 +10,6 @@ import xlinear.DenseMatrix
 @Data class Simplex implements DenseMatrix {
   
   @Delegate
-  val DenseMatrix probabilities
+  val public DenseMatrix probabilityMatrix
   
 }

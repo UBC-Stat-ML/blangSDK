@@ -48,7 +48,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   public static final String VERSION_FIELD_NAME = "version" 
   
   @GlobalArg
-  Observations observations = new Observations
+  public Observations observations = new Observations
   
   @DesignatedConstructor
   new(
@@ -90,6 +90,10 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   def static void main(String ... args) {
+    System::exit(start(args))
+  }
+  
+  def static int start(String ... args) {
     val Arguments parsedArgs = parseArguments(args)
     val Creator creator = Creators::empty()
     creator.addFactories(CoreProviders)
@@ -105,12 +109,12 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     
     printExplationsIfNeeded(args, parsedArgs, creator)
     
-    System::exit(Experiment::start(args, parsedArgs, parsingConfigs))
+    return Experiment::start(args, parsedArgs, parsingConfigs)
   }
   
   def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs, Creator creator) {
     if (useSimplifiedArguments(rawArguments) && !new File(CONFIG_FILE_NAME).exists) {
-      println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:\n\n")
+      System.err.println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:\n\n")
     }
   }
   

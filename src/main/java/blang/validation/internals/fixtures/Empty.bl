@@ -1,6 +1,0 @@
-package blang.testmodels
-
-model Empty {
-  
-  laws {}
-}

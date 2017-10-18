@@ -5,6 +5,8 @@ import org.eclipse.xtext.xbase.lib.Pair;
 import blang.core.WritableRealVar;
 import blang.mcmc.RealNaiveMHSampler;
 import blang.mcmc.Samplers;
+import blang.types.Simplex;
+import blang.types.TransitionMatrix;
 import xlinear.Matrix;
 import xlinear.internals.Slice;
 
@@ -14,15 +16,11 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
   // These should stay private and without getter/setter 
   // Making them accessible is probably symptom of a bug, see e.g. commit b8c2f2f6df416c2d64527c373356965b1daec583
   private final Matrix container;
-  private final int row;
-  private final int col;
   
   public MatrixConstituentNode(Matrix matrix, int row, int col) 
   {
     super(findRoot(matrix), getRootKey(matrix, row, col));
     this.container = findRoot(matrix);
-    this.row = row;
-    this.col = col;
   }
   
   private static Pair<Integer,Integer> getRootKey(Matrix matrix, int row, int col)
@@ -41,6 +39,10 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
   {
     if (matrix instanceof Slice)
       return ((Slice) matrix).rootMatrix;
+    else if (matrix instanceof Simplex)
+      return findRoot(((Simplex) matrix).probabilityMatrix);
+    else if (matrix instanceof TransitionMatrix)
+      return findRoot(((TransitionMatrix) matrix).probabilityMatrix);
     else
       return matrix;
   }
@@ -66,12 +68,12 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
   @Override
   public double doubleValue() 
   {
-    return container.get(row, col);
+    return container.get(key.getKey(), key.getValue());
   }
 
   @Override
   public void set(double value) 
   {
-    container.set(row, col, value);
+    container.set(key.getKey(), key.getValue(), value);
   }
 }

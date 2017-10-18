@@ -2,8 +2,6 @@ package blang.types
 
 import blang.core.RealVar
 import xlinear.Matrix
-import blang.core.IntVar
-import java.util.List
 import bayonet.distributions.Random
 import blang.runtime.internals.objectgraph.MatrixConstituentNode
 
@@ -20,11 +18,6 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
       return getRealVar(m, 0, index)
     else
       return getRealVar(m, index, 0)
-  }
-
-
-  def static <T> T get(List<T> list, IntVar intVar) {
-    return list.get(intVar.intValue)
   }
   
   def static double exp(RealVar realVar) {

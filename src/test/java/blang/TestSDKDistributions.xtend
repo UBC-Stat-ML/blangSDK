@@ -6,10 +6,13 @@ import blang.validation.ExactTest
 
 import static blang.validation.internals.Helpers.realRealizationSquared
 import static blang.validation.internals.Helpers.intRealizationSquared
+import static blang.validation.internals.Helpers.listHash
 import static blang.validation.internals.Helpers.vectorHash
 import static blang.types.StaticUtils.realVar
 import static blang.types.StaticUtils.intVar
 import static blang.types.StaticUtils.simplex
+import static blang.types.StaticUtils.transitionMatrix
+import static blang.types.StaticUtils.listOfIntVars
 import blang.distributions.Bernoulli
 import blang.distributions.Beta
 import blang.distributions.Binomial
@@ -25,8 +28,10 @@ import blang.distributions.MultivariateNormal
 import xlinear.Matrix
 import blang.distributions.Poisson
 import blang.distributions.DiscreteUniform
+import blang.distributions.MarkovChain
+import blang.types.TransitionMatrix
 
-class TestExactSDKDistributions { 
+class TestSDKDistributions { 
 
   @Test def void test() {
     var ExactTest exact = new ExactTest => [ 
@@ -129,6 +134,14 @@ class TestExactSDKDistributions {
         intRealizationSquared
       )
       
+      add(
+        new MarkovChain.Builder()
+          .setInitialDistribution(simplex(#[0.3, 0.7]))
+          .setTransitionProbabilities(transitionMatrix)
+          .setChain(listOfIntVars(4)).build,  
+        listHash
+      )
+      
     ]
     
     println("Corrected pValue = " + exact.correctedPValue)
@@ -139,5 +152,10 @@ class TestExactSDKDistributions {
     #[2.0, -1.3, 0.0],
     #[-1.3, 2.0, -0.8],
     #[0.0, -0.8, 2.1]
+  ])
+  
+  val TransitionMatrix transitionMatrix = transitionMatrix(#[
+    #[0.1, 0.9],
+    #[0.6, 0.4]
   ])
 }
