@@ -1,0 +1,27 @@
+package blang.distributions
+
+
+model DiscreteUniform {
+  
+  random IntVar realization
+  
+  param IntVar minInclusive, maxExclusive
+  
+  laws {
+    
+    logf(minInclusive, maxExclusive) {
+      -log(maxExclusive - minInclusive)
+    }
+    
+    indicator(realization, minInclusive, maxExclusive) {
+      minInclusive <= realization &&
+      realization < maxExclusive
+    }
+    
+  }
+  
+  generate(rand) {
+    rand.nextInt(maxExclusive - minInclusive) + minInclusive
+  }
+  
+}

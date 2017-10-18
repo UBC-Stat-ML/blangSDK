@@ -33,6 +33,7 @@ import blang.mcmc.internals.ExponentiatedFactor;
 import blang.runtime.internals.objectgraph.AnnealingStructure;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.runtime.internals.objectgraph.Node;
+import blang.runtime.internals.objectgraph.StaticUtils;
 import blang.types.RealScalar;
 import briefj.BriefLists;
 import briefj.BriefLog;
@@ -104,7 +105,7 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
       (exponentiatedFactorsSet.contains(sparseUpdateFactors.get(i)) ? sparseUpdateAnnealedIndices : sparseUpdateFixedIndices).add(i);
     
     this.objectsToOutput = new LinkedHashMap<String, Object>();
-    for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true)) 
+    for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
       if (f.getAnnotation(Param.class) == null) // TODO: filter out fully observed stuff too
         objectsToOutput.put(f.getName(), ReflexionUtils.getFieldValue(f, model));
     

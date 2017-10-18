@@ -2,7 +2,7 @@ package blang.runtime
 
 import org.eclipse.xtend.lib.annotations.Data
 import java.util.LinkedHashSet
-import blang.runtime.internals.objectgraph.NodeUtils
+import blang.runtime.internals.objectgraph.StaticUtils
 import blang.runtime.internals.objectgraph.Node
 
 @Data
@@ -13,7 +13,7 @@ class Observations {
   val LinkedHashSet<Node> observationRoots = new LinkedHashSet<Node>()
   
   def <T> T markAsObserved(T object) {
-    val Node node = NodeUtils::get(object)
+    val Node node = StaticUtils::get(object)
     observationRoots.add(node)
     return object
   }

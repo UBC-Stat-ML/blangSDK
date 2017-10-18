@@ -1,5 +1,6 @@
-package blang.validation.internals.tests;
+package blang;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import blang.types.StaticUtils;
@@ -20,11 +21,12 @@ public class TestExactTest
     
     ExactTest exact = new ExactTest();
     
-    exact.addTest(
+    exact.add(
         new BadNormal.Builder().setMean(() -> 0.2).setVariance(() -> 0.1).setRealization(StaticUtils.realVar(1.0)).build(), 
-        new RealRealizationSquared()
+        new RealRealizationSquared() 
     );
     
-    System.out.println(ExactTest.format(exact.failedTests()));
+    Assert.assertTrue(exact.nTests() > 0);
+    Assert.assertEquals(exact.failedTests().size(), exact.nTests());
   }
 }

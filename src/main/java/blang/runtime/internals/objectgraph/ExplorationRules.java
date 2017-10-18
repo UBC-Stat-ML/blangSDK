@@ -42,7 +42,7 @@ public class ExplorationRules
       return null;
     ArrayList<ArrayConstituentNode> result = new ArrayList<>();
     ArrayView view = (ArrayView) object;
-    List<Field> annotatedDeclaredFields = ReflexionUtils.getAnnotatedDeclaredFields(view.getClass(), ViewedArray.class, true);
+    List<Field> annotatedDeclaredFields = ReflexionUtils.getAnnotatedDeclaredFields(view.getClass(), ViewedArray.class, true); 
     if (annotatedDeclaredFields.size() != 1)
       throw new RuntimeException();
     Object array = ReflexionUtils.getFieldValue(annotatedDeclaredFields.get(0), view);
@@ -98,7 +98,7 @@ public class ExplorationRules
     // note: outer class and anonymous fields handled by the generated fields "x$y"
   
     // find all fields (including those of super class(es), recursively, if any
-    for (Field f : ReflexionUtils.getDeclaredFields(object.getClass(), true))
+    for (Field f : StaticUtils.getDeclaredFields(object.getClass()))
       if (f.getAnnotation(SkipDependency.class) == null) // skip those annotated by @SkipDependency
         result.add(new FieldConstituentNode(object, f));
       else if (f.getAnnotation(SkipDependency.class).isMutable())

@@ -185,7 +185,7 @@ public class GraphAnalysis
           for (ObjectNode<Factor> candidateNode : candidates)
           {
             SupportFactor candidate = getSupportFactor(candidateNode.object);
-            if (candidate != null && accessibilityConstraint.containsAll(getFreeMutableNodes(candidateNode))) // the only one allowed is the exponent dependency
+            if (candidate != null && accessibilityConstraint.containsAll(getFreeMutableNodes(candidateNode)))
               supports.add(new ObjectNode<SupportFactor>(candidate));
           }
         }
@@ -195,7 +195,7 @@ public class GraphAnalysis
     }
   }
 
-  private SupportFactor getSupportFactor(Factor factor) 
+  private SupportFactor getSupportFactor(Factor factor)  
   {
     if (factor instanceof SupportFactor)
       return (SupportFactor) factor;
@@ -228,9 +228,9 @@ public class GraphAnalysis
     LinkedHashSet<Node> result = new LinkedHashSet<>();
     result.addAll(observations.getObservationRoots());
     // mark params in top level model as frozen
-    for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true)) 
+    for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
       if (f.getAnnotation(Param.class) != null) 
-        result.add(NodeUtils.get(ReflexionUtils.getFieldValue(f, model))); 
+        result.add(StaticUtils.get(ReflexionUtils.getFieldValue(f, model))); 
     
     if (!accessibilityGraph.graph.vertexSet().containsAll(result))
     {
@@ -393,13 +393,13 @@ public class GraphAnalysis
       if (!(component instanceof Model))
         throw new NotAllComponentsAreModels();
       
-      for (Field field : ReflexionUtils.getDeclaredFields(component.getClass(), true))
+      for (Field field : StaticUtils.getDeclaredFields(component.getClass()))
       {
         boolean isParam = field.getAnnotation(Param.class) != null;
         Object dependencyRoot = ReflexionUtils.getFieldValue(field, component);
         if (!isParam) 
         {
-          Node randomVariableNode = NodeUtils.get(dependencyRoot); 
+          Node randomVariableNode = StaticUtils.get(dependencyRoot); 
           if (generatedRandomVariables.contains(randomVariableNode)) 
             throw new RuntimeException("The component " + component.getClass().getSimpleName() + " generated a random variable that already had a distribution");
           generatedRandomVariables.add(randomVariableNode);
@@ -420,7 +420,7 @@ public class GraphAnalysis
   private boolean allRandomNodesObserved(Model model) 
   {
     Boolean result = null;
-    for (Field f : ReflexionUtils.getDeclaredFields(model.getClass(), true))
+    for (Field f : StaticUtils.getDeclaredFields(model.getClass()))
       if (f.getAnnotation(Param.class) == null) 
       {
         Object randomVariable = ReflexionUtils.getFieldValue(f, model);

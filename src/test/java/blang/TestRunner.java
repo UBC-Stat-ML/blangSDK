@@ -1,4 +1,4 @@
-package blang.validation.internals.tests;
+package blang;
 
 import org.junit.Test;
 
@@ -6,8 +6,8 @@ import blang.core.ModelBuilder;
 import blang.runtime.Runner;
 import blang.testmodel.Cyclic;
 import blang.testmodels.GenerateTwice;
-import blang.testmodels.NotAllRandomHaveDistributions;
 import blang.validation.internals.Helpers;
+import blang.validation.internals.fixtures.Simple;
 
 public class TestRunner 
 {
@@ -24,9 +24,9 @@ public class TestRunner
   }
   
   @Test
-  public void checkNotAllRandHaveDistDetected()
+  public void checkSimpleOK()
   {
-    checkDAGViolation(new NotAllRandomHaveDistributions.Builder());
+    new Runner(new Simple.Builder()).run();
   }
   
   public void checkDAGViolation(ModelBuilder builder)

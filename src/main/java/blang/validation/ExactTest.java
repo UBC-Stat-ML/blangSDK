@@ -27,25 +27,25 @@ import briefj.BriefCollections;
 public class ExactTest
 {
   @Arg        @DefaultValue("1")
-  Random random = new Random(1);
+  public Random random = new Random(1);
   
   @Arg @DefaultValue("TTest")
-  Test test     = new TTest();
+  public Test test     = new TTest();
   
   @Arg       @DefaultValue("10_000")
-  int nIndependentSamples = 10_000;
+  public int nIndependentSamples = 10_000;
   
   @Arg             @DefaultValue("10")
-  int nPosteriorSamplesPerIndep = 10;
+  public int nPosteriorSamplesPerIndep = 10;
   
   @Arg      @DefaultValue("0.005")
-  double familyWiseError = 0.005;
+  public double familyWiseError = 0.005;
   
   private List<TestResult> results = new ArrayList<>();
   
   // TODO: add a test with all samplers 
 
-  public <M extends Model> void addTest(M model, Function<M, Double> testFunction) 
+  public <M extends Model> void add(M model, Function<M, Double> testFunction) 
   {
     GraphAnalysis analysis = new GraphAnalysis(model, new Observations());
     BuiltSamplers kernels = SamplerBuilder.build(analysis);
@@ -81,7 +81,12 @@ public class ExactTest
     return offenders;
   }
   
-  public void check()
+  public int nTests() 
+  {
+    return results.size();
+  }
+  
+  public void check() 
   {
     List<TestResult> failedTests = failedTests();
     if (!failedTests.isEmpty())
@@ -167,7 +172,4 @@ public class ExactTest
     @Override
     public String toString() { return "TTest"; }
   }
-
-  
-
 }
