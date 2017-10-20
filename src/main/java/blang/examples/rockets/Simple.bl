@@ -11,8 +11,6 @@ model Simple  {
   random Plated<IntVar> numberOfFailures
   random RealVar p0 ?: realVar(1.0), strength ?: realVar(1.0)
   
-  
-  
   laws {
     
     p0 ~ ContinuousUniform(0, 1)

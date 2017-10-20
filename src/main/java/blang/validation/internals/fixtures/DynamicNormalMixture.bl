@@ -2,15 +2,16 @@ package blang.examples
 
 model DynamicNormalMixture  { 
   
-  random List<RealVar>     observations 
-  random List<IntVar>      states                   
+  param  int               nLatentStates 
   
-  random Simplex           initialDistribution      
-  random TransitionMatrix  transitionProbabilities  
-  random List<RealVar>     means, variances 
-           
-  param  int               nLatentStates        
-  param  Matrix            concentrations    
+  random List<RealVar>     observations 
+  random List<IntVar>      states ?: listOfIntVars(observations.size)  
+  
+  random Simplex           initialDistribution ?: simplex(nLatentStates) 
+  random TransitionMatrix  transitionProbabilities ?: transitionMatrix(nLatentStates)
+  random List<RealVar>     means ?: listOfRealVars(nLatentStates), variances ?: listOfRealVars(nLatentStates)
+         
+  param  Matrix            concentrations ?: ones(nLatentStates)
   
   laws {
     // Priors on initial and transition probabilities
@@ -34,7 +35,7 @@ model DynamicNormalMixture  {
         means, 
         variances, 
         IntVar curIndic = states.get(obsIdx)
-      ~ Normal(means.get(curIndic), variances.get(curIndic))
+      ~ Normal(means.safeGet(curIndic), variances.safeGet(curIndic))
     }
   }
 }

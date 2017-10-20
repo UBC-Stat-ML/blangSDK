@@ -145,11 +145,14 @@ public class GraphAnalysis
     frozenNodesClosure.addAll(closure(accessibilityGraph.graph, frozenRoots, true));
     
     // find the free mutable nodes, i.e. those mutable (i.e. non-final fields, array entries, etc)  and not frozen
+    // edit: root the search at the random variables of the outer-most model
     freeMutableNodes = new LinkedHashSet<>();
-    accessibilityGraph.getAccessibleNodes()
-        .filter(node -> node.isMutable())
-        .filter(node -> !frozenNodesClosure.contains(node))
-        .forEachOrdered(freeMutableNodes::add);
+    for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
+      if (f.getAnnotation(Param.class) == null) 
+        accessibilityGraph.getAccessibleNodes(StaticUtils.get(ReflexionUtils.getFieldValue(f, model)))
+            .filter(node -> node.isMutable())
+            .filter(node -> !frozenNodesClosure.contains(node))
+            .forEachOrdered(freeMutableNodes::add);
     
     // identify the latent variables (those with specified samplers and free mutable nodes under)
     latentVariables = latentVariables(
@@ -439,7 +442,11 @@ public class GraphAnalysis
   public void exportAccessibilityGraphVisualization(File file)
   {
     DotExporter<Node, Pair<Node, Node>> dotExporter = accessibilityGraph.toDotExporter();
-    dotExporter.addVertexAttribute("fillcolor", node -> frozenNodesClosure.contains(node) ? "grey" : ""); 
+    dotExporter.addVertexAttribute("fillcolor", node -> {
+      if (latentVariables.contains(node)) return "yellow"; 
+      if (frozenNodesClosure.contains(node)) return "grey"; 
+      return "";
+    }); 
     dotExporter.export(file);
   }
   

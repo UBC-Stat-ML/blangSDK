@@ -7,11 +7,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-
 import briefj.ReflexionUtils;
 import xlinear.DenseMatrix;
 import xlinear.Matrix;
 import xlinear.SparseMatrix;
+import xlinear.internals.Slice;
 
 
 
@@ -56,10 +56,12 @@ public class ExplorationRules
     if (!(object instanceof Matrix))
       return null;
     ArrayList<MatrixConstituentNode> result = new ArrayList<>();
-    Matrix matrix = (Matrix) object;
-    // TODO: special behavior for sparse matrix : use a 'locked' support
-    if      (matrix instanceof SparseMatrix) 
-      throw new RuntimeException("Sparse matrices not yet supported");
+    Matrix matrix = MatrixConstituentNode.findDelegate((Matrix) object);
+    
+    if (matrix instanceof Slice && ((Slice) matrix).isReadOnly())
+      ; // If the matrix is read-only just skip
+    else if (matrix instanceof SparseMatrix) 
+      throw new RuntimeException("Sparse matrices not yet supported"); // TODO: solution is to not break into constituents?
     else if (matrix instanceof DenseMatrix)
       for (int r = 0; r < matrix.nRows(); r++) 
         for (int c = 0; c < matrix.nCols(); c++)
@@ -99,10 +101,11 @@ public class ExplorationRules
   
     // find all fields (including those of super class(es), recursively, if any
     for (Field f : StaticUtils.getDeclaredFields(object.getClass()))
-      if (f.getAnnotation(SkipDependency.class) == null) // skip those annotated by @SkipDependency
+      if (f.getAnnotation(SkipDependency.class) == null) 
         result.add(new FieldConstituentNode(object, f));
       else if (f.getAnnotation(SkipDependency.class).isMutable())
         result.add(new SkippedFieldConstituentNode(object, f));
+      // and just skip altogether those with SkipDependency that are not mutable
     
     return result;
   }

@@ -23,7 +23,7 @@ import briefj.run.Results
 import java.io.File
 import java.util.Collections
 import java.util.Optional
-import java.util.Random
+import bayonet.distributions.Random
 import blang.engines.internals.PosteriorInferenceEngine
 import blang.engines.internals.factories.SCM
 import blang.io.internals.GlobalDataSourceStore

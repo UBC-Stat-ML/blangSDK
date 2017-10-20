@@ -4,9 +4,9 @@ import org.apache.commons.math3.distribution.GammaDistribution
 
 model Dirichlet {
   
-  random Simplex realization ?: simplex(2)
+  random Simplex realization 
   
-  param  Matrix concentrations ?: denseCopy(#[1,2])
+  param  Matrix concentrations 
   
   laws {
     

@@ -1,7 +1,7 @@
 package blang.mcmc
 
 import blang.types.Simplex
-import java.util.Random
+import bayonet.distributions.Random;
 import blang.core.ConstrainedFactor
 import blang.mcmc.internals.Callback
 

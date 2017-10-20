@@ -13,6 +13,8 @@ import static blang.types.StaticUtils.intVar
 import static blang.types.StaticUtils.simplex
 import static blang.types.StaticUtils.transitionMatrix
 import static blang.types.StaticUtils.listOfIntVars
+import static blang.types.StaticUtils.listOfRealVars
+
 import blang.distributions.Bernoulli
 import blang.distributions.Beta
 import blang.distributions.Binomial
@@ -30,6 +32,8 @@ import blang.distributions.Poisson
 import blang.distributions.DiscreteUniform
 import blang.distributions.MarkovChain
 import blang.types.TransitionMatrix
+import blang.examples.DynamicNormalMixture
+import blang.validation.internals.fixtures.ListHash
 
 class TestSDKDistributions { 
 
@@ -140,6 +144,13 @@ class TestSDKDistributions {
           .setTransitionProbabilities(transitionMatrix)
           .setChain(listOfIntVars(4)).build,  
         listHash
+      )
+      
+      add(
+        new DynamicNormalMixture.Builder()
+          .setObservations(listOfRealVars(4))
+          .setNLatentStates(2).build,  
+        [ListHash.hash(it.states)]
       )
       
     ]

@@ -1,6 +1,6 @@
 package blang.mcmc;
 
-import java.util.Random;
+import bayonet.distributions.Random;
 
 
 

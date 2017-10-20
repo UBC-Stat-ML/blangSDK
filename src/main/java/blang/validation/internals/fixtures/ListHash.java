@@ -12,10 +12,15 @@ public class ListHash implements Function<UnivariateModel<? extends List<IntVar>
   @Override
   public Double apply(UnivariateModel<? extends List<IntVar>> t) 
   {
+    return hash(t.realization());
+  }
+  
+  public static double hash(List<IntVar> list)
+  {
     double sum = 0.0;
-    for (int i = 0; i < t.realization().size(); i++)
-      sum += (i+1) * Math.pow(t.realization().get(i).intValue(), 2.0);
-    return sum; 
+    for (int i = 0; i < list.size(); i++)
+      sum += (i+1) * Math.pow(list.get(i).intValue(), 2.0);
+    return sum;
   }
 
 }

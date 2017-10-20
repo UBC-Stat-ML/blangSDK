@@ -29,8 +29,8 @@ public class ExactTest
   @Arg        @DefaultValue("1")
   public Random random = new Random(1);
   
-  @Arg @DefaultValue("TTest")
-  public Test test     = new TTest();
+  @Arg @DefaultValue("KSTest")
+  public Test test     = new KSTest();
   
   @Arg       @DefaultValue("10_000")
   public int nIndependentSamples = 10_000;
@@ -149,10 +149,28 @@ public class ExactTest
     return result;
   }
 
-  @Implementations({TTest.class})
+  @Implementations({TTest.class, KSTest.class})
   public static interface Test
   {
     public double pValue(List<Double> sample1, List<Double> sample2);
+  }
+  
+  public static class KSTest implements Test
+  {
+    /**
+     * 
+     */
+    @Override
+    public double pValue(List<Double> sample1, List<Double> sample2)
+    {
+      return TestUtils.kolmogorovSmirnovTest(Doubles.toArray(sample1), Doubles.toArray(sample2));
+    }
+    
+    /**
+     * 
+     */
+    @Override
+    public String toString() { return "KSTest"; }   
   }
   
   public static class TTest implements Test

@@ -4,6 +4,7 @@ import blang.core.RealVar
 import xlinear.Matrix
 import bayonet.distributions.Random
 import blang.runtime.internals.objectgraph.MatrixConstituentNode
+import java.util.List
 
 class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
@@ -22,6 +23,14 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
   
   def static double exp(RealVar realVar) {
     return Math::exp(realVar.doubleValue)
+  }
+  
+  def static <T> T safeGet(List<T> list, int index) {
+    if (index < 0 || index >= list.size) {
+      return list.get(0) // assumes that the configuration has zero probability so we can return an arbitrary item
+    } else {
+      return list.get(index)
+    }
   }
   
   /**

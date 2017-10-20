@@ -4,13 +4,13 @@ import org.eclipse.xtext.xbase.lib.Pair;
 
 import blang.core.WritableRealVar;
 import blang.mcmc.RealNaiveMHSampler;
+import blang.mcmc.RealSliceSampler;
 import blang.mcmc.Samplers;
-import blang.types.Simplex;
-import blang.types.TransitionMatrix;
+import blang.types.internals.Delegator;
 import xlinear.Matrix;
 import xlinear.internals.Slice;
 
-@Samplers({RealNaiveMHSampler.class}) 
+@Samplers({RealNaiveMHSampler.class, RealSliceSampler.class}) 
 public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>> implements WritableRealVar
 {
   // These should stay private and without getter/setter 
@@ -23,10 +23,19 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
     this.container = findRoot(matrix);
   }
   
+  public static Matrix findDelegate(Matrix m) 
+  {
+    if (m instanceof Delegator<?>) 
+      return findDelegate((Matrix) ((Delegator<?>) m).getDelegate());
+    else
+      return m;
+  }
+  
   private static Pair<Integer,Integer> getRootKey(Matrix matrix, int row, int col)
   {
     int rowOffSet = 0;
     int colOffSet = 0;
+    matrix = findDelegate(matrix); // needed when called from ExtensionUtils
     if (matrix instanceof Slice)
     {
       rowOffSet = ((Slice) matrix).row0Incl;
@@ -37,16 +46,13 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
   
   private static Matrix findRoot(Matrix matrix) 
   {
+    matrix = findDelegate(matrix); // needed when called from ExtensionUtils
     if (matrix instanceof Slice)
       return ((Slice) matrix).rootMatrix;
-    else if (matrix instanceof Simplex)
-      return findRoot(((Simplex) matrix).probabilityMatrix);
-    else if (matrix instanceof TransitionMatrix)
-      return findRoot(((TransitionMatrix) matrix).probabilityMatrix);
     else
       return matrix;
   }
-
+  
   @Override
   public Object resolve()
   {
