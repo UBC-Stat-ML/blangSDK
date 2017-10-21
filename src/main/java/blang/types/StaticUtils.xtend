@@ -1,20 +1,13 @@
 package blang.types
 
-import java.util.List
+import blang.core.IntVar
+import blang.core.RealVar
 import java.util.ArrayList
-import blang.types.Simplex
+import java.util.Collections
+import java.util.List
 import xlinear.DenseMatrix
 
 import static xlinear.MatrixOperations.*
-import static extension xlinear.MatrixExtensions.*
-import bayonet.math.NumericalUtils
-import blang.types.TransitionMatrix
-import blang.core.RealVar
-import blang.types.RealScalar
-import blang.core.IntVar
-import blang.types.IntScalar
-import java.util.Collections
-import xlinear.MatrixOperations
 
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
@@ -52,33 +45,24 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return Collections::unmodifiableList(result)
   }
   
-  def static List<DenseMatrix> listOfDenseVectors(int size, int dim) {
-    val List<DenseMatrix> result = new ArrayList
-    for (var int i = 0; i < size; i++) {
-      result.add(MatrixOperations::dense(dim))
-    }
-    return result
-  }
-  
-  def static Simplex simplex(int nStates) {
+  def static DenseSimplex denseSimplex(int nStates) {
     val double unif = 1.0 / (nStates as double)
     val DenseMatrix m = dense(nStates)
     for (int index : 0 ..< nStates) {
       m.set(index, unif)
     }
-    return simplex(m)
+    return StaticUtils.denseSimplex(m)
   }
   
-  def static Simplex simplex(DenseMatrix m) {
-    NumericalUtils::checkIsClose(m.sum, 1.0)
-    return new Simplex(m)
+  def static DenseSimplex denseSimplex(DenseMatrix m) {
+    return new DenseSimplex(m)
   }
   
-  def static Simplex simplex(double [] probabilities) {
-    return simplex(denseCopy(probabilities))
+  def static DenseSimplex denseSimplex(double [] probabilities) {
+    return StaticUtils.denseSimplex(denseCopy(probabilities))
   }
   
-  def static TransitionMatrix transitionMatrix(int nStates) {
+  def static DenseTransitionMatrix transitionMatrix(int nStates) {
     val double unif = 1.0 / (nStates as double)
     val DenseMatrix m = dense(nStates, nStates)
     for (int r : 0 ..< nStates) {
@@ -86,16 +70,15 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
         m.set(r, c, unif)
       }
     }
-    return transitionMatrix(m)
+    return StaticUtils.denseTransitionMatrix(m)
   }
   
-  def static TransitionMatrix transitionMatrix(DenseMatrix m) {
-    NumericalUtils::checkIsTransitionMatrix(toArray(m))
-    return new TransitionMatrix(m)
+  def static DenseTransitionMatrix denseTransitionMatrix(DenseMatrix m) {
+    return new DenseTransitionMatrix(m)
   }
   
-  def static TransitionMatrix transitionMatrix(double [][] probabilities) {
-    return transitionMatrix(denseCopy(probabilities))
+  def static DenseTransitionMatrix denseTransitionMatrix(double [][] probabilities) {
+    return StaticUtils.denseTransitionMatrix(denseCopy(probabilities))
   }
   
 

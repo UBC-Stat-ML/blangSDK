@@ -1,7 +1,5 @@
 package blang.distributions
 
-import org.apache.commons.math3.distribution.GammaDistribution
-
 model Dirichlet {
   
   random Simplex realization 
@@ -38,7 +36,7 @@ model Dirichlet {
     var double sum = 0.0
     for (var int d = 0; d < concentrations.nEntries; d++)
     {
-      val double gammaVariate = new GammaDistribution(rand.generator, concentrations.get(d), 1.0).sample 
+      val double gammaVariate = Generators::gamma(rand, concentrations.get(d), 1.0)
       realization.set(d, gammaVariate)
       sum += gammaVariate
     }

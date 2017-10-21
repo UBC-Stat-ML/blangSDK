@@ -17,6 +17,8 @@ import java.lang.reflect.ParameterizedType
 import java.util.Map.Entry
 import java.util.Optional
 import blang.io.internals.GlobalDataSourceStore
+import java.util.function.Supplier
+import blang.types.internals.LatentFactoryAsParser
 
 /**
  * A random variable or parameter of type T enclosed in one or more Plates.
@@ -44,8 +46,8 @@ interface Plated<T> extends Iterable<Entry<Query, T>> {
    * b) the DataSource has a column with name corresponding to the name given to the declared Plated variable.
    */
   @DesignatedConstructor
-  def public static <T> Plated<T> parse(
-    @ConstructorArg("name") Optional<ColumnName> name,
+  def static <T> Plated<T> parse(
+    @ConstructorArg(value = "name", description = "Name of variable in the plate") Optional<ColumnName> name,
     @ConstructorArg("dataSource") DataSource dataSource,
     @GlobalArg GlobalDataSourceStore globalDataSourceStore,
     @InitService QualifiedName qualifiedName,
@@ -65,5 +67,7 @@ interface Plated<T> extends Iterable<Entry<Query, T>> {
     return new HashPlated(columnName, scopedDataSource, new SimpleParser(creator, typeArgument))
   }
   
-  
+  def static <T> Plated<T> latent(ColumnName name, Supplier<T> supplier) {
+    return new HashPlated(name, DataSource::empty, new LatentFactoryAsParser(supplier))
+  }
 }

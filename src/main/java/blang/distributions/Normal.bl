@@ -27,6 +27,6 @@ model Normal {
   }
   
   generate(rand) {
-    rand.nextGaussian * sqrt(variance) + mean
+    Generators::normal(rand, mean, variance)
   }
 }

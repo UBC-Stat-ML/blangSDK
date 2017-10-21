@@ -36,4 +36,8 @@ class PlatedSlice<T> implements Plated<T> {
     this.sliceIndices = sliceIndices
   }
   
+  override String toString() {
+    HashPlated::toString(this)
+  }
+  
 }

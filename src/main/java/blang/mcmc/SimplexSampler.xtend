@@ -1,17 +1,17 @@
 package blang.mcmc
 
-import blang.types.Simplex
 import bayonet.distributions.Random;
 import blang.core.ConstrainedFactor
 import blang.mcmc.internals.Callback
+import blang.types.DenseSimplex
 
-class SimplexSampler extends MHSampler<Simplex> {
+class SimplexSampler extends MHSampler<DenseSimplex> {
   
   @ConnectedFactor
   protected ConstrainedFactor constrained
   
   override boolean setup() {
-    return constrained !== null && constrained.object instanceof Simplex
+    return constrained !== null && constrained.object instanceof DenseSimplex
   }
   
   override void propose(Random random, Callback callback) {
@@ -24,12 +24,16 @@ class SimplexSampler extends MHSampler<Simplex> {
     val double lastValue = variable.get(lastDim)
     val double max = oldValue + lastValue
     val double proposal = random.nextDouble() * max
-    variable.set(sampledDim, proposal)
-    variable.set(lastDim, max - proposal)
+    variable.setPair(
+      sampledDim, proposal,
+      lastDim, max - proposal
+    )
     callback.proposalLogRatio = 0.0 
     if (!callback.sampleAcceptance) {
-      variable.set(sampledDim, oldValue)
-      variable.set(lastDim, lastValue)
+      variable.setPair(
+        sampledDim, oldValue,
+        lastDim, lastValue
+      )
     }
   }
 }

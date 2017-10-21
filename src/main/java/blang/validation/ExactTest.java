@@ -1,6 +1,8 @@
 package blang.validation;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,7 +47,7 @@ public class ExactTest
   
   // TODO: add a test with all samplers 
 
-  public <M extends Model> void add(M model, Function<M, Double> testFunction) 
+  public <M extends Model> void add(M model, @SuppressWarnings("unchecked") Function<M, Double> ... testFunctions) 
   {
     GraphAnalysis analysis = new GraphAnalysis(model, new Observations());
     BuiltSamplers kernels = SamplerBuilder.build(analysis);
@@ -56,10 +58,11 @@ public class ExactTest
       BuiltSamplers currentKernel = kernels.restrict(samplerIndex);
       SampledModel sampledModel = new SampledModel(analysis, currentKernel, random);
       
-      List<Double> forwardSamples          = sample(sampledModel, model, testFunction, false);
-      List<Double> forwardPosteriorSamples = sample(sampledModel, model, testFunction, true);
+      List<List<Double>> forwardSamples          = sample(sampledModel, model, testFunctions, false);
+      List<List<Double>> forwardPosteriorSamples = sample(sampledModel, model, testFunctions, true);
       
-      results.add(new TestResult(model, testFunction, BriefCollections.pick(currentKernel.list), forwardSamples, forwardPosteriorSamples));
+      for (int testIndex = 0; testIndex < testFunctions.length; testIndex++)
+        results.add(new TestResult(model, testFunctions[testIndex], BriefCollections.pick(currentKernel.list), forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
     }
   }
   
@@ -67,7 +70,8 @@ public class ExactTest
   {
     if (results.isEmpty())
       throw new RuntimeException("Need to add tests first.");
-    return 1.0 - Math.pow(1.0 - familyWiseError, 1.0/((double) results.size()));
+    // Note: there can be dependence between tests when using several test functions
+    return familyWiseError / ((double) results.size());
   }
   
   public List<TestResult> failedTests()
@@ -95,9 +99,10 @@ public class ExactTest
       System.out.println("All tests passed:\n" + format(results));
   }
   
-  public static String format(List<TestResult> failedTests) 
+  public static String format(List<TestResult> tests) 
   {
-    return failedTests.stream().map(t -> t.toString()).collect(Collectors.joining("\n"));
+    Collections.sort(tests, Comparator.comparing(result -> result.pValue));
+    return tests.stream().map(t -> t.toString()).collect(Collectors.joining("\n"));
   }
 
   public class TestResult
@@ -135,18 +140,23 @@ public class ExactTest
     }
   }
   
-  private <M> List<Double> sample(SampledModel sampledModel, M model, Function<M, Double> testFunction, boolean withPosterior) 
+  private <M> List<List<Double>> sample(SampledModel sampledModel, M model, Function<M, Double> [] testFunctions, boolean withPosterior) 
   {
-    List<Double> result = new ArrayList<Double>();
-    for (int i = 0; i < nIndependentSamples; i++)
+    List<List<Double>> results = new ArrayList<>();
+    for (Function<M, Double> testFunction : testFunctions)
     {
-      sampledModel.forwardSample(random);
-      if (withPosterior)
-        for (int j = 0; j < nPosteriorSamplesPerIndep; j++)
-          sampledModel.posteriorSamplingStep_deterministicScanAndShuffle(random);
-      result.add(testFunction.apply(model));
+      List<Double> result = new ArrayList<Double>();
+      for (int i = 0; i < nIndependentSamples; i++)
+      {
+        sampledModel.forwardSample(random);
+        if (withPosterior)
+          for (int j = 0; j < nPosteriorSamplesPerIndep; j++)
+            sampledModel.posteriorSamplingStep_deterministicScanAndShuffle(random);
+        result.add(testFunction.apply(model));
+      }
+      results.add(result);
     }
-    return result;
+    return results;
   }
 
   @Implementations({TTest.class, KSTest.class})

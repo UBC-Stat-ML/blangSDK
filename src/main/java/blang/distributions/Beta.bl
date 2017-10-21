@@ -1,7 +1,5 @@
 package blang.distributions
 
-import org.apache.commons.math3.distribution.BetaDistribution
-
 model Beta {
    
   random RealVar realization
@@ -12,18 +10,11 @@ model Beta {
   laws {
     
     logf(alpha, realization) {
-      if (realization == 0.0) {
-        // avoid return +INFINITY so that INF - INF does not occur
-        return Double.NEGATIVE_INFINITY
-      }
       (alpha - 1.0) * log(realization)
     }
     
     logf(beta, realization) {
-      if (realization == 1.0) {
-        // avoid return +INFINITY so that INF - INF does not occur
-        return Double.NEGATIVE_INFINITY
-      }
+      // better precision than log(1.0-realization)
       (beta - 1.0) * log1p(-realization)
     }
         
@@ -48,11 +39,12 @@ model Beta {
     }
     
     indicator(realization) {
-      realization >= 0.0 && realization <= 1.0
+      // We follow Feller and exclude end points
+      realization > 0.0 && realization < 1.0
     }
   }
   
   generate(rand) {
-    return new BetaDistribution(rand.generator, alpha, beta).sample
+    Generators::beta(rand, alpha, beta)
   }
 }

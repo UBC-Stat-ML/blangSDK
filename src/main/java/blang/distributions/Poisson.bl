@@ -1,8 +1,5 @@
 package blang.distributions
 
-import org.apache.commons.math3.distribution.PoissonDistribution
-
-
 model Poisson {
   
   random IntVar realization
@@ -33,6 +30,6 @@ model Poisson {
   }
   
   generate(rand) {
-    new PoissonDistribution(rand.generator, mean, PoissonDistribution::DEFAULT_EPSILON, PoissonDistribution::DEFAULT_MAX_ITERATIONS).sample
+    Generators::poisson(rand, mean)
   }
 }

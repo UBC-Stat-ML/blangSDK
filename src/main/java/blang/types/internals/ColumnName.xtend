@@ -14,4 +14,5 @@ class ColumnName {
   new(@Input String string) {
     this.string = string.replaceAll("\\s+", "").toLowerCase
   }
+  override String toString() { string }
 }

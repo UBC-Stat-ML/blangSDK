@@ -1,4 +1,4 @@
-package blang.types
+package blang.io
 
 class NA {
   
@@ -8,6 +8,10 @@ class NA {
    * imputed as part of the posterior simulation).
    */
   val public static SYMBOL = "NA"
+  
+  def static boolean isNA(String string) {
+    return string.trim.toUpperCase == SYMBOL
+  }
   
   private new () {}
 }

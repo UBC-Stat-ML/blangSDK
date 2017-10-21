@@ -5,6 +5,7 @@ import bayonet.distributions.Random;
 
 import blang.core.LogScaleFactor;
 import blang.core.WritableRealVar;
+import blang.distributions.Generators;
 
 
 public class RealSliceSampler implements Sampler
@@ -40,7 +41,7 @@ public class RealSliceSampler implements Sampler
       rightShrankEndPoint = rightProposalEndPoint; // bar R in Neal's paper
     while (true) 
     {
-      final double newState = nextUniform(random, leftShrankEndPoint, rightShrankEndPoint); // x1 in Neal's paper
+      final double newState = Generators.uniform(random, leftShrankEndPoint, rightShrankEndPoint); // x1 in Neal's paper
       if (logSliceHeight < logDensityAt(newState) && accept(oldState, newState, logSliceHeight, leftProposalEndPoint, rightProposalEndPoint))
       {
         variable.set(newState);
@@ -74,17 +75,7 @@ public class RealSliceSampler implements Sampler
 
   private double nextSliceHeight(Random random)
   {
-    return logDensity() - nextExponential(random); 
-  }
-  
-  private static double nextExponential(Random random)
-  {
-    return - Math.log(random.nextDouble());
-  }
-  
-  private static double nextUniform(Random random, double min, double max)
-  {
-    return min + random.nextDouble() * (max - min);
+    return logDensity() - Generators.unitRateExponential(random); 
   }
   
   private double logDensityAt(double x)
@@ -97,6 +88,8 @@ public class RealSliceSampler implements Sampler
     double sum = 0.0;
     for (LogScaleFactor f : numericFactors)
       sum += f.logDensity();
+    if (Double.isNaN(sum))
+      throw new RuntimeException();
     return sum;
   }
   

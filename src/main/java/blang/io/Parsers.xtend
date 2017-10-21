@@ -16,20 +16,20 @@ import blang.inits.Input
 import blang.inits.GlobalArg
 import java.util.Optional
 import blang.types.IntScalar
-import blang.types.NA
 import blang.core.RealVar
 import blang.types.RealScalar
 import blang.inits.providers.CoreProviders
 import xlinear.Matrix
-import blang.types.Simplex
 import xlinear.MatrixOperations
 import xlinear.DenseMatrix
 import xlinear.SparseMatrix
-import blang.types.TransitionMatrix
 import blang.runtime.Observations
 import blang.inits.DefaultValue
 import blang.runtime.internals.objectgraph.MatrixConstituentNode
 import blang.types.StaticUtils
+import static extension blang.io.NA.isNA
+import blang.types.DenseSimplex
+import blang.types.DenseTransitionMatrix
 
 class Parsers {
   
@@ -39,7 +39,7 @@ class Parsers {
     @GlobalArg Observations initContext
   ) {
     return
-      if (str == NA::SYMBOL) {
+      if (str.isNA) {
         new RealScalar(0.1)
       } else {
         initContext.markAsObserved(new RealScalar(Double.parseDouble(str)))
@@ -52,7 +52,7 @@ class Parsers {
     @GlobalArg Observations initContext
   ) {
     return
-      if (str == NA::SYMBOL) {
+      if (str.isNA) {
         new IntScalar(0)
       } else {
         initContext.markAsObserved(new IntScalar(CoreProviders.parse_int(str)))
@@ -96,7 +96,7 @@ class Parsers {
         val int row = Integer.parseInt(line.get(0))
         val int col = Integer.parseInt(line.get(1))
         val String str = line.get(2)
-        if (str == NA::SYMBOL) {
+        if (str.isNA) {
           // nothing, leave set to 0
         } else {
           initContext.markAsObserved(new MatrixConstituentNode(result, row, col))
@@ -128,25 +128,25 @@ class Parsers {
   }
   
   @ProvidesFactory
-  def static Simplex parseSimplex(
+  def static DenseSimplex parseSimplex(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the value. Include the redundant one.") File file,
     @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") Optional<Integer> nRows,
     @ConstructorArg(value = "nCols") Optional<Integer> nCols
   ) {
     val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
-    return StaticUtils::simplex(m)
+    return StaticUtils::denseSimplex(m)
   }
   
   @ProvidesFactory
-  def static TransitionMatrix parseTransitionMatrix(
+  def static DenseTransitionMatrix parseTransitionMatrix(
     @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value. Include the redundant ones.") File file,
     @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") Optional<Integer> nRows,
     @ConstructorArg(value = "nCols") Optional<Integer> nCols
   ) {
     val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
-    return StaticUtils::transitionMatrix(m)
+    return StaticUtils::denseTransitionMatrix(m)
   }
   
   @ProvidesFactory

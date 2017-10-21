@@ -21,7 +21,7 @@ model DiscreteUniform {
   }
   
   generate(rand) {
-    rand.nextInt(maxExclusive - minInclusive) + minInclusive
+    Generators::discreteUniform(rand, minInclusive, maxExclusive)
   }
   
 }

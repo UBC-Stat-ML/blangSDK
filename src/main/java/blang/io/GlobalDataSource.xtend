@@ -18,4 +18,12 @@ class GlobalDataSource extends DataSource {
     super(path)
     store.set(this)
   }
+  
+  private new(Optional<String> path) {
+    super(path)
+  }
+  
+  def static GlobalDataSource empty() {
+    return new GlobalDataSource(Optional.empty)
+  }
 }

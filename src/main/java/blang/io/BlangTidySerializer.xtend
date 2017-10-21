@@ -35,7 +35,7 @@ class BlangTidySerializer extends TidySerializer {
     for (Entry<Query, ?> entry : p) {
       var TabularWriter childWriter = writer
       for (Index<?> index : entry.key.indices) {
-        childWriter = writer.child(index.plate.name.string, index.key)
+        childWriter = childWriter.child(index.plate.name.string, index.key)
       }
       serializeImplementation(entry.value, childWriter)
     }

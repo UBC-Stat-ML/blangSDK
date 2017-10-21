@@ -5,7 +5,7 @@ import blang.types.Index
 import blang.runtime.internals.objectgraph.SkipDependency
 import blang.io.DataSource
 import java.util.Map
-import blang.types.NA
+import blang.io.NA
 import java.util.LinkedHashMap
 import blang.types.internals.Query.QueryType
 
@@ -49,5 +49,22 @@ class HashPlated<T> implements Plated<T> {
   
   override iterator() {
     return variables.entrySet.iterator
+  }
+  
+  override String toString() {
+    return toString(this)
+  }
+  
+  def static <T> String toString(Plated<T> plated) {
+    val StringBuilder result = new StringBuilder
+    var boolean first = true
+    for (entry : plated) {
+      if (first) {
+        result.append(entry.key.indices.map[plate.name].join("\t") + "\tvalue" + "\n")
+        first = false
+      }
+      result.append(entry.key.indices.map[key].join("\t") + "\t" + entry.value + "\n")
+    }
+    return result.toString
   }
 }

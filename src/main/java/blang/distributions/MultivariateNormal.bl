@@ -27,7 +27,7 @@ model MultivariateNormal {
   }
   
   generate(rand) {
-    realization.setTo(sampleNormalByPrecision(rand, precision) + mean)
+    realization.setTo(Generators::multivariateNormal(rand, mean, precision))
   }
   
 }

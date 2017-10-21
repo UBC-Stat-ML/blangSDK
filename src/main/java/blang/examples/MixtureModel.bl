@@ -4,13 +4,13 @@ model MixtureModel {
   
   random  List<RealVar>  observations 
   random  List<IntVar>   clusterIndicators  ?:  listOfIntVars(observations.size) 
-  random  Simplex        pi                 ?:  simplex(2)
+  random  Simplex        pi                 ?:  denseSimplex(2)
   random  List<RealVar>  means              ?:  listOfRealVars(2), 
                          variances          ?:  listOfRealVars(2)
   param   Matrix         concentration      ?:  denseCopy(#[1.0, 1.0])  
   
   laws {
-    
+     
     pi | concentration ~ Dirichlet(concentration)
     
     // priors on each mixture component mean and variance

@@ -10,8 +10,6 @@ import static blang.validation.internals.Helpers.listHash
 import static blang.validation.internals.Helpers.vectorHash
 import static blang.types.StaticUtils.realVar
 import static blang.types.StaticUtils.intVar
-import static blang.types.StaticUtils.simplex
-import static blang.types.StaticUtils.transitionMatrix
 import static blang.types.StaticUtils.listOfIntVars
 import static blang.types.StaticUtils.listOfRealVars
 
@@ -31,14 +29,25 @@ import xlinear.Matrix
 import blang.distributions.Poisson
 import blang.distributions.DiscreteUniform
 import blang.distributions.MarkovChain
-import blang.types.TransitionMatrix
 import blang.examples.DynamicNormalMixture
 import blang.validation.internals.fixtures.ListHash
+import blang.validation.internals.fixtures.VectorHash
+import blang.examples.rockets.SimpleHierarchicalModel
+import blang.types.Plate
+import blang.types.internals.ColumnName
+import blang.io.GlobalDataSource
+import blang.types.Plated
+import blang.types.DenseTransitionMatrix
+import static blang.types.StaticUtils.denseSimplex
+import static blang.types.StaticUtils.denseTransitionMatrix
+import blang.types.StaticUtils
 
 class TestSDKDistributions { 
 
   @Test def void test() {
     var ExactTest exact = new ExactTest => [ 
+      
+      // Test SDK distributions individually
       
       add(
         new Normal.Builder()
@@ -73,7 +82,7 @@ class TestSDKDistributions {
       
       add(
         new Categorical.Builder()
-          .setProbabilities(simplex(#[0.2, 0.3, 0.5]))
+          .setProbabilities(denseSimplex(#[0.2, 0.3, 0.5]))
           .setRealization(intVar).build, 
         intRealizationSquared
       )
@@ -97,14 +106,14 @@ class TestSDKDistributions {
       add(
         new Dirichlet.Builder()
           .setConcentrations(denseCopy(#[0.2, 3.1, 5.0]))
-          .setRealization(simplex(3)).build, 
+          .setRealization(denseSimplex(3)).build, 
         vectorHash
       ) 
       
       add(
         new Dirichlet.Builder()
           .setConcentrations(denseCopy(#[5.2, 3.1]))
-          .setRealization(simplex(2)).build, 
+          .setRealization(denseSimplex(2)).build, 
         vectorHash
       ) 
       
@@ -138,9 +147,12 @@ class TestSDKDistributions {
         intRealizationSquared
       )
       
+      // Test several distributions simultaneously in the context of 
+      // prototypical complex models.
+      
       add(
         new MarkovChain.Builder()
-          .setInitialDistribution(simplex(#[0.3, 0.7]))
+          .setInitialDistribution(denseSimplex(#[0.3, 0.7]))
           .setTransitionProbabilities(transitionMatrix)
           .setChain(listOfIntVars(4)).build,  
         listHash
@@ -150,7 +162,20 @@ class TestSDKDistributions {
         new DynamicNormalMixture.Builder()
           .setObservations(listOfRealVars(4))
           .setNLatentStates(2).build,  
-        [ListHash.hash(it.states)]
+        [ListHash.hash(it.states)], 
+        [VectorHash.hash(it.initialDistribution)],
+        [VectorHash.hash(it.transitionProbabilities.row(0))]
+      )
+      
+      add(
+        new SimpleHierarchicalModel.Builder()
+          .setRocketTypes(Plate::simpleStringPlate(new ColumnName("rocketType"), 2))
+          .setNumberOfLaunches(Plated::latent(new ColumnName("nLaunches"), [intVar]))
+          .setFailureProbabilities(Plated::latent(new ColumnName("failPrs"), [realVar]))
+          .setNumberOfFailures(Plated::latent(new ColumnName("failPrs"), [intVar]))
+          .setData(GlobalDataSource::empty).build,
+        [p0.doubleValue]
+        
       )
       
     ]
@@ -165,7 +190,7 @@ class TestSDKDistributions {
     #[0.0, -0.8, 2.1]
   ])
   
-  val TransitionMatrix transitionMatrix = transitionMatrix(#[
+  val DenseTransitionMatrix transitionMatrix = StaticUtils.denseTransitionMatrix(#[
     #[0.1, 0.9],
     #[0.6, 0.4]
   ])

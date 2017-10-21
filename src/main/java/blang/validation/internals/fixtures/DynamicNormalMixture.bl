@@ -1,5 +1,7 @@
 package blang.examples
 
+import blang.types.DenseTransitionMatrix
+
 model DynamicNormalMixture  { 
   
   param  int               nLatentStates 
@@ -7,8 +9,8 @@ model DynamicNormalMixture  {
   random List<RealVar>     observations 
   random List<IntVar>      states ?: listOfIntVars(observations.size)  
   
-  random Simplex           initialDistribution ?: simplex(nLatentStates) 
-  random TransitionMatrix  transitionProbabilities ?: transitionMatrix(nLatentStates)
+  random DenseSimplex           initialDistribution ?: denseSimplex(nLatentStates) 
+  random DenseTransitionMatrix  transitionProbabilities ?: transitionMatrix(nLatentStates)
   random List<RealVar>     means ?: listOfRealVars(nLatentStates), variances ?: listOfRealVars(nLatentStates)
          
   param  Matrix            concentrations ?: ones(nLatentStates)

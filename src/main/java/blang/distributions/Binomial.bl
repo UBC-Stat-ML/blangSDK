@@ -1,6 +1,5 @@
 package blang.distributions
 
-import org.apache.commons.math3.distribution.BinomialDistribution
 
 model Binomial {
   
@@ -36,6 +35,6 @@ model Binomial {
     }
   }
   generate (rand) {
-    return new BinomialDistribution(rand.generator, numberOfTrials, probabilityOfSuccess).sample
+    Generators::binomial(rand, numberOfTrials, probabilityOfSuccess)
   }
 }
