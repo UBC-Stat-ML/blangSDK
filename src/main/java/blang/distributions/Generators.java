@@ -103,9 +103,19 @@ public class Generators
     return MatrixOperations.sampleNormalByPrecision(rand, precision).add(mean);
   }
   
+  public static Matrix standardMultivariateNormal(Random rand, int dim)
+  {
+    return MatrixOperations.sampleStandardNormal(rand, dim);
+  }
+  
   public static double normal(Random rand, double mean, double variance)
   {
     return rand.nextGaussian() * Math.sqrt(variance) + mean;
+  }
+  
+  public static double standardNormal(Random rand) 
+  {
+    return rand.nextGaussian();
   }
   
   public static int poisson(Random rand, double mean) 
