@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import blang.types.StaticUtils;
-import blang.validation.ExactTest;
+import blang.validation.ExactInvarianceTest;
 import blang.validation.internals.Helpers;
 import blang.validation.internals.fixtures.BadNormal;
 import blang.validation.internals.fixtures.RealRealizationSquared;
@@ -19,7 +19,7 @@ public class TestExactTest
   {
     Helpers.setOkToUseDefectiveImplementation();
     
-    ExactTest exact = new ExactTest();
+    ExactInvarianceTest exact = new ExactInvarianceTest();
     
     exact.add(
         new BadNormal.Builder().setMean(() -> 0.2).setVariance(() -> 0.1).setRealization(StaticUtils.realVar(1.0)).build(), 

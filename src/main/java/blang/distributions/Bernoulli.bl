@@ -17,7 +17,7 @@ model Bernoulli {
     }
     
     indicator(realization)  { 
-      realization == 0 || realization.intValue == 1
+      realization.isBool
     }
     
     indicator(probability)  {
@@ -27,10 +27,6 @@ model Bernoulli {
   }
   
   generate(rand) {
-    if (rand.generator.nextBernoulli(probability)) {
-      return 1
-    } else {
-      return 0
-    }
+    Generators::bernoulli(rand, probability).asInt
   }
 }

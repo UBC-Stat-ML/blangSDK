@@ -36,6 +36,20 @@ public class Generators
     return result;
   }
   
+  public static boolean bernoulli(Random random, double p) 
+  {
+    if (random instanceof bayonet.distributions.Random)
+      return ((bayonet.distributions.Random) random).nextBernoulli(p);
+    return bayonet.distributions.Random.nextBernoulli(random, p);
+  }
+  
+  public static int categorical(Random random, double [] probabilities)
+  {
+    if (random instanceof bayonet.distributions.Random)
+      return ((bayonet.distributions.Random) random).nextCategorical(probabilities);
+    return bayonet.distributions.Random.nextCategorical(random, probabilities);
+  }
+  
   public static int binomial(Random random, int numberOfTrials, double probabilityOfSuccess)
   {
     return new BinomialDistribution(generator(random), numberOfTrials, probabilityOfSuccess).sample();

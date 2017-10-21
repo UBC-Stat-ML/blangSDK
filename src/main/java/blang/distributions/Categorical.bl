@@ -20,6 +20,6 @@ model Categorical {
   }
   
   generate(rand) {
-    rand.generator.nextCategorical(probabilities.vectorToArray)
+    Generators::categorical(rand, probabilities.vectorToArray)
   }
 }

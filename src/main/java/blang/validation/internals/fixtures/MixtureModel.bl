@@ -27,8 +27,8 @@ model MixtureModel {
         means, variances, 
         IntVar curIndic = clusterIndicators.get(obsIdx)
         ~ Normal(
-          means.get(curIndic),
-          variances.get(curIndic) 
+          means.safeGet(curIndic),
+          variances.safeGet(curIndic) 
         )
     }
   }

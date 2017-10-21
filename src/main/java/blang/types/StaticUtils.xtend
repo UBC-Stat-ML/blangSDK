@@ -13,19 +13,19 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   
   //// Initialization utilities
   
-  def static IntVar intVar() {
+  def static IntScalar intVar() {
     return intVar(Integer::MIN_VALUE)
   }
   
-  def static RealVar realVar() {
+  def static RealScalar realVar() {
     return realVar(Double::NaN)
   }
   
-  def static IntVar intVar(int initialValue) {
+  def static IntScalar intVar(int initialValue) {
     return new IntScalar(initialValue)
   }
   
-  def static RealVar realVar(double initialValue) {
+  def static RealScalar realVar(double initialValue) {
     return new RealScalar(initialValue)
   }
   
@@ -81,10 +81,5 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return StaticUtils.denseTransitionMatrix(denseCopy(probabilities))
   }
   
-
-  //// mathematical functions
-  
-
-
   private new() {}
 }

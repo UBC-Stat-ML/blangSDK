@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import briefj.BriefCollections;
 
-public class ExactTest
+public class ExactInvarianceTest
 {
   @Arg        @DefaultValue("1")
   public Random random = new Random(1);
@@ -49,13 +50,16 @@ public class ExactTest
 
   public <M extends Model> void add(M model, @SuppressWarnings("unchecked") Function<M, Double> ... testFunctions) 
   {
+    System.out.print("Running ExactInvarianceTest on model " + model.getClass().getSimpleName());
     GraphAnalysis analysis = new GraphAnalysis(model, new Observations());
     BuiltSamplers kernels = SamplerBuilder.build(analysis);
     if (kernels.list.isEmpty())
       throw new RuntimeException("No kernels produced by model to be tested");
-    for (int samplerIndex = 0; samplerIndex < kernels.list.size(); samplerIndex++)
+    Set<Class<? extends Sampler>> samplerTypes = kernels.list.stream().map(s -> s.getClass()).collect(Collectors.toSet());
+    for (Class<? extends Sampler> currentSamplerType : samplerTypes)
     {
-      BuiltSamplers currentKernel = kernels.restrict(samplerIndex);
+      System.out.print(" [" + currentSamplerType.getSimpleName() + "] ");
+      BuiltSamplers currentKernel = kernels.restrict(s -> s.getClass() == currentSamplerType);
       SampledModel sampledModel = new SampledModel(analysis, currentKernel, random);
       
       List<List<Double>> forwardSamples          = sample(sampledModel, model, testFunctions, false);
@@ -64,6 +68,7 @@ public class ExactTest
       for (int testIndex = 0; testIndex < testFunctions.length; testIndex++)
         results.add(new TestResult(model, testFunctions[testIndex], BriefCollections.pick(currentKernel.list), forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
     }
+    System.out.println();
   }
   
   public double correctedPValue()

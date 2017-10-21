@@ -1,7 +1,9 @@
 package blang.mcmc;
 
-import bayonet.distributions.Random;
+import java.util.List;
 
+import bayonet.distributions.Random;
+import blang.core.LogScaleFactor;
 import blang.core.WritableIntVar;
 import blang.mcmc.internals.Callback;
 
@@ -10,6 +12,14 @@ import blang.mcmc.internals.Callback;
 
 public class IntNaiveMHSampler extends MHSampler<WritableIntVar>
 {
+  public static IntNaiveMHSampler build(WritableIntVar variable, List<LogScaleFactor> numericFactors)
+  {
+    IntNaiveMHSampler result = new IntNaiveMHSampler();
+    result.variable = variable;
+    result.numericFactors = numericFactors;
+    return result;
+  }
+  
   @Override
   public void propose(Random random, Callback callback)
   {

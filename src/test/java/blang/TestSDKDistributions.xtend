@@ -2,7 +2,7 @@ package blang
 
 import org.junit.Test
 import blang.distributions.Normal
-import blang.validation.ExactTest
+import blang.validation.ExactInvarianceTest
 
 import static blang.validation.internals.Helpers.realRealizationSquared
 import static blang.validation.internals.Helpers.intRealizationSquared
@@ -41,11 +41,13 @@ import blang.types.DenseTransitionMatrix
 import static blang.types.StaticUtils.denseSimplex
 import static blang.types.StaticUtils.denseTransitionMatrix
 import blang.types.StaticUtils
+import blang.validation.internals.fixtures.GLM
+import blang.examples.MixtureModel
 
 class TestSDKDistributions { 
 
   @Test def void test() {
-    var ExactTest exact = new ExactTest => [ 
+    var ExactInvarianceTest exact = new ExactInvarianceTest => [ 
       
       // Test SDK distributions individually
       
@@ -162,9 +164,9 @@ class TestSDKDistributions {
         new DynamicNormalMixture.Builder()
           .setObservations(listOfRealVars(4))
           .setNLatentStates(2).build,  
-        [ListHash.hash(it.states)], 
-        [VectorHash.hash(it.initialDistribution)],
-        [VectorHash.hash(it.transitionProbabilities.row(0))]
+        [ListHash.hash(states)], 
+        [VectorHash.hash(initialDistribution)],
+        [VectorHash.hash(transitionProbabilities.row(0))]
       )
       
       add(
@@ -175,7 +177,20 @@ class TestSDKDistributions {
           .setNumberOfFailures(Plated::latent(new ColumnName("failPrs"), [intVar]))
           .setData(GlobalDataSource::empty).build,
         [p0.doubleValue]
-        
+      )
+      
+      add(
+        new GLM.Builder()
+          .setOutput(listOfIntVars(3))
+          .setDesignMatrix(designMatrix).build,
+        [coefficients.get(0).realPart.doubleValue],
+        [coefficients.get(0).isZero.intValue as double]
+      )
+      
+      add(
+        new MixtureModel.Builder()
+          .setObservations(listOfRealVars(2)).build,
+        [observations.get(0).doubleValue] 
       )
       
     ]
@@ -193,5 +208,11 @@ class TestSDKDistributions {
   val DenseTransitionMatrix transitionMatrix = StaticUtils.denseTransitionMatrix(#[
     #[0.1, 0.9],
     #[0.6, 0.4]
+  ])
+  
+  val Matrix designMatrix = denseCopy(#[ // n = 3, p = 2
+    #[2.0, -1.3],
+    #[-1.3, 2.0],
+    #[0.0, -0.8]
   ])
 }

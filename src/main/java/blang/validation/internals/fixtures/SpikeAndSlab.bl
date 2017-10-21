@@ -1,13 +1,12 @@
-package blang.examples
+package blang.validation.internals.fixtures
 
-import java.util.function.Function
 
 model SpikeAndSlab {
   
   random List<SpikedRealVar> variables
   
   param RealVar zeroProbability
-  param Function<Double,Double> nonZeroLogDensity
+  param RealDistribution nonZeroLogDensity
   
   laws {
     for (int index : 0 ..< variables.size) {
@@ -15,17 +14,25 @@ model SpikeAndSlab {
         if (variable == 0.0) {
           log(zeroProbability)
         } else { 
-          log(1.0 - zeroProbability) * nonZeroLogDensity.apply(variable)  
+          log(1.0 - zeroProbability) + nonZeroLogDensity.logDensity(variable)  
         }
       }
       indicator(SpikedRealVar variable = variables.get(index)) {
-        variable.isZero == 0 || variable.isZero == 1
+        variable.isZero.isBool
       }
+      variables.get(index) ~ new ConstrainedFactor() 
     }
     
     indicator(zeroProbability) {
       0.0 <= zeroProbability && zeroProbability <= 1
     }
     
+  }
+  
+  generate(rand) {
+    for (SpikedRealVar variable : variables) {
+      variable.isZero.set(Generators::bernoulli(rand, zeroProbability).asInt)
+      variable.realPart.set(nonZeroLogDensity.sample(rand)) 
+    }
   }
 }

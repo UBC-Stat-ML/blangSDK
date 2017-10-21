@@ -5,6 +5,7 @@ import xlinear.Matrix
 import bayonet.distributions.Random
 import blang.runtime.internals.objectgraph.MatrixConstituentNode
 import java.util.List
+import blang.core.IntVar
 
 class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
@@ -27,6 +28,30 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
     } else {
       return list.get(index)
     }
+  }
+  
+  def static boolean asBool(int integer) {
+    switch (integer) {
+      case 0  : false
+      case 1  : true
+      default : throw new RuntimeException("Cannot cast to boolean: " + integer)
+    }
+  }
+  
+  def static int asInt(boolean bool) {
+    if (bool) 1 else 0
+  }
+  
+  def static boolean isBool(int integer) {
+    return integer === 0 || integer === 1
+  }
+  
+  def static boolean asBool(IntVar variable) {
+    asBool(variable.intValue)
+  }
+  
+  def static boolean isBool(IntVar variable) {
+    isBool(variable.intValue)
   }
   
   /**

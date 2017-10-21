@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import com.google.common.base.Joiner;
 
@@ -22,11 +23,15 @@ public class BuiltSamplers
     return "" + list.size() + " samplers constructed with following prototypes:\n" + Joiner.on("\n").join(matchingReport);
   }
   
-  public BuiltSamplers restrict(int i)
+  public BuiltSamplers restrict(Predicate<Sampler> predicate)
   {
     BuiltSamplers result = new BuiltSamplers();
-    result.list.add(this.list.get(i));
-    result.correspondingVariables.add(this.correspondingVariables.get(i));
+    for (int i = 0; i < list.size(); i++)
+      if (predicate.test(list.get(i)))
+      {
+        result.list.add(this.list.get(i));
+        result.correspondingVariables.add(this.correspondingVariables.get(i));
+      }
     return result;
   }
 }

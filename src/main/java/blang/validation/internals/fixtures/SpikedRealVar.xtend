@@ -1,18 +1,26 @@
-package blang.examples
+package blang.validation.internals.fixtures
 
 import org.eclipse.xtend.lib.annotations.Data
 import blang.core.RealVar
 
-import static extension blang.core.BlangExtensions.*
-import blang.core.IntVar
 import java.util.List
 import xlinear.Matrix
+import blang.core.WritableRealVar
+import blang.types.StaticUtils
+import blang.core.WritableIntVar
+import blang.mcmc.Samplers
 
 @Data
+@Samplers(SpikedRealVarSampler)
 class SpikedRealVar implements RealVar {
   
-  public val RealVar realPart
-  public val IntVar isZero
+  public val WritableRealVar realPart
+  public val WritableIntVar isZero
+  
+  new() {
+    realPart = StaticUtils::realVar
+    isZero = StaticUtils::intVar 
+  }
   
   override doubleValue() {
     if (isZero == 1) 0.0

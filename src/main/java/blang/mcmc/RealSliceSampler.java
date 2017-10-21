@@ -18,6 +18,14 @@ public class RealSliceSampler implements Sampler
   
   private static final double initialWindowSize = 1.0;
   
+  public static RealSliceSampler build(WritableRealVar variable, List<LogScaleFactor> numericFactors)
+  {
+    RealSliceSampler result = new RealSliceSampler();
+    result.variable = variable;
+    result.numericFactors = numericFactors;
+    return result;
+  }
+  
   public void execute(Random random)
   {
     // sample slice
@@ -31,9 +39,17 @@ public class RealSliceSampler implements Sampler
     
     while (logSliceHeight < logDensityAt(leftProposalEndPoint) || logSliceHeight < logDensityAt(rightProposalEndPoint)) 
       if (random.nextBernoulli(0.5))
+      {
         leftProposalEndPoint += - (rightProposalEndPoint - leftProposalEndPoint);
+        if (leftProposalEndPoint == Double.NEGATIVE_INFINITY)
+          throw new RuntimeException(INFINITE_SLICE_MESSAGE);
+      }
       else
+      {
         rightProposalEndPoint += rightProposalEndPoint - leftProposalEndPoint;
+        if (rightProposalEndPoint == Double.POSITIVE_INFINITY)
+          throw new RuntimeException(INFINITE_SLICE_MESSAGE);
+      }
     
     // shrinkage procedure
     double 
@@ -97,4 +113,7 @@ public class RealSliceSampler implements Sampler
   {
     return true;
   }
+  
+  private static final String INFINITE_SLICE_MESSAGE = "Slice diverged to infinity. "
+      + "Possible cause is that a variable has no distribution attached to it, i.e. the model is improper.";
 }

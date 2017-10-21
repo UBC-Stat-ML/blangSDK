@@ -1,6 +1,6 @@
-package blang.examples
+package blang.validation.internals.fixtures
 
-import static extension blang.examples.SpikedRealVar.*
+import static extension blang.validation.internals.fixtures.SpikedRealVar.*
 
 model GLM {
   
@@ -10,7 +10,7 @@ model GLM {
     val p = designMatrix.nCols
     return new ArrayList(p) => [
       for (int i : 0 ..< p) 
-        add(new SpikedRealVar(0,0))
+        add(new SpikedRealVar)
     ]
   } 
   
@@ -20,7 +20,7 @@ model GLM {
     
     zeroProbability ~ Beta(1,1)
     
-    coefficients | zeroProbability ~ SpikeAndSlab(zeroProbability, [value | -value * value])
+    coefficients | zeroProbability ~ SpikeAndSlab(zeroProbability, Normal.distribution(0, 1)) 
     
     for (int index : 0 ..< output.size) {
       output.get(index) | coefficients, 

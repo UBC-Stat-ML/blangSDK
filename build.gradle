@@ -34,12 +34,11 @@ dependencies {
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.10.0'
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.4.21'
   compile group: 'ca.ubc.stat', name: 'inits', version: '2.6.10'
-  compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.0.3'
+  compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.0.4'
   compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.2'
   compile group: 'ca.ubc.stat', name: 'xlinear', version: '2.0.0'
   compile group: 'org.jgrapht', name: 'jgrapht-dist', version: '0.9.0'
   compile group: 'com.esotericsoftware', name: 'kryo-shaded', version: '4.0.1'
-  // compile 'uk.com.robust-it:cloning:1.9.0' Removing - does not seem to actually clone stuff in the rocket Simple example
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
 }
 
