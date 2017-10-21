@@ -12,6 +12,7 @@ model Gamma {
   laws {
     
     logf(shape, rate, realization) {
+      check(shape > 0 && rate > 0)
       (shape - 1.0) * log(realization * rate)
     }
     
@@ -27,18 +28,9 @@ model Gamma {
       log(rate)
     }
     
-    indicator(shape) {
-      shape > 0.0
-    }
-    
-    indicator(rate) {
-      rate > 0.0
-    }
-    
     indicator(realization) {
       realization > 0.0
     }
-    
   }
   
   generate(rand) {

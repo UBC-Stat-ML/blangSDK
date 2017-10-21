@@ -11,15 +11,13 @@ model Binomial {
   laws {
     
     logf(numberOfSuccesses, numberOfTrials, probabilityOfSuccess) {
+      check(probabilityOfSuccess >= 0.0 && probabilityOfSuccess <= 1.0)
+      check(numberOfTrials > 0)
       numberOfSuccesses * log(probabilityOfSuccess) + (numberOfTrials - numberOfSuccesses) * log(1.0 - probabilityOfSuccess)
     }
     
     logf(numberOfTrials, numberOfSuccesses) {
       logBinomial(numberOfTrials, numberOfSuccesses)
-    }
-    
-    indicator(probabilityOfSuccess) {
-      probabilityOfSuccess >= 0.0 && probabilityOfSuccess <= 1.0
     }
     
     indicator(numberOfSuccesses, numberOfTrials) {
@@ -28,10 +26,6 @@ model Binomial {
     
     indicator(numberOfSuccesses) {
       0 <= numberOfSuccesses
-    }
-    
-    indicator(numberOfTrials) {
-      0 < numberOfTrials
     }
   }
   generate (rand) {

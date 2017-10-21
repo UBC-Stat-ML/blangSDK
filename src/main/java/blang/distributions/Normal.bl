@@ -18,11 +18,8 @@ model Normal {
     }
     
     logf(mean, variance, realization)  {
-      - 0.5 * ((mean - realization) ** 2) / variance
-    }
-    
-    indicator(variance)  {
-      variance > 0
+      check(variance > 0)
+      return - 0.5 * ((mean - realization) ** 2) / variance
     }
   }
   

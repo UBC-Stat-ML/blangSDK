@@ -10,10 +10,12 @@ model Beta {
   laws {
     
     logf(alpha, realization) {
+      check(alpha > 0)
       (alpha - 1.0) * log(realization)
     }
     
     logf(beta, realization) {
+      check(beta > 0)
       // better precision than log(1.0-realization)
       (beta - 1.0) * log1p(-realization)
     }
@@ -28,14 +30,6 @@ model Beta {
     
     logf(beta) {
       - lnGamma(beta)
-    }
-    
-    indicator(alpha) {
-      alpha > 0.0
-    }
-    
-    indicator(beta) {
-      beta > 0.0
     }
     
     indicator(realization) {

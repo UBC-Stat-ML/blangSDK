@@ -13,15 +13,12 @@ model Dirichlet {
         RealVar concentration = concentrations.getRealVar(dim),
         RealVar x = realization.getRealVar(dim)
       ) {
+        check(concentration > 0)
         (concentration - 1.0) * log(x)
       }
       
       logf(RealVar concentration = concentrations.getRealVar(dim)) {
         - lnGamma(concentration)
-      }
-      
-      indicator(RealVar concentration = concentrations.getRealVar(dim)) {
-        concentration > 0.0
       }
     }
     

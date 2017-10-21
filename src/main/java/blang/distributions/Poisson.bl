@@ -9,6 +9,7 @@ model Poisson {
   laws {
     
     logf(realization, mean) {
+      check (mean > 0)
       realization * log(mean)
     }
     
@@ -17,15 +18,11 @@ model Poisson {
     }
     
     logf(realization) {
-       - factorialLog(realization)
+      return - factorialLog(realization)
     }
     
     indicator(realization) {
       realization >= 0
-    }
-    
-    indicator(mean) {
-      mean > 0
     }
   }
   

@@ -81,5 +81,23 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return StaticUtils.denseTransitionMatrix(denseCopy(probabilities))
   }
   
+  /**
+   * An assertion check that is always performed.
+   */
+  def static void check(boolean condition) {
+    if (!condition) {
+      throw new RuntimeException("Assertion violated")
+    }
+  }
+  
+  // TODO:
+//  /**
+//   * A more computationally costly check which can be disabled.
+//   */
+//  def static void check(Supplier<Boolean> assertion) {
+//    // TODO: disable for Runner (controlled with switch), enable otherwise
+//    check(assertion.get)
+//  }
+  
   private new() {}
 }

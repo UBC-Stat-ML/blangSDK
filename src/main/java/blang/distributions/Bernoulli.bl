@@ -9,6 +9,7 @@ model Bernoulli {
   laws {
     
     logf(probability, realization)  {
+      check(probability >= 0.0 && probability <= 1.0)
       if (realization == 0) {
         log(1.0 -  probability)
       } else {
@@ -18,10 +19,6 @@ model Bernoulli {
     
     indicator(realization)  { 
       realization.isBool
-    }
-    
-    indicator(probability)  {
-      probability >= 0.0 && probability <= 1.0
     }
     
   }

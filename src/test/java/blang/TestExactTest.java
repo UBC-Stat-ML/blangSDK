@@ -18,7 +18,6 @@ public class TestExactTest
   public void checkBadNormalDetected()
   {
     Helpers.setOkToUseDefectiveImplementation();
-    
     ExactInvarianceTest exact = new ExactInvarianceTest();
     
     exact.add(
