@@ -81,8 +81,14 @@ public class Generators
   
   public static DenseSimplex dirichlet(Random random, Matrix concentrations) 
   {
-    double sum = 0.0;
     DenseMatrix result = MatrixOperations.dense(concentrations.nEntries());
+    dirichletInPlace(random, concentrations, result);
+    return StaticUtils.denseSimplex(result);
+  }
+  
+  static void dirichletInPlace(Random random, Matrix concentrations, Matrix result)
+  {
+    double sum = 0.0;
     for (int d = 0; d < concentrations.nEntries(); d++)
     {
       double gammaVariate = gamma(random, concentrations.get(d), 1.0);
@@ -90,7 +96,6 @@ public class Generators
       sum += gammaVariate;
     }
     result.divInPlace(sum);
-    return StaticUtils.denseSimplex(result);
   }
   
   public static Matrix multivariateNormal(Random rand, Matrix mean, CholeskyDecomposition precision) 

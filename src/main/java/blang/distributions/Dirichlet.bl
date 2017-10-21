@@ -1,5 +1,7 @@
 package blang.distributions
 
+import blang.types.internals.Delegator
+
 model Dirichlet {
   
   random Simplex realization 
@@ -30,13 +32,6 @@ model Dirichlet {
   }
   
   generate(rand) { 
-    var double sum = 0.0
-    for (var int d = 0; d < concentrations.nEntries; d++)
-    {
-      val double gammaVariate = Generators::gamma(rand, concentrations.get(d), 1.0)
-      realization.set(d, gammaVariate)
-      sum += gammaVariate
-    }
-    realization /= sum
+    Generators::dirichletInPlace(rand, concentrations, (realization as Delegator<Matrix>).delegate)
   }
 }

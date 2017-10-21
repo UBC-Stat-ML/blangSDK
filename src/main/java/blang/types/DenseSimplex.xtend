@@ -35,4 +35,13 @@ class DenseSimplex implements Simplex, DenseMatrix, Delegator<DenseMatrix> {
     delegate.set(index1, value1)
     delegate.set(index2, value2)
   }
+  
+  override void set(int i, int j, double value) {
+    throw new RuntimeException("Use setPair or unsafeSet instead");
+  }
+  
+  override void set(int i, double value) {
+    throw new RuntimeException("Use setPair or unsafeSet instead");
+  }
+  
 }
