@@ -47,8 +47,8 @@ class Helpers {
   /**
    * Call this first when testing intentionally incorrect fixtures.
    */
-  def static void setOkToUseDefectiveImplementation() {
-    okToUseDefectiveImplementation = true
+  def static void setDefectiveImplementationStatus(boolean useBadIsOk) {
+    okToUseDefectiveImplementation = useBadIsOk
   }
  
   /**

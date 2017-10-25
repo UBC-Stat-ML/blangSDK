@@ -50,8 +50,8 @@ class TestSDKDistributions {
   def void test() {
     test(new ExactInvarianceTest)
   }
-
-  def static void test(ExactInvarianceTest test) {
+  
+  def static void setup(ExactInvarianceTest test) {
     test => [ 
       
       // Test SDK distributions individually
@@ -199,7 +199,10 @@ class TestSDKDistributions {
       )
       
     ]
-    
+  }
+
+  def static void test(ExactInvarianceTest test) {
+    setup(test)
     println("Corrected pValue = " + test.correctedPValue)
     test.check()
   }

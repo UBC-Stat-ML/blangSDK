@@ -22,6 +22,7 @@ import blang.inits.Implementations;
 import blang.mcmc.Sampler;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.mcmc.internals.SamplerBuilder;
+import blang.mcmc.internals.SamplerBuilderOptions;
 import blang.runtime.Observations;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
@@ -56,20 +57,32 @@ public class ExactInvarianceTest
     this(false);
   }
 
-  private List<TestResult> results = new ArrayList<>();
+  public List<TestResult> results = new ArrayList<>();
   private int nTests = 0;
   
-  public <M extends Model> void add(M model, @SuppressWarnings("unchecked") Function<M, Double> ... testFunctions) 
+  public <M extends Model> void add(
+      M model, 
+      @SuppressWarnings("unchecked") Function<M, Double> ... testFunctions) 
   {
-    System.out.print("Running ExactInvarianceTest on model " + model.getClass().getSimpleName());
+    add(model, new SamplerBuilderOptions(), testFunctions);
+  }
+  
+  public <M extends Model> void add(
+      M model, 
+      SamplerBuilderOptions samplerOptions,
+      @SuppressWarnings("unchecked") Function<M, Double> ... testFunctions) 
+  {
+    if (!justComputeNumberOfTests)
+      System.out.print("Running ExactInvarianceTest on model " + model.getClass().getSimpleName());
     GraphAnalysis analysis = new GraphAnalysis(model, new Observations());
-    BuiltSamplers kernels = SamplerBuilder.build(analysis);
+    BuiltSamplers kernels = SamplerBuilder.build(analysis, samplerOptions);
     if (kernels.list.isEmpty())
       throw new RuntimeException("No kernels produced by model to be tested");
     Set<Class<? extends Sampler>> samplerTypes = kernels.list.stream().map(s -> s.getClass()).collect(Collectors.toSet());
     for (Class<? extends Sampler> currentSamplerType : samplerTypes)
     {
-      System.out.print(" [" + currentSamplerType.getSimpleName() + "] ");
+      if (!justComputeNumberOfTests)
+        System.out.print(" [" + currentSamplerType.getSimpleName() + "] ");
       BuiltSamplers currentKernel = kernels.restrict(s -> s.getClass() == currentSamplerType);
       SampledModel sampledModel = new SampledModel(analysis, currentKernel, random);
       
@@ -83,7 +96,8 @@ public class ExactInvarianceTest
           results.add(new TestResult(model, testFunctions[testIndex], BriefCollections.pick(currentKernel.list), forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
       }
     }
-    System.out.println();
+    if (!justComputeNumberOfTests)
+      System.out.println();
   }
   
   public double correctedPValue()
