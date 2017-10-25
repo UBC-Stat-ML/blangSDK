@@ -1,21 +1,17 @@
 package blang
 
-import blang.distributions.Beta
 import blang.mcmc.internals.SamplerBuilderOptions
 import blang.types.StaticUtils
 import blang.validation.ExactInvarianceTest
 import blang.validation.internals.Helpers
 import blang.validation.internals.fixtures.BadNormal
 import blang.validation.internals.fixtures.BadRealSliceSampler
+import blang.validation.internals.fixtures.Multimodal
 import blang.validation.internals.fixtures.RealRealizationSquared
-import org.junit.Assert
-import org.junit.Test
-
-import static blang.types.StaticUtils.realVar
-import static blang.validation.internals.Helpers.realRealizationSquared
-import org.junit.Before
 import org.junit.After
-import blang.distributions.Normal
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
 /** 
  * A test for the exact test, to make sure it catches some common types of errors.
@@ -33,14 +29,13 @@ class TestExactTest {
   @Test
   def void checkBadSliceSamplerDetected() {
     var ExactInvarianceTest test = new ExactInvarianceTest()
-//    test.nPosteriorSamplesPerIndep = 1000
     var SamplerBuilderOptions samplers = new SamplerBuilderOptions => [
       useAnnotation = false
       additional.add(BadRealSliceSampler)
     ]
       
     test.add(
-      new Normal.Builder().setMean([0.2]).setVariance([0.1]).setRealization(StaticUtils.realVar(1.0)).build(),
+      new Multimodal.Builder().build,
       samplers,
       new RealRealizationSquared()
     )

@@ -1,10 +1,11 @@
-package blang.mcmc;
+package blang.validation.internals.fixtures;
 
 import java.util.List;
 
 import bayonet.distributions.Random;
 import blang.core.LogScaleFactor;
 import blang.core.WritableIntVar;
+import blang.mcmc.MHSampler;
 import blang.mcmc.internals.Callback;
 
 

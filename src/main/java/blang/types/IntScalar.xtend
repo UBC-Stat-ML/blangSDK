@@ -1,10 +1,10 @@
 package blang.types
 
-import blang.mcmc.IntNaiveMHSampler
 import blang.mcmc.Samplers
 import blang.core.WritableIntVar
+import blang.mcmc.IntSliceSampler
 
-@Samplers(IntNaiveMHSampler) 
+@Samplers(IntSliceSampler) 
 class IntScalar implements WritableIntVar {
   
   var int value

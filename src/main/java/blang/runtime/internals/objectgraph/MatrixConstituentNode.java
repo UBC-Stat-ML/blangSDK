@@ -3,14 +3,13 @@ package blang.runtime.internals.objectgraph;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import blang.core.WritableRealVar;
-import blang.mcmc.RealNaiveMHSampler;
 import blang.mcmc.RealSliceSampler;
 import blang.mcmc.Samplers;
 import blang.types.internals.Delegator;
 import xlinear.Matrix;
 import xlinear.internals.Slice;
 
-@Samplers({RealNaiveMHSampler.class, RealSliceSampler.class}) 
+@Samplers({RealSliceSampler.class}) 
 public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>> implements WritableRealVar
 {
   // These should stay private and without getter/setter 

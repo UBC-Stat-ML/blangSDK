@@ -6,7 +6,7 @@ import bayonet.distributions.Random;
 import blang.core.ConstrainedFactor;
 import blang.core.LogScaleFactor;
 import blang.mcmc.ConnectedFactor;
-import blang.mcmc.IntNaiveMHSampler;
+import blang.mcmc.IntSliceSampler;
 import blang.mcmc.RealSliceSampler;
 import blang.mcmc.SampledVariable;
 import blang.mcmc.Sampler;
@@ -24,7 +24,7 @@ public class SpikedRealVarSampler implements Sampler {
   List<LogScaleFactor> numericFactors;
   
   RealSliceSampler sliceSampler;
-  IntNaiveMHSampler intSampler;
+  IntSliceSampler intSampler;
 
   @Override
   public void execute(Random rand) 
@@ -38,7 +38,7 @@ public class SpikedRealVarSampler implements Sampler {
   public boolean setup() 
   {
     sliceSampler = RealSliceSampler.build(variable.realPart, numericFactors);
-    intSampler = IntNaiveMHSampler.build(variable.isZero, numericFactors);
+    intSampler = IntSliceSampler.build(variable.isZero, numericFactors);
     return true;
   }
 

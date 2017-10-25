@@ -1,11 +1,10 @@
 package blang.types
 
-import blang.mcmc.RealNaiveMHSampler
 import blang.mcmc.Samplers
 import blang.core.WritableRealVar
 import blang.mcmc.RealSliceSampler
 
-@Samplers(RealNaiveMHSampler, RealSliceSampler)
+@Samplers(RealSliceSampler)
 class RealScalar implements WritableRealVar { 
   
   var double value = 0.0

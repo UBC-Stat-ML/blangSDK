@@ -1,7 +1,6 @@
 package blang
 
 import org.junit.Test
-import blang.mcmc.IntNaiveMHSampler
 import blang.validation.internals.fixtures.SmallHMM
 import blang.engines.internals.schedules.FixedTemperatureSchedule
 import bayonet.smc.ResamplingScheme
@@ -22,6 +21,7 @@ import blang.validation.internals.fixtures.ExactHMMCalculations
 import blang.types.IntScalar
 import blang.runtime.Observations
 import java.util.ArrayList
+import blang.validation.internals.fixtures.IntNaiveMHSampler
 
 class TestSMCUnbiasness {
   @Test def void testHMM() {
