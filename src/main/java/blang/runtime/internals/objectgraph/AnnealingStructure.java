@@ -13,13 +13,13 @@ public class AnnealingStructure
 {
   public final RealScalar annealingParameter;
   
-  // Those that are not annealed (e.g. priors)
+  // Those that are not annealed (e.g. priors, Constrained, etc)
   public final List<LogScaleFactor> fixedLogScaleFactors = new ArrayList<>();
-  public final List<Factor> otherFixedFactors = new ArrayList<>();
+  public final List<Factor> otherFactors = new ArrayList<>();
   
   // Those that are annealed
   public final List<ExponentiatedFactor> exponentiatedFactors = new ArrayList<>();
-  public final List<AnnealedFactor> otherAnnealedFactors = new ArrayList<>();
+  public final List<AnnealedFactor> otherAnnealedFactors = new ArrayList<>(); // custom (not yet used)
   
   public AnnealingStructure(RealScalar annealingParameter) 
   {

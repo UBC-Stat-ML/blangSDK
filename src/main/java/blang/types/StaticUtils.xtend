@@ -3,7 +3,6 @@ package blang.types
 import blang.core.IntVar
 import blang.core.RealVar
 import java.util.ArrayList
-import java.util.Collections
 import java.util.List
 import xlinear.DenseMatrix
 
@@ -34,7 +33,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     for (var int i = 0; i < size; i++) {
       result.add(intVar(0))
     }
-    return Collections::unmodifiableList(result)
+    return new ArrayList(result)
   }
   
   def static List<RealVar> listOfRealVars(int size) {
@@ -42,7 +41,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     for (var int i = 0; i < size; i++) {
       result.add(realVar(0.0))
     }
-    return Collections::unmodifiableList(result)
+    return new ArrayList(result)
   }
   
   def static DenseSimplex denseSimplex(int nStates) {

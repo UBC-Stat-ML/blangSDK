@@ -4,6 +4,7 @@ import java.util.List;
 import bayonet.distributions.Random;
 
 import blang.core.LogScaleFactor;
+import blang.distributions.Generators;
 import blang.mcmc.internals.Callback;
 
 
@@ -40,7 +41,7 @@ public abstract class MHSampler<T> implements Sampler
           throw new RuntimeException("Use setProposalLogRatio(..) before calling sampleAcceptance()");
         final double logAfter = logDensity();
         final double ratio = Math.exp(proposalLogRatio + logAfter - logBefore);
-        return random.nextDouble() < ratio;
+        return Generators.bernoulli(random, Math.min(1.0, ratio));
       }
     };
     propose(random, callback);

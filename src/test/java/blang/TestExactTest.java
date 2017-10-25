@@ -14,6 +14,7 @@ import blang.validation.internals.fixtures.RealRealizationSquared;
  */
 public class TestExactTest 
 {
+  @SuppressWarnings("unchecked")
   @Test
   public void checkBadNormalDetected()
   {
@@ -25,7 +26,15 @@ public class TestExactTest
         new RealRealizationSquared() 
     );
     
+    final double referenceFamilyWiseErrorThreshold = getMainTestPValue();
     Assert.assertTrue(exact.nTests() > 0);
-    Assert.assertEquals(exact.failedTests().size(), exact.nTests());
+    Assert.assertEquals(exact.failedTests(referenceFamilyWiseErrorThreshold).size(), exact.nTests());
+  }
+  
+  private double getMainTestPValue()
+  {
+    ExactInvarianceTest lazyTest = new ExactInvarianceTest(true);
+    TestSDKDistributions.test(lazyTest);
+    return lazyTest.familyWiseError;
   }
 }

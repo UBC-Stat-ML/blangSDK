@@ -2,7 +2,6 @@ package blang.engines;
 
 import java.util.Arrays;
 
-import bayonet.distributions.ExhaustiveDebugRandom;
 import bayonet.distributions.Random;
 import bayonet.smc.ParticlePopulation;
 import bayonet.smc.ResamplingScheme;
@@ -47,19 +46,13 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     ParticlePopulation<P> population = initialize(parallelRandomStreams);
     
     double temperature = 0.0;
-    int iter = 0;
     while (temperature < 1.0)
     {
-      System.out.println("Iteration " + iter + ": exponent=" + temperature + ", ESS=" + population.getRelativeESS());
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature); 
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
       if (resamplingNeeded(population, nextTemperature))
-      {
-        System.out.println("Resampling");
         population = resample(random, population);
-      }
       temperature = nextTemperature;
-      iter++;
     }
     return population;
   }
@@ -74,8 +67,6 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
 
   private ParticlePopulation<P> resample(Random random, ParticlePopulation<P> population)
   {
-    if (kernels.inPlace() && random instanceof ExhaustiveDebugRandom)
-      throw new RuntimeException();
     population = population.resample(random, resamplingScheme);
     if (kernels.inPlace())
       deepCopyParticles(population);

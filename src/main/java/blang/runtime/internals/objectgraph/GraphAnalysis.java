@@ -56,7 +56,7 @@ public class GraphAnalysis
   private final LinkedHashSet<Node> freeMutableNodes;
   private final LinkedHashSet<Node> latentVariables;
   private final LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
-  private final LinkedHashSet<ObjectNode<Factor>> factorNodes = new LinkedHashSet<>();
+  private final LinkedHashSet<ObjectNode<Factor>> factorNodes = new LinkedHashSet<>(); // all of them, not just LogScale
   private final Predicate<Class<?>> isVariablePredicate = c -> 
     !SamplerBuilder.SAMPLER_PROVIDER_1.getProducts(c).isEmpty() ||
     !SamplerBuilder.SAMPLER_PROVIDER_2.getProducts(c).isEmpty();
@@ -105,27 +105,14 @@ public class GraphAnalysis
    */
   public AnnealingStructure createLikelihoodAnnealer()
   {
-    List<AnnealedFactor> annealedFactors = new ArrayList<>(); 
-    List<Factor> fixedFactors = new ArrayList<>(); 
-    createLikelihoodAnnealer(model, annealedFactors, fixedFactors);
-    
     AnnealingStructure result = new AnnealingStructure(annealingParameter);
-    for (AnnealedFactor annealed : annealedFactors)
-    {
-      annealed.setAnnealingParameter(annealingParameter); 
-      if (annealed instanceof ExponentiatedFactor)
-        result.exponentiatedFactors.add((ExponentiatedFactor) annealed);
-      else
-        result.otherAnnealedFactors.add(annealed);
-    }
-    for (Factor fixed : fixedFactors)
-    {
-      if (fixed instanceof LogScaleFactor)
-        result.fixedLogScaleFactors.add((LogScaleFactor) fixed);
-      else
-        result.otherFixedFactors.add(fixed);
-    }
+    createLikelihoodAnnealer(model, result);
     return result;
+  }
+  
+  public GraphAnalysis(Model model)
+  {
+    this (model, new Observations());
   }
   
   public GraphAnalysis(Model model, Observations observations)
@@ -285,41 +272,55 @@ public class GraphAnalysis
     }
   }
   
-  private void createLikelihoodAnnealer(Model model, List<AnnealedFactor> annealedFactors, List<Factor> fixedFactors)
+  private void createLikelihoodAnnealer(Model model, AnnealingStructure annealingStructure)
   {
     if (model instanceof ForwardSimulator)
     {
-      if (allRandomNodesObserved(model))
-        addAllRecursively(model, annealedFactors); 
-      else
-        addAllRecursively(model, fixedFactors); 
-      return;
+      boolean allRandomNodesObserved = allRandomNodesObserved(model);
+      for (Factor f : factors((Model) model))
+        if (f instanceof LogScaleFactor)
+        {
+          if (allRandomNodesObserved)
+          {
+            if (f instanceof ExponentiatedFactor)
+              annealingStructure.exponentiatedFactors.add((ExponentiatedFactor) f);
+            else
+              annealingStructure.otherAnnealedFactors.add((AnnealedFactor) f);
+          }
+          else
+            annealingStructure.fixedLogScaleFactors.add((LogScaleFactor) f);
+        }
+        else
+          annealingStructure.otherFactors.add(f);
     }
-    
-    // recurse
-    ObjectNode<Model> modelNode = new ObjectNode<>(model);
-    for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
+    else
     {
-      ModelComponent component = componentNode.object;
-      if (!(component instanceof Model))
-        throw new RuntimeException("If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed");
-      Model submodel = (Model) component;
-      createLikelihoodAnnealer(submodel, annealedFactors, fixedFactors);
+      // recurse
+      ObjectNode<Model> modelNode = new ObjectNode<>(model);
+      for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
+      {
+        ModelComponent component = componentNode.object;
+        if (!(component instanceof Model))
+          throw new RuntimeException("If a Model is not a ForwardSimulator, all its components should be Model's, no Factor's allowed");
+        Model submodel = (Model) component;
+        createLikelihoodAnnealer(submodel, annealingStructure);
+      }
     }
   }
   
-  @SuppressWarnings("unchecked")
-  private <T> void addAllRecursively(Model model, List<T> factors)
+  private List<Factor> factors(Model model)
   {
+    List<Factor> result = new ArrayList<>();
     ObjectNode<Model> modelNode = new ObjectNode<>(model);
     for (ObjectNode<ModelComponent> componentNode : model2ModelComponents.get(modelNode))
     {
       ModelComponent component = componentNode.object;
       if (component instanceof Model)
-        addAllRecursively((Model) component, factors);
-      else
-        factors.add((T) component);
+        result.addAll(factors((Model) component));
+      else if (component instanceof Factor)
+        result.add((Factor) component);
     }
+    return result;
   }
   
   public void checkDAG()

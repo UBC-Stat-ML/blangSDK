@@ -44,10 +44,21 @@ public class ExactInvarianceTest
   @Arg      @DefaultValue("0.005")
   public double familyWiseError = 0.005;
   
-  private List<TestResult> results = new ArrayList<>();
+  private final boolean justComputeNumberOfTests;
   
-  // TODO: add a test with all samplers 
+  public ExactInvarianceTest(boolean justComputeNumberOfTests) 
+  {
+    this.justComputeNumberOfTests = justComputeNumberOfTests;
+  }
+  
+  public ExactInvarianceTest() 
+  {
+    this(false);
+  }
 
+  private List<TestResult> results = new ArrayList<>();
+  private int nTests = 0;
+  
   public <M extends Model> void add(M model, @SuppressWarnings("unchecked") Function<M, Double> ... testFunctions) 
   {
     System.out.print("Running ExactInvarianceTest on model " + model.getClass().getSimpleName());
@@ -62,42 +73,54 @@ public class ExactInvarianceTest
       BuiltSamplers currentKernel = kernels.restrict(s -> s.getClass() == currentSamplerType);
       SampledModel sampledModel = new SampledModel(analysis, currentKernel, random);
       
-      List<List<Double>> forwardSamples          = sample(sampledModel, model, testFunctions, false);
-      List<List<Double>> forwardPosteriorSamples = sample(sampledModel, model, testFunctions, true);
+      List<List<Double>> forwardSamples          = justComputeNumberOfTests ? null : sample(sampledModel, model, testFunctions, false);
+      List<List<Double>> forwardPosteriorSamples = justComputeNumberOfTests ? null : sample(sampledModel, model, testFunctions, true);
       
       for (int testIndex = 0; testIndex < testFunctions.length; testIndex++)
-        results.add(new TestResult(model, testFunctions[testIndex], BriefCollections.pick(currentKernel.list), forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
+      {
+        nTests++;
+        if (!justComputeNumberOfTests)
+          results.add(new TestResult(model, testFunctions[testIndex], BriefCollections.pick(currentKernel.list), forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
+      }
     }
     System.out.println();
   }
   
   public double correctedPValue()
   {
-    if (results.isEmpty())
+    if (nTests == 0)
       throw new RuntimeException("Need to add tests first.");
     // Note: there can be dependence between tests when using several test functions
-    return familyWiseError / ((double) results.size());
+    return familyWiseError / ((double) nTests);
   }
   
   public List<TestResult> failedTests()
   {
-    // compute via Sidak since tests are independent by construction
+    return failedTests(correctedPValue());
+  }
+  
+  public List<TestResult> failedTests(double threshold)
+  {
     List<TestResult> offenders = new ArrayList<>();
-    double corrected = correctedPValue();
     for (TestResult result : results)
-      if (result.pValue < corrected)
+      if (result.pValue < threshold)
         offenders.add(result);
     return offenders;
   }
   
   public int nTests() 
   {
-    return results.size();
+    return nTests;
   }
   
-  public void check() 
+  public void check()
   {
-    List<TestResult> failedTests = failedTests();
+    check(correctedPValue());
+  }
+  
+  public void check(double threshold) 
+  {
+    List<TestResult> failedTests = failedTests(threshold);
     if (!failedTests.isEmpty())
       Assert.fail("Some test(s) failed:\n" + format(failedTests));
     else

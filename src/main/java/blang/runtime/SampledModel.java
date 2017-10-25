@@ -83,6 +83,11 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
   
   private final Map<String, Object> objectsToOutput;
   
+  public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers)
+  {
+    this(graphAnalysis, samplers, new Random(1));
+  }
+  
   public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers, Random initRandom) 
   {
     this.model = graphAnalysis.model;

@@ -1,9 +1,7 @@
 package blang.mcmc.internals;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import blang.core.Factor;
@@ -23,10 +21,10 @@ public class SamplerBuilder
 {
   public static BuiltSamplers build(GraphAnalysis graphAnalysis)
   {
-    return build(graphAnalysis, Collections.emptySet(), Collections.emptySet());
+    return build(graphAnalysis, new SamplerBuilderOptions());
   }
   
-  public static BuiltSamplers build(GraphAnalysis graphAnalysis, Set<Class<Sampler>> additionalSamplers, Set<Class<Sampler>> excludedSamplers)
+  public static BuiltSamplers build(GraphAnalysis graphAnalysis, SamplerBuilderOptions options)
   {
     BuiltSamplers result = new BuiltSamplers();
     for (Node latentNode : graphAnalysis.getLatentVariables())
@@ -34,32 +32,35 @@ public class SamplerBuilder
       Object latent = GraphAnalysis.getLatentObject(latentNode);
       SamplerMatch current = new SamplerMatch(latent);
       // add samplers coming from Samplers annotations
-      innerLoop:for (Class<? extends Sampler> product : SAMPLER_PROVIDER_1.getProducts(latent.getClass())) 
+      if (options.useAnnotation)
       {
-        if (excludedSamplers.contains(product)) 
-          continue innerLoop;
-        Sampler o = tryInstantiate(product, latentNode, graphAnalysis);
-        if (o != null)
-          add(result, current, o, latentNode);
-      }
+        innerLoop:for (Class<? extends Sampler> product : SAMPLER_PROVIDER_1.getProducts(latent.getClass())) 
+        {
+          if (options.excluded.samplers.contains(product)) 
+            continue innerLoop;
+          Sampler o = tryInstantiate(product, latentNode, graphAnalysis);
+          if (o != null)
+            add(result, current, o, latentNode);
+        }
       
       // add samplers coming from SamplerTypes annotations
-      innerLoop:for (String product : SAMPLER_PROVIDER_2.getProducts(latent.getClass()))
-      {
-        @SuppressWarnings("rawtypes")
-        Class opClass = null;
-        try { opClass = Class.forName(product); } catch (Exception e) { throw new RuntimeException(e); }
-        if (excludedSamplers.contains(opClass)) 
-          continue innerLoop;
-        @SuppressWarnings("unchecked")
-        Sampler o = tryInstantiate(opClass, latentNode, graphAnalysis);
-        if (o != null)
-          add(result, current, o, latentNode);
+        innerLoop:for (String product : SAMPLER_PROVIDER_2.getProducts(latent.getClass()))
+        {
+          @SuppressWarnings("rawtypes")
+          Class opClass = null;
+          try { opClass = Class.forName(product); } catch (Exception e) { throw new RuntimeException(e); }
+          if (options.excluded.samplers.contains(opClass)) 
+            continue innerLoop;
+          @SuppressWarnings("unchecked")
+          Sampler o = tryInstantiate(opClass, latentNode, graphAnalysis);
+          if (o != null)
+            add(result, current, o, latentNode);
+        }
       }
       
       // add sampler from additional list
-      for (Class<Sampler> additionalSamplerClass : additionalSamplers)
-        if (!excludedSamplers.contains(additionalSamplerClass)) 
+      for (Class<Sampler> additionalSamplerClass : options.additional.samplers)
+        if (!options.excluded.samplers.contains(additionalSamplerClass)) 
         {
           Sampler o = tryInstantiate(additionalSamplerClass, latentNode, graphAnalysis);
           if (o != null) 

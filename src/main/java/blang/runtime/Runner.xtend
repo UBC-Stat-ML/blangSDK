@@ -29,19 +29,26 @@ import blang.engines.internals.factories.SCM
 import blang.io.internals.GlobalDataSourceStore
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.runtime.internals.objectgraph.GraphAnalysis
+import blang.mcmc.internals.SamplerBuilderOptions
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
   val Model model
   
   @Arg                   @DefaultValue("SCM")
-  PosteriorInferenceEngine engine = new SCM
+  public PosteriorInferenceEngine engine = new SCM
   
   @Arg               @DefaultValue("false")
-  boolean printAccessibilityGraph = false
+  public boolean printAccessibilityGraph = false
   
   @Arg  @DefaultValue("true")
-  boolean checkIsDAG = true
+  public boolean checkIsDAG = true
+  
+  @Arg                   @DefaultValue("1")
+  public Random initRandom = new Random(1)
+  
+  @Arg
+  public SamplerBuilderOptions samplers = new SamplerBuilderOptions
   
   @Arg(description = "Version of the blang SDK to use (see https://github.com/UBC-Stat-ML/blangSDK/releases), of the form of a git tag x.y.z where x >= 2. If omitted, use the local SDK's 'master' version.")
   public Optional<String> version // Only used when called from Main 
@@ -142,7 +149,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
       graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
       graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
     }
-    val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis)
+    val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis, samplers)
     println(kernels)
     if (checkIsDAG) {
       try {
@@ -151,7 +158,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         throw new NotDAG(re.toString + "\nTo disable check for DAG, use the option --checkIsDAG")
       }
     }
-    val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, new Random(1))
+    val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, initRandom)
     engine.sampledModel = sampledModel
     engine.performInference
   }

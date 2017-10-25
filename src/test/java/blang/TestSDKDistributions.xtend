@@ -45,9 +45,14 @@ import blang.validation.internals.fixtures.GLM
 import blang.examples.MixtureModel
 
 class TestSDKDistributions { 
+  
+  @Test 
+  def void test() {
+    test(new ExactInvarianceTest)
+  }
 
-  @Test def void test() {
-    var ExactInvarianceTest exact = new ExactInvarianceTest => [ 
+  def static void test(ExactInvarianceTest test) {
+    test => [ 
       
       // Test SDK distributions individually
       
@@ -195,22 +200,22 @@ class TestSDKDistributions {
       
     ]
     
-    println("Corrected pValue = " + exact.correctedPValue)
-    exact.check()
+    println("Corrected pValue = " + test.correctedPValue)
+    test.check()
   }
   
-  val Matrix precision = denseCopy(#[
+  val static Matrix precision = denseCopy(#[
     #[2.0, -1.3, 0.0],
     #[-1.3, 2.0, -0.8],
     #[0.0, -0.8, 2.1]
   ])
   
-  val DenseTransitionMatrix transitionMatrix = StaticUtils.denseTransitionMatrix(#[
+  val static DenseTransitionMatrix transitionMatrix = StaticUtils.denseTransitionMatrix(#[
     #[0.1, 0.9],
     #[0.6, 0.4]
   ])
   
-  val Matrix designMatrix = denseCopy(#[ // n = 3, p = 2
+  val static Matrix designMatrix = denseCopy(#[ // n = 3, p = 2
     #[2.0, -1.3],
     #[-1.3, 2.0],
     #[0.0, -0.8]
