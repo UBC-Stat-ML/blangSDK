@@ -41,8 +41,8 @@ import blang.types.DenseTransitionMatrix
 import static blang.types.StaticUtils.denseSimplex
 import static blang.types.StaticUtils.denseTransitionMatrix
 import blang.types.StaticUtils
-import blang.validation.internals.fixtures.GLM
 import blang.examples.MixtureModel
+import blang.validation.internals.fixtures.SpikedGLM
 
 class TestSDKDistributions { 
   
@@ -185,7 +185,7 @@ class TestSDKDistributions {
       )
       
       add(
-        new GLM.Builder()
+        new SpikedGLM.Builder()
           .setOutput(listOfIntVars(3))
           .setDesignMatrix(designMatrix).build,
         [coefficients.get(0).realPart.doubleValue],

@@ -2,7 +2,7 @@ package blang.validation.internals.fixtures
 
 import static extension blang.validation.internals.fixtures.SpikedRealVar.*
 
-model GLM {
+model SpikedGLM {
   
   param Matrix designMatrix // n by p
   random List<IntVar> output // size n

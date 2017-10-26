@@ -11,7 +11,8 @@ public interface Sampler
   public void execute(Random rand);
   
   /**
-   * @return If this sampler is actually compatible.
+   * @return Is the sampler is actually compatible?
    */
   public boolean setup();
+  
 }
