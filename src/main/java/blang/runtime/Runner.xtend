@@ -35,13 +35,13 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   val Model model
   
-  @Arg                   @DefaultValue("SCM")
+  @Arg                          @DefaultValue("SCM")
   public PosteriorInferenceEngine engine = new SCM
   
-  @Arg               @DefaultValue("false")
+  @Arg                      @DefaultValue("false")
   public boolean printAccessibilityGraph = false
   
-  @Arg  @DefaultValue("true")
+  @Arg         @DefaultValue("true")
   public boolean checkIsDAG = true
   
   @Arg                   @DefaultValue("1")

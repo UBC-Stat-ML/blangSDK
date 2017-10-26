@@ -1,4 +1,4 @@
-package blang.distributions
+package blang.validation.internals.fixtures
 
 model MarkovChain {  
   

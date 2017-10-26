@@ -28,7 +28,7 @@ import blang.distributions.MultivariateNormal
 import xlinear.Matrix
 import blang.distributions.Poisson
 import blang.distributions.DiscreteUniform
-import blang.distributions.MarkovChain
+import blang.validation.internals.fixtures.MarkovChain
 import blang.examples.DynamicNormalMixture
 import blang.validation.internals.fixtures.ListHash
 import blang.validation.internals.fixtures.VectorHash
