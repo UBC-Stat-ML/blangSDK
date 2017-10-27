@@ -1,5 +1,6 @@
 package blang.validation.internals.fixtures
 
+import blang.distributions.* // Do not remove (see Issue #56)
 
 model Multimodal {
   

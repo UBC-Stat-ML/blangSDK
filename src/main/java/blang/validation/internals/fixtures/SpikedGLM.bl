@@ -2,6 +2,8 @@ package blang.validation.internals.fixtures
 
 import static extension blang.validation.internals.fixtures.SpikedRealVar.*
 
+import blang.distributions.* // Do not remove (see Issue #56)
+
 model SpikedGLM {
   
   param Matrix designMatrix // n by p
