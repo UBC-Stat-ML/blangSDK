@@ -2,7 +2,6 @@ package blang.validation.internals.fixtures
 
 import static extension blang.validation.internals.fixtures.SpikedRealVar.*
 
-import blang.distributions.* // Do not remove (see Issue #56)
 
 model SpikedGLM {
   
@@ -22,7 +21,9 @@ model SpikedGLM {
     
     zeroProbability ~ Beta(1,1)
     
-    coefficients | zeroProbability ~ SpikeAndSlab(zeroProbability, Normal.distribution(0, 1)) 
+    coefficients | zeroProbability ~ 
+      SpikeAndSlab(zeroProbability, blang.distributions.Normal.distribution(0, 1)) 
+      // Weird explicit import because of workaround for Issue #56
     
     for (int index : 0 ..< output.size) {
       output.get(index) | coefficients, 
