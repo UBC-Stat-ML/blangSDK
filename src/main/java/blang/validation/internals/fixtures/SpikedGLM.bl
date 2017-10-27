@@ -22,7 +22,7 @@ model SpikedGLM {
     zeroProbability ~ Beta(1,1)
     
     coefficients | zeroProbability ~ 
-      SpikeAndSlab(zeroProbability, blang.distributions.Normal.distribution(0, 1)) 
+      SpikeAndSlab(zeroProbability, blang.distributions.Normal::distribution(0, 1)) 
       // Weird explicit import because of workaround for Issue #56
     
     for (int index : 0 ..< output.size) {
