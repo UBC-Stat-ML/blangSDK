@@ -1,18 +1,21 @@
 package blang.mcmc.internals;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import blang.core.Factor;
-import blang.core.SamplerTypes;
 import blang.mcmc.ConnectedFactor;
+import blang.mcmc.SampledVariable;
 import blang.mcmc.Sampler;
 import blang.mcmc.Samplers;
-import blang.runtime.internals.RecursiveAnnotationProducer;
-import blang.runtime.internals.TypeProvider;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.runtime.internals.objectgraph.Node;
+import blang.runtime.internals.objectgraph.VariableUtils;
 import briefj.ReflexionUtils;
 
 
@@ -27,52 +30,21 @@ public class SamplerBuilder
   public static BuiltSamplers build(GraphAnalysis graphAnalysis, SamplerBuilderOptions options)
   {
     BuiltSamplers result = new BuiltSamplers();
+    SamplerTypesMatcher typeMatcher = new SamplerTypesMatcher(options);
     for (Node latentNode : graphAnalysis.getLatentVariables())
     {
       Object latent = GraphAnalysis.getLatentObject(latentNode);
       SamplerMatch current = new SamplerMatch(latent);
-      // add samplers coming from Samplers annotations
-      if (options.useAnnotation)
+      for (Class<? extends Sampler> typeMatch : typeMatcher.matches(latent.getClass()))
       {
-        innerLoop:for (Class<? extends Sampler> product : SAMPLER_PROVIDER_1.getProducts(latent.getClass())) 
-        {
-          if (options.excluded.samplers.contains(product)) 
-            continue innerLoop;
-          Sampler o = tryInstantiate(product, latentNode, graphAnalysis);
-          if (o != null)
-            add(result, current, o, latentNode);
-        }
-      
-      // add samplers coming from SamplerTypes annotations
-        innerLoop:for (String product : SAMPLER_PROVIDER_2.getProducts(latent.getClass()))
-        {
-          @SuppressWarnings("rawtypes")
-          Class opClass = null;
-          try { opClass = Class.forName(product); } catch (Exception e) { throw new RuntimeException(e); }
-          if (options.excluded.samplers.contains(opClass)) 
-            continue innerLoop;
-          @SuppressWarnings("unchecked")
-          Sampler o = tryInstantiate(opClass, latentNode, graphAnalysis);
-          if (o != null)
-            add(result, current, o, latentNode);
-        }
+        Sampler o = tryInstantiate(typeMatch, latentNode, graphAnalysis);
+        if (o != null)
+          add(result, current, o, latentNode);
       }
-      
-      // add sampler from additional list
-      for (Class<Sampler> additionalSamplerClass : options.additional.samplers)
-        if (!options.excluded.samplers.contains(additionalSamplerClass)) 
-        {
-          Sampler o = tryInstantiate(additionalSamplerClass, latentNode, graphAnalysis);
-          if (o != null) 
-            add(result, current, o, latentNode);
-        }
-      
       result.matchingReport.add(current);
     }
     return result;
   }
-  
-  private SamplerBuilder() {}
   
   private static void add(BuiltSamplers result, SamplerMatch match, Sampler product, Node variable)
   {
@@ -81,7 +53,7 @@ public class SamplerBuilder
     result.correspondingVariables.add(variable);
   }
   
-  public static <O extends Sampler> O tryInstantiate(
+  private static <O extends Sampler> O tryInstantiate(
       Class<O> operatorClass, 
       Node variable,
       GraphAnalysis graphAnalysis)
@@ -115,7 +87,56 @@ public class SamplerBuilder
     return instantiated;
   }
   
-  public static TypeProvider<Class<? extends Sampler>>  SAMPLER_PROVIDER_1 = RecursiveAnnotationProducer.ofClasses(Samplers.class, true);
-  public static TypeProvider<String>                    SAMPLER_PROVIDER_2 = new RecursiveAnnotationProducer<>(SamplerTypes.class, String.class, true, "value");
+  /**
+   * For internal use only. Use the SamplerMatch instead, which has the key difference that 
+   * it takes into accound whether the factors were successfully matched as well (this cannot 
+   * be determined from types alone).
+   */
+  private static class SamplerTypesMatcher
+  {
+    private final SamplerBuilderOptions options;
+    private final Map<Class<?>, Set<Class<? extends Sampler>>> cache = new LinkedHashMap<>();
+    
+    public SamplerTypesMatcher(SamplerBuilderOptions options) {
+      this.options = options;
+    }
+
+    public Set<Class<? extends Sampler>> matches(Class<?> latentNode)
+    {
+      if (cache.containsKey(latentNode))
+        return cache.get(latentNode);
+      
+      Set<Class<? extends Sampler>> result = new LinkedHashSet<>();
+      
+      if (options.useAnnotation)
+      {
+        result.addAll(VariableUtils.annotatedSamplers(latentNode));
+        result.removeAll(options.excluded.samplers);
+        // check the samplers provided by annotations are compatible
+        for (Class<? extends Sampler> samplerFromAnnotation : result)
+          if (!isCompatible(samplerFromAnnotation, latentNode))
+            throw new RuntimeException("Field marked by @" + SampledVariable.class.getSimpleName() + " is no assignable from " + latentNode.getSimpleName() + "\n" +
+                "Ensure that you are properly linking the sampler types to variable types prescribed by annotations @" + SampledVariable.class.getSimpleName() + " and @" + Samplers.class.getSimpleName());
+      }
+      
+      // add the additionals (checking they were not excluded) when assignable is ok
+      for (Class<? extends Sampler> additional : options.additional.samplers)
+        if (isCompatible(additional, latentNode))
+          if (options.excluded.samplers.contains(additional))
+            throw new RuntimeException("A sampler should not be both included and excluded: " + additional);
+          else
+            result.add(additional);
+      
+      cache.put(latentNode, result);
+      return result;
+    }
+  }
   
+  public static boolean isCompatible(Class<? extends Sampler> samplerType, Class<?> variableType)
+  {
+    Field variableField = NodeMoveUtils.getSampledVariableField(samplerType);
+    return variableField.getType().isAssignableFrom(variableType);
+  }
+  
+  private SamplerBuilder() {}
 }

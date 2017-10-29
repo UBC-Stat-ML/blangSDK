@@ -3,6 +3,7 @@ package blang.validation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -75,15 +76,20 @@ public class ExactInvarianceTest
     if (!justComputeNumberOfTests)
       System.out.print("Running ExactInvarianceTest on model " + model.getClass().getSimpleName());
     GraphAnalysis analysis = new GraphAnalysis(model, new Observations());
-    BuiltSamplers kernels = SamplerBuilder.build(analysis, samplerOptions);
-    if (kernels.list.isEmpty())
+    BuiltSamplers allKernels = SamplerBuilder.build(analysis, samplerOptions);
+    if (allKernels.list.isEmpty())
       throw new RuntimeException("No kernels produced by model to be tested");
-    Set<Class<? extends Sampler>> samplerTypes = kernels.list.stream().map(s -> s.getClass()).collect(Collectors.toSet());
+    Set<Class<? extends Sampler>> samplerTypes = new LinkedHashSet<>();
+    for (Sampler sampler : allKernels.list)
+      samplerTypes.add(sampler.getClass());
     for (Class<? extends Sampler> currentSamplerType : samplerTypes)
     {
       if (!justComputeNumberOfTests)
         System.out.print(" [" + currentSamplerType.getSimpleName() + "] ");
-      BuiltSamplers currentKernel = kernels.restrict(s -> s.getClass() == currentSamplerType);
+      SamplerBuilderOptions options = new SamplerBuilderOptions();
+      options.useAnnotation = false;
+      options.additional.add(currentSamplerType);
+      BuiltSamplers currentKernel = SamplerBuilder.build(analysis, options);
       SampledModel sampledModel = new SampledModel(analysis, currentKernel, random);
       
       List<List<Double>> forwardSamples          = justComputeNumberOfTests ? null : sample(sampledModel, model, testFunctions, false);
@@ -97,7 +103,7 @@ public class ExactInvarianceTest
       }
     }
     if (!justComputeNumberOfTests)
-      System.out.println();
+      System.out.println("-- currentRandStatus(" + random.nextInt() + ")");
   }
   
   public double correctedPValue()

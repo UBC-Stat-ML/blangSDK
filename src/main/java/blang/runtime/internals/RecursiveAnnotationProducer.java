@@ -27,7 +27,7 @@ import java.util.Map;
  * @param <A> Type of annotation
  * @param <P> Return type of one of the method of the annotation
  */
-public class RecursiveAnnotationProducer<A extends Annotation,P> implements TypeProvider<P>
+public class RecursiveAnnotationProducer<A extends Annotation,P> 
 {
   private final Class<A> annotationType;
   private final Method annotationMethod;

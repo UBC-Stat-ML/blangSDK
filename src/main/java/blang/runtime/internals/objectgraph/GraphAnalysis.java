@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.DirectedGraph;
@@ -34,7 +33,6 @@ import blang.core.ModelComponent;
 import blang.core.Param;
 import blang.core.SupportFactor;
 import blang.mcmc.internals.ExponentiatedFactor;
-import blang.mcmc.internals.SamplerBuilder;
 import blang.runtime.Observations;
 import blang.types.RealScalar;
 import briefj.ReflexionUtils;
@@ -57,9 +55,7 @@ public class GraphAnalysis
   private final LinkedHashSet<Node> latentVariables;
   private final LinkedHashMultimap<Node, ObjectNode<Factor>> mutableToFactorCache;
   private final LinkedHashSet<ObjectNode<Factor>> factorNodes = new LinkedHashSet<>(); // all of them, not just LogScale
-  private final Predicate<Class<?>> isVariablePredicate = c -> 
-    !SamplerBuilder.SAMPLER_PROVIDER_1.getProducts(c).isEmpty() ||
-    !SamplerBuilder.SAMPLER_PROVIDER_2.getProducts(c).isEmpty();
+  
   private final Map<ObjectNode<ModelComponent>,String> factorDescriptions = new LinkedHashMap<>();
   private final Observations observations;
   private final RealScalar annealingParameter = new RealScalar(1.0);
@@ -144,8 +140,7 @@ public class GraphAnalysis
     // identify the latent variables (those with specified samplers and free mutable nodes under)
     latentVariables = latentVariables(
         accessibilityGraph, 
-        freeMutableNodes, 
-        isVariablePredicate);
+        freeMutableNodes);
     
     // prepare the cache mutable -> factors having access to it
     mutableToFactorCache = LinkedHashMultimap.create();
@@ -511,8 +506,7 @@ public class GraphAnalysis
    */
   private static LinkedHashSet<Node> latentVariables(
       AccessibilityGraph accessibilityGraph,
-      final Set<Node> freeMutableNodes,
-      Predicate<Class<?>> isVariablePredicate
+      final Set<Node> freeMutableNodes
       )
   {
     // find the ObjectNode's which have some unobserved mutable nodes under them
@@ -522,7 +516,7 @@ public class GraphAnalysis
     LinkedHashSet<Class<?>> matchedVariableClasses = new LinkedHashSet<>();
     ancestorsOfUnobservedMutableNodes.stream()
       .map(GraphAnalysis::getLatentClass)
-      .filter(isVariablePredicate)
+      .filter(VariableUtils::isVariable)
       .forEachOrdered(matchedVariableClasses::add);
     
     // return the ObjectNode's which have some unobserved mutable nodes under them 
