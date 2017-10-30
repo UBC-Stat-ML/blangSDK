@@ -6,13 +6,17 @@ import bayonet.distributions.Random;
 import blang.core.LogScaleFactor;
 import blang.core.WritableIntVar;
 import blang.mcmc.MHSampler;
+import blang.mcmc.SampledVariable;
 import blang.mcmc.internals.Callback;
 
 
 
 
-public class IntNaiveMHSampler extends MHSampler<WritableIntVar>
+public class IntNaiveMHSampler extends MHSampler
 {
+  @SampledVariable
+  WritableIntVar variable;
+  
   public static IntNaiveMHSampler build(WritableIntVar variable, List<LogScaleFactor> numericFactors)
   {
     IntNaiveMHSampler result = new IntNaiveMHSampler();

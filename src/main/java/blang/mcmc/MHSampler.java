@@ -9,11 +9,8 @@ import blang.mcmc.internals.Callback;
 
 
 
-public abstract class MHSampler<T> implements Sampler
+public abstract class MHSampler implements Sampler
 {
-  @SampledVariable
-  protected T variable;
-  
   @ConnectedFactor
   protected List<LogScaleFactor> numericFactors;
   

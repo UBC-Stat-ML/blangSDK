@@ -5,10 +5,13 @@ import blang.core.ConstrainedFactor
 import blang.mcmc.internals.Callback
 import blang.types.DenseSimplex
 
-class SimplexSampler extends MHSampler<DenseSimplex> {
+class SimplexSampler extends MHSampler {
+  
+  @SampledVariable
+  DenseSimplex variable
   
   @ConnectedFactor
-  protected ConstrainedFactor constrained
+  ConstrainedFactor constrained
   
   override boolean setup() {
     return constrained !== null && constrained.object instanceof DenseSimplex
