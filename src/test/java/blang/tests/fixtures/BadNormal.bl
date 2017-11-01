@@ -1,0 +1,35 @@
+package blang.tests.fixtures
+
+import blang.tests.fixtures.Helpers
+
+model BadNormal {
+  
+  random RealVar realization 
+  
+  param RealVar mean,
+                variance
+  
+  laws {  
+    
+    logf() {
+      - log(Math.sqrt(2*Math.PI))
+    }
+    
+    logf(variance) {
+      - 0.5 * log(variance)
+    }
+    
+    logf(mean, variance, realization)  {
+      Helpers::checkOkToUseDefectiveImplementation 
+      return - ((mean - realization) ** 2) / variance
+    }
+    
+    indicator(variance)  {
+      variance > 0
+    }
+  }
+  
+  generate(rand) {
+    rand.nextGaussian * sqrt(variance) + mean
+  }
+}

@@ -1,0 +1,11 @@
+package blang.tests.fixtures
+
+model GenerateTwice {
+  
+  random RealVar x ?: realVar(1.0)
+  
+  laws {
+    x ~ Normal(0.0, 1.0)
+    x ~ Normal(0.0, 1.0)
+  }
+}

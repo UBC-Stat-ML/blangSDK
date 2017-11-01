@@ -1,0 +1,12 @@
+package blang.tests.fixtures
+
+model UnspecifiedParam { 
+  
+  random RealVar myRandom ?: realVar
+  
+  param  RealVar myParam 
+  
+  laws {
+    
+  }
+}
