@@ -1,0 +1,28 @@
+package blang.examples.rockets
+
+model SimpleHierarchicalModel  {
+
+  param GlobalDataSource data
+  param Plate<String> rocketTypes
+  
+  random Plated<IntVar> numberOfLaunches
+  
+  random Plated<RealVar> failureProbabilities
+  random Plated<IntVar> numberOfFailures
+  random RealVar p0 ?: realVar, strength ?: realVar
+  
+  laws {
+    
+    p0 ~ ContinuousUniform(0, 1)
+    strength ~ Exponential(1)
+
+    for (Index<String> rocketType : rocketTypes.indices) {
+      failureProbabilities.get(rocketType) | p0, strength ~ Beta(strength * p0, strength * (1.0 - p0)) 
+      numberOfLaunches.get(rocketType) ~ Poisson(2.0)
+      numberOfFailures.get(rocketType) 
+        | RealVar failureProbability = failureProbabilities.get(rocketType),
+          IntVar numberOfLaunch = numberOfLaunches.get(rocketType)
+        ~ Binomial(1+numberOfLaunch, failureProbability)
+    }
+  }
+}

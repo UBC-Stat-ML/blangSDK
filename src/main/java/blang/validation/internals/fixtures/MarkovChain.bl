@@ -1,0 +1,31 @@
+package blang.validation.internals.fixtures
+
+model MarkovChain {  
+  
+  param Simplex initialDistribution     
+  param TransitionMatrix transitionProbabilities  
+  
+  random List<IntVar> chain             
+   
+  laws { 
+    
+    // Initial distribution:
+    chain.get(0) | initialDistribution ~ Categorical(initialDistribution)
+    // Transitions: 
+    for (int step : 1 ..< chain.size) {
+      chain.get(step) |
+        IntVar previous = chain.get(step - 1),
+        transitionProbabilities
+        ~ Categorical({
+          if (previous >= 0 && previous < transitionProbabilities.nRows)
+            transitionProbabilities.row(previous)
+          else {
+            // to avoid picking invalid submatrix; 
+            // if we get here state will be set to probability zero by support
+            // required even with the SafeSupport as it crashes in the support itself
+            transitionProbabilities.row(0) 
+          }
+        }) 
+    }
+  }
+}

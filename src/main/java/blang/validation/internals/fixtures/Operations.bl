@@ -1,0 +1,95 @@
+package blang.validation.internals.fixtures
+
+import org.junit.Assert
+
+model Operations {
+  
+  laws {
+    
+    logf() {
+      
+      val RealVar r2 = realVar(2.2)
+      val RealVar r3 = realVar(3.3)
+      val IntVar i4 = intVar(4)
+      val IntVar i7 = intVar(7)
+      
+      // those are taken care of by special rules in BlangExtensions (to avoid clashes with String -)
+      Assert.assertEquals(r2 - r3, 2.2 - 3.3, 0.0)
+      Assert.assertEquals(i4 - i7, 4 - 7)
+      Assert.assertEquals(r2 - i4, 2.2 - 4, 0.0)
+      Assert.assertEquals(i4 - r3, 4 - 3.3, 0.0)
+      
+      Assert.assertEquals(r2 - 3.3, 2.2 - 3.3, 0.0)
+      Assert.assertEquals(i4 - 7, 4 - 7)
+      Assert.assertEquals(r2 - i4, 2.2 - 4, 0.0)
+      Assert.assertEquals(i4 - r3, 4 - 3.3, 0.0)
+      
+      Assert.assertEquals(2.2 - r3, 2.2 - 3.3, 0.0)
+      Assert.assertEquals(4 - i7, 4 - 7)
+      Assert.assertEquals(2.2 - i4, 2.2 - 4, 0.0)
+      Assert.assertEquals(4 - r3, 4 - 3.3, 0.0)
+      
+      val RealVar r2_2 = realVar(2.2)
+      val IntVar i4_2 = intVar(4)
+      
+      Assert.assertTrue(r2 == r2_2)
+      Assert.assertTrue(r2 !== r2_2)
+      Assert.assertTrue(r2 == 2.2)
+      Assert.assertTrue(2.2 == r2)
+      Assert.assertTrue(i4 == i4_2)
+      Assert.assertTrue(i4 !== i4_2)
+      Assert.assertTrue(i4 == 4)
+      Assert.assertTrue(4 == i4)
+      
+      // those are box/unbox
+      Assert.assertEquals(r2 * r3, 2.2 * 3.3, 0.0)
+      Assert.assertEquals(i4 * i7, 4 * 7)
+      Assert.assertEquals(r2 * i4, 2.2 * 4, 0.0)
+      Assert.assertEquals(i4 * r3, 4 * 3.3, 0.0)
+      
+      Assert.assertEquals(r2 * 3.3, 2.2 * 3.3, 0.0)
+      Assert.assertEquals(i4 * 7, 4 * 7)
+      Assert.assertEquals(r2 * i4, 2.2 * 4, 0.0)
+      Assert.assertEquals(i4 * r3, 4 * 3.3, 0.0)
+      
+      Assert.assertEquals(2.2 * r3, 2.2 * 3.3, 0.0)
+      Assert.assertEquals(4 * i7, 4 * 7)
+      Assert.assertEquals(2.2 * i4, 2.2 * 4, 0.0)
+      Assert.assertEquals(4 * r3, 4 * 3.3, 0.0)
+      
+      Assert.assertEquals(r2 - r3, 2.2 - 3.3, 0.0)
+      Assert.assertEquals(i4 - i7, 4 - 7)
+      Assert.assertEquals(r2 - i4, 2.2 - 4, 0.0)
+      Assert.assertEquals(i4 - r3, 4 - 3.3, 0.0)
+      
+      Assert.assertEquals(r2 - 3.3, 2.2 - 3.3, 0.0)
+      Assert.assertEquals(i4 - 7, 4 - 7)
+      Assert.assertEquals(r2 - i4, 2.2 - 4, 0.0)
+      Assert.assertEquals(i4 - r3, 4 - 3.3, 0.0)
+      
+      Assert.assertEquals(2.2 - r3, 2.2 - 3.3, 0.0)
+      Assert.assertEquals(4 - i7, 4 - 7)
+      Assert.assertEquals(2.2 - i4, 2.2 - 4, 0.0)
+      Assert.assertEquals(4 - r3, 4 - 3.3, 0.0)
+      
+      Assert.assertEquals(r2 / r3, 2.2 / 3.3, 0.0)
+      Assert.assertEquals(i4 / i7, 4 / 7)
+      Assert.assertEquals(r2 / i4, 2.2 / 4, 0.0)
+      Assert.assertEquals(i4 / r3, 4 / 3.3, 0.0)
+      
+      Assert.assertEquals(r2 / 3.3, 2.2 / 3.3, 0.0)
+      Assert.assertEquals(i4 / 7, 4 / 7)
+      Assert.assertEquals(r2 / i4, 2.2 / 4, 0.0)
+      Assert.assertEquals(i4 / r3, 4 / 3.3, 0.0)
+      
+      Assert.assertEquals(2.2 / r3, 2.2 / 3.3, 0.0)
+      Assert.assertEquals(4 / i7, 4 / 7)
+      Assert.assertEquals(2.2 / i4, 2.2 / 4, 0.0)
+      Assert.assertEquals(4 / r3, 4 / 3.3, 0.0)
+      
+      Double.NaN
+    }
+    
+  }
+  
+}

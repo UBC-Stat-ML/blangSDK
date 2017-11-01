@@ -1,0 +1,25 @@
+package blang.validation.internals.fixtures
+
+model SmallHMM {
+  
+  param TransitionMatrix trMatrix ?: denseTransitionMatrix(new ExactHMMCalculations.SimpleTwoStates().transitionPrs)
+  
+  random List<IntVar> observations 
+  random List<IntVar> latents ?: listOfIntVars(observations.size)
+  
+  laws {
+    
+    latents | trMatrix ~ MarkovChain(denseSimplex(new ExactHMMCalculations.SimpleTwoStates().initialPrs), trMatrix)
+    
+    for (int i : 0 ..< latents.size) {
+      observations.get(i) | trMatrix, IntVar latent = latents.get(i) ~ Categorical({
+        if (latent >= 0 && latent < trMatrix.nRows) {
+          trMatrix.row(latent)
+        } else {
+          trMatrix.row(0)
+        }
+      })
+    }
+    
+  }
+}

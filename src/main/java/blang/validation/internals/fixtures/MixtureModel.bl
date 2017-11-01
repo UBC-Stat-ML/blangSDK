@@ -1,0 +1,35 @@
+package blang.examples
+
+model MixtureModel { 
+  
+  random  List<RealVar>  observations 
+  random  List<IntVar>   clusterIndicators  ?:  listOfIntVars(observations.size) 
+  random  Simplex        pi                 ?:  denseSimplex(2)
+  random  List<RealVar>  means              ?:  listOfRealVars(2), 
+                         variances          ?:  listOfRealVars(2)
+  param   Matrix         concentration      ?:  denseCopy(#[1.0, 1.0])  
+  
+  laws {
+     
+    pi | concentration ~ Dirichlet(concentration)
+    
+    // priors on each mixture component mean and variance
+    for (int mixIdx : 0 ..< means.size) { 
+      means.get(mixIdx)     ~ Normal(0.0, 1.0)
+      variances.get(mixIdx) ~ Gamma(1.0, 1.0)
+    }
+    
+    for (int obsIdx : 0 ..< observations.size) {
+      // prior over mixture indicators
+      clusterIndicators.get(obsIdx) | pi ~ Categorical(pi)
+      // likelihood:
+      observations.get(obsIdx) |
+        means, variances, 
+        IntVar curIndic = clusterIndicators.get(obsIdx)
+        ~ Normal(
+          means.safeGet(curIndic),
+          variances.safeGet(curIndic) 
+        )
+    }
+  }
+}
