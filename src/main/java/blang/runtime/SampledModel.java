@@ -13,11 +13,6 @@ import bayonet.distributions.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.objenesis.strategy.StdInstantiatorStrategy;
-
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Kryo.DefaultInstantiatorStrategy;
-
 import blang.core.AnnealedFactor;
 import blang.core.Factor;
 import blang.core.ForwardSimulator;
@@ -31,6 +26,7 @@ import blang.mcmc.Sampler;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.mcmc.internals.ExponentiatedFactor;
 import blang.runtime.internals.objectgraph.AnnealingStructure;
+import blang.runtime.internals.objectgraph.DeepCloner;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.runtime.internals.objectgraph.Node;
 import blang.runtime.internals.objectgraph.StaticUtils;
@@ -43,6 +39,7 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
 {
   public final Model model;
   private final List<Sampler> posteriorInvariantSamplers;
+
   private List<ForwardSimulator> forwardSamplers;
   private final RealScalar annealingExponent;
   
@@ -177,23 +174,9 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
     return sum;
   }
   
-  private static ThreadLocal<Kryo> duplicator = new ThreadLocal<Kryo>()
-  {
-    @Override
-    protected Kryo initialValue() 
-    {
-      Kryo kryo = new Kryo();
-      DefaultInstantiatorStrategy defaultInstantiatorStrategy = new Kryo.DefaultInstantiatorStrategy();
-      defaultInstantiatorStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy());
-      kryo.setInstantiatorStrategy(defaultInstantiatorStrategy);
-      kryo.getFieldSerializerConfig().setCopyTransient(false); 
-      return kryo;
-    }
-  };
-  
   public SampledModel duplicate() 
   {
-    return duplicator.get().copy(this);
+    return DeepCloner.deepClone(this);
   }
   
   public void posteriorSamplingStep(Random random, int kernelIndex)
@@ -335,6 +318,7 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
   
   //// Utility methods setting up caches
   
+  @SuppressWarnings("unlikely-arg-type")
   private void initSampler2FactorIndices(GraphAnalysis graphAnalysis, BuiltSamplers samplers, AnnealingStructure annealingStructure) 
   {
     Map<ExponentiatedFactor, Integer> factor2Index = factor2index(sparseUpdateFactors);
@@ -379,5 +363,10 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
       result.add((ExponentiatedFactor) f);
     }
     return result;
+  }
+  
+  public List<Sampler> getPosteriorInvariantSamplers() 
+  {
+    return posteriorInvariantSamplers;
   }
 }

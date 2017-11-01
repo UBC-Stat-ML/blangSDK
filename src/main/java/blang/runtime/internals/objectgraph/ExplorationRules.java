@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.rits.cloning.Immutable;
+
 import briefj.ReflexionUtils;
 import xlinear.DenseMatrix;
 import xlinear.Matrix;
@@ -79,7 +81,8 @@ public class ExplorationRules
         object instanceof Boolean || 
         object instanceof Short ||
         object instanceof Long ||
-        object instanceof Class)
+        object instanceof Class ||
+        object.getClass().isAnnotationPresent(Immutable.class))
       return Collections.emptyList();
     else
       return null;

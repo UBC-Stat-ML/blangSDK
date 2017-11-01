@@ -3,9 +3,7 @@ package blang.validation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,12 +19,7 @@ import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.Implementations;
 import blang.mcmc.Sampler;
-import blang.mcmc.internals.BuiltSamplers;
-import blang.mcmc.internals.SamplerBuilder;
-import blang.mcmc.internals.SamplerBuilderOptions;
-import blang.runtime.Observations;
 import blang.runtime.SampledModel;
-import blang.runtime.internals.objectgraph.GraphAnalysis;
 import briefj.BriefCollections;
 
 public class ExactInvarianceTest
@@ -61,49 +54,30 @@ public class ExactInvarianceTest
   public List<TestResult> results = new ArrayList<>();
   private int nTests = 0;
   
-  public <M extends Model> void add(
-      M model, 
-      @SuppressWarnings("unchecked") Function<M, Double> ... testFunctions) 
-  {
-    add(model, new SamplerBuilderOptions(), testFunctions);
-  }
-  
-  public <M extends Model> void add(
-      M model, 
-      SamplerBuilderOptions samplerOptions,
-      @SuppressWarnings("unchecked") Function<M, Double> ... testFunctions) 
+  public void add(Instance<?> instance) 
   {
     if (!justComputeNumberOfTests)
-      System.out.print("Running ExactInvarianceTest on model " + model.getClass().getSimpleName());
-    GraphAnalysis analysis = new GraphAnalysis(model, new Observations());
-    BuiltSamplers allKernels = SamplerBuilder.build(analysis, samplerOptions);
-    if (allKernels.list.isEmpty())
-      throw new RuntimeException("No kernels produced by model to be tested");
-    Set<Class<? extends Sampler>> samplerTypes = new LinkedHashSet<>();
-    for (Sampler sampler : allKernels.list)
-      samplerTypes.add(sampler.getClass());
-    for (Class<? extends Sampler> currentSamplerType : samplerTypes)
+      System.out.print("Running ExactInvarianceTest on model " + instance.model.getClass().getSimpleName());
+    
+    for (Class<? extends Sampler> currentSamplerType : instance.samplerTypes())
     {
       if (!justComputeNumberOfTests)
-        System.out.print(" [" + currentSamplerType.getSimpleName() + "] ");
-      SamplerBuilderOptions options = new SamplerBuilderOptions();
-      options.useAnnotation = false;
-      options.additional.add(currentSamplerType);
-      BuiltSamplers currentKernel = SamplerBuilder.build(analysis, options);
-      SampledModel sampledModel = new SampledModel(analysis, currentKernel, random);
+        System.out.print(" [" + currentSamplerType.getSimpleName() + "]");
       
-      List<List<Double>> forwardSamples          = justComputeNumberOfTests ? null : sample(sampledModel, model, testFunctions, false);
-      List<List<Double>> forwardPosteriorSamples = justComputeNumberOfTests ? null : sample(sampledModel, model, testFunctions, true);
+      SampledModel sampledModel = instance.restrictedSampledModel(currentSamplerType);
       
-      for (int testIndex = 0; testIndex < testFunctions.length; testIndex++)
+      List<List<Double>> forwardSamples          = justComputeNumberOfTests ? null : sample(random, sampledModel, instance.testFunctions, false, nIndependentSamples, nPosteriorSamplesPerIndep);
+      List<List<Double>> forwardPosteriorSamples = justComputeNumberOfTests ? null : sample(random, sampledModel, instance.testFunctions, true, nIndependentSamples, nPosteriorSamplesPerIndep);
+      
+      for (int testIndex = 0; testIndex < instance.testFunctions.length; testIndex++)
       {
         nTests++;
         if (!justComputeNumberOfTests)
-          results.add(new TestResult(model, testFunctions[testIndex], BriefCollections.pick(currentKernel.list), forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
+          results.add(new TestResult(instance.model, instance.testFunctions[testIndex], BriefCollections.pick(sampledModel.getPosteriorInvariantSamplers()), forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
       }
     }
     if (!justComputeNumberOfTests)
-      System.out.println("-- currentRandStatus(" + random.nextInt() + ")");
+      System.out.println();
   }
   
   public double correctedPValue()
@@ -188,8 +162,16 @@ public class ExactInvarianceTest
     }
   }
   
-  private <M> List<List<Double>> sample(SampledModel sampledModel, M model, Function<M, Double> [] testFunctions, boolean withPosterior) 
+  @SuppressWarnings("unchecked")
+  public static <M> List<List<Double>> sample(
+      Random random, 
+      SampledModel sampledModel, 
+      Function<M, Double> [] testFunctions, 
+      boolean withPosterior,
+      int nIndependentSamples,
+      int nPosteriorSamplesPerIndep) 
   {
+    sampledModel = sampledModel.duplicate(); // Important to duplicate when checking determinism (sampledModel keeps track of sampler index)
     List<List<Double>> results = new ArrayList<>();
     for (Function<M, Double> testFunction : testFunctions)
     {
@@ -200,7 +182,7 @@ public class ExactInvarianceTest
         if (withPosterior)
           for (int j = 0; j < nPosteriorSamplesPerIndep; j++)
             sampledModel.posteriorSamplingStep_deterministicScanAndShuffle(random);
-        result.add(testFunction.apply(model));
+        result.add(testFunction.apply((M) sampledModel.model));
       }
       results.add(result);
     }

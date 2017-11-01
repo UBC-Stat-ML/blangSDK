@@ -30,6 +30,8 @@ import blang.types.StaticUtils
 import static extension blang.io.NA.isNA
 import blang.types.DenseSimplex
 import blang.types.DenseTransitionMatrix
+import blang.core.RealConstant
+import blang.core.IntConstant
 
 class Parsers {
   
@@ -40,9 +42,9 @@ class Parsers {
   ) {
     return
       if (str.isNA) {
-        new RealScalar(0.1)
+        new RealScalar(0.0)
       } else {
-        initContext.markAsObserved(new RealScalar(Double.parseDouble(str)))
+        initContext.markAsObserved(new RealConstant(Double.parseDouble(str)))
       }
   }
   
@@ -55,7 +57,7 @@ class Parsers {
       if (str.isNA) {
         new IntScalar(0)
       } else {
-        initContext.markAsObserved(new IntScalar(CoreProviders.parse_int(str)))
+        initContext.markAsObserved(new IntConstant(CoreProviders.parse_int(str)))
       }
   }
   

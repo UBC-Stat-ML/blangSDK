@@ -26,7 +26,7 @@ xtend {
   }
 }
 
-def blangVersion = '3.19.0'
+def blangVersion = '3.19.1'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
@@ -38,7 +38,7 @@ dependencies {
   compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.2'
   compile group: 'ca.ubc.stat', name: 'xlinear', version: '2.0.0'
   compile group: 'org.jgrapht', name: 'jgrapht-dist', version: '0.9.0'
-  compile group: 'com.esotericsoftware', name: 'kryo-shaded', version: '4.0.1'
+  compile group: 'uk.com.robust-it', name: 'cloning', version: '1.9.6'
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
 }
 

@@ -7,6 +7,8 @@ import java.util.List
 import xlinear.DenseMatrix
 
 import static xlinear.MatrixOperations.*
+import blang.core.IntConstant
+import blang.core.RealConstant
 
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
@@ -26,6 +28,14 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   
   def static RealScalar realVar(double initialValue) {
     return new RealScalar(initialValue)
+  }
+  
+  def static IntConstant constant(int value) {
+    return new IntConstant(value)
+  }
+  
+  def static RealConstant constant(double value) {
+    return new RealConstant(value)
   }
   
   def static List<IntVar> listOfIntVars(int size) {

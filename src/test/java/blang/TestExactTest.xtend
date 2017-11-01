@@ -12,6 +12,7 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import blang.validation.Instance 
 
 /** 
  * A test for the exact test, to make sure it catches some common types of errors.
@@ -20,9 +21,9 @@ class TestExactTest {
   
   @SuppressWarnings("unchecked") @Test def void checkBadNormalDetected() {
     var ExactInvarianceTest test = new ExactInvarianceTest()
-    test.add(
-      new BadNormal.Builder().setMean([0.2]).setVariance([0.1]).setRealization(StaticUtils.realVar(1.0)).build(),
-      new RealRealizationSquared())
+    test.add(new Instance(
+      new BadNormal.Builder().setMean(StaticUtils.constant(0.2)).setVariance(StaticUtils.constant(0.1)).setRealization(StaticUtils.realVar(1.0)).build(),
+      new RealRealizationSquared()))
     ensureTestFails(test)
   }
   
@@ -34,11 +35,11 @@ class TestExactTest {
       additional.add(BadRealSliceSampler)
     ]
       
-    test.add(
+    test.add(new Instance(
       new Multimodal.Builder().build,
       samplers,
       new RealRealizationSquared()
-    )
+    ))
     ensureTestFails(test)
   }
   

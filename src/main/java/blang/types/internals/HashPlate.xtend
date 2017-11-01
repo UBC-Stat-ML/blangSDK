@@ -4,16 +4,17 @@ import blang.types.Plate
 import java.util.Map
 import java.util.LinkedHashMap
 import java.util.Set
-import blang.runtime.internals.objectgraph.SkipDependency
 import blang.types.Index
 import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.LinkedHashSet
 import blang.io.DataSource
 import java.util.Optional
+import com.rits.cloning.Immutable
 
 /**
  * A Plate using a DataSource to load and store indices in a hash table.
  */
+@Immutable
 class HashPlate<K> implements Plate<K> {
   
   @Accessors(PUBLIC_GETTER)
@@ -24,14 +25,11 @@ class HashPlate<K> implements Plate<K> {
    */
   val int maxSize
   
-  @SkipDependency(isMutable = false)
   val Map<Query, Set<Index<K>>> indices = new LinkedHashMap
   
-  @SkipDependency(isMutable = false)
-  transient val IndexedDataSource index
+  val IndexedDataSource index
   
-  @SkipDependency(isMutable = false)
-  transient val Parser<K> parser
+  val Parser<K> parser
   
   override Iterable<Index<K>> indices(Index<?>... parentIndices) {
     val Query query = Query::build(parentIndices)
@@ -60,7 +58,7 @@ class HashPlate<K> implements Plate<K> {
    */
   new(ColumnName name, DataSource dataSource, Parser<K> parser, Optional<Integer> optionalMaxSize) {
     this.name = name
-    this.index = new IndexedDataSource(name, dataSource, true)
+    this.index = new IndexedDataSource(name, dataSource)
     this.parser = parser
     this.maxSize = optionalMaxSize.orElse(Integer.MAX_VALUE)
   }

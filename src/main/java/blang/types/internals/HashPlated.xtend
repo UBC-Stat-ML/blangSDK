@@ -2,7 +2,6 @@ package blang.types.internals
 
 import blang.types.Plated
 import blang.types.Index
-import blang.runtime.internals.objectgraph.SkipDependency
 import blang.io.DataSource
 import java.util.Map
 import blang.io.NA
@@ -18,11 +17,9 @@ class HashPlated<T> implements Plated<T> {
   
   val Map<Query, T> variables = new LinkedHashMap
   
-  @SkipDependency(isMutable = false)
-  transient val IndexedDataSource index
+  val IndexedDataSource index
   
-  @SkipDependency(isMutable = false)
-  transient val Parser<T> parser
+  val Parser<T> parser
   
   override T get(Index<?>... indices) {
     val Query query = Query::build(indices)
@@ -43,7 +40,7 @@ class HashPlated<T> implements Plated<T> {
   
   new(ColumnName columnName, DataSource dataSource, Parser<T> parser) {
     this.columnName = columnName
-    this.index = new IndexedDataSource(columnName, dataSource, false)
+    this.index = new IndexedDataSource(columnName, dataSource)
     this.parser = parser
   }
   

@@ -3,8 +3,11 @@ package blang.types.internals
 import org.eclipse.xtend.lib.annotations.Data
 import java.util.function.Supplier
 import static extension blang.io.NA.isNA
+import com.rits.cloning.Immutable
 
-@Data class LatentFactoryAsParser<T> implements Parser<T>  {
+@Data 
+@Immutable
+class LatentFactoryAsParser<T> implements Parser<T>  {
   
   val Supplier<T> supplier
   

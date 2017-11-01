@@ -40,7 +40,7 @@ class DataSource {
   
   def Set<ColumnName> columnNames() {
     val Map<ColumnName,String> head = read().head
-    if (head == null) {
+    if (head === null) {
       return Collections::emptySet
     } else {
       return head.keySet

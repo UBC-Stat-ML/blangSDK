@@ -6,16 +6,17 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.Set
 import blang.runtime.internals.objectgraph.SkipDependency
 import java.util.LinkedHashSet
+import com.rits.cloning.Immutable
 
 /**
  * Plate implementation based on an explicit list of indices.
  */
+@Immutable
 class SimplePlate<T> implements Plate<T> {
   
   @Accessors(PUBLIC_GETTER)
   val ColumnName name
   
-  @SkipDependency(isMutable = false)
   val Set<Index<T>> indices
   
   /**
