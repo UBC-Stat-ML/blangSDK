@@ -77,9 +77,6 @@ public class SamplerBuilder
     // fill the variable node too; make sure there is only one such field
     NodeMoveUtils.assignVariable(instantiated, GraphAnalysis.getLatentObject(variable));
     
-    // fill other injected variables
-    NodeMoveUtils.assignGraphAnalysis(instantiated, graphAnalysis);
-    
     if (instantiated instanceof Sampler) 
       if (!((Sampler) instantiated).setup())
         return null;

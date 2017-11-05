@@ -7,10 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import blang.core.Factor;
-import blang.inits.GlobalArg;
 import blang.mcmc.SampledVariable;
 import blang.mcmc.Sampler;
-import blang.runtime.internals.objectgraph.GraphAnalysis;
 import briefj.BriefCollections;
 import briefj.BriefLists;
 import briefj.ReflexionUtils;
@@ -123,13 +121,6 @@ public class NodeMoveUtils
   {
     Field field = getSampledVariableField(mcmcMoveInstance.getClass());
     ReflexionUtils.setFieldValue(field, mcmcMoveInstance, variable);
-  }
-  
-  public static void assignGraphAnalysis(Sampler mcmcMoveInstance, GraphAnalysis graphAnalysis) 
-  {
-    List<Field> matches = ReflexionUtils.getAnnotatedDeclaredFields(mcmcMoveInstance.getClass(), GlobalArg.class, true);
-    for (Field field : matches) 
-      ReflexionUtils.setFieldValue(field, mcmcMoveInstance, graphAnalysis);
   }
   
   public static Field getSampledVariableField(Class<? extends Sampler> moveType)
