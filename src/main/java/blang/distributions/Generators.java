@@ -7,6 +7,7 @@ import org.apache.commons.math3.distribution.PoissonDistribution;
 
 import blang.types.DenseSimplex;
 import blang.types.StaticUtils;
+import blang.types.internals.Delegator;
 import xlinear.CholeskyDecomposition;
 import xlinear.DenseMatrix;
 import xlinear.Matrix;
@@ -86,8 +87,11 @@ public class Generators
     return StaticUtils.denseSimplex(result);
   }
   
+  @SuppressWarnings("unchecked")
   static void dirichletInPlace(Random random, Matrix concentrations, Matrix result)
   {
+    if (result instanceof Delegator<?>)
+      result = ((Delegator<Matrix>) result).getDelegate();
     double sum = 0.0;
     for (int d = 0; d < concentrations.nEntries(); d++)
     {

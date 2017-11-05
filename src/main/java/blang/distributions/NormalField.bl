@@ -14,7 +14,11 @@ model NormalField {
   
   random Matrix realization
   
+  /**
+   * precision.support is assumed to be constant.
+   */
   param Precision precision
+  
   param Matrix mean
     
   laws {

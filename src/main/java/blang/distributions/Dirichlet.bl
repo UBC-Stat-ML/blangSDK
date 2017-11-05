@@ -1,7 +1,5 @@
 package blang.distributions
 
-import blang.types.internals.Delegator
-
 model Dirichlet {
   
   random Simplex realization 
@@ -10,28 +8,28 @@ model Dirichlet {
   
   laws {
     
-    for (int dim : 0 ..< concentrations.nEntries) {
-      logf(
-        RealVar concentration = concentrations.getRealVar(dim),
-        RealVar x = realization.getRealVar(dim)
-      ) {
-        check(concentration > 0)
-        (concentration - 1.0) * log(x)
-      }
-      
-      logf(RealVar concentration = concentrations.getRealVar(dim)) {
-        - lnGamma(concentration)
-      }
-    }
     
+    logf(concentrations, realization) {
+      var sum = 0.0
+      for (int dim : 0 ..< concentrations.nEntries) {
+        check(concentrations.get(dim) > 0)
+        sum += (concentrations.get(dim) - 1.0) * log(realization.get(dim))
+      }
+      return sum
+    }
+      
     logf(concentrations) {
-      lnGamma(concentrations.sum) 
+      var sum = 0.0
+      for (int dim : 0 ..< concentrations.nEntries) {
+        sum += - lnGamma(concentrations.get(dim))
+      }
+      return sum + lnGamma(concentrations.sum) 
     }
     
     realization ~ new ConstrainedFactor()
   }
   
   generate(rand) { 
-    Generators::dirichletInPlace(rand, concentrations, (realization as Delegator<Matrix>).delegate)
+    Generators::dirichletInPlace(rand, concentrations, realization) 
   }
 }
