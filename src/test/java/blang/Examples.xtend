@@ -15,7 +15,7 @@ import blang.distributions.Normal
 import blang.distributions.Poisson
 import blang.examples.DynamicNormalMixture
 import blang.examples.MixtureModel
-import blang.examples.rockets.SimpleHierarchicalModel
+import blang.validation.internals.fixtures.SimpleHierarchicalModel
 import blang.io.GlobalDataSource
 import blang.types.DenseTransitionMatrix
 import blang.types.Plate
@@ -44,6 +44,7 @@ import static blang.validation.internals.Helpers.realRealizationSquared
 import static blang.validation.internals.Helpers.vectorHash
 import static xlinear.MatrixOperations.dense
 import static xlinear.MatrixOperations.denseCopy
+import blang.validation.internals.fixtures.Multimodal
 
 class Examples {
   
@@ -189,6 +190,11 @@ class Examples {
     new MixtureModel.Builder()
       .setObservations(listOfRealVars(2)).build,
     [observations.get(0).doubleValue] 
+  )
+  
+  public val multimodal = add(
+    new Multimodal.Builder().build,
+    new RealRealizationSquared()
   )
   
   public static Matrix precision = denseCopy(#[

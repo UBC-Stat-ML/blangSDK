@@ -1,4 +1,4 @@
-package blang.examples.rockets
+package blang.validation.internals.fixtures
 
 model SimpleHierarchicalModel  {
 

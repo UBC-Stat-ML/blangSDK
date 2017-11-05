@@ -30,10 +30,7 @@ class TestExactTest {
   @Test
   def void checkBadSliceSamplerDetected() {
     var ExactInvarianceTest test = new ExactInvarianceTest()
-    var SamplerBuilderOptions samplers = new SamplerBuilderOptions => [
-      useAnnotation = false
-      additional.add(BadRealSliceSampler)
-    ]
+    var SamplerBuilderOptions samplers = SamplerBuilderOptions.startWithOnly(BadRealSliceSampler)
       
     test.add(new Instance(
       new Multimodal.Builder().build,

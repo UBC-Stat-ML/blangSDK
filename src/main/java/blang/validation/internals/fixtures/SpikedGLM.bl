@@ -23,7 +23,6 @@ model SpikedGLM {
     
     coefficients | zeroProbability ~ 
       SpikeAndSlab(zeroProbability, Normal::distribution(0, 1)) 
-      // Weird explicit import because of workaround for Issue #56
     
     for (int index : 0 ..< output.size) {
       output.get(index) | coefficients, 

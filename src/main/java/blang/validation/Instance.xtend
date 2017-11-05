@@ -38,10 +38,7 @@ class Instance<M extends Model> {
       return samplerTypes       
     }
     def SampledModel restrictedSampledModel(Class<? extends Sampler> currentSamplerType) {
-      val SamplerBuilderOptions options = new SamplerBuilderOptions() => [
-        useAnnotation = false
-        additional.add(currentSamplerType)
-      ]
+      val SamplerBuilderOptions options = SamplerBuilderOptions.startWithOnly(currentSamplerType)
       val BuiltSamplers currentKernel = SamplerBuilder.build(graphAnalysis, options)
       return new SampledModel(graphAnalysis, currentKernel)
     }

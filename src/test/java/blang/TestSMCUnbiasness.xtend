@@ -33,10 +33,7 @@ class TestSMCUnbiasness {
     observationsMarker.markAsObserved(observationsIntVar)
     
     val GraphAnalysis graphAnalysis = new GraphAnalysis(new SmallHMM.Builder().setObservations(observationsIntVar).build, observationsMarker)
-    val SamplerBuilderOptions samplerOptions = new SamplerBuilderOptions() => [
-      useAnnotation = false
-      additional.add(IntNaiveMHSampler)
-    ]
+    val SamplerBuilderOptions samplerOptions = SamplerBuilderOptions.startWithOnly(IntNaiveMHSampler)
     val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis, samplerOptions)
     Assert.assertEquals(chainLen, kernels.list.size)
     val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels)

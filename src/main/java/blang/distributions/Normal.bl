@@ -10,7 +10,7 @@ model Normal {
   laws {  
     
     logf() {
-      - log(Math.sqrt(2*Math.PI))
+      - log(2*PI) / 2.0
     }
     
     logf(variance) {
