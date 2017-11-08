@@ -1,0 +1,16 @@
+package blang.validation.internals.fixtures
+
+model Deep_Beta  {
+  
+  random RealVar failureProbabilities ?: realVar
+  
+  random RealVar p0 ?: realVar
+  param RealVar strength ?: constant(0.1)
+  
+  laws {
+    
+    p0 ~ ContinuousUniform(0.1, 0.9)
+    failureProbabilities | p0, strength ~ Beta(strength * p0, strength * (1.0 - p0)) 
+    
+  }
+}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,6 @@ import blang.inits.DefaultValue;
 import blang.inits.Implementations;
 import blang.mcmc.Sampler;
 import blang.runtime.SampledModel;
-import briefj.BriefCollections;
 
 public class ExactInvarianceTest
 {
@@ -59,12 +59,18 @@ public class ExactInvarianceTest
     if (!justComputeNumberOfTests)
       System.out.print("Running ExactInvarianceTest on model " + instance.model.getClass().getSimpleName());
     
-    for (Class<? extends Sampler> currentSamplerType : instance.samplerTypes())
+    Set<Class<? extends Sampler>> restrictions = instance.samplerTypes();
+    if (restrictions.size() > 1)
+      restrictions.add(null); // also run all samplers in conjunction (only useful if more than one sampler type defined)
+    
+    for (Class<? extends Sampler> currentSamplerType : restrictions)
     {
       if (!justComputeNumberOfTests)
-        System.out.print(" [" + currentSamplerType.getSimpleName() + "]");
+        System.out.print(" [" + (currentSamplerType == null ? "ALL" : currentSamplerType.getSimpleName()) + "]");
       
-      SampledModel sampledModel = instance.restrictedSampledModel(currentSamplerType);
+      SampledModel sampledModel = currentSamplerType == null ?
+          instance.sampledModel :
+          instance.restrictedSampledModel(currentSamplerType);
       
       List<List<Double>> forwardSamples          = justComputeNumberOfTests ? null : sample(random, sampledModel, instance.testFunctions, false, nIndependentSamples, nPosteriorSamplesPerIndep);
       List<List<Double>> forwardPosteriorSamples = justComputeNumberOfTests ? null : sample(random, sampledModel, instance.testFunctions, true, nIndependentSamples, nPosteriorSamplesPerIndep);
@@ -73,7 +79,7 @@ public class ExactInvarianceTest
       {
         nTests++;
         if (!justComputeNumberOfTests)
-          results.add(new TestResult(instance.model, instance.testFunctions[testIndex], BriefCollections.pick(sampledModel.getPosteriorInvariantSamplers()), forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
+          results.add(new TestResult(instance.model, instance.testFunctions[testIndex], currentSamplerType, forwardSamples.get(testIndex), forwardPosteriorSamples.get(testIndex)));
       }
     }
     if (!justComputeNumberOfTests)
@@ -131,20 +137,20 @@ public class ExactInvarianceTest
   {
     public final Model model;
     public final Function<?,Double> testFunction;
-    public final Sampler sampler;
+    public final String samplerDescription;
     public final List<Double> fStats, fpStats;
     public final SummaryStatistics fSummary, fpSummary;
     public final double pValue;
     public TestResult(
         Model model, 
         Function<?, Double> testFunction, 
-        Sampler sampler, List<Double> fStats,
+        Class<? extends Sampler> samplerType, List<Double> fStats,
         List<Double> fpStats) 
     {
       super();
       this.model = model;
       this.testFunction = testFunction;
-      this.sampler = sampler;
+      this.samplerDescription = samplerType == null ? "ALL" : samplerType.getSimpleName();
       this.fStats = fStats;
       this.fpStats = fpStats;
       this.pValue = test.pValue(fStats, fpStats);
@@ -156,7 +162,7 @@ public class ExactInvarianceTest
     @Override
     public String toString()
     {
-      return "" + model.getClass().getSimpleName() + '\t' + sampler.getClass().getSimpleName() + "\t" + testFunction.getClass().getSimpleName() + '\t' + pValue + '\t' 
+      return "" + model.getClass().getSimpleName() + '\t' + samplerDescription + "\t" + testFunction.getClass().getSimpleName() + '\t' + pValue + '\t' 
           + fSummary.getMean()  + "(" + fSummary.getStandardDeviation() /Math.sqrt(fSummary.getN()) + ")" + '\t'
           + fpSummary.getMean() + "(" + fpSummary.getStandardDeviation()/Math.sqrt(fpSummary.getN()) + ")"; 
     }

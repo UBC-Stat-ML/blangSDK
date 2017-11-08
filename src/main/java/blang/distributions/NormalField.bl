@@ -16,6 +16,7 @@ model NormalField {
   
   /**
    * precision.support is assumed to be constant.
+   * TODO: add some construct that test this exponentially less and less frequently
    */
   param Precision precision
   

@@ -30,10 +30,18 @@ class DenseSimplex implements Simplex, DenseMatrix, Delegator<DenseMatrix> {
   }
   
   def void setPair(int index1, double value1, int index2, double value2) {
+    checkIsPr(value1)
+    checkIsPr(value2)
     val double old = get(index1) + get(index2)
     NumericalUtils::checkIsClose(old, value1 + value2)
     delegate.set(index1, value1)
     delegate.set(index2, value2)
+  }
+  
+  private def static void checkIsPr(double value) {
+    if (!(value >= 0.0 && value <= 1.0)) {
+      throw new RuntimeException("Simplex entries should be probabilities: " + value)
+    }
   }
   
   override void set(int i, int j, double value) {

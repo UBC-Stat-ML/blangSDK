@@ -45,6 +45,9 @@ import static blang.validation.internals.Helpers.vectorHash
 import static xlinear.MatrixOperations.dense
 import static xlinear.MatrixOperations.denseCopy
 import blang.validation.internals.fixtures.Multimodal
+import blang.validation.internals.fixtures.RealRealizationSquared
+import blang.validation.internals.fixtures.Deep_Beta
+import blang.validation.internals.fixtures.Deep_Diri
 
 class Examples {
   
@@ -175,6 +178,18 @@ class Examples {
       .setFailureProbabilities(Plated::latent(new ColumnName("failPrs"), [realVar]))
       .setNumberOfFailures(Plated::latent(new ColumnName("failPrs"), [intVar]))
       .setData(GlobalDataSource::empty).build,
+    [p0.doubleValue]
+  )
+  
+  public val deep_beta = add(
+    new Deep_Beta.Builder()
+      .build,
+    [p0.doubleValue]
+  )
+  
+  public val deep_diri = add(
+    new Deep_Diri.Builder()
+      .build,
     [p0.doubleValue]
   )
   

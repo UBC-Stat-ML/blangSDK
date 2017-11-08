@@ -29,7 +29,8 @@ public class Generators
 
   public static double beta(Random random, double alpha, double beta)
   {
-    double result = new BetaDistribution(generator(random), alpha, beta).sample();
+    double result = 
+        new BetaDistribution(generator(random), alpha, beta).sample();
     if (result == 0.0) // avoid crash-inducing zero probability corner cases
       result = ZERO_PLUS_EPS;
     if (result == 1.0)
@@ -100,6 +101,15 @@ public class Generators
       sum += gammaVariate;
     }
     result.divInPlace(sum);
+    for (int d = 0; d < concentrations.nEntries(); d++)
+    {
+      if (result.get(d) == 0.0) // avoid crash-inducing zero probability corner cases
+        result.set(d, ZERO_PLUS_EPS);
+      else if (result.get(d) == 1.0)
+        result.set(d, ONE_MINUS_EPS);
+      if (!(result.get(d) > 0.0 && result.get(d) < 1.0))
+        throw new RuntimeException("Generation of Dirichlet with small concentration may fail with current algorithm.");
+    }
   }
   
   public static Matrix multivariateNormal(Random rand, Matrix mean, CholeskyDecomposition precision) 
@@ -129,6 +139,6 @@ public class Generators
   
   public static final double ZERO_PLUS_EPS = 1e-300;
   public static final double ONE_MINUS_EPS = 1.0 - 1e-16;
-  
+
   private Generators() {}
 }

@@ -2,10 +2,14 @@ package blang.mcmc
 
 import bayonet.distributions.Random;
 import blang.core.ConstrainedFactor
-import blang.mcmc.internals.Callback
 import blang.types.DenseSimplex
+import blang.core.WritableRealVar
+import org.eclipse.xtend.lib.annotations.Data
+import blang.core.LogScaleFactor
+import java.util.List
+import briefj.BriefLog
 
-class SimplexSampler extends MHSampler {
+class SimplexSampler implements Sampler {
   
   @SampledVariable
   DenseSimplex variable
@@ -13,30 +17,51 @@ class SimplexSampler extends MHSampler {
   @ConnectedFactor
   ConstrainedFactor constrained
   
+  @ConnectedFactor
+  List<LogScaleFactor> numericFactors
+  
   override boolean setup() {
     return constrained !== null && constrained.object instanceof DenseSimplex
   }
   
-  override void propose(Random random, Callback callback) {
+  override void execute(Random rand) {
     if (variable.nEntries  < 2) {
       throw new RuntimeException
     }
-    val int sampledDim = random.nextInt(variable.nEntries - 1)
-    val int lastDim = variable.nEntries - 1
-    val double oldValue = variable.get(sampledDim)
-    val double lastValue = variable.get(lastDim)
-    val double max = oldValue + lastValue
-    val double proposal = random.nextDouble() * max
-    variable.setPair(
-      sampledDim, proposal,
-      lastDim, max - proposal
-    )
-    callback.proposalLogRatio = 0.0 
-    if (!callback.sampleAcceptance) {
-      variable.setPair(
-        sampledDim, oldValue,
-        lastDim, lastValue
-      )
+    val int sampledDim = rand.nextInt(variable.nEntries)
+//    BriefLog::warnOnce("remove - 1 in SimplexSampler!")
+    val SimplexWritableVariable sampled = new SimplexWritableVariable(sampledDim, variable)
+    val RealSliceSampler slicer = RealSliceSampler::build(sampled, numericFactors, 0.0, sampled.sum)
+    slicer.execute(rand) 
+  }
+  
+  @Data
+  private static class SimplexWritableVariable implements WritableRealVar {
+    
+    val int index
+    val DenseSimplex simplex
+    
+    def double sum()
+    {
+      return simplex.get(index) + simplex.get(nextIndex);
+    }
+    
+    def int nextIndex() {
+      if (index === simplex.nEntries - 1) {
+        return 0
+      } else {
+        return index + 1
+      }
+    }
+    
+    override set(double value) {
+      val sum = sum()
+      val complement = Math.max(0.0, sum - value) // avoid rounding errors creating negative values
+      simplex.setPair(index, value, nextIndex, complement)
+    }
+    
+    override doubleValue() {
+      return simplex.get(index)
     }
   }
 }

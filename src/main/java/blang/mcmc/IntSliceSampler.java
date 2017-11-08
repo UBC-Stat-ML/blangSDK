@@ -58,7 +58,7 @@ public class IntSliceSampler implements Sampler
     while (true) 
     {
       final int newState = Generators.discreteUniform(random, leftShrankEndPoint, rightShrankEndPoint); // x1 in Neal's paper
-      if (logSliceHeight < logDensityAt(newState) && accept(oldState, newState, logSliceHeight, leftProposalEndPoint, rightProposalEndPoint))
+      if (logSliceHeight <= logDensityAt(newState) && accept(oldState, newState, logSliceHeight, leftProposalEndPoint, rightProposalEndPoint))
       {
         variable.set(newState);
         return;
