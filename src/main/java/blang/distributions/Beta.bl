@@ -1,5 +1,7 @@
 package blang.distributions
 
+import blang.distributions.internals.Helpers
+
 model Beta {
    
   random RealVar realization
@@ -10,12 +12,12 @@ model Beta {
   laws {
     
     logf(alpha, realization) {
-      check(alpha > 0)
+      Helpers::checkDirichletOrBetaParam(alpha)
       (alpha - 1.0) * log(realization)
     }
     
     logf(beta, realization) {
-      check(beta > 0)
+      Helpers::checkDirichletOrBetaParam(beta)
       // better precision than log(1.0-realization)
       (beta - 1.0) * log1p(-realization)
     }
