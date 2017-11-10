@@ -9,7 +9,6 @@ import bayonet.math.NumericalUtils;
 import blang.types.DenseSimplex;
 import blang.types.StaticUtils;
 import blang.types.internals.Delegator;
-import briefj.BriefLog;
 import xlinear.CholeskyDecomposition;
 import xlinear.DenseMatrix;
 import xlinear.Matrix;
@@ -19,7 +18,7 @@ import static blang.types.ExtensionUtils.generator;
 
 import java.util.Random;
 
-public class Generators 
+public class Generators  
 {
   public static double gamma(Random random, double shape, double rate)
   {
@@ -31,13 +30,8 @@ public class Generators
 
   public static double beta(Random random, double alpha, double beta)
   {
-//    double result = 
-//        new BetaDistribution(generator(random), alpha, beta).sample();
-    
-    BriefLog.warnOnce("Using test beta rng");
-    DenseSimplex dirichlet = dirichlet(random, MatrixOperations.denseCopy(new double[] {alpha, beta}));
-    double result = dirichlet.get(0);
-    
+    double result = 
+        new BetaDistribution(generator(random), alpha, beta).sample();
     if (result == 0.0) // avoid crash-inducing zero probability corner cases
       result = ZERO_PLUS_EPS;
     if (result == 1.0)
@@ -49,7 +43,7 @@ public class Generators
   {
     if (random instanceof bayonet.distributions.Random)
       return ((bayonet.distributions.Random) random).nextBernoulli(p);
-    return bayonet.distributions.Random.nextBernoulli(random, p); 
+    return bayonet.distributions.Random.nextBernoulli(random, p);
   }
   
   public static int categorical(Random random, double [] probabilities)
@@ -102,6 +96,8 @@ public class Generators
       result = ((Delegator<Matrix>) result).getDelegate();
     if (concentrations.nonZeroEntries().min().getAsDouble() < 1) 
     {
+      // This sub-case based on a trick in Stan's code 
+      // see https://groups.google.com/forum/#!msg/stan-users/Q1ZDhlGPZyc/AVuX_7pEdSsJ
       double [] array = new double[concentrations.nEntries()];
       for (int d = 0; d < concentrations.nEntries(); d++)
       {
