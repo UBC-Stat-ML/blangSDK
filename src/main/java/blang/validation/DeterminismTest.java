@@ -3,7 +3,10 @@ package blang.validation;
 import java.util.List;
 import java.util.function.Function;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.junit.Assert;
+
+import com.google.common.collect.Table;
 
 import bayonet.distributions.Random;
 import blang.inits.Arg;
@@ -28,16 +31,16 @@ public class DeterminismTest
       SampledModel sampledModel = instance.restrictedSampledModel(currentSamplerType);
       checkDeterministic(sampledModel, instance.testFunctions, false);
       checkDeterministic(sampledModel, instance.testFunctions, true);
-    }
+    } 
     System.out.println();
   }
   
   private <M> void checkDeterministic(SampledModel sampledModel, Function<M, Double>[] testFunctions, boolean usePosterior) 
   {
 
-    List<List<Double>> 
-      list1 = ExactInvarianceTest.sample(new Random(1), sampledModel, testFunctions, usePosterior, nIndependentSamples, nPosteriorSamplesPerIndep),
-      list2 = ExactInvarianceTest.sample(new Random(1), sampledModel, testFunctions, usePosterior, nIndependentSamples, nPosteriorSamplesPerIndep);
+    Table<Integer, Function<?,?>, Double>
+      list1 = ExactInvarianceTest.sample(new Random(1), sampledModel, testFunctions, usePosterior, nIndependentSamples, nPosteriorSamplesPerIndep, new SummaryStatistics()),
+      list2 = ExactInvarianceTest.sample(new Random(1), sampledModel, testFunctions, usePosterior, nIndependentSamples, nPosteriorSamplesPerIndep, new SummaryStatistics());
     Assert.assertTrue(
         "Problem with model " + sampledModel.model.getClass().getSimpleName() + ": " +
         (usePosterior ? 
