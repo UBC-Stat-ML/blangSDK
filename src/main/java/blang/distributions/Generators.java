@@ -5,9 +5,11 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 
+import bayonet.math.NumericalUtils;
 import blang.types.DenseSimplex;
 import blang.types.StaticUtils;
 import blang.types.internals.Delegator;
+import briefj.BriefLog;
 import xlinear.CholeskyDecomposition;
 import xlinear.DenseMatrix;
 import xlinear.Matrix;
@@ -29,8 +31,13 @@ public class Generators
 
   public static double beta(Random random, double alpha, double beta)
   {
-    double result = 
-        new BetaDistribution(generator(random), alpha, beta).sample();
+//    double result = 
+//        new BetaDistribution(generator(random), alpha, beta).sample();
+    
+    BriefLog.warnOnce("Using test beta rng");
+    DenseSimplex dirichlet = dirichlet(random, MatrixOperations.denseCopy(new double[] {alpha, beta}));
+    double result = dirichlet.get(0);
+    
     if (result == 0.0) // avoid crash-inducing zero probability corner cases
       result = ZERO_PLUS_EPS;
     if (result == 1.0)
@@ -42,7 +49,7 @@ public class Generators
   {
     if (random instanceof bayonet.distributions.Random)
       return ((bayonet.distributions.Random) random).nextBernoulli(p);
-    return bayonet.distributions.Random.nextBernoulli(random, p);
+    return bayonet.distributions.Random.nextBernoulli(random, p); 
   }
   
   public static int categorical(Random random, double [] probabilities)
@@ -93,14 +100,30 @@ public class Generators
   {
     if (result instanceof Delegator<?>)
       result = ((Delegator<Matrix>) result).getDelegate();
-    double sum = 0.0;
-    for (int d = 0; d < concentrations.nEntries(); d++)
+    if (concentrations.nonZeroEntries().min().getAsDouble() < 1) 
     {
-      double gammaVariate = gamma(random, concentrations.get(d), 1.0);
-      result.set(d, gammaVariate);
-      sum += gammaVariate;
+      double [] array = new double[concentrations.nEntries()];
+      for (int d = 0; d < concentrations.nEntries(); d++)
+      {
+        double gammaVariate = gamma(random, concentrations.get(d) + 1.0, 1.0);
+        double logU = Math.log(random.nextDouble());
+        array[d] = Math.log(gammaVariate) + logU / concentrations.get(d);
+      }
+      double logSumExp = NumericalUtils.logAdd(array);
+      for (int d = 0; d < concentrations.nEntries(); d++)
+        result.set(d, Math.exp(array[d] - logSumExp));
     }
-    result.divInPlace(sum);
+    else
+    {
+      double sum = 0.0;
+      for (int d = 0; d < concentrations.nEntries(); d++)
+      {
+        double gammaVariate = gamma(random, concentrations.get(d), 1e7);
+        result.set(d, gammaVariate);
+        sum += gammaVariate;
+      }
+      result.divInPlace(sum);
+    }
     for (int d = 0; d < concentrations.nEntries(); d++)
     {
       if (result.get(d) == 0.0) // avoid crash-inducing zero probability corner cases
@@ -108,7 +131,7 @@ public class Generators
       else if (result.get(d) == 1.0)
         result.set(d, ONE_MINUS_EPS);
       if (!(result.get(d) > 0.0 && result.get(d) < 1.0))
-        throw new RuntimeException("Generation of Dirichlet with small concentration may fail with current algorithm.");
+        throw new RuntimeException();
     }
   }
   

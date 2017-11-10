@@ -41,14 +41,18 @@ public class IntSliceSampler implements Sampler
       if (random.nextBernoulli(0.5))
       {
         leftProposalEndPoint += - (rightProposalEndPoint - leftProposalEndPoint);
+        // note 1: check we don't diverge to INF 
+        // this as that can arise e.g. when encountering an improper posterior
+        // avoid infinite loop then and warn user.
         if (leftProposalEndPoint == Double.NEGATIVE_INFINITY)
-          throw new RuntimeException(INFINITE_SLICE_MESSAGE);
+          throw new RuntimeException(RealSliceSampler.INFINITE_SLICE_MESSAGE);
       }
       else
       {
         rightProposalEndPoint += rightProposalEndPoint - leftProposalEndPoint;
+     // same as note 1 above
         if (rightProposalEndPoint == Double.POSITIVE_INFINITY)
-          throw new RuntimeException(INFINITE_SLICE_MESSAGE);
+          throw new RuntimeException(RealSliceSampler.INFINITE_SLICE_MESSAGE);
       }
     
     // shrinkage procedure
@@ -104,16 +108,11 @@ public class IntSliceSampler implements Sampler
     double sum = 0.0;
     for (LogScaleFactor f : numericFactors)
       sum += f.logDensity();
-    if (Double.isNaN(sum))
-      throw new RuntimeException();
     return sum;
   }
-  
+   
   public boolean setup() 
   {
     return true;
   }
-  
-  private static final String INFINITE_SLICE_MESSAGE = "Slice diverged to infinity. "
-      + "Possible cause is that a variable has no distribution attached to it, i.e. the model is improper.";
 }

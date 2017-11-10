@@ -75,6 +75,30 @@ class Examples {
       .setRealization(realVar).build, 
     realRealizationSquared
   )
+  
+  public val densebeta = add(
+    new Beta.Builder()
+      .setAlpha(constant(1.0))
+      .setBeta(constant(3.0))
+      .setRealization(realVar).build, 
+    realRealizationSquared
+  )
+  
+  public val sparseBeta = add(
+    new Beta.Builder()
+      .setAlpha(constant(0.1))
+      .setBeta(constant(0.1))
+      .setRealization(realVar).build, 
+    realRealizationSquared
+  )
+  
+  public val sparseBeta2 = add(
+    new Beta.Builder()
+      .setAlpha(constant(0.1))
+      .setBeta(constant(0.1))
+      .setRealization(realVar).build, 
+    [getRealization.doubleValue]
+  )
       
   public val binom = add(
     new Binomial.Builder()
@@ -119,6 +143,13 @@ class Examples {
       .setConcentrations(denseCopy(#[5.2, 3.1]))
       .setRealization(denseSimplex(2)).build, 
     vectorHash
+  ) 
+  
+  public val dirichlet3 = add(
+    new Dirichlet.Builder()
+      .setConcentrations(denseCopy(#[0.1, 0.1]))
+      .setRealization(denseSimplex(2)).build, 
+    [getRealization.get(0)]
   ) 
   
   public val exp = add(

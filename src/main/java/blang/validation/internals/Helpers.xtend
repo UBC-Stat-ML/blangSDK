@@ -5,6 +5,8 @@ import blang.validation.internals.fixtures.RealRealizationSquared
 import blang.validation.internals.fixtures.IntRealizationSquared
 import blang.validation.internals.fixtures.VectorHash
 import blang.validation.internals.fixtures.ListHash
+import java.io.File
+import briefj.BriefIO
 
 class Helpers {
   
@@ -58,5 +60,18 @@ class Helpers {
     if (!okToUseDefectiveImplementation) {
       throw new RuntimeException("An intentionally defective implementation is being accidentally used. Check the stack trace, there is a class in there that should only be used for testing sensitivity of unit tests.")
     }
+  }
+  
+  def static void generateQQPlotScript(String fFile, String fpFile, String plotName, File destination) {
+    val String output = '''
+      #!/usr/bin/env Rscript
+      require("ggplot2")
+      require("readr")
+      f  <- sort((read_csv("«fFile »", col_names = FALSE))$X1)
+      fp <- sort((read_csv("«fpFile»", col_names = FALSE))$X1)
+      plot <- ggplot() + geom_point(aes(x = f, y = fp), size = 0.001) + geom_abline(intercept = 0, slope = 1)
+      ggsave("«plotName»", plot)
+    '''
+    BriefIO.write(destination, output)
   }
 }

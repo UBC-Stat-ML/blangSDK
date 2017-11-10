@@ -9,7 +9,7 @@ model Deep_Diri  {
   
   laws {
     
-    p0 ~ ContinuousUniform(0.1, 0.9)
+    p0 ~ ContinuousUniform(0.5, 1.0)
     failureProbabilities | p0, strength ~ Dirichlet(denseCopy(#[strength * p0, strength * (1.0 - p0)]))
     
   }

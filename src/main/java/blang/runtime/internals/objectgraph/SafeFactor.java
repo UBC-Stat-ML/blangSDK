@@ -26,6 +26,9 @@ public class SafeFactor implements LogScaleFactor
     for (SupportFactor support : preconditions)
       if (!support.isInSupport())
         return Double.NEGATIVE_INFINITY;
-    return enclosed.logDensity();
+    double result = enclosed.logDensity();
+    if (Double.isNaN(result))
+      throw new RuntimeException("logDensity = NaN not allowed.");
+    return result;
   }
 }

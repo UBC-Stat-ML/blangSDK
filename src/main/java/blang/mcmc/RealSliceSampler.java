@@ -72,12 +72,16 @@ public class RealSliceSampler implements Sampler
         if (random.nextBernoulli(0.5))
         {
           leftProposalEndPoint += - (rightProposalEndPoint - leftProposalEndPoint);
+          // note 1: check we don't diverge to INF 
+          // this as that can arise e.g. when encountering an improper posterior
+          // avoid infinite loop then and warn user.
           if (leftProposalEndPoint == Double.NEGATIVE_INFINITY)
             throw new RuntimeException(INFINITE_SLICE_MESSAGE);
         }
         else
         {
           rightProposalEndPoint += rightProposalEndPoint - leftProposalEndPoint;
+          // same as note 1 above
           if (rightProposalEndPoint == Double.POSITIVE_INFINITY)
             throw new RuntimeException(INFINITE_SLICE_MESSAGE);
         }
@@ -89,7 +93,7 @@ public class RealSliceSampler implements Sampler
       rightShrankEndPoint = rightProposalEndPoint; // bar R in Neal's paper
     while (true) 
     {
-      final double newState = Generators.uniform(random, leftShrankEndPoint, rightShrankEndPoint); // x1 in Neal's paper
+      final double newState = uniform(random, leftShrankEndPoint, oldState, rightShrankEndPoint); // x1 in Neal's paper
       if (logSliceHeight <= logDensityAt(newState) && accept(oldState, newState, logSliceHeight, leftProposalEndPoint, rightProposalEndPoint))
       {
         variable.set(newState);
@@ -101,10 +105,32 @@ public class RealSliceSampler implements Sampler
         rightShrankEndPoint = newState;
       if (NumericalUtils.isClose(leftShrankEndPoint, rightShrankEndPoint, 1e-6))
       {
+        // If a conditional is degenerate, the shrinkage will be relatively slow,
+        // but worse, depending on how rounding behaves, may miss the oldState. 
+        // This was observed in a case caused by the uniform generator excluding
+        // the right end point, creating an infinite loop.
         variable.set(oldState);
         return;
       }
     }
+  }
+  
+  /**
+   * Consider a case where range is very large but current point at zero. 
+   * Precision is much higher close to zero. 
+   * We want to be able propose very close to zero, e.g. if there is an asymptote 
+   * there.
+   */
+  private double uniform(Random random, double left, double middle, double right)
+  {
+    final double 
+      deltaL = middle - left,
+      deltaR = right - middle;
+    boolean useLeft = Generators.bernoulli(random, deltaL / (right - left));
+    if (useLeft)
+      return middle - deltaL * random.nextDouble();
+    else
+      return middle + deltaR * random.nextDouble();
   }
   
   private boolean accept(double oldState, double newState, double logSliceHeight, double leftProposalEndPoint, double rightProposalEndPoint) 
@@ -144,8 +170,6 @@ public class RealSliceSampler implements Sampler
     double sum = 0.0;
     for (LogScaleFactor f : numericFactors)
       sum += f.logDensity();
-    if (Double.isNaN(sum))
-      throw new RuntimeException();
     return sum;
   }
   
@@ -154,6 +178,6 @@ public class RealSliceSampler implements Sampler
     return true;
   }
   
-  private static final String INFINITE_SLICE_MESSAGE = "Slice diverged to infinity. "
+  public static final String INFINITE_SLICE_MESSAGE = "Slice diverged to infinity. "
       + "Possible cause is that a variable has no distribution attached to it, i.e. the model is improper.";
 }

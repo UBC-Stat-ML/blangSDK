@@ -7,7 +7,6 @@ import blang.core.WritableRealVar
 import org.eclipse.xtend.lib.annotations.Data
 import blang.core.LogScaleFactor
 import java.util.List
-import briefj.BriefLog
 
 class SimplexSampler implements Sampler {
   
@@ -29,7 +28,6 @@ class SimplexSampler implements Sampler {
       throw new RuntimeException
     }
     val int sampledDim = rand.nextInt(variable.nEntries)
-//    BriefLog::warnOnce("remove - 1 in SimplexSampler!")
     val SimplexWritableVariable sampled = new SimplexWritableVariable(sampledDim, variable)
     val RealSliceSampler slicer = RealSliceSampler::build(sampled, numericFactors, 0.0, sampled.sum)
     slicer.execute(rand) 
