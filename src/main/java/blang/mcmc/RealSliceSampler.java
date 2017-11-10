@@ -93,7 +93,7 @@ public class RealSliceSampler implements Sampler
       rightShrankEndPoint = rightProposalEndPoint; // bar R in Neal's paper
     while (true) 
     {
-      final double newState = uniform(random, leftShrankEndPoint, oldState, rightShrankEndPoint); // x1 in Neal's paper
+      final double newState = Generators.uniform(random, leftShrankEndPoint, rightShrankEndPoint); // x1 in Neal's paper
       if (logSliceHeight <= logDensityAt(newState) && accept(oldState, newState, logSliceHeight, leftProposalEndPoint, rightProposalEndPoint))
       {
         variable.set(newState);
@@ -113,24 +113,6 @@ public class RealSliceSampler implements Sampler
         return;
       }
     }
-  }
-  
-  /**
-   * Consider a case where range is very large but current point at zero. 
-   * Precision is much higher close to zero. 
-   * We want to be able propose very close to zero, e.g. if there is an asymptote 
-   * there.
-   */
-  private double uniform(Random random, double left, double middle, double right)
-  {
-    final double 
-      deltaL = middle - left,
-      deltaR = right - middle;
-    boolean useLeft = Generators.bernoulli(random, deltaL / (right - left));
-    if (useLeft)
-      return middle - deltaL * random.nextDouble();
-    else
-      return middle + deltaR * random.nextDouble();
   }
   
   private boolean accept(double oldState, double newState, double logSliceHeight, double leftProposalEndPoint, double rightProposalEndPoint) 
