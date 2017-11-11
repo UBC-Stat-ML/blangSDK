@@ -5,7 +5,7 @@ import blang.types.StaticUtils;
 
 public class Helpers 
 {
-  private static boolean warnedUnstableConcentration = false;
+  public static boolean warnedUnstableConcentration = false;
   public static double concentrationWarningThreshold = 0.5;
   public static void checkDirichletOrBetaParam(double concentration)
   {

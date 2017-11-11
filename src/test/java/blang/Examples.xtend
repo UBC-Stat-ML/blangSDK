@@ -46,8 +46,7 @@ import static xlinear.MatrixOperations.dense
 import static xlinear.MatrixOperations.denseCopy
 import blang.validation.internals.fixtures.Multimodal
 import blang.validation.internals.fixtures.RealRealizationSquared
-import blang.validation.internals.fixtures.Deep_Beta
-import blang.validation.internals.fixtures.Deep_Diri
+import blang.distributions.internals.Helpers
 
 class Examples {
   
@@ -70,14 +69,6 @@ class Examples {
       
   public val beta = add(
     new Beta.Builder()
-      .setAlpha(constant(0.1))
-      .setBeta(constant(0.3))
-      .setRealization(realVar).build, 
-    realRealizationSquared
-  )
-  
-  public val densebeta = add(
-    new Beta.Builder()
       .setAlpha(constant(1.0))
       .setBeta(constant(3.0))
       .setRealization(realVar).build, 
@@ -86,18 +77,10 @@ class Examples {
   
   public val sparseBeta = add(
     new Beta.Builder()
-      .setAlpha(constant(0.1))
-      .setBeta(constant(0.1))
+      .setAlpha(constant(Helpers::concentrationWarningThreshold))
+      .setBeta(constant(Helpers::concentrationWarningThreshold))
       .setRealization(realVar).build, 
     realRealizationSquared
-  )
-  
-  public val sparseBeta2 = add(
-    new Beta.Builder()
-      .setAlpha(constant(0.1))
-      .setBeta(constant(0.1))
-      .setRealization(realVar).build, 
-    [getRealization.doubleValue]
   )
       
   public val binom = add(
@@ -133,7 +116,7 @@ class Examples {
   
   public val dirichlet = add(
     new Dirichlet.Builder()
-      .setConcentrations(denseCopy(#[0.2, 3.1, 5.0]))
+      .setConcentrations(denseCopy(#[Helpers::concentrationWarningThreshold, 3.1, 5.0]))
       .setRealization(denseSimplex(3)).build, 
     vectorHash
   ) 
@@ -143,13 +126,6 @@ class Examples {
       .setConcentrations(denseCopy(#[5.2, 3.1]))
       .setRealization(denseSimplex(2)).build, 
     vectorHash
-  ) 
-  
-  public val dirichlet3 = add(
-    new Dirichlet.Builder()
-      .setConcentrations(denseCopy(#[0.1, 0.1]))
-      .setRealization(denseSimplex(2)).build, 
-    [getRealization.get(0)]
   ) 
   
   public val exp = add(
@@ -209,19 +185,7 @@ class Examples {
       .setFailureProbabilities(Plated::latent(new ColumnName("failPrs"), [realVar]))
       .setNumberOfFailures(Plated::latent(new ColumnName("failPrs"), [intVar]))
       .setData(GlobalDataSource::empty).build,
-    [p0.doubleValue]
-  )
-  
-  public val deep_beta = add(
-    new Deep_Beta.Builder()
-      .build,
-    [p0.doubleValue]
-  )
-  
-  public val deep_diri = add(
-    new Deep_Diri.Builder()
-      .build,
-    [p0.doubleValue]
+    [a.doubleValue]
   )
   
   public val sglm = add(

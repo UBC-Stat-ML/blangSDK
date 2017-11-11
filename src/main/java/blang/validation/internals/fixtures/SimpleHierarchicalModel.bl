@@ -9,15 +9,15 @@ model SimpleHierarchicalModel  {
   
   random Plated<RealVar> failureProbabilities
   random Plated<IntVar> numberOfFailures
-  random RealVar p0 ?: realVar, strength ?: realVar
+  random RealVar a ?: realVar, b ?: realVar
   
   laws {
     
-    p0 ~ ContinuousUniform(0, 1)
-    strength ~ Exponential(1)
+    a ~ Exponential(1)
+    b ~ Exponential(1)
 
     for (Index<String> rocketType : rocketTypes.indices) {
-      failureProbabilities.get(rocketType) | p0, strength ~ Beta(strength * p0, strength * (1.0 - p0)) 
+      failureProbabilities.get(rocketType) | a, b ~ Beta(a + 0.5, b + 0.5) 
       numberOfLaunches.get(rocketType) ~ Poisson(2.0)
       numberOfFailures.get(rocketType) 
         | RealVar failureProbability = failureProbabilities.get(rocketType),
