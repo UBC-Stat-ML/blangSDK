@@ -1,7 +1,5 @@
 package blang
 
-import blang.core.SamplerTypes
-import blang.mcmc.Samplers
 import blang.runtime.internals.objectgraph.AccessibilityGraph
 import blang.runtime.internals.objectgraph.Node
 import blang.runtime.internals.objectgraph.ObjectNode
@@ -14,6 +12,7 @@ import java.util.stream.Collectors
 import org.junit.Assert
 import org.junit.Test
 import blang.runtime.internals.objectgraph.DeepCloner
+import blang.runtime.internals.objectgraph.VariableUtils
 
 class TestCloning {
   
@@ -80,8 +79,7 @@ class TestCloning {
   
   def check(Set<Class<?>> classes) {
     for (aClass : classes) {
-      val annotations = aClass.annotations.map[annotationType]
-      if (annotations.contains(Samplers) || annotations.contains(SamplerTypes))
+      if (VariableUtils::isVariable(aClass))
         throw new RuntimeException('''A variable found in the overlap: «aClass.simpleName»''')
     }
   }

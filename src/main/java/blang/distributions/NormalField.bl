@@ -9,7 +9,7 @@ import briefj.collections.UnorderedPair
  * for the precision, outside of which the precision is guaranteed to be zero. This 
  * can speed up sampling considerably.
  */
-@SamplerTypes(blang.mcmc.BouncyParticleSampler)
+@Samplers(BouncyParticleSampler)
 model NormalField {
   
   random Matrix realization

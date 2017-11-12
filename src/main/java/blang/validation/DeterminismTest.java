@@ -1,6 +1,5 @@
 package blang.validation;
 
-import java.util.List;
 import java.util.function.Function;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;

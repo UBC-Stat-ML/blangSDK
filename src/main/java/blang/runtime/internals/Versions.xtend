@@ -92,7 +92,7 @@ class Versions {
       // fetch all commits for this tag
       val LogCommand log = git.log();
       val Ref peeledRef = repository.peel(ref);
-      if (peeledRef.getPeeledObjectId() != null) {
+      if (peeledRef.getPeeledObjectId() !== null) {
         log.add(peeledRef.getPeeledObjectId());
       } else {
         log.add(ref.getObjectId());

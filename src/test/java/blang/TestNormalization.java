@@ -12,7 +12,6 @@ import blang.core.RealDistribution;
 import blang.core.RealDistributionAdaptor;
 import blang.core.RealVar;
 import blang.core.UnivariateModel;
-import blang.distributions.Generators;
 
 public class TestNormalization 
 {
