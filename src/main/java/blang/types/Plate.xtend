@@ -40,6 +40,10 @@ interface Plate<K> {
    */
   def K parse(String string)
   
+  def Index<K> index(K key) { 
+    return new Index<K>(this, key)
+  }
+  
   /*
    * Builders
    */
