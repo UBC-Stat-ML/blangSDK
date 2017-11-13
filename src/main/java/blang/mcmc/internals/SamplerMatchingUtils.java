@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
  * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
  *
  */
-public class NodeMoveUtils
+public class SamplerMatchingUtils
 {
   /**
    * An operator (move or proposal) specifies a list of factors that are 

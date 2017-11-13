@@ -65,17 +65,17 @@ public class SamplerBuilder
     
     List<Field> fieldsToPopulate = ReflexionUtils.getAnnotatedDeclaredFields(operatorClass, ConnectedFactor.class, true);
     
-    if (!NodeMoveUtils.isFactorAssignmentCompatible(factors, fieldsToPopulate))
+    if (!SamplerMatchingUtils.isFactorAssignmentCompatible(factors, fieldsToPopulate))
       return null;
     
     // instantiate via empty constructor
     O instantiated = ReflexionUtils.instantiate(operatorClass);
     
     // fill the fields via annotations
-    NodeMoveUtils.assignFactorConnections(instantiated, factors, fieldsToPopulate);
+    SamplerMatchingUtils.assignFactorConnections(instantiated, factors, fieldsToPopulate);
     
     // fill the variable node too; make sure there is only one such field
-    NodeMoveUtils.assignVariable(instantiated, GraphAnalysis.getLatentObject(variable));
+    SamplerMatchingUtils.assignVariable(instantiated, GraphAnalysis.getLatentObject(variable));
     
     if (instantiated instanceof Sampler) 
       if (!((Sampler) instantiated).setup())
@@ -131,7 +131,7 @@ public class SamplerBuilder
   
   public static boolean isCompatible(Class<? extends Sampler> samplerType, Class<?> variableType)
   {
-    Field variableField = NodeMoveUtils.getSampledVariableField(samplerType);
+    Field variableField = SamplerMatchingUtils.getSampledVariableField(samplerType);
     return variableField.getType().isAssignableFrom(variableType);
   }
   
