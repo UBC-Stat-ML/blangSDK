@@ -53,8 +53,8 @@ public class SamplerBuilder
     result.correspondingVariables.add(variable);
   }
   
-  private static <O extends Sampler> O tryInstantiate(
-      Class<O> operatorClass, 
+  private static Sampler tryInstantiate(
+      Class<? extends Sampler> operatorClass, 
       Node variable,
       GraphAnalysis graphAnalysis)
   {
@@ -69,7 +69,7 @@ public class SamplerBuilder
       return null;
     
     // instantiate via empty constructor
-    O instantiated = ReflexionUtils.instantiate(operatorClass);
+    Sampler instantiated = ReflexionUtils.instantiate(operatorClass);
     
     // fill the fields via annotations
     SamplerMatchingUtils.assignFactorConnections(instantiated, factors, fieldsToPopulate);
