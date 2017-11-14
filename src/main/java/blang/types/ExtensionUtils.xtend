@@ -77,14 +77,14 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
     one += another
   }
   
-  def static SparseMatrix asMatrix(Precision precision) {
-    val int dim = precision.dim();
-    val SparseMatrix precisionAsMatrix = MatrixOperations.sparse(dim, dim);
-    for (UnorderedPair<Integer,Integer> pair : precision.support()) {
-      val double value = precision.get(pair);
-      precisionAsMatrix.set(pair.getFirst(), pair.getSecond(), value); 
-      precisionAsMatrix.set(pair.getSecond(), pair.getFirst(), value); 
-    }
-    return precisionAsMatrix;
-  }
+//  def static SparseMatrix asMatrix(Precision precision) {
+//    val int dim = precision.dim();
+//    val SparseMatrix precisionAsMatrix = MatrixOperations.sparse(dim, dim);
+//    for (UnorderedPair<Integer,Integer> pair : precision.support()) {
+//      val double value = precision.get(pair);
+//      precisionAsMatrix.set(pair.getFirst(), pair.getSecond(), value); 
+//      precisionAsMatrix.set(pair.getSecond(), pair.getFirst(), value); 
+//    }
+//    return precisionAsMatrix;
+//  }
 }

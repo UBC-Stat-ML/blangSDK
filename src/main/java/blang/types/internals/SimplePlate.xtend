@@ -6,6 +6,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.Set
 import java.util.LinkedHashSet
 import com.rits.cloning.Immutable
+import java.util.Collection
 
 /**
  * Plate implementation based on an explicit list of indices.
@@ -21,7 +22,7 @@ class SimplePlate<T> implements Plate<T> {
   /**
    * Assume a non-jagged array so that parentIndices are ignored.
    */
-  override Iterable<Index<T>> indices(Index<?>... parentIndices) {
+  override Collection<Index<T>> indices(Index<?>... parentIndices) {
     return indices
   }
   

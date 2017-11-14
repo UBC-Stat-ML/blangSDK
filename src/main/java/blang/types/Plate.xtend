@@ -15,6 +15,7 @@ import blang.types.internals.SimpleParser
 import blang.types.internals.HashPlate
 import blang.types.internals.SimplePlate
 import blang.io.internals.GlobalDataSourceStore
+import java.util.Collection
 
 /**
  * A plate in a graphical mode. 
@@ -33,7 +34,7 @@ interface Plate<K> {
   /**
    * Get the indices available given the indices of the parent (enclosing) plates.
    */
-  def Iterable<Index<K>> indices(Index<?> ... parentIndices)
+  def Collection<Index<K>> indices(Index<?> ... parentIndices)
   
   /**
    * Used to parse data from a DataSource

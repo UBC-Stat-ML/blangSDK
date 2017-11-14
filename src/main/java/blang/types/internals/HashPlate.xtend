@@ -10,6 +10,7 @@ import java.util.LinkedHashSet
 import blang.io.DataSource
 import java.util.Optional
 import com.rits.cloning.Immutable
+import java.util.Collection
 
 /**
  * A Plate using a DataSource to load and store indices in a hash table.
@@ -31,7 +32,7 @@ class HashPlate<K> implements Plate<K> {
   
   val Parser<K> parser
   
-  override Iterable<Index<K>> indices(Index<?>... parentIndices) {
+  override Collection<Index<K>> indices(Index<?>... parentIndices) {
     val Query query = Query::build(parentIndices)
     if (indices.containsKey(query)) {
       return indices.get(query)

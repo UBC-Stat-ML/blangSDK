@@ -44,8 +44,8 @@ class HashPlated<T> implements Plated<T> {
     this.parser = parser
   }
   
-  override iterator() {
-    return variables.entrySet.iterator
+  override entries() {
+    return variables.entrySet
   }
   
   override String toString() {
@@ -55,7 +55,7 @@ class HashPlated<T> implements Plated<T> {
   def static <T> String toString(Plated<T> plated) {
     val StringBuilder result = new StringBuilder
     var boolean first = true
-    for (entry : plated) {
+    for (entry : plated.entries) {
       if (first) {
         result.append(entry.key.indices.map[plate.name].join("\t") + "\tvalue" + "\n")
         first = false

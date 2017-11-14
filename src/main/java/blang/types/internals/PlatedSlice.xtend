@@ -6,14 +6,21 @@ import blang.runtime.internals.objectgraph.SkipDependency
 import java.util.Map
 import java.util.LinkedHashMap
 
+/**
+ * Variables loaded through this class will be inserted into 
+ * the parent(s) as well. Not vice versa. 
+ * 
+ * Dependency analysis for instance of PlatedSlice 
+ * will only point to the entries in the 
+ * slice, as expected. 
+ */
 class PlatedSlice<T> implements Plated<T> {
   
   val Map<Query, T> variables = new LinkedHashMap
   
-  @SkipDependency(isMutable = false)
   val Query sliceIndices
   
-  @SkipDependency(isMutable = false)
+  @SkipDependency(isMutable = false)  // Otherwise dependency would be too large
   val Plated<T> parent
   
   override T get(Index<?>... indices) {
@@ -27,8 +34,8 @@ class PlatedSlice<T> implements Plated<T> {
     return result
   }
   
-  override iterator() {
-    return variables.entrySet.iterator
+  override entries() {
+    return variables.entrySet
   }
   
   new(Plated<T> parent, Query sliceIndices) {

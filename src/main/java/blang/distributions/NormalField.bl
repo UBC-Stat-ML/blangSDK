@@ -1,6 +1,7 @@
 package blang.distributions
 
 import briefj.collections.UnorderedPair
+import blang.types.Precision
 
 /** 
  * A normal Markov random field. For small problem, use MultivariateNormal instead, 
@@ -11,38 +12,36 @@ import briefj.collections.UnorderedPair
  */
 @Samplers(BouncyParticleSampler)
 model NormalField {
-  
-  random Matrix realization
-  
+
+
   /**
    * precision.support is assumed to be constant.
    * TODO: add some construct that test this exponentially less and less frequently
    */
   param Precision precision
   
-  param Matrix mean
+  random Plated<RealVar> realization
     
   laws {
     
-    for (UnorderedPair<Integer,Integer> pair : precision.support) {
+    for (UnorderedPair<?,?> pair : precision.support) {
       logf(
         precision,
-        UnorderedPair<Integer,Integer> currentPair = pair,
-        RealVar x0 = realization.get(pair.first),
-        RealVar x1 = realization.get(pair.second),
-        RealVar m0 = mean.get(pair.first),
-        RealVar m1 = mean.get(pair.second)
+        UnorderedPair<?,?> currentPair = pair,
+        RealVar x0 = realization.get(precision.plate.index(pair.first)),
+        RealVar x1 = realization.get(precision.plate.index(pair.second))
       ) {
-        if (currentPair.first === currentPair.second) {
-          return - 0.5 * precision.get(currentPair) * (x0 - m0) ** 2
+        if (currentPair.first == currentPair.second) {
+          return - 0.5 * precision.get(currentPair) * x0 * x0
         } else {
-          return - precision.get(currentPair) * (x0 - m0) * (x1 - m1)
+          // 0.5 * 2 = 1 (because we iterate over set of unordered pairs)
+          return - precision.get(currentPair) * x0 * x1
         }
       }
     }
     
-    logf(double dim = realization.nEntries) {
-      - dim * log(Math.sqrt(2*Math.PI)) / 2.0
+    logf(int dim = precision.plate.indices.size) {
+      - dim * log(2*PI) / 2.0
     }
     
     logf(precision) {
@@ -51,6 +50,7 @@ model NormalField {
   }
   
   generate (rand) {
-    realization.setTo(Generators::multivariateNormal(rand, mean, precision.asMatrix.cholesky))
+    throw new RuntimeException
+//    realization.setTo(Generators::multivariateNormal(rand, mean, precision.asMatrix.cholesky))
   }
 }

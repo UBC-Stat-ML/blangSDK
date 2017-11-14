@@ -31,8 +31,9 @@ class BlangTidySerializer extends TidySerializer {
     }
   }
   
-  def dispatch protected void serializeImplementation(Plated<?> p, TabularWriter writer) {
-    for (Entry<Query, ?> entry : p) {
+  def dispatch protected void serializeImplementation(Plated p, TabularWriter writer) {
+    for (_entry : p.entries) { 
+      val Entry<Query,?> entry = _entry as Entry // work around type inference bug
       var TabularWriter childWriter = writer
       for (Index<?> index : entry.key.indices) {
         childWriter = childWriter.child(index.plate.name.string, index.key)

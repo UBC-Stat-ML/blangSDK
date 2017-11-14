@@ -19,17 +19,26 @@ import java.util.Optional
 import blang.io.internals.GlobalDataSourceStore
 import java.util.function.Supplier
 import blang.types.internals.LatentFactoryAsParser
+import java.util.Collection
 
 /**
  * A random variable or parameter of type T enclosed in one or more Plates.
  */
-interface Plated<T> extends Iterable<Entry<Query, T>> {
+interface Plated<T>  {
   
   /**
-   * The random variable or parameter indexed by the provided indices.
+   * Get the random variable or parameter indexed by the provided indices. 
+   * "Getting" may involve creating a new latent variable, a new observed variable, 
+   * or just returning a previously created variable.
    */
   def T get(Index<?> ... indices) 
   
+  /**
+   * List all variables obtained through get(..) so far. 
+   * Each returned entry contains the variable as well as the associated indices 
+   * (called a Query).
+   */
+  def Collection<Entry<Query, T>> entries()
   
   def Plated<T> slice(Index<?> ... indices) {
     return new PlatedSlice(this, Query::build(indices)) 
