@@ -28,7 +28,7 @@ model Dirichlet {
       return sum + lnGamma(concentrations.sum) 
     }
     
-    realization ~ new ConstrainedFactor()
+    realization is Constrained()
   }
   
   generate(rand) { 

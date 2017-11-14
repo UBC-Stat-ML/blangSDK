@@ -3,7 +3,7 @@ package blang.validation.internals.fixtures;
 import java.util.List;
 
 import bayonet.distributions.Random;
-import blang.core.ConstrainedFactor;
+import blang.core.Constrained;
 import blang.core.LogScaleFactor;
 import blang.mcmc.ConnectedFactor;
 import blang.mcmc.IntSliceSampler;
@@ -20,7 +20,7 @@ public class SpikedRealVarSampler implements Sampler {
   SpikedRealVar variable;
   
   @ConnectedFactor
-  ConstrainedFactor constrained;
+  Constrained constrained;
   
   @ConnectedFactor
   List<LogScaleFactor> numericFactors;

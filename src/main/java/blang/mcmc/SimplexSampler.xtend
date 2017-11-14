@@ -1,7 +1,7 @@
 package blang.mcmc
 
-import bayonet.distributions.Random;
-import blang.core.ConstrainedFactor
+import bayonet.distributions.Random
+import blang.core.Constrained
 import blang.types.DenseSimplex
 import blang.core.WritableRealVar
 import org.eclipse.xtend.lib.annotations.Data
@@ -15,7 +15,7 @@ class SimplexSampler implements Sampler {
   DenseSimplex variable
   
   @ConnectedFactor
-  ConstrainedFactor constrained
+  Constrained constrained
   
   @ConnectedFactor
   List<LogScaleFactor> numericFactors

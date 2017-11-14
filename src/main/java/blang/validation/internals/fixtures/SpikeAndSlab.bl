@@ -20,7 +20,7 @@ model SpikeAndSlab {
       indicator(SpikedRealVar variable = variables.get(index)) {
         variable.isZero.isBool
       }
-      variables.get(index) ~ new ConstrainedFactor() 
+      variables.get(index) is Constrained() 
     }
     
     indicator(zeroProbability) {
