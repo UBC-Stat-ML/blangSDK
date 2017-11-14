@@ -9,12 +9,12 @@ import briefj.collections.UnorderedPair;
 // TODO: move to separate package, generalize to GLMs, call package glm
 
 // Examples: Time series, Spatial; abstract kernel based version
-public interface Precision  // TODO: get rid of that generic type?
+public interface Precision  // Dev note: avoiding generics here as they cause bunch of problems when used in blang models (believe me, tried many things)
 {
-  <K> Plate<K> getPlate();
-  <K> Set<UnorderedPair<K, K>> support();
+  Plate getPlate();
+  Set<UnorderedPair> support();
   double logDet();
-  <K> double get(UnorderedPair<K, K> entry);
+  double get(UnorderedPair pair);
   
   
   public static class Diagonal implements Precision
@@ -23,7 +23,7 @@ public interface Precision  // TODO: get rid of that generic type?
     final Plate<?> plate;
     final int dim;
     
-    public Diagonal(RealVar diagonalPrecisionValue, Plate plate) 
+    public Diagonal(RealVar diagonalPrecisionValue, Plate<?> plate) 
     {
       this.plate = plate;
       this.dim = plate.indices().size();
@@ -31,10 +31,10 @@ public interface Precision  // TODO: get rid of that generic type?
     }
 
     @Override
-    public <K> Set<UnorderedPair<K, K>> support() 
+    public Set<UnorderedPair> support() 
     {
       Set result = new LinkedHashSet<>();
-      for (Index<?> index : plate.indices())
+      for (Index index : plate.indices())
         result.add(UnorderedPair.of(index.key, index.key));
       return result;
     }
@@ -46,7 +46,7 @@ public interface Precision  // TODO: get rid of that generic type?
     }
 
     @Override
-    public <K> double get(UnorderedPair<K, K> entry) 
+    public double get(UnorderedPair entry) 
     {
       return diagonalPrecisionValue.doubleValue();
     }

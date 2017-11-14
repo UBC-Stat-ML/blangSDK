@@ -24,7 +24,7 @@ model NormalField {
     
   laws {
     
-    for (UnorderedPair<?,?> pair : precision.support) {
+    for (UnorderedPair pair : precision.support) {
       logf(
         precision,
         UnorderedPair<?,?> currentPair = pair,
