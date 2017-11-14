@@ -1,15 +1,19 @@
 package blang.mcmc;
 
+import java.util.List;
+
 import bayonet.distributions.Random;
+import blang.core.LogScaleFactor;
 import blang.distributions.NormalField;
 import blang.mcmc.internals.SamplerBuilderContext;
 
 public class BouncyParticleSampler implements Sampler 
 {
-  @SampledVariable
+  @SampledVariable(skipFactorsFromSampledModel = true)
   public NormalField field;
   
-  
+  @ConnectedFactor
+  public List<LogScaleFactor> likelihoods;
 
   @Override
   public void execute(Random rand) 
@@ -21,7 +25,7 @@ public class BouncyParticleSampler implements Sampler
   @Override
   public boolean setup(SamplerBuilderContext context) 
   {
-   System.out.println("Matched BPS correctly!" + field);
+//    for (LogScaleFactor factor : )
     return false;
   }
 
