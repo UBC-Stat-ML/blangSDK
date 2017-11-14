@@ -10,6 +10,8 @@ import blang.mcmc.IntSliceSampler;
 import blang.mcmc.RealSliceSampler;
 import blang.mcmc.SampledVariable;
 import blang.mcmc.Sampler;
+import blang.mcmc.internals.SamplerBuilderContext;
+
 import static blang.types.ExtensionUtils.*;
 
 public class SpikedRealVarSampler implements Sampler {
@@ -35,7 +37,7 @@ public class SpikedRealVarSampler implements Sampler {
   }
 
   @Override
-  public boolean setup() 
+  public boolean setup(SamplerBuilderContext context) 
   {
     sliceSampler = RealSliceSampler.build(variable.realPart, numericFactors);
     intSampler = IntSliceSampler.build(variable.isZero, numericFactors);

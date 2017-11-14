@@ -9,6 +9,7 @@ import blang.distributions.Generators;
 import blang.mcmc.ConnectedFactor;
 import blang.mcmc.SampledVariable;
 import blang.mcmc.Sampler;
+import blang.mcmc.internals.SamplerBuilderContext;
 import blang.validation.internals.Helpers;
 
 
@@ -117,7 +118,7 @@ public class BadRealSliceSampler implements Sampler
     return sum;
   }
   
-  public boolean setup() 
+  public boolean setup(SamplerBuilderContext context) 
   {
     return true;
   }

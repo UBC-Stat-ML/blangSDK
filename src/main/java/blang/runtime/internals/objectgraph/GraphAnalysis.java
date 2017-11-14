@@ -49,7 +49,7 @@ public class GraphAnalysis
 {
   public final Model model;
   private Multimap<ObjectNode<Model>,ObjectNode<ModelComponent>> model2ModelComponents;
-  private AccessibilityGraph accessibilityGraph;
+  public AccessibilityGraph accessibilityGraph;
   private final LinkedHashSet<Node> frozenNodesClosure;
   private final LinkedHashSet<Node> freeMutableNodes;
   private final LinkedHashSet<Node> latentVariables;
@@ -132,7 +132,7 @@ public class GraphAnalysis
     freeMutableNodes = new LinkedHashSet<>();
     for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
       if (f.getAnnotation(Param.class) == null) 
-        accessibilityGraph.getAccessibleNodes(StaticUtils.get(ReflexionUtils.getFieldValue(f, model)))
+        accessibilityGraph.getAccessibleNodes(StaticUtils.node(ReflexionUtils.getFieldValue(f, model)))
             .filter(node -> node.isMutable())
             .filter(node -> !frozenNodesClosure.contains(node))
             .forEachOrdered(freeMutableNodes::add);
@@ -215,7 +215,7 @@ public class GraphAnalysis
     // mark params in top level model as frozen
     for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
       if (f.getAnnotation(Param.class) != null) 
-        result.add(StaticUtils.get(ReflexionUtils.getFieldValue(f, model))); 
+        result.add(StaticUtils.node(ReflexionUtils.getFieldValue(f, model))); 
     
     if (!accessibilityGraph.graph.vertexSet().containsAll(result))
     {
@@ -272,7 +272,7 @@ public class GraphAnalysis
     if (model instanceof ForwardSimulator)
     {
       boolean allRandomNodesObserved = allRandomNodesObserved(model);
-      for (Factor f : factors((Model) model))
+      for (Factor f : factorsDefinedBy((Model) model))
         if (f instanceof LogScaleFactor)
         {
           if (allRandomNodesObserved)
@@ -303,7 +303,7 @@ public class GraphAnalysis
     }
   }
   
-  private List<Factor> factors(Model model)
+  public List<Factor> factorsDefinedBy(Model model)
   {
     List<Factor> result = new ArrayList<>();
     ObjectNode<Model> modelNode = new ObjectNode<>(model);
@@ -311,7 +311,7 @@ public class GraphAnalysis
     {
       ModelComponent component = componentNode.object;
       if (component instanceof Model)
-        result.addAll(factors((Model) component));
+        result.addAll(factorsDefinedBy((Model) component));
       else if (component instanceof Factor)
         result.add((Factor) component);
     }
@@ -398,7 +398,7 @@ public class GraphAnalysis
         Object dependencyRoot = ReflexionUtils.getFieldValue(field, component);
         if (!isParam) 
         {
-          Node randomVariableNode = StaticUtils.get(dependencyRoot); 
+          Node randomVariableNode = StaticUtils.node(dependencyRoot); 
           if (generatedRandomVariables.contains(randomVariableNode)) 
             throw new RuntimeException("The component " + component.getClass().getSimpleName() + " generated a random variable that already had a distribution");
           generatedRandomVariables.add(randomVariableNode);

@@ -6,6 +6,7 @@ import bayonet.distributions.Random;
 import blang.core.LogScaleFactor;
 import blang.distributions.Generators;
 import blang.mcmc.internals.Callback;
+import blang.mcmc.internals.SamplerBuilderContext;
 
 
 
@@ -14,11 +15,13 @@ public abstract class MHSampler implements Sampler
   @ConnectedFactor
   protected List<LogScaleFactor> numericFactors;
   
-  public boolean setup() 
+  @Override
+  public boolean setup(SamplerBuilderContext context) 
   {
     return true;
   }
   
+  @Override
   public void execute(Random random)
   {
     // record likelihood before

@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 public @interface SampledVariable
 {
-
+  boolean skipFactorsFromSampledModel() default false;
 }

@@ -6,6 +6,7 @@ import bayonet.distributions.Random;
 import blang.core.LogScaleFactor;
 import blang.core.WritableIntVar;
 import blang.distributions.Generators;
+import blang.mcmc.internals.SamplerBuilderContext;
 
 
 public class IntSliceSampler implements Sampler
@@ -111,7 +112,7 @@ public class IntSliceSampler implements Sampler
     return sum;
   }
    
-  public boolean setup() 
+  public boolean setup(SamplerBuilderContext context) 
   {
     return true;
   }

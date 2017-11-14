@@ -94,7 +94,7 @@ public class AccessibilityGraph
   
   public void add(Object object)
   {
-    Node root = StaticUtils.get(object);
+    Node root = StaticUtils.node(object);
     roots.add(root);
     
     if (graph.vertexSet().contains(root))
@@ -124,7 +124,7 @@ public class AccessibilityGraph
         ConstituentNode<?> constituent = (ConstituentNode<?>) current;
         if (constituent.resolvesToObject())
         {
-          Node next = StaticUtils.get(constituent.resolve());
+          Node next = StaticUtils.node(constituent.resolve());
           if (!graph.vertexSet().contains(next))
             toExploreQueue.add(next);
           addEdgeAndVertices(constituent, next);
@@ -163,7 +163,7 @@ public class AccessibilityGraph
 
   public Stream<Node> getAccessibleNodes(Object object)
   {
-    return toStream(new BreadthFirstIterator<>(graph, StaticUtils.get(object)));
+    return toStream(new BreadthFirstIterator<>(graph, StaticUtils.node(object)));
   }
   
   public Stream<Node> getAccessibleNodes()

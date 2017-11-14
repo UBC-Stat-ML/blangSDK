@@ -6,6 +6,7 @@ import bayonet.math.NumericalUtils;
 import blang.core.LogScaleFactor;
 import blang.core.WritableRealVar;
 import blang.distributions.Generators;
+import blang.mcmc.internals.SamplerBuilderContext;
 
 
 public class RealSliceSampler implements Sampler
@@ -155,7 +156,7 @@ public class RealSliceSampler implements Sampler
     return sum;
   }
   
-  public boolean setup() 
+  public boolean setup(SamplerBuilderContext context) 
   {
     return true;
   }

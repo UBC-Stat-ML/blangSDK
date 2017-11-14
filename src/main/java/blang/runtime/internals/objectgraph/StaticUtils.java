@@ -8,7 +8,7 @@ import briefj.ReflexionUtils;
 
 public class StaticUtils  
 {
-  public static <T> Node get(T object)
+  public static <T> Node node(T object)
   {
     if (object instanceof Node)
       return (Node) object;
@@ -21,7 +21,7 @@ public class StaticUtils
     List<Field> result = ReflexionUtils.getDeclaredFields(aClass, true);
     Iterator<Field> resultsIter = result.iterator();
     while (resultsIter.hasNext())
-      if (resultsIter.next().getName().equals("$jacocoData")) // work around for testing coverage
+      if (resultsIter.next().getName().equals("$jacocoData")) // work around required for checking test-case coverage
         resultsIter.remove();
     return result;
   }

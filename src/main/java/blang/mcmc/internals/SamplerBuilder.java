@@ -1,6 +1,7 @@
 package blang.mcmc.internals;
 
 import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -9,12 +10,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import blang.core.Factor;
+import blang.core.Model;
 import blang.mcmc.ConnectedFactor;
 import blang.mcmc.SampledVariable;
 import blang.mcmc.Sampler;
 import blang.mcmc.Samplers;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.runtime.internals.objectgraph.Node;
+import blang.runtime.internals.objectgraph.ObjectNode;
 import blang.runtime.internals.objectgraph.VariableUtils;
 import briefj.ReflexionUtils;
 
@@ -71,22 +74,51 @@ public class SamplerBuilder
     // instantiate via empty constructor
     Sampler instantiated = ReflexionUtils.instantiate(operatorClass);
     
+    // if requested, skip fields defined under the sampled model (order matters, modifies factors in place)
+    if (SamplerMatchingUtils.getSampledVariableField(operatorClass).getAnnotation(SampledVariable.class).skipFactorsFromSampledModel())
+      skipFieldsDefinedUnderSampledModel(operatorClass, variable, graphAnalysis, factors);
+    
     // fill the fields via annotations
     SamplerMatchingUtils.assignFactorConnections(instantiated, factors, fieldsToPopulate);
     
     // fill the variable node too; make sure there is only one such field
     SamplerMatchingUtils.assignVariable(instantiated, GraphAnalysis.getLatentObject(variable));
     
-    if (instantiated instanceof Sampler) 
-      if (!((Sampler) instantiated).setup())
-        return null;
+    SamplerBuilderContext context = new SamplerBuilderContext(graphAnalysis, variable);
+    if (!((Sampler) instantiated).setup(context))
+      return null;
+    context.tearDown();
     
     return instantiated;
   }
   
+  // edits factors in place
+  private static void skipFieldsDefinedUnderSampledModel(
+      Class<? extends Sampler> operatorClass, 
+      Node variable,
+      GraphAnalysis graphAnalysis,
+      List<? extends Factor> factors)
+  {
+    if (!(variable instanceof ObjectNode<?>) || !(((ObjectNode<?>) variable).object instanceof Model))
+      throw new RuntimeException("The option skipFactorsFromSampledModel only applied when the sampled variable is a Model, "
+          + "in: " + operatorClass.getSimpleName());
+    Model model = (Model) ((ObjectNode<?>) variable).object;
+    List<Factor> skippedFactorsList = graphAnalysis.factorsDefinedBy(model); 
+    LinkedHashSet<ObjectNode<Factor>> skippedFactorSet = new LinkedHashSet<>();
+    for (Factor skipped : skippedFactorsList)
+      skippedFactorSet.add(new ObjectNode<>(skipped));
+    Iterator<? extends Factor> iterator = factors.iterator();
+    while (iterator.hasNext())
+    {
+      Factor current = iterator.next();
+      if (skippedFactorSet.contains(new ObjectNode<>(current)))
+        iterator.remove();
+    }
+  }
+  
   /**
    * For internal use only. Use the SamplerMatch instead, which has the key difference that 
-   * it takes into accound whether the factors were successfully matched as well (this cannot 
+   * it takes into account whether the factors were successfully matched as well (this cannot 
    * be determined from types alone).
    */
   private static class SamplerTypesMatcher

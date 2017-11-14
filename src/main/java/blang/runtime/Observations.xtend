@@ -13,7 +13,7 @@ class Observations {
   val LinkedHashSet<Node> observationRoots = new LinkedHashSet<Node>()
   
   def <T> T markAsObserved(T object) {
-    val Node node = StaticUtils::get(object)
+    val Node node = StaticUtils::node(object)
     observationRoots.add(node)
     return object
   }

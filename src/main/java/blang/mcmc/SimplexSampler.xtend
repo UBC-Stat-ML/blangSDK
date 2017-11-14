@@ -7,6 +7,7 @@ import blang.core.WritableRealVar
 import org.eclipse.xtend.lib.annotations.Data
 import blang.core.LogScaleFactor
 import java.util.List
+import blang.mcmc.internals.SamplerBuilderContext
 
 class SimplexSampler implements Sampler {
   
@@ -19,7 +20,7 @@ class SimplexSampler implements Sampler {
   @ConnectedFactor
   List<LogScaleFactor> numericFactors
   
-  override boolean setup() {
+  override boolean setup(SamplerBuilderContext context) {
     return constrained !== null && constrained.object instanceof DenseSimplex
   }
   
