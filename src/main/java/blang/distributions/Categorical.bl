@@ -16,7 +16,7 @@ model Categorical {
       realization >= 0 && realization < probabilities.nEntries
     }
      
-    probabilities is Constrained() 
+    probabilities is Constrained 
   }
   
   generate(rand) {
