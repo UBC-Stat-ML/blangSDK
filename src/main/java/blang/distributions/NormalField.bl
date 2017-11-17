@@ -2,6 +2,7 @@ package blang.distributions
 
 import briefj.collections.UnorderedPair
 import blang.types.Precision
+import briefj.Indexer
 
 /** 
  * A normal Markov random field. For small problem, use MultivariateNormal instead, 
@@ -10,7 +11,7 @@ import blang.types.Precision
  * for the precision, outside of which the precision is guaranteed to be zero. This 
  * can speed up sampling considerably.
  */
-@Samplers(BouncyParticleSampler)
+@Samplers(EllipticalSliceSampler)
 model NormalField {
 
 
@@ -27,7 +28,7 @@ model NormalField {
     for (UnorderedPair pair : precision.support) {
       logf(
         precision,
-        UnorderedPair<?,?> currentPair = pair,
+        UnorderedPair currentPair = pair,
         RealVar x0 = realization.get(precision.plate.index(pair.first)),
         RealVar x1 = realization.get(precision.plate.index(pair.second))
       ) {
@@ -50,7 +51,12 @@ model NormalField {
   }
   
   generate (rand) {
-    throw new RuntimeException
-//    realization.setTo(Generators::multivariateNormal(rand, mean, precision.asMatrix.cholesky))
+    val Precision<Object> p = precision 
+    val Indexer<Object> indexer = Precision::indexer(p.plate)
+    val Matrix precisionMatrix = Precision::asMatrix(p, indexer)
+    val Matrix result = MatrixOperations::sampleNormalByPrecision(rand, precisionMatrix)
+    for (Index<Object> index : p.plate.indices) { 
+      (realization.get(index) as WritableRealVar).set(result.get(indexer.o2i(index.key)))
+    }
   }
 }

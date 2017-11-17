@@ -58,6 +58,13 @@ public class Generators
     return new BinomialDistribution(generator(random), numberOfTrials, probabilityOfSuccess).sample();
   }
   
+  public static int negativeBinomial(Random random, double r, double p) 
+  {
+    // Use Gamma-Poisson mixture
+    double lambda = gamma(random, r, (1-p) / p);
+    return poisson(random, lambda);
+  }
+  
   public static double unitRateExponential(Random random)
   {
     return - Math.log(random.nextDouble());

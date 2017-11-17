@@ -1,0 +1,32 @@
+package blang.validation.internals.fixtures
+
+import blang.types.Precision.Diagonal
+
+model PoissonNormalField {
+  
+  param Plate<Integer> plate
+  
+  random Plated<RealVar> latents
+  random Plated<IntVar> observations
+  
+  laws {
+    
+    // Prior:
+    //hyperParam ~ Exponential(1.0)
+    latents | Precision<Integer> precision = new Diagonal(1.0, plate) ~ NormalField(precision)
+    
+    // Likelihood
+    for (Index<Integer> index : plate.indices) {
+      observations.get(index) | RealVar latent = latents.get(index) ~ Poisson({
+        val double result = exp(latent)
+        if (result == 0) 
+          Generators::ZERO_PLUS_EPS
+        else if (result == Double::POSITIVE_INFINITY)
+          Double::MAX_VALUE
+        else 
+          result 
+      })
+    }
+    
+  }
+}

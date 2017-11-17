@@ -6,9 +6,7 @@ import bayonet.distributions.Random
 import blang.runtime.internals.objectgraph.MatrixConstituentNode
 import java.util.List
 import blang.core.IntVar
-import xlinear.SparseMatrix
-import briefj.collections.UnorderedPair
-import xlinear.MatrixOperations
+import java.util.ArrayList
 
 class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
@@ -58,6 +56,21 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
   }
   
   /**
+   * Assumes the plate is of the form 0, 1, ..
+   */
+  def static <T> asList(Plated<T> plated, Plate<Integer> plate) {
+    val List<T> result = new ArrayList()
+    var int check = 0
+    for (Index<Integer> index : plate.indices) {
+      if (index.key != check++) {
+        throw new RuntimeException
+      }
+      result.add(plated.get(index))
+    }
+    return result
+  }
+  
+  /**
    * Convert into a Random object compatible with both 
    * Apache common's RandomGenerator and bayonet's 
    * Random.
@@ -76,15 +89,5 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
     one *= 0.0
     one += another
   }
-  
-//  def static SparseMatrix asMatrix(Precision precision) {
-//    val int dim = precision.dim();
-//    val SparseMatrix precisionAsMatrix = MatrixOperations.sparse(dim, dim);
-//    for (UnorderedPair<Integer,Integer> pair : precision.support()) {
-//      val double value = precision.get(pair);
-//      precisionAsMatrix.set(pair.getFirst(), pair.getSecond(), value); 
-//      precisionAsMatrix.set(pair.getSecond(), pair.getFirst(), value); 
-//    }
-//    return precisionAsMatrix;
-//  }
+
 }

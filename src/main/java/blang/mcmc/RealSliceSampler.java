@@ -53,7 +53,7 @@ public class RealSliceSampler implements Sampler
   public void execute(Random random)
   {
     // sample slice
-    final double logSliceHeight = nextSliceHeight(random); // log(Y) in Neal's paper
+    final double logSliceHeight = nextLogSliceHeight(random, logDensity());  // log(Y) in Neal's paper
     final double oldState = variable.doubleValue();        // x0 in Neal's paper
    
     // doubling procedure
@@ -137,10 +137,10 @@ public class RealSliceSampler implements Sampler
     }
     return true;
   }
-
-  private double nextSliceHeight(Random random)
+  
+  public static double nextLogSliceHeight(Random random, double logDensity)
   {
-    return logDensity() - Generators.unitRateExponential(random); 
+    return logDensity - Generators.unitRateExponential(random);
   }
   
   private double logDensityAt(double x)

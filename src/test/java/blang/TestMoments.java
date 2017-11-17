@@ -11,10 +11,15 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import bayonet.distributions.Random;
-import blang.core.ForwardSimulator;
+import blang.core.IntVar;
 import blang.core.RealVar;
 import blang.core.UnivariateModel;
 import blang.distributions.Beta;
+import blang.distributions.NegativeBinomial;
+import blang.distributions.NegativeBinomial_MeanParam;
+import blang.mcmc.internals.BuiltSamplers;
+import blang.runtime.SampledModel;
+import blang.runtime.internals.objectgraph.GraphAnalysis;
 
 public class TestMoments 
 {
@@ -25,6 +30,37 @@ public class TestMoments
   public void beta() 
   {
     test(10_000_000, (Beta) examples.sparseBeta.model);
+  }
+  
+  @Test
+  public void negBin()
+  {
+    test(10_000_000, (NegativeBinomial) examples.negBinomial.model);
+    test(10_000_000, (NegativeBinomial_MeanParam) examples.negBinomial_mv.model);
+  }
+  
+  @TestedDistribution(NegativeBinomial_MeanParam.class)
+  private static List<Double> negBinMeanVarMoments(NegativeBinomial_MeanParam negBin)
+  {
+    List<Double> result = new ArrayList<>();
+    result.add(1.0);
+    double m = negBin.getMean().doubleValue(); //, v = negBin.getVariance().doubleValue();
+    result.add(m);
+//    result.add(v + m * m);
+    return result;
+  }
+  
+  @TestedDistribution(NegativeBinomial.class)
+  private static List<Double> negBinMoments(NegativeBinomial negBin) 
+  {
+    List<Double> result = new ArrayList<>();
+    
+    result.add(1.0);
+    
+    double p = negBin.getP().doubleValue(), r = negBin.getR().doubleValue();
+    result.add(p * r / (1.0 - p));
+    
+    return result;
   }
   
   @TestedDistribution(Beta.class)
@@ -43,7 +79,7 @@ public class TestMoments
   }
   
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  public static <T extends UnivariateModel<RealVar> & ForwardSimulator> void test(int nSamples, T distribution)
+  public static <T extends UnivariateModel<?>> void test(int nSamples, T distribution)
   {
     System.out.println("Testing moments for " + distribution.getClass().getSimpleName());
     boolean found = false;
@@ -67,7 +103,7 @@ public class TestMoments
             SummaryStatistics currentMCStat = numeric.get(d);
             
             // TODO: instead, control p value computed with multiple testing correction
-            double tol = currentMCStat.getStandardDeviation() / Math.sqrt(currentMCStat.getN()); 
+            double tol = 3.0 * currentMCStat.getStandardDeviation() / Math.sqrt(currentMCStat.getN()); 
             
             System.out.println("d = " + d);
             System.out.println("\tNumeric = " + analytic);
@@ -82,15 +118,24 @@ public class TestMoments
       throw new RuntimeException("Did not find method providing analytic moments");
   }
   
-  private static <T extends UnivariateModel<RealVar> & ForwardSimulator> List<SummaryStatistics> empiricalRawMoments(T distribution, int maxDegree, Random random, int nSamples)
+  private static <T extends UnivariateModel<?>> List<SummaryStatistics> empiricalRawMoments(T distribution, int maxDegree, Random random, int nSamples)
   {
     List<SummaryStatistics> result = new ArrayList<SummaryStatistics>();
     for (int d = 0; d <= maxDegree; d++)
       result.add(new SummaryStatistics());
+    SampledModel sampledModel = new SampledModel(new GraphAnalysis(distribution), new BuiltSamplers());
     for (int i = 0; i < nSamples; i++)
     {
-      distribution.generate(random);
-      double current = distribution.realization().doubleValue();
+      sampledModel.forwardSample(random); 
+      //distribution.generate(random);
+      Object realization = distribution.realization();
+      double current; 
+      if (realization instanceof RealVar)
+        current = ((RealVar) realization).doubleValue();
+      else if (realization instanceof IntVar)
+        current = ((IntVar) realization).intValue();
+      else
+        throw new RuntimeException();
       for (int d = 0; d < maxDegree; d++)
         result.get(d).addValue(Math.pow(current, d));
     }
@@ -100,7 +145,7 @@ public class TestMoments
   @Retention(RetentionPolicy.RUNTIME)
   public static @interface TestedDistribution
   {
-    Class<? extends UnivariateModel<RealVar>> value();
+    Class<? extends UnivariateModel<?>> value();
   }
 
 }

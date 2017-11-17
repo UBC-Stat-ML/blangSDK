@@ -28,7 +28,7 @@ class TestSDKDistributions {
   
   def static void setup(ExactInvarianceTest test) {
     test => [ 
-      nPosteriorSamplesPerIndep = 500
+      nPosteriorSamplesPerIndep = 1000
       for (instance : new Examples().all) {
         test.add(instance)
       }

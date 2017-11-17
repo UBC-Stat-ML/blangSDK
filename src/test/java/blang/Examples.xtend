@@ -47,6 +47,11 @@ import static xlinear.MatrixOperations.denseCopy
 import blang.validation.internals.fixtures.Multimodal
 import blang.validation.internals.fixtures.RealRealizationSquared
 import blang.distributions.internals.Helpers
+import blang.distributions.NegativeBinomial
+import blang.distributions.NegativeBinomial_MeanParam
+import blang.distributions.NormalField
+import blang.types.Precision.Diagonal
+import blang.validation.internals.fixtures.PoissonNormalField
 
 class Examples {
   
@@ -56,14 +61,16 @@ class Examples {
     new Normal.Builder()
       .setMean(constant(0.2))
       .setVariance(constant(0.1))
-      .setRealization(realVar).build, 
+      .setRealization(realVar)
+        .build, 
     realRealizationSquared
   )
       
   public val bern = add(
     new Bernoulli.Builder()
       .setProbability(constant(0.2))
-      .setRealization(intVar).build, 
+      .setRealization(intVar)
+        .build, 
     intRealizationSquared
   )
       
@@ -71,15 +78,35 @@ class Examples {
     new Beta.Builder()
       .setAlpha(constant(1.0))
       .setBeta(constant(3.0))
-      .setRealization(realVar).build, 
+      .setRealization(realVar)
+        .build, 
     realRealizationSquared
+  )
+  
+  public val negBinomial = add( 
+    new NegativeBinomial.Builder()
+      .setK(intVar)
+      .setP(constant(0.1))
+      .setR(constant(2.1))
+        .build,
+    intRealizationSquared
+  )
+  
+  public val negBinomial_mv = add( 
+    new NegativeBinomial_MeanParam.Builder()
+      .setK(intVar)
+      .setMean(constant(1.1))
+      .setOverdispersion(constant(0.3))
+        .build,
+    intRealizationSquared
   )
   
   public val sparseBeta = add(
     new Beta.Builder()
       .setAlpha(constant(Helpers::concentrationWarningThreshold))
       .setBeta(constant(Helpers::concentrationWarningThreshold))
-      .setRealization(realVar).build, 
+      .setRealization(realVar)
+        .build, 
     realRealizationSquared
   )
       
@@ -87,14 +114,16 @@ class Examples {
     new Binomial.Builder()
       .setProbabilityOfSuccess(constant(0.3))
       .setNumberOfTrials(constant(3))
-      .setNumberOfSuccesses(intVar).build, 
+      .setNumberOfSuccesses(intVar)
+        .build, 
     intRealizationSquared 
   )
   
   public val cat = add(
     new Categorical.Builder()
       .setProbabilities(denseSimplex(#[0.2, 0.3, 0.5]))
-      .setRealization(intVar).build, 
+      .setRealization(intVar)
+        .build, 
     intRealizationSquared
   )
   
@@ -102,7 +131,8 @@ class Examples {
     new ContinuousUniform.Builder()
       .setMin(constant(-1.1))
       .setMax(constant(-0.05))
-      .setRealization(realVar).build, 
+      .setRealization(realVar)
+        .build, 
     realRealizationSquared
   )
   
@@ -110,28 +140,32 @@ class Examples {
     new DiscreteUniform.Builder()
       .setMinInclusive(constant(-1))
       .setMaxExclusive(constant(5))
-      .setRealization(intVar).build, 
+      .setRealization(intVar)
+        .build, 
     intRealizationSquared
   )
   
   public val dirichlet = add(
     new Dirichlet.Builder()
       .setConcentrations(denseCopy(#[Helpers::concentrationWarningThreshold, 3.1, 5.0]))
-      .setRealization(denseSimplex(3)).build, 
+      .setRealization(denseSimplex(3))
+        .build, 
     vectorHash
   ) 
   
   public val dirichlet2 = add(
     new Dirichlet.Builder()
       .setConcentrations(denseCopy(#[5.2, 3.1]))
-      .setRealization(denseSimplex(2)).build, 
+      .setRealization(denseSimplex(2))
+        .build, 
     vectorHash
   ) 
   
   public val exp = add(
     new Exponential.Builder()
       .setRate(constant(2.3))
-      .setRealization(realVar).build, 
+      .setRealization(realVar)
+        .build, 
     realRealizationSquared
   )
   
@@ -139,7 +173,8 @@ class Examples {
     new Gamma.Builder()
       .setRate(constant(2.1))
       .setShape(constant(0.9))
-      .setRealization(realVar).build, 
+      .setRealization(realVar)
+        .build, 
     realRealizationSquared
   )
   
@@ -147,14 +182,16 @@ class Examples {
     new MultivariateNormal.Builder()
       .setMean(denseCopy(#[-3.1, 0.0, 1.2]))
       .setPrecision(precision.cholesky)
-      .setRealization(dense(3)).build,  
+      .setRealization(dense(3))
+        .build,  
     vectorHash
   )
   
   public val poi = add(
     new Poisson.Builder()
       .setMean(constant(3.4))
-      .setRealization(intVar).build, 
+      .setRealization(intVar)
+        .build, 
     intRealizationSquared
   )
   
@@ -165,14 +202,16 @@ class Examples {
     new MarkovChain.Builder()
       .setInitialDistribution(denseSimplex(#[0.3, 0.7]))
       .setTransitionProbabilities(transitionMatrix)
-      .setChain(listOfIntVars(4)).build,  
+      .setChain(listOfIntVars(4))
+        .build,  
     listHash
   )
   
   public val dnm = add(
     new DynamicNormalMixture.Builder()
       .setObservations(listOfRealVars(4))
-      .setNLatentStates(2).build,  
+      .setNLatentStates(2)
+        .build,  
     [ListHash.hash(states)], 
     [VectorHash.hash(initialDistribution)],
     [VectorHash.hash(transitionProbabilities.row(0))]
@@ -184,27 +223,50 @@ class Examples {
       .setNumberOfLaunches(Plated::latent(new ColumnName("nLaunches"), [intVar]))
       .setFailureProbabilities(Plated::latent(new ColumnName("failPrs"), [realVar]))
       .setNumberOfFailures(Plated::latent(new ColumnName("failPrs"), [intVar]))
-      .setData(GlobalDataSource::empty).build,
+      .setData(GlobalDataSource::empty)
+        .build,
     [a.doubleValue]
   )
   
   public val sglm = add(
     new SpikedGLM.Builder()
       .setOutput(listOfIntVars(3))
-      .setDesignMatrix(designMatrix).build,
+      .setDesignMatrix(designMatrix)
+        .build,
     [coefficients.get(0).realPart.doubleValue],
     [coefficients.get(0).isZero.intValue as double]
   )
   
   public val mix = add(
     new MixtureModel.Builder()
-      .setObservations(listOfRealVars(2)).build,
+      .setObservations(listOfRealVars(2))
+        .build,
     [observations.get(0).doubleValue] 
   )
   
   public val multimodal = add(
-    new Multimodal.Builder().build,
+    new Multimodal.Builder()
+      .build,
     new RealRealizationSquared()
+  )
+  
+  val col = new ColumnName("plate")
+  val plate = Plate::simpleIntegerPlate(col, 2)
+  public val normalField = add(
+    new NormalField.Builder()
+      .setRealization(Plated::latent(col, [realVar]))
+      .setPrecision(new Diagonal(constant(1.4), plate))
+        .build,
+    [getRealization().get(plate.indices.iterator.next).doubleValue ** 2]
+  )
+  
+  public val poissonNormal = add(
+    new PoissonNormalField.Builder()
+      .setPlate(plate)
+      .setLatents(Plated::latent(col, [realVar]))
+      .setObservations(Plated::latent(col, [intVar]))
+        .build,
+    [getLatents().get(plate.indices.iterator.next).doubleValue ** 2]
   )
   
   public static Matrix precision = denseCopy(#[

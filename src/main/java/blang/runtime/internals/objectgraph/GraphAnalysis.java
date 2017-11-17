@@ -128,11 +128,8 @@ public class GraphAnalysis
     frozenNodesClosure.addAll(closure(accessibilityGraph.graph, frozenRoots, true));
     
     // find the free mutable nodes, i.e. those mutable (i.e. non-final fields, array entries, etc)  and not frozen
-    // edit: root the search at the random variables of the outer-most model
     freeMutableNodes = new LinkedHashSet<>();
-    for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
-      if (f.getAnnotation(Param.class) == null) 
-        accessibilityGraph.getAccessibleNodes(StaticUtils.node(ReflexionUtils.getFieldValue(f, model)))
+    accessibilityGraph.getAccessibleNodes()
             .filter(node -> node.isMutable())
             .filter(node -> !frozenNodesClosure.contains(node))
             .forEachOrdered(freeMutableNodes::add);
@@ -206,6 +203,8 @@ public class GraphAnalysis
     accessibilityGraph.add(model); 
     for (ObjectNode<Factor> factorNode : factorNodes)
       accessibilityGraph.add(factorNode);
+    for (ObjectNode<Model> modelNode : model2ModelComponents.keySet())
+      accessibilityGraph.add(modelNode);
   }
 
   private LinkedHashSet<Node> buildFrozenRoots(Model model, Observations observations) 
