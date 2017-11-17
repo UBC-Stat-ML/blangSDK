@@ -13,7 +13,7 @@ model SymmetricDirichlet {
   
   laws {
     
-    realization | Matrix ones = ones(dim) / dim, concentration ~ Dirichlet(ones * concentration.doubleValue)
+    realization | dim, concentration ~ Dirichlet(ones(dim) * (concentration.doubleValue / dim))
     
   }
   

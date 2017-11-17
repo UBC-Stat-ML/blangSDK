@@ -8,7 +8,7 @@ model SimplexUniform {
   
   laws {
     
-    realization | Matrix ones = ones(dim) ~ Dirichlet(ones)
+    realization | dim ~ Dirichlet(ones(dim))
     
   }
   
