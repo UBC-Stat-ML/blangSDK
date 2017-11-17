@@ -30,6 +30,9 @@ import blang.io.internals.GlobalDataSourceStore
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.runtime.internals.objectgraph.GraphAnalysis
 import blang.mcmc.internals.SamplerBuilderOptions
+import com.google.common.base.Stopwatch
+import briefj.BriefIO
+import java.util.concurrent.TimeUnit
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
@@ -141,8 +144,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   public static class NotDAG extends RuntimeException { new(String s) { super(s) }}
   
-  val public static final String SAMPLE_FILE = "samples.csv"
   override void run() {
+    println("Preprocessing started")
+    val Stopwatch preprocessingTime = Stopwatch.createStarted
     val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations)
     engine.check(graphAnalysis)
     if (printAccessibilityGraph) {
@@ -160,6 +164,22 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     }
     val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, initRandom)
     engine.sampledModel = sampledModel
+    preprocessingTime.stop
+    val Stopwatch samplingTime = Stopwatch.createStarted
+    println("Sampling started")
     engine.performInference
+    samplingTime.stop
+    reportTiming(preprocessingTime, samplingTime)
   }
+  
+  def void reportTiming(Stopwatch preprocessingTime, Stopwatch samplingTime) {
+    BriefIO.write(results.getFileInResultFolder(RUNNING_TIME_SUMMARY), 
+      "preprocessingTime_ms\t" + preprocessingTime.elapsed(TimeUnit.MILLISECONDS) + "\n" +
+      "samplingTime_ms\t" + samplingTime.elapsed(TimeUnit.MILLISECONDS) + "\n"
+    )
+    println("Preprocessing time: " + preprocessingTime.toString)
+    println("Sampling time: " + samplingTime.toString)
+  }
+  
+  val static String RUNNING_TIME_SUMMARY = "runningTimeSummary.tsv";
 }
