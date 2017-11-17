@@ -9,6 +9,8 @@ import xlinear.DenseMatrix
 import static xlinear.MatrixOperations.*
 import blang.core.IntConstant
 import blang.core.RealConstant
+import org.apache.commons.math3.special.Gamma
+import bayonet.math.SpecialFunctions
 
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
@@ -98,15 +100,16 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
       throw new RuntimeException("Assertion violated")
     }
   }
-  
-  // TODO:
-//  /**
-//   * A more computationally costly check which can be disabled.
-//   */
-//  def static void check(Supplier<Boolean> assertion) {
-//    // TODO: disable for Runner (controlled with switch), enable otherwise
-//    check(assertion.get)
-//  }
+
+  def static double logFactorial(double input) 
+  {
+    return SpecialFunctions.lnGamma(input+1);
+  }
+
+  def static double logBinomial(double n, double k)
+  {
+    return logFactorial(n) - logFactorial(k) - logFactorial(n-k);
+  }
   
   private new() {}
 }

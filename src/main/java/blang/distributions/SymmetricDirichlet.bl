@@ -1,0 +1,20 @@
+package blang.distributions
+
+model SymmetricDirichlet {
+  
+  param Integer dim
+  
+  /*
+   * SymmetricDirichlet(alpha, dim) = Dirichlet(alpha/dim, alpha/dim, ..., alpha/dim)
+   */
+  param RealVar concentration
+  
+  random Simplex realization
+  
+  laws {
+    
+    realization | Matrix ones = ones(dim) / dim, concentration ~ Dirichlet(ones * concentration.doubleValue)
+    
+  }
+  
+}

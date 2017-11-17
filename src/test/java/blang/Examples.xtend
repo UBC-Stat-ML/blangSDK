@@ -52,6 +52,8 @@ import blang.distributions.NegativeBinomial_MeanParam
 import blang.distributions.NormalField
 import blang.types.Precision.Diagonal
 import blang.validation.internals.fixtures.PoissonNormalField
+import blang.distributions.SymmetricDirichlet
+import blang.distributions.SimplexUniform
 
 class Examples {
   
@@ -157,6 +159,23 @@ class Examples {
     new Dirichlet.Builder()
       .setConcentrations(denseCopy(#[5.2, 3.1]))
       .setRealization(denseSimplex(2))
+        .build, 
+    vectorHash
+  ) 
+  
+  public val dirichletSymm = add(
+    new SymmetricDirichlet.Builder()
+      .setConcentration(constant(4.4))
+      .setDim(3)
+      .setRealization(denseSimplex(3))
+        .build, 
+    vectorHash
+  ) 
+  
+  public val simplexUni = add(
+    new SimplexUniform.Builder()
+      .setDim(3)
+      .setRealization(denseSimplex(3))
         .build, 
     vectorHash
   ) 

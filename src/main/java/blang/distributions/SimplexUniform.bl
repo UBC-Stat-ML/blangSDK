@@ -1,0 +1,15 @@
+package blang.distributions
+
+model SimplexUniform {
+  
+  param Integer dim
+  
+  random Simplex realization
+  
+  laws {
+    
+    realization | Matrix ones = ones(dim) ~ Dirichlet(ones)
+    
+  }
+  
+}
