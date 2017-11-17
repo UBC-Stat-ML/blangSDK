@@ -86,7 +86,19 @@ public class Generators
   {
     if (maxExclusive <= minInclusive)
       throw new RuntimeException("Invalid arguments " + minInclusive + ", " + maxExclusive);
-    return rand.nextInt(maxExclusive - minInclusive) + minInclusive;
+    int range = maxExclusive - minInclusive;
+    if (range > 0) 
+      return rand.nextInt(range) + minInclusive;
+    else // even with above check, this can still happen because of overflows (e.g. in test of commit 9a0250d267e2be7eb4d53af09a362733caf5543e)
+    {
+      // discretize the continuous uniform since nextLong(max) not available
+      int result = (int) uniform(rand, minInclusive, maxExclusive);
+      if (result < minInclusive)
+        result = minInclusive;
+      if (result >= maxExclusive)
+        result = maxExclusive - 1;
+      return result;
+    }
   }
   
   public static DenseSimplex dirichlet(Random random, Matrix concentrations) 
