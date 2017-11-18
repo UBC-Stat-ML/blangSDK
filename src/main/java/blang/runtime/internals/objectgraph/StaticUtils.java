@@ -16,6 +16,21 @@ public class StaticUtils
       return new ObjectNode<T>(object);
   }
   
+  @SuppressWarnings("unchecked")
+  public static <T> T tryCasting(Node node, Class<T> type)
+  {
+    // node instanceof type
+    if (type.isAssignableFrom(node.getClass()))
+      return (T) node;
+    else if (node instanceof ObjectNode<?>)
+    {
+      ObjectNode<?> objectNode = (ObjectNode<?>) node;
+      if (type.isAssignableFrom(objectNode.object.getClass()))
+        return (T) objectNode.object;
+    }
+    return null;
+  }
+  
   public static List<Field> getDeclaredFields(Class<?> aClass)
   {
     List<Field> result = ReflexionUtils.getDeclaredFields(aClass, true);
