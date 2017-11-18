@@ -28,7 +28,7 @@ class TestSDKDistributions {
   
   def static void setup(ExactInvarianceTest test) {
     test => [ 
-      nPosteriorSamplesPerIndep = 1000
+      nPosteriorSamplesPerIndep = 500 // 1000 creates a travis time out
       for (instance : new Examples().all) {
         test.add(instance)
       }
