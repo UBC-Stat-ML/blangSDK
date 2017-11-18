@@ -18,10 +18,16 @@ class CSV implements DataSourceReader {
   @Arg @DefaultValue(",")
   char   separator = ','
   
-  @Arg @DefaultValue("\"")
+  /*
+   * Avoid making the following two fields command line 
+   * options as they cause problem down the pipeline when 
+   * command line option values are reported
+   */
+  
+  // @Arg @DefaultValue("\"")
   char   quotechar = "\""
   
-  @Arg @DefaultValue("\\")
+  // @Arg @DefaultValue("\\")
   char      escape = "\\"
   
   @Arg    @DefaultValue("false")
