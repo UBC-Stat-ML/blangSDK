@@ -73,6 +73,10 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     } catch (BinaryExecutionException bee) {
       // don't print: mirroring showed it already
       System.exit(1)
+    } catch (Exception e) {
+      System.err.println(e)
+      System.exit(1)
+      throw new RuntimeException
     }
   }
   
