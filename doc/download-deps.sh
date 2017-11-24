@@ -15,5 +15,5 @@ rm -rf www/dist
 git clone https://github.com/twbs/bootstrap.git
 cd bootstrap
 git reset --hard v3.3.7
-cp dist ../www/
+cp -r dist ../www/
 cd -
