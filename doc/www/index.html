@@ -79,10 +79,11 @@
 
 <script>
     var editor = ace.edit("editor");
-    editor.setTheme("ace/theme/monokai");
+    editor.setTheme("ace/theme/gruvbox");
     editor.session.setMode("ace/mode/blang");
     editor.setOptions({
-    readOnly: true
+    readOnly: true,
+    showPrintMargin: false
     });
     
     var editor2 = ace.edit("editor2");
