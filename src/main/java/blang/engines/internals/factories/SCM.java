@@ -11,6 +11,7 @@ import blang.io.BlangTidySerializer;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.model2kernel.ChangeOfMeasureKernel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
+import briefj.BriefIO;
 
 /**
  * Sequential Change of Measure implementation.
@@ -36,6 +37,11 @@ public class SCM extends AdaptiveJarzynski<SampledModel> implements PosteriorInf
     
     // resample for now the last iteration to simplify processing downstream
     approximation = approximation.resample(random, resamplingScheme);
+    
+    // write Z estimate
+    double logNormEstimate = approximation.logNormEstimate();
+    System.out.println("Normalization constant estimate: " + logNormEstimate);
+    BriefIO.write(results.getFileInResultFolder("logNormEstimate.txt"), "" + logNormEstimate);
     
     // write samples
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples")); 
