@@ -421,9 +421,13 @@ public class GraphAnalysis
     for (Field f : StaticUtils.getDeclaredFields(model.getClass()))
       if (f.getAnnotation(Param.class) == null) 
       {
-        Object randomVariable = ReflexionUtils.getFieldValue(f, model);
+        Object randomVariable = ReflexionUtils.getFieldValue(f, model); 
         // check that all accessible mutables are unobserved
-        boolean hasNoObservedChildren = accessibilityGraph.getAccessibleNodes(randomVariable).filter(current -> current.isMutable()).noneMatch(current -> frozenNodesClosure.contains(current));
+        boolean hasNoObservedChildren = 
+            accessibilityGraph
+              .getAccessibleNodes(randomVariable)
+              .filter(current -> current.isMutable() && !frozenNodesClosure.contains(current))
+              .findAny().isPresent();
         if (result == null)
           result = !hasNoObservedChildren;
         if (result.booleanValue() != !hasNoObservedChildren)
