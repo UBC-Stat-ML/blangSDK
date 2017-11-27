@@ -1,22 +1,16 @@
 package blang.distributions
 
 model Categorical {
-  
   random IntVar realization
-  
   param Simplex probabilities
   
   laws {
-    
     logf(probabilities, realization)  {
       log(probabilities.get(realization)) 
     }
-    
     indicator(probabilities, realization)  {
       realization >= 0 && realization < probabilities.nEntries
     }
-     
-    probabilities is Constrained 
   }
   
   generate(rand) {

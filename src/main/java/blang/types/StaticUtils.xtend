@@ -9,7 +9,6 @@ import xlinear.DenseMatrix
 import static xlinear.MatrixOperations.*
 import blang.core.IntConstant
 import blang.core.RealConstant
-import org.apache.commons.math3.special.Gamma
 import bayonet.math.SpecialFunctions
 
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
