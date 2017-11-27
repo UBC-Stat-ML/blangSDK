@@ -43,13 +43,39 @@ body {
 
 /* Main marketing message and sign up button */
 .jumbotron {
+  colour = white;
+  background-image:url('jupiter.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
   text-align: center;
   border-bottom: 1px solid #e5e5e5;
+  
 }
+
+.jumbotron h1 {
+    color: white;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+.jumbotron span{
+  background: black;
+}
+
+.jumbotron p{
+    color: white;
+    text-shadow: 2px 2px 4px #000000;
+}
+
 .jumbotron .btn {
   padding: 14px 24px;
   font-size: 21px;
 }
+
+.marketing div {
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+}
+
 
 /* Supporting marketing content */
 .marketing {

@@ -12,3 +12,5 @@ src/main/xtend-gen/blang/types/.gitignore
 src/main/xtend-gen/blang/utils/.gitignore
 samples
 failed-test-info-*
+doc/www/ace
+doc/www/dist
