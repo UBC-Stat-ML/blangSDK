@@ -21,7 +21,7 @@ model BadNormal {
     
     logf(mean, variance, realization)  {
       Helpers::checkOkToUseDefectiveImplementation 
-      return - ((mean - realization) ** 2) / variance
+      return - (pow((mean - realization), 2)) / variance
     }
     
     indicator(variance)  {

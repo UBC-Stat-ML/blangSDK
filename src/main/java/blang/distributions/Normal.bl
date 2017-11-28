@@ -19,7 +19,7 @@ model Normal {
     
     logf(mean, variance, realization)  {
       check(variance > 0)
-      return - 0.5 * ((mean - realization) ** 2) / variance
+      return - 0.5 * pow(mean - realization, 2) / variance
     }
   }
   
