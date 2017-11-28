@@ -89,5 +89,20 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
     one *= 0.0
     one += another
   }
+  
+  def static **(double base, double exp) {
+    // a ** b has wrong operation priority in Xbase
+    throw new RuntimeException("Not supported: use pow(base, exp)")
+  }
+  
+  def static **(double base, int exp) {
+    // a ** b has wrong operation priority in Xbase
+    throw new RuntimeException("Not supported: use pow(base, exp)")
+  }
+  
+  def static **(int base, int exp) {
+    // a ** b has wrong operation priority in Xbase
+    throw new RuntimeException("Not supported: use pow(base, exp)")
+  }
 
 }
