@@ -1,7 +1,5 @@
 package blang.examples
 
-import blang.types.DenseTransitionMatrix
-
 model DynamicNormalMixture  { 
   
   param  int               nLatentStates 
