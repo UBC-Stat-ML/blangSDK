@@ -44,7 +44,7 @@ class Parsers {
       if (str.isNA) {
         new RealScalar(0.0)
       } else {
-        initContext.markAsObserved(new RealConstant(Double.parseDouble(str)))
+        initContext.markAsObserved(new RealConstant(CoreProviders.parseDouble(str)))
       }
   }
   
