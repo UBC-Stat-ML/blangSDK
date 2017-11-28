@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import com.rits.cloning.IFreezable;
 import com.rits.cloning.Immutable;
 
 import briefj.ReflexionUtils;
@@ -22,6 +24,7 @@ public class ExplorationRules
   public static List<ExplorationRule> defaultExplorationRules = Arrays.asList(
       ExplorationRules::arrayViews,
       ExplorationRules::arrays,
+      ExplorationRules::maps,
       ExplorationRules::matrices,
       ExplorationRules::knownImmutableObjects,
       ExplorationRules::standardObjects);
@@ -37,6 +40,17 @@ public class ExplorationRules
       result.add(new ArrayConstituentNode(object, i));
     return result;
   }
+  
+  public static List<MapConstituentNode> maps(Object object)
+  {
+    if (!(object instanceof Map))
+      return null;
+    ArrayList<MapConstituentNode> result = new ArrayList<>();
+    Map m = (Map) object;
+    for (Object key : m.keySet())
+      result.add(new MapConstituentNode(object, key));
+    return result;
+  } 
   
   public static List<ArrayConstituentNode> arrayViews(Object object)
   {
@@ -75,6 +89,9 @@ public class ExplorationRules
   
   public static List<? extends ConstituentNode<?>> knownImmutableObjects(Object object)
   {
+    if (object instanceof IFreezable)
+      if (((IFreezable) object).isFrozen())
+        return Collections.emptyList();
     if (object instanceof String || 
         object instanceof Integer || 
         object instanceof Double || 

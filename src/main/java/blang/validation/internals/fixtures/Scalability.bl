@@ -1,0 +1,17 @@
+package blang.validation.internals.fixtures
+
+model Scalability {
+  
+  param Plate<Integer> plate
+  
+  param Plated<RealVar> variables 
+  
+  laws {
+    
+    for (Index<Integer> index : plate.indices) {
+      variables.get(index) ~ Normal(0.0, 1.0)
+    }
+    
+  }
+  
+}

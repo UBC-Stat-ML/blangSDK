@@ -16,6 +16,7 @@ import blang.types.internals.HashPlate
 import blang.types.internals.SimplePlate
 import blang.io.internals.GlobalDataSourceStore
 import java.util.Collection
+import com.rits.cloning.Immutable
 
 /**
  * A plate in a graphical mode. 
@@ -24,6 +25,7 @@ import java.util.Collection
  * 
  * We assume these indices are not random variables.
  */
+@Immutable
 interface Plate<K> {
   
   /**
