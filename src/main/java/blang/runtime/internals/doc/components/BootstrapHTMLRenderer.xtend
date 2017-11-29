@@ -145,8 +145,6 @@ class BootstrapHTMLRenderer {
     
         <title>«document.name»</title>
     
-        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-      
         <!-- Bootstrap core CSS -->
         <link href="dist/css/bootstrap.min.css" rel="stylesheet">
     

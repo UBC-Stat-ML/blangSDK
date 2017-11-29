@@ -10,22 +10,12 @@ class Home {
   
   public val static Document page = Document.create("Home") [
     
-    it += '''
-      Blang is a language and software development kit for doing Bayesian analysis. 
-      Our design philosophy is centered around the day-to-day requirements of real world 
-      data analysis. We have also used Blang as a teaching tool, both for basic probability 
-      concepts and more advanced Bayesian modelling. 
-    '''
     
-    section("Examples") [ 
-      
-      it += '''Here is an example:'''
+    section("One minute tour") [ 
       
       code(Dirichlet)
       
-      it += '''Here is another one:'''
       
-      code(Node)
       
     ]
     

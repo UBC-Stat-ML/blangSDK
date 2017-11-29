@@ -9,10 +9,8 @@ import briefj.repo.RepositoryUtils
 
 class DocElementExtensions {
 
-  def static Code code(DocElement element, Class<?> code) { 
-    val Code loadedCode = loadCode(code)
-    element += loadedCode
-    return loadedCode
+  def static void code(DocElement element, Class<?> code) { 
+    element += loadCode(code)
   } 
   
   def private static Code loadCode(Class<?> code) {

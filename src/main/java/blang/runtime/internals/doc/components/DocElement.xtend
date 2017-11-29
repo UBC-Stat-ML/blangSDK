@@ -15,28 +15,22 @@ class DocElement {
     children += child
   }
   
-  def Section section(String name, Procedure1<Section> init) { 
-    val Section result = new Section(name) => init
-    children += result
-    return result
+  // TODO: getLabel, remember when called, etc
+  
+  def void section(String name, Procedure1<Section> init) { 
+    children += new Section(name) => init
   }
   
-  def Bullets orderedList(Procedure1<Bullets> init) {
-    val Bullets result = new Bullets(true) => init
-    children += result
-    return result
+  def void orderedList(Procedure1<Bullets> init) {
+    children += new Bullets(true) => init
   }
   
-  def Bullets unorderedList(Procedure1<Bullets> init) {
-    val Bullets result = new Bullets(false) => init
-    children += result
-    return result
+  def void unorderedList(Procedure1<Bullets> init) {
+    children += new Bullets(false) => init
   }
   
-  def Code code(Language language, String contents) {
-    val Code result = new Code(language, contents)
-    children += result
-    return result
+  def void code(Language language, String contents) {
+    children += new Code(language, contents)
   }
   
 }
