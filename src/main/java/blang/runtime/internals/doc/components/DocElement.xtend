@@ -3,11 +3,12 @@ package blang.runtime.internals.doc.components
 import java.util.List
 import java.util.ArrayList
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import blang.runtime.internals.doc.components.Code.Language
 import org.eclipse.xtend.lib.annotations.Accessors
 
 class DocElement {
   
-  @Accessors(PACKAGE_GETTER)
+  @Accessors(PUBLIC_GETTER)
   val List<Object> children = new ArrayList
   
   def void +=(Object child) {
@@ -28,6 +29,12 @@ class DocElement {
   
   def Bullets unorderedList(Procedure1<Bullets> init) {
     val Bullets result = new Bullets(false) => init
+    children += result
+    return result
+  }
+  
+  def Code code(Language language, String contents) {
+    val Code result = new Code(language, contents)
     children += result
     return result
   }
