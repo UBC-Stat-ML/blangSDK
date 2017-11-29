@@ -71,7 +71,7 @@ class BootstrapHTMLRenderer {
     '''
   }
   
-  def protected dispatch String recurse(DocElement element) {
+  def protected String recurse(DocElement element) {
     '''
     «FOR child : element.children»
       «render(child)»
