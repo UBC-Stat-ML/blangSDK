@@ -4,6 +4,6 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 class Components {
   
-  def static section(Procedure1<Section> init) { new Section => init }
+  def static section(Procedure1<Old_Section> init) { new Old_Section => init }
   
 }

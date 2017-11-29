@@ -4,6 +4,7 @@ import java.util.List
 import java.util.ArrayList
 import briefj.ReflexionUtils
 import java.lang.reflect.Field
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 abstract class Tag {
   
@@ -17,6 +18,15 @@ abstract class Tag {
   public String cla
   
   public val List in = new ArrayList
+  
+  def a(Procedure1<A> init) { in += new A => init }
+  def div(Procedure1<? super Div> init) { in += new Div => init }
+  def li(Procedure1<Li> init) { in += new Li => init }
+  def nav(Procedure1<Nav> init) { in += new Nav => init } 
+  def ul(Procedure1<Ul> init) { in += new Ul => init }
+  def h1(Procedure1<H1> init) { in += new H1 => init }
+  def h2(Procedure1<H2> init) { in += new H2 => init }
+  def h3(Procedure1<H3> init) { in += new H3 => init }
   
   val List<Pair<String,String>> additionalAttributes = new ArrayList 
   

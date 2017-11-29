@@ -29,8 +29,7 @@ abstract class Page {
       if (isActive) {
         cla = "active"
       }
-      in += a [
-        href = fileName
+      a [href = fileName
         in += name
       ]
     ]
@@ -39,9 +38,8 @@ abstract class Page {
   def private navBar() { 
     div [
       cla = "header clearfix"
-      in += nav [
-        in += ul [
-          cla = "nav nav-pills pull-right"
+      nav [
+        ul [cla = "nav nav-pills pull-right"
           for (page : pages) {
             in += navLink(page === this)
           }
