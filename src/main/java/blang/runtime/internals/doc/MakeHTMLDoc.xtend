@@ -6,11 +6,13 @@ import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.doc.contents.Home
 import blang.runtime.internals.doc.components.BootstrapHTMLRenderer
 import blang.runtime.internals.doc.components.DocElement
+import blang.runtime.internals.doc.contents.Reference
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
   val static Collection<Document> documents = #[
-    Home::page
+    Home::page,
+    Reference::page
   ]
   
   override protected String recurse(DocElement page) {

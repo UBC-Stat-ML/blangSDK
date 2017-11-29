@@ -4,7 +4,6 @@ import blang.runtime.internals.doc.components.Document
 
 import static extension blang.runtime.internals.doc.contents.DocElementExtensions.*
 import blang.distributions.Dirichlet
-import blang.distributions.Bernoulli
 import blang.runtime.internals.objectgraph.Node
 
 class Home {
