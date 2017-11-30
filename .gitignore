@@ -13,6 +13,8 @@ src/main/xtend-gen/blang/utils/.gitignore
 samples
 failed-test-info-*
 doc/www/ace
+doc/ace-master
+doc/bootstrap
 doc/www/dist
 Home.html
 Quick_Start.html
