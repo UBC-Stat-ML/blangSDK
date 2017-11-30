@@ -96,9 +96,7 @@ class BootstrapHTMLRenderer {
   def protected dispatch String render(Code code) {
     state.codeModes += code.language
     return '''
-      <div id="editor«state.codeModes.size - 1»" style="height: 300px;">
-        «noTrailingSpace(code.contents)»
-      </div>
+      <div id="editor«state.codeModes.size - 1»" style="height: 300px;">«noTrailingSpace(code.contents)»</div>
     '''
   }
   
