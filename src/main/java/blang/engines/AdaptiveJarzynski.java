@@ -80,7 +80,7 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     
     BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
     {
-      boolean needsCloning = particleIndex > 1 && population.particles.get(particleIndex) == population.particles.get(particleIndex - 1);
+      boolean needsCloning = particleIndex > 0 && population.particles.get(particleIndex) == population.particles.get(particleIndex - 1);
       P current = population.particles.get(particleIndex);
       cloned[particleIndex] = needsCloning ? kernels.deepCopy(current) : current;
     });
