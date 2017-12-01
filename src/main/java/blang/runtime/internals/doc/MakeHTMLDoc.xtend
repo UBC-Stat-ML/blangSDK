@@ -31,7 +31,7 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
             Blang is a language and software development kit for doing Bayesian analysis. 
             Our design philosophy is centered around the day-to-day requirements of real world 
             data analysis. We have also used Blang as a teaching tool, both for basic probability 
-            concepts and more advanced Bayesian modelling.
+            concepts and more advanced Bayesian modelling. Here is the one minute tour:
           </p>
           ''' 
         else ""

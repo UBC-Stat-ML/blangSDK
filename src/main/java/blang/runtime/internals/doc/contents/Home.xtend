@@ -2,29 +2,114 @@ package blang.runtime.internals.doc.contents
 
 import blang.runtime.internals.doc.components.Document
 
-import static extension blang.runtime.internals.doc.contents.DocElementExtensions.*
-import blang.distributions.Dirichlet
-import blang.runtime.internals.objectgraph.Node
+import blang.runtime.internals.doc.components.Code.Language
+
+import static extension blang.runtime.internals.doc.components.DocElement.*
 
 class Home {
   
   public val static Document page = Document.create("Home") [
     
+    code(Language.blang, firstExample)
     
-    section("One minute tour") [ 
-      
-      code(Dirichlet)
-      
-      
-      
+    it += '''The above example illustrates several aspects of Blang:'''
+    
+    unorderedList[
+      it += '''
+        Blang can go beyond simple real and integer valued random variables, for example we have a type of 
+        phylogenetic tree here, «SYMB»UnrootedTree«ENDSYMB». 
+        We believe Bayesian inference over combinatorial spaces is important in practice and currently neglected. 
+        So Blang uses an open type system and assists you in creating complex random types and correct sampling 
+        algorithms for these types. 
+      '''
+      it += '''
+        All the distributions shown, e.g. «SYMB»Exponential«ENDSYMB», «SYMB»NonClockTreePrior«ENDSYMB», etc, 
+        including those in the SDK, are themselves written in Blang.
+        This is important for extensibility and, crucially, for teaching. When using the Blang IDE, the student 
+        can command click on a distribution to see its definition in the language they are familiar with. 
+      '''
+      it += '''
+        The parameters of the distributions can themselves be distributions, e.g. «SYMB»NonClockTreePrior«ENDSYMB» taking in a 
+        «SYMB»Gamma«ENDSYMB» distribution as argument. This is useful to create rich probability models such as Bayesian 
+        non-parametric priors.
+      '''
     ]
     
-    // Example: Something involving normalization constants?
+    it += '''If you have one more minute to spare, let us see what happen when we run this model:'''
     
-    // TODO: some motivation ideally mostly linked to the example above
+    code(Language.sh, runningByShell)
     
-    // TODO: quick start here?
-    
+    unorderedList[
+      it += '''
+        We inferred a distribution over unobserved phylogenetic tree given an observed multiple sequence 
+        alignments.
+      '''
+      it += '''
+        The engine used here, «SYMB»SCM«ENDSYMB» (Sequential Change of Measure) is based on state-of-the-art 
+        sampling methods. It uses Jarzynski's method (with annealed distributions created automatically 
+        from the model) with a Sequential Monte Carlo algorithm and an adaptive temperature schedule. Other methods 
+        include Parallel Tempering but users can add other inference frameworks as well.
+      '''
+      it += '''
+        The algorithm trivially parallelize to hundreds of CPUs, here only 8 cores were used.
+      '''
+      it += '''
+        The method provides an estimate of the evidence, here «SYMB»-1227.75«ENDSYMB», which is critical for model 
+        selection and lacking in many 
+        existing tools. Running again the method with twice as many particles, we get «SYMB»-1227.15«ENDSYMB», 
+        suggesting the estimate is getting close to the true value. In contrast, variational methods will 
+        typically only give a bound on the true evidence.
+      '''
+      it += '''
+        The resulting samples are easy to use: tidy csv's in a unique execution folder created for each run. 
+        This makes it easy to integrate Blang in your data analysis pipeline seamlessly. 
+      '''
+      it += '''
+        The command line arguments are automatically inferred from the random variables declared in the model and 
+        the constructors of the corresponding types (with a bit of help of some annotations). 
+      '''
+    ]
   ]
+  
+  def static String firstExample() { 
+    '''
+      package conifer.factors
+      import conifer.*
+      import static conifer.Utils.*
+      
+      model Example {
+        random RealVar shape ?: realVar, rate ?: realVar
+        random SequenceAlignment observations
+        random UnrootedTree tree ?: unrootedTree(observations.observedTreeNodes)
+        param EvolutionaryModel evoModel ?: kimura(observations.nSites)
+        
+        laws {
+          shape ~ Exponential(1.0)
+          rate ~ Exponential(1.0)
+          tree | shape, rate ~ NonClockTreePrior(Gamma.distribution(shape, rate))
+          observations | tree, evoModel ~ UnrootedTreeLikelihood(tree, evoModel) 
+        }
+      }
+    '''
+  }
+  
+  def static String runningByShell() {
+    '''
+      > blang --model Example \
+        --model.observations.file data.fasta \
+        --model.observations.encoding DNA \
+        --engine SCM \
+        --engine.nThreads MAX 
+      
+      Preprocessing started
+      RealScalar sampled via: [RealSliceSampler]
+      UnrootedTree sampled via: [SingleNNI, SingleBranchScaling]
+      Sampling started
+      Normalization constant estimate: -1227.7537992263346
+      Preprocessing time: 154.2 ms
+      Sampling time: 1.901 min
+      outputFolder : /Users/bouchard/w/conifer/results/all/2017-11-30-19-43-22-C7VMR7rK.exec
+    '''
+  }
   
 }

@@ -33,4 +33,6 @@ class DocElement {
     children += new Code(language, contents)
   }
   
+  val public static SYMB = "__SYMB"
+  val public static ENDSYMB = "__ENDSYMB"
 }

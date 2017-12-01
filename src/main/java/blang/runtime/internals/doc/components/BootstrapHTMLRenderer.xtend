@@ -7,7 +7,7 @@ import java.util.List
 import java.util.ArrayList
 import blang.runtime.internals.doc.components.Code.Language
 
-class BootstrapHTMLRenderer {
+class BootstrapHTMLRenderer  {
   
   val String siteName
   val Collection<Document> documents
@@ -21,7 +21,7 @@ class BootstrapHTMLRenderer {
   def void renderInto(File folder) {
     for (Document document : documents) {
       val File file = new File(folder, document.fileName)
-      BriefIO.write(file, render(document).replaceAll("\\s*" + NO_TRAILING_SPACE, "\n")) 
+      BriefIO.write(file, render(document).replaceFirst("\\s*" + NO_TRAILING_SPACE, "").replaceAll("\\s*" + NO_TRAILING_SPACE, "\n")) 
     }
   } 
   
@@ -79,7 +79,13 @@ class BootstrapHTMLRenderer {
   }
   
   def protected dispatch String render(Object object) {
-    object.toString
+    '''
+      <p>
+        «object.toString
+        .replace(DocElement.SYMB, "<code>")
+        .replace(DocElement.ENDSYMB, "</code>")»
+      </p>
+    '''
   }
   
   def protected dispatch String render(Section section) {
@@ -95,14 +101,16 @@ class BootstrapHTMLRenderer {
   
   def protected dispatch String render(Code code) {
     state.codeModes += code.language
+    val String processedCode = noTrailingSpace(code.contents)
     return '''
-      <div id="editor«state.codeModes.size - 1»" style="height: 300px;">«noTrailingSpace(code.contents)»</div>
+      <div id="editor«state.codeModes.size - 1»" style="height: «(code.contents.split("\\R").size * 1.5) as int»em;">«processedCode»</div>
+      <br />
     '''
   }
   
   public static val String NO_TRAILING_SPACE = "____NO_TRAILING_SPACE"
   def public static String noTrailingSpace(String text) {
-    text.split('''\R''').map[NO_TRAILING_SPACE + it].join('\n')
+    text.split("\\R").map[NO_TRAILING_SPACE + it].join('\n')
   }
   
   def protected String recurse(DocElement element) {
@@ -112,15 +120,15 @@ class BootstrapHTMLRenderer {
   def private navBar(Document document) {
     '''
     <div class="header clearfix">
-            <nav>
-              <ul class="nav nav-pills pull-right">
-                «FOR menuItem : documents»
-                  «navLink(menuItem, menuItem === document)»
-                «ENDFOR»
-              </ul>
-            </nav>
-            <h3 class="text-muted">«siteName»</h3>
-          </div>
+      <nav>
+        <ul class="nav nav-pills pull-right">
+          «FOR menuItem : documents»
+            «navLink(menuItem, menuItem === document)»
+          «ENDFOR»
+        </ul>
+      </nav>
+      <h3 class="text-muted">«siteName»</h3>
+    </div>
     '''
   }
   

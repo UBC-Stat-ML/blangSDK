@@ -25,8 +25,8 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
   @Arg                                         @DefaultValue("STRATIFIED")            
   public ResamplingScheme resamplingScheme = ResamplingScheme.STRATIFIED;
 
-  @Arg                 @DefaultValue("10_000")
-  public int nSamplesPerTemperature = 10_000;
+  @Arg                 @DefaultValue("1_000")
+  public int nSamplesPerTemperature = 1_000;
 
   @Arg   
   public Cores nThreads = Cores.maxAvailable(); 
