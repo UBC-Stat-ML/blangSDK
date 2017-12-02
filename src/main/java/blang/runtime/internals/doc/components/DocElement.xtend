@@ -4,12 +4,12 @@ import java.util.List
 import java.util.ArrayList
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import blang.runtime.internals.doc.components.Code.Language
-import org.eclipse.xtend.lib.annotations.Accessors
+import java.util.Map
+import java.util.HashMap
 
 class DocElement {
   
-  @Accessors(PUBLIC_GETTER)
-  val List<Object> children = new ArrayList
+  public val List<Object> children = new ArrayList
   
   def void +=(Object child) {
     children += child
@@ -33,6 +33,19 @@ class DocElement {
     children += new Code(language, contents)
   }
   
-  val public static SYMB = "__SYMB"
-  val public static ENDSYMB = "__ENDSYMB"
+  def void downloadButton(Procedure1<DownloadButton> init) {
+    children += new DownloadButton => init
+  }
+  
+  val static public SYMB = "__SYMB"
+  val static public ENDSYMB = "__ENDSYMB"
+  
+//  val public static _LINK = "__LINK"
+//  public val Map<String, LinkTarget> _linkTargets = new HashMap
+//  def LINK(LinkTarget target) {
+//    val code = _LINK + "(" + target.hashCode + ")"
+//    _linkTargets.put(code, target)
+//    return code
+//  }
+//  val public ENDLINK = "__ENDLINK"
 }

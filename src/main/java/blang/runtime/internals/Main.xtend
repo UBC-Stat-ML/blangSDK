@@ -7,10 +7,16 @@ import blang.runtime.Runner
 import blang.inits.Creators
 import com.google.inject.TypeLiteral
 import blang.runtime.internals.Versions.BadVersion
+import java.io.File
 
 class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
 
   def static void main(String[] args) {
+    
+    if (new File("build.gradle").exists) {
+      System.err.println("It appears the folder already contains gradle build architecture. Use those instead of the blang command.")
+      System.exit(1);
+    }
     
     // read args to find version, if specified
     val Optional<String> requestedVersion = requestedVersion(args)

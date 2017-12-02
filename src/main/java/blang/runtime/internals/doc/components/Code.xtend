@@ -6,5 +6,5 @@ import org.eclipse.xtend.lib.annotations.Data
 class Code {
   val Language language
   val String contents
-  static enum Language { blang, java, sh }
+  static enum Language { blang, java, sh, text }
 }

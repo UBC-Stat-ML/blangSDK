@@ -1,4 +1,4 @@
-package blang.runtime.internals.doc.contents
+package blang.runtime.internals.doc
 
 import blang.runtime.internals.doc.components.DocElement
 import blang.runtime.internals.doc.components.Code

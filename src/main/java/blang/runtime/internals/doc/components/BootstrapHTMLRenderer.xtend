@@ -6,6 +6,7 @@ import briefj.BriefIO
 import java.util.List
 import java.util.ArrayList
 import blang.runtime.internals.doc.components.Code.Language
+import blang.runtime.internals.doc.components.LinkTarget.LinkURL
 
 class BootstrapHTMLRenderer  {
   
@@ -28,6 +29,7 @@ class BootstrapHTMLRenderer  {
   static private class State {
     var int currentSectionDepth = 1
     val List<Language> codeModes = new ArrayList
+    val List<DownloadButton> downloadButtons = new ArrayList
   }
   
   def protected dispatch String render(Document document) {
@@ -46,6 +48,24 @@ class BootstrapHTMLRenderer  {
           <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
           <script>window.jQuery || document.write('<script src="assets/js/vendor/jquery.min.js"><\/script>')</script>
           <script src="dist/js/bootstrap.min.js"></script>
+          
+          «IF !state.downloadButtons.empty»
+          <script>
+            «FOR i : 0 ..< state.downloadButtons.size»
+              function DownloadAndRedirect«i»()
+              {
+                var RedirectURL«i» = "«resolveLink(state.downloadButtons.get(i).redirect)»";
+                var RedirectPauseSeconds = 2;
+                location.href = "«resolveLink(state.downloadButtons.get(i).file)»";
+                «IF state.downloadButtons.get(i).redirect !== null»
+                  setTimeout("DoTheRedirect«i»('"+RedirectURL«i»+"')",parseInt(RedirectPauseSeconds*1000));
+                «ENDIF»
+              }
+              function DoTheRedirect«i»(url) { window.location=url; }
+            «ENDFOR»
+          </script>
+          «ENDIF»
+          
           «IF !state.codeModes.empty»
             <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
             <script>
@@ -75,6 +95,19 @@ class BootstrapHTMLRenderer  {
         </li>
       «ENDFOR»
     </«tag»>
+    '''
+  }
+  
+  def protected dispatch String render(DownloadButton button) {
+    state.downloadButtons.add(button)
+    return '''
+      <div class="text-center"> 
+        <br/>
+        <a href="javascript:DownloadAndRedirect«state.downloadButtons.size - 1»()" role="button" class="btn-success btn-lg">
+          «button.label»
+        </a>
+        <br/>
+      </div> 
     '''
   }
   
@@ -164,6 +197,14 @@ class BootstrapHTMLRenderer  {
         <![endif]-->
       </head>
     '''
+  }
+  
+  def protected dispatch String resolveLink(LinkURL link) {
+    link.url
+  }
+  
+  def protected dispatch String resolveLink(Document document) {
+    fileName(document)
   }
   
   def static String fileName(Document document) {
