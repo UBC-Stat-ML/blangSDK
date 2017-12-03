@@ -41,14 +41,30 @@
         <h3 class="text-muted">Blang Doc</h3>
       </div>
       <p>
-        TODO: Getting started
+        All you need to get started is available in this download
       </p>
+      
+      <div class="text-center"> 
+        <br/>
+        <a href="javascript:DownloadAndRedirect0()" role="button" class="btn-success btn-lg">
+          Get Blang
+        </a>
+        <br/>
+      </div> 
     </div>
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="assets/js/vendor/jquery.min.js"><\/script>')</script>
     <script src="dist/js/bootstrap.min.js"></script>
     
+    <script>
+      function DownloadAndRedirect0()
+      {
+        var RedirectPauseSeconds = 2;
+        location.href = "downloads/blang-mac-latest.zip";
+      }
+      function DoTheRedirect0(url) { window.location=url; }
+    </script>
     
   </body>
 </html>

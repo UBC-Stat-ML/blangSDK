@@ -54,7 +54,9 @@ class BootstrapHTMLRenderer implements Renderer  {
             «FOR i : 0 ..< state.downloadButtons.size»
               function DownloadAndRedirect«i»()
               {
-                var RedirectURL«i» = "«resolveLink(state.downloadButtons.get(i).redirect)»";
+                «IF state.downloadButtons.get(i).redirect !== null»
+                  var RedirectURL«i» = "«resolveLink(state.downloadButtons.get(i).redirect)»";
+                «ENDIF»
                 var RedirectPauseSeconds = 2;
                 location.href = "«resolveLink(state.downloadButtons.get(i).file)»";
                 «IF state.downloadButtons.get(i).redirect !== null»

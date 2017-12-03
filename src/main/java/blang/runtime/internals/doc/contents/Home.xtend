@@ -95,8 +95,8 @@ class Home {
     ]
     downloadButton[
       label = "Get started"
-      file = LinkTarget::url("test.zip")
-      redirect = GettingStarted::page
+      file = LinkTarget::url("downloads/blang-mac-latest.zip")
+      redirect = GettingStarted::page 
     ]
     // - have animated gif with Desktop IDE, Web IDE, Command line and links
   ]
@@ -125,7 +125,7 @@ class Home {
   
   def static String runningByShell() {
     '''
-      > git clone git@github.com:UBC-Stat-ML/blangExample.git
+      > git clone https://github.com/UBC-Stat-ML/blangExample.git
       [cloning]
       
       > ./gradlew installDist
