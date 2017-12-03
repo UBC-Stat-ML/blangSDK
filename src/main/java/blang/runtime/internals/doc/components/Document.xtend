@@ -5,10 +5,9 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 @Data
 class Document extends DocElement implements LinkTarget {
-  protected val String name
+  val String name
   
   def static Document create(String name, Procedure1<Document> init) {
-    val Document result = new Document(name) => init
-    return result
+    return new Document(init, name)
   }
 }

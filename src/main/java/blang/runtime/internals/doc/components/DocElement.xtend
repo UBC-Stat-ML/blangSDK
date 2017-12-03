@@ -4,29 +4,40 @@ import java.util.List
 import java.util.ArrayList
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import blang.runtime.internals.doc.components.Code.Language
-import java.util.Map
-import java.util.HashMap
 
-class DocElement {
+abstract class DocElement {
   
-  public val List<Object> children = new ArrayList
+  protected var List<Object> children = new ArrayList
+  private val Procedure1 documentSpecification
+  private var Renderer renderer = null
   
-  def void +=(Object child) {
-    children += child
+  new(Procedure1<? extends DocElement> documentSpecification) {
+    this.documentSpecification = documentSpecification
   }
   
-  // TODO: getLabel, remember when called, etc
+  def String render(Renderer renderer) {
+    this.renderer = renderer
+    children = new ArrayList
+    documentSpecification.apply(this)
+    return renderer.render(this)
+  }
+  
+  // For use in init blocks [ ... ]
+  
+  def +=(Object child) {
+    children.add(child)
+  }
   
   def void section(String name, Procedure1<Section> init) { 
-    children += new Section(name) => init
+    children += new Section(init, name) 
   }
   
   def void orderedList(Procedure1<Bullets> init) {
-    children += new Bullets(true) => init
+    children += new Bullets(init, true)
   }
   
   def void unorderedList(Procedure1<Bullets> init) {
-    children += new Bullets(false) => init
+    children += new Bullets(init, false)
   }
   
   def void code(Language language, String contents) {
@@ -37,15 +48,28 @@ class DocElement {
     children += new DownloadButton => init
   }
   
-  val static public SYMB = "__SYMB"
-  val static public ENDSYMB = "__ENDSYMB"
+  // For use directly in string blocks e.g. '''  <<SYMB>> ..  ''' etc
   
-//  val public static _LINK = "__LINK"
-//  public val Map<String, LinkTarget> _linkTargets = new HashMap
-//  def LINK(LinkTarget target) {
-//    val code = _LINK + "(" + target.hashCode + ")"
-//    _linkTargets.put(code, target)
-//    return code
-//  }
-//  val public ENDLINK = "__ENDLINK"
+  def String LINK(LinkTarget target) {
+    renderer.render(target)
+  }
+  
+  def String LINK(String target) {
+    renderer.render(LinkTarget::url(target)) 
+  }
+  
+  val static public Object _ENDLINK = new Object
+  def String ENDLINK() {
+    renderer.render(_ENDLINK)
+  }
+  
+  val static public Object _SYMB = new Object
+  def String SYMB() {
+    renderer.render(_SYMB)
+  }
+  
+  val static public Object _ENDSYMB = new Object
+  def String ENDSYMB() {
+    renderer.render(_ENDSYMB)
+  }
 }

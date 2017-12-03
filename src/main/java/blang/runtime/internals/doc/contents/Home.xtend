@@ -13,7 +13,7 @@ class Home {
     
     code(Language.blang, firstExample)
     
-    it += '''The above example illustrates several aspects of Blang:'''
+    it += '''The above example illustrates several aspects of Blang:''' 
     
     unorderedList[
       it += '''
@@ -43,7 +43,8 @@ class Home {
     
     it += '''
       If you have one more minute to spare, let us see what happen when we run this model (if you want to try at home, 
-      all you need to run this is Java 8 and git intalled):
+      all you need to run this is «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html")»Java 8«ENDLINK» 
+      and git intalled):
     '''
     
     code(Language.text, runningByShell)
@@ -55,7 +56,8 @@ class Home {
       '''
       it += '''
         The engine used here, «SYMB»SCM«ENDSYMB» (Sequential Change of Measure) is based on state-of-the-art 
-        sampling methods. It uses Jarzynski's method (with annealed distributions created automatically 
+        «LINK("https://www.stats.ox.ac.uk/~doucet/delmoral_doucet_jasra_sequentialmontecarlosamplersJRSSB.pdf")»sampling methods«ENDLINK». 
+        It uses Jarzynski's method (with annealed distributions created automatically 
         from the model) with a Sequential Monte Carlo algorithm and an adaptive temperature schedule. Other methods 
         include Parallel Tempering, various non-reversible methods, and users can add other inference frameworks as well.
       '''

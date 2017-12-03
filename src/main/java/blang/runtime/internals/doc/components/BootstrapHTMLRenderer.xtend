@@ -8,7 +8,7 @@ import java.util.ArrayList
 import blang.runtime.internals.doc.components.Code.Language
 import blang.runtime.internals.doc.components.LinkTarget.LinkURL
 
-class BootstrapHTMLRenderer  {
+class BootstrapHTMLRenderer implements Renderer  {
   
   val String siteName
   val Collection<Document> documents
@@ -22,7 +22,7 @@ class BootstrapHTMLRenderer  {
   def void renderInto(File folder) {
     for (Document document : documents) {
       val File file = new File(folder, document.fileName)
-      BriefIO.write(file, render(document).replaceFirst("\\s*" + NO_TRAILING_SPACE, "").replaceAll("\\s*" + NO_TRAILING_SPACE, "\n")) 
+      BriefIO.write(file, document.render(this).replaceFirst("\\s*" + NO_TRAILING_SPACE, "").replaceAll("\\s*" + NO_TRAILING_SPACE, "\n")) 
     }
   } 
   
@@ -32,7 +32,7 @@ class BootstrapHTMLRenderer  {
     val List<DownloadButton> downloadButtons = new ArrayList
   }
   
-  def protected dispatch String render(Document document) {
+  def dispatch String render(Document document) {
     state = new State
     return '''
       <!DOCTYPE html>
@@ -85,7 +85,7 @@ class BootstrapHTMLRenderer  {
     '''
   }
   
-  def protected dispatch String render(Bullets bullets) {
+  def dispatch String render(Bullets bullets) {
     val String tag = if (bullets.ordered) "ol" else "ul"
     return '''
     <«tag»>
@@ -98,7 +98,7 @@ class BootstrapHTMLRenderer  {
     '''
   }
   
-  def protected dispatch String render(DownloadButton button) {
+  def dispatch String render(DownloadButton button) {
     state.downloadButtons.add(button)
     return '''
       <div class="text-center"> 
@@ -111,17 +111,25 @@ class BootstrapHTMLRenderer  {
     '''
   }
   
-  def protected dispatch String render(Object object) {
-    '''
-      <p>
-        «object.toString
-        .replace(DocElement.SYMB, "<code>")
-        .replace(DocElement.ENDSYMB, "</code>")»
-      </p>
-    '''
+  def dispatch String render(LinkTarget link) {
+    '''<a href="«resolveLink(link)»">'''
   }
   
-  def protected dispatch String render(Section section) {
+  def dispatch String render(Object object) {
+    switch (object) {
+      case DocElement._SYMB : "<code>"
+      case DocElement._ENDSYMB : "</code>"
+      case DocElement._ENDLINK : "</a>"
+      default :
+        '''
+          <p>
+            «object.toString»
+          </p>
+        '''
+    }
+  }
+  
+  def dispatch String render(Section section) {
     if (state.currentSectionDepth > 6) {
       throw new RuntimeException("Max section depth is 6.")
     }
@@ -132,7 +140,7 @@ class BootstrapHTMLRenderer  {
     '''
   }
   
-  def protected dispatch String render(Code code) {
+  def dispatch String render(Code code) {
     state.codeModes += code.language
     val String processedCode = noTrailingSpace(code.contents)
     return '''
@@ -147,7 +155,13 @@ class BootstrapHTMLRenderer  {
   }
   
   def protected String recurse(DocElement element) {
-    return element.children.map[render].join("\n")
+    return element.children.map[it |
+      if (it instanceof DocElement) {
+        it.render(this)
+      } else {
+        render(it)
+      }
+    ].join("\n")
   }
   
   def private navBar(Document document) {
