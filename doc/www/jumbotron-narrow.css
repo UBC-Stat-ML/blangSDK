@@ -43,16 +43,18 @@ body {
 
 /* Main marketing message and sign up button */
 .jumbotron {
+  text-align: center;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.jumbotron-bg {
   colour = white;
   background-image:url('jupiter.jpg');
   background-repeat: no-repeat;
   background-size: cover;
-  text-align: center;
-  border-bottom: 1px solid #e5e5e5;
-  
 }
 
-.jumbotron h1 {
+.jumbotron-bg h1 {
     color: white;
     text-shadow: 2px 2px 4px #000000;
 }
@@ -61,7 +63,7 @@ body {
   background: black;
 }
 
-.jumbotron p{
+.jumbotron-bg p{
     color: white;
     text-shadow: 2px 2px 4px #000000;
 }

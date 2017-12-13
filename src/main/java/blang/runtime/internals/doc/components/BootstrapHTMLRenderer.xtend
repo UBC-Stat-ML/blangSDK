@@ -27,7 +27,9 @@ class BootstrapHTMLRenderer implements Renderer  {
   } 
   
   static private class State {
-    var int currentSectionDepth = 1
+    var int currentSectionDepth = 0
+    var int currentOrderedListDepth = 0
+    var int currentUnorderedListDepth = 0
     val List<Language> codeModes = new ArrayList
     val List<DownloadButton> downloadButtons = new ArrayList
   }
@@ -42,7 +44,7 @@ class BootstrapHTMLRenderer implements Renderer  {
         <body>
           <div class="container">
             «navBar(document)»
-            «recurse(document)»
+            «recurse(document).join("\n")»
           </div>
           <!-- Placed at the end of the document so the pages load faster -->
           <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -87,17 +89,26 @@ class BootstrapHTMLRenderer implements Renderer  {
     '''
   }
   
+  static final List<String> orderedStyles = #["1", "a", "i", "A", "I"]
+  static final List<String> unorderedStyles = #["disc", "square", "circle"]
   def dispatch String render(Bullets bullets) {
     val String tag = if (bullets.ordered) "ol" else "ul"
-    return '''
-    <«tag»>
-      «FOR child : bullets.children»
-        <li>
-          «render(child)»
-        </li>
+    val int styleIndex = if (bullets.ordered) state.currentOrderedListDepth++ else state.currentUnorderedListDepth++
+    val List<String> styleList = if (bullets.ordered) orderedStyles else unorderedStyles
+    val String style = styleList.get(styleIndex % styleList.size)
+    val String styleString = if (bullets.ordered) '''type="«style»"''' else '''style="list-style-type:«style»"'''
+    var int i = 0
+    val String result = '''
+    <«tag» «styleString»>
+      «FOR child : recurse(bullets)»
+        «IF !(bullets.children.get(i) instanceof Bullets)»<li>«ENDIF»
+          «child»
+        «IF !(bullets.children.get(i++) instanceof Bullets)»</li>«ENDIF»
       «ENDFOR»
     </«tag»>
     '''
+    if (bullets.ordered) state.currentOrderedListDepth-- else state.currentUnorderedListDepth--
+    return result
   }
   
   def dispatch String render(DownloadButton button) {
@@ -113,8 +124,8 @@ class BootstrapHTMLRenderer implements Renderer  {
     '''
   }
   
-  def dispatch String render(LinkTarget link) {
-    '''<a href="«resolveLink(link)»">'''
+  def dispatch String render(Link link) {
+    '''<a href="«resolveLink(link.target)»">'''
   }
   
   def dispatch String render(Object object) {
@@ -131,15 +142,19 @@ class BootstrapHTMLRenderer implements Renderer  {
     }
   }
   
+  var firstDepth = 2
   def dispatch String render(Section section) {
-    if (state.currentSectionDepth > 6) {
-      throw new RuntimeException("Max section depth is 6.")
-    }
     val int depth = state.currentSectionDepth++
-    return '''
-    <h«depth»>«section.name»</h«depth»>
-    «recurse(section)»
-    '''
+    val int hDepth = firstDepth + depth
+    if (hDepth >= 6 || hDepth < 1) {
+      throw new RuntimeException("Invalid hX level: " + hDepth)
+    }
+    val String result = '''
+      <h«hDepth»«IF depth == 1» class="page-header"«ENDIF»>«section.name»</h«hDepth»>
+      «recurse(section).join("\n")»
+      '''
+    state.currentSectionDepth--
+    return result
   }
   
   def dispatch String render(Code code) {
@@ -156,14 +171,14 @@ class BootstrapHTMLRenderer implements Renderer  {
     text.split("\\R").map[NO_TRAILING_SPACE + it].join('\n')
   }
   
-  def protected String recurse(DocElement element) {
+  def protected List<String> recurse(DocElement element) {
     return element.children.map[it |
       if (it instanceof DocElement) {
         it.render(this)
       } else {
         render(it)
       }
-    ].join("\n")
+    ]
   }
   
   def private navBar(Document document) {
@@ -215,7 +230,7 @@ class BootstrapHTMLRenderer implements Renderer  {
     '''
   }
   
-  def protected dispatch String resolveLink(LinkURL link) {
+  def protected dispatch String resolveLink(LinkURL link) { 
     link.url
   }
   

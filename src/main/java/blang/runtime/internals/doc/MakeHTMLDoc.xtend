@@ -8,22 +8,27 @@ import blang.runtime.internals.doc.components.BootstrapHTMLRenderer
 import blang.runtime.internals.doc.components.DocElement
 import blang.runtime.internals.doc.contents.Reference
 import blang.runtime.internals.doc.contents.GettingStarted
+import java.util.List
+import java.util.ArrayList
+import blang.runtime.internals.doc.contents.BlangIDE
+import blang.runtime.internals.doc.contents.BlangWeb
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
   val static Collection<Document> documents = #[
     Home::page,
     GettingStarted::page,
+    BlangIDE::page,
+    BlangWeb::page,
     Reference::page
   ]
   
-  override protected String recurse(DocElement page) {
-    // Add a fancy title to the home page
-    return 
-      {
-        if (page === Home::page) 
-          '''
-          <div class="jumbotron jumbotron-fluid">
+  override protected List<String> recurse(DocElement page) {
+    val List<String> result = new ArrayList
+    if (page === Home::page) {
+      result.add(
+        '''
+          <div class="jumbotron-bg jumbotron jumbotron-fluid">
             <div class="container">
               <h1 class="display-3">Blang</h1>
               <p class="lead">Tools for Bayesian data science and probabilistic exploration</p>
@@ -35,10 +40,34 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
             data analysis. We have also used Blang as a teaching tool, both for basic probability 
             concepts and more advanced Bayesian modelling. Here is the one minute tour:
           </p>
-          ''' 
-        else ""
-      }
-      + super.recurse(page)
+        '''
+      ) 
+    }
+    if (page === GettingStarted::page) {
+      result.add(
+        '''
+          <div class="jumbotron jumbotron-fluid">
+            <div class="container">
+              <p class="lead">All you need to get started is available in this zip file:</p>
+              
+              <div class="text-center"> 
+                <br/>
+                <a href="«Home::downloadLink»" role="button" class="btn-success btn-lg">
+                  Download zip
+                </a>
+                &nbsp;
+                <a href="https://silico.io" role="button" class="btn-success btn-lg">
+                  Blang in the browser
+                </a>
+                <br/>
+              </div> 
+            </div>
+          </div>
+        '''
+      )
+    }
+    result.addAll(super.recurse(page))
+    return result
   }
   
   new() {

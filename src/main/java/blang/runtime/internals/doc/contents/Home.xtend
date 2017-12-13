@@ -4,7 +4,6 @@ import blang.runtime.internals.doc.components.Document
 
 import blang.runtime.internals.doc.components.Code.Language
 
-import static extension blang.runtime.internals.doc.components.DocElement.*
 import blang.runtime.internals.doc.components.LinkTarget
 
 class Home {
@@ -43,7 +42,7 @@ class Home {
     
     it += '''
       If you have one more minute to spare, let us see what happen when we run this model (if you want to try at home, 
-      all you need to run this is «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html")»Java 8«ENDLINK» 
+      all you need to run this is «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html")»Java 8 SDK«ENDLINK» 
       and git intalled):
     '''
     
@@ -62,7 +61,8 @@ class Home {
         include Parallel Tempering, various non-reversible methods, and users can add other inference frameworks as well.
       '''
       it += '''
-        The algorithm trivially parallelize to hundreds of CPUs, here only 8 cores were used.
+        The algorithm trivially parallelize to hundreds of CPUs, here only 8 cores were used. 
+        Massive distribution is in the pipeline. 
       '''
       it += '''
         The method provides an estimate of the evidence, here «SYMB»-1227.75«ENDSYMB», which is critical for model 
@@ -95,11 +95,13 @@ class Home {
     ]
     downloadButton[
       label = "Get started"
-      file = LinkTarget::url("downloads/blang-mac-latest.zip")
+      file = downloadLink
       redirect = GettingStarted::page 
     ]
     // - have animated gif with Desktop IDE, Web IDE, Command line and links
   ]
+  
+  val static public LinkTarget downloadLink = LinkTarget::url("downloads/blang-mac-latest.zip")
   
   def static String firstExample() { 
     '''

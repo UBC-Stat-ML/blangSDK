@@ -6,17 +6,32 @@ import java.io.File
 import blang.runtime.internals.doc.components.Code.Language
 import briefj.BriefIO
 import briefj.repo.RepositoryUtils
+import java.util.function.Function
 
 class DocElementExtensions {
 
   def static void code(DocElement element, Class<?> code) { 
-    element += loadCode(code)
+    element += loadCode(code, null)
   } 
   
-  def private static Code loadCode(Class<?> code) {
-    if (findFile(code, "bl")   !== null) return new Code(Language.blang, BriefIO.fileToString(findFile(code, "bl")))
-    if (findFile(code, "java") !== null) return new Code(Language.java,  BriefIO.fileToString(findFile(code, "java")))
+  /**
+   * Use to remove package declaration line
+   */
+  def static void code(DocElement element, Class<?> code, Function<String,String> transform) { 
+    element += loadCode(code, transform)
+  } 
+  
+  def private static Code loadCode(Class<?> code, Function<String,String> transform) {
+    if (findFile(code, "bl")   !== null) return new Code(Language.blang, readSource(findFile(code, "bl"), transform))
+    if (findFile(code, "java") !== null) return new Code(Language.java,  readSource(findFile(code, "java"), transform))
     throw new RuntimeException
+  }
+  
+  def private static String readSource(File file, Function<String,String> transform) {
+    var String contents = BriefIO.fileToString(file)
+    if (transform !== null)
+      contents = transform.apply(contents)
+    return contents
   }
   
   def private static File findFile(Class<?> code, String ext) {

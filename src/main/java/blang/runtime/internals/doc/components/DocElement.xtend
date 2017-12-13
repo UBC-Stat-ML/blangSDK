@@ -51,11 +51,11 @@ abstract class DocElement {
   // For use directly in string blocks e.g. '''  <<SYMB>> ..  ''' etc
   
   def String LINK(LinkTarget target) {
-    renderer.render(target)
+    renderer.render(new Link(target))
   }
   
   def String LINK(String target) {
-    renderer.render(LinkTarget::url(target)) 
+    LINK(LinkTarget::url(target)) 
   }
   
   val static public Object _ENDLINK = new Object

@@ -11,5 +11,6 @@ interface LinkTarget {
   @Data
   static class LinkURL implements LinkTarget {
     val String url
+    override toString() { url }
   }
 }
