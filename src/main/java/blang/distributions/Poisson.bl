@@ -9,21 +9,21 @@ model Poisson {
   laws {
     
     logf(realization, mean) {
-      check (mean > 0)
-      realization * log(mean)
+      if (mean <= 0) return NEGATIVE_INFINITY
+      if (realization < 0) return NEGATIVE_INFINITY
+      return realization * log(mean)
     }
     
     logf(mean) {
-       - mean; 
+      if (mean <= 0) return NEGATIVE_INFINITY
+      return - mean; 
     }
     
     logf(realization) {
+      if (realization < 0) return NEGATIVE_INFINITY
       return - factorialLog(realization)
     }
-    
-    indicator(realization) {
-      realization >= 0
-    }
+
   }
   
   generate(rand) {

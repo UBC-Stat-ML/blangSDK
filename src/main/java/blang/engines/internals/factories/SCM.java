@@ -25,6 +25,7 @@ public class SCM extends AdaptiveJarzynski<SampledModel> implements PosteriorInf
   @Override
   public void setSampledModel(SampledModel model) 
   { 
+    model.setExponent(0.0);
     this.kernel = new ChangeOfMeasureKernel(model);
   }
 

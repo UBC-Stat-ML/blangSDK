@@ -1,11 +1,15 @@
 package blang.mcmc.internals;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import blang.core.Factor;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.runtime.internals.objectgraph.Node;
+import blang.runtime.internals.objectgraph.ObjectNode;
 import blang.runtime.internals.objectgraph.StaticUtils;
 
 public class SamplerBuilderContext 
@@ -35,6 +39,14 @@ public class SamplerBuilderContext
         .getAccessibleNodes(factor)
         .filter(n -> getSampledNodes().contains(n))
         .collect(Collectors.toSet());
+  }
+  
+  public List<Factor> connectedFactors(Node node) 
+  {
+    List<Factor> result = new ArrayList<>();
+    for (ObjectNode<Factor> n : graphAnalysis.getConnectedFactor(node))
+      result.add(n.object);
+    return result;
   }
   
   public static boolean contain(Set<Node> nodes, Object object)

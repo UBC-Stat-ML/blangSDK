@@ -17,7 +17,7 @@ public class ExactSamplerKernel extends AbstractKernel
       throw new RuntimeException();
     if (current == null)
       return sampleInitial(random, false);
-    current.forwardSample(random);
+    current.forwardSample(random, false);
     return current;
   }
 }

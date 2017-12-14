@@ -10,11 +10,7 @@ model NegativeBinomial_MeanParam {
   laws {
     
     k | mean, overdispersion ~ NegativeBinomial(
-      {
-        check(mean > 0) 
-        check(overdispersion > 0)
-        mean * mean / overdispersion
-      }, 
+      mean * mean / overdispersion, 
       1.0 - mean/(mean + overdispersion)
     )
     

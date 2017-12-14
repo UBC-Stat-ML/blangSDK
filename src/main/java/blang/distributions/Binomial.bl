@@ -11,22 +11,16 @@ model Binomial {
   laws {
     
     logf(numberOfSuccesses, numberOfTrials, probabilityOfSuccess) {
-      check(probabilityOfSuccess >= 0.0 && probabilityOfSuccess <= 1.0)
-      check(numberOfTrials > 0)
-      numberOfSuccesses * log(probabilityOfSuccess) + (numberOfTrials - numberOfSuccesses) * log(1.0 - probabilityOfSuccess)
+      if (probabilityOfSuccess < 0.0 || probabilityOfSuccess > 1.0) return NEGATIVE_INFINITY
+      if (numberOfTrials <= 0 || numberOfSuccesses > numberOfTrials) return NEGATIVE_INFINITY
+      return numberOfSuccesses * log(probabilityOfSuccess) + (numberOfTrials - numberOfSuccesses) * log(1.0 - probabilityOfSuccess)
     }
     
     logf(numberOfTrials, numberOfSuccesses) {
-      logBinomial(numberOfTrials, numberOfSuccesses)
+      if (numberOfTrials <= 0 || numberOfSuccesses > numberOfTrials) return NEGATIVE_INFINITY
+      return logBinomial(numberOfTrials, numberOfSuccesses)
     }
-    
-    indicator(numberOfSuccesses, numberOfTrials) {
-      numberOfSuccesses <= numberOfTrials
-    }
-    
-    indicator(numberOfSuccesses) {
-      0 <= numberOfSuccesses
-    }
+
   }
   generate (rand) {
     Generators::binomial(rand, numberOfTrials, probabilityOfSuccess)

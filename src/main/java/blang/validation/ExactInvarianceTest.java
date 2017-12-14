@@ -228,7 +228,7 @@ public class ExactInvarianceTest
 
     for (int i = 0; i < nIndependentSamples; i++)
     {
-      sampledModel.forwardSample(random);
+      sampledModel.forwardSample(random, true);
       Map<Function<M,Double>,Double> before = withPosterior ? eval((M) sampledModel.model, testFunctions) : null;
       if (withPosterior)
         for (int j = 0; j < nPosteriorSamplesPerIndep; j++)

@@ -16,7 +16,7 @@ public abstract class AbstractKernel implements AnnealingKernels<SampledModel>
   protected SampledModel sampleInitial(Random random, boolean dropForwardSimulator) 
   {
     SampledModel copy = prototype.duplicate();
-    copy.forwardSample(random);
+    copy.forwardSample(random, false);
     if (dropForwardSimulator)
       copy.dropForwardSimulator();
     return copy;

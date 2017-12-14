@@ -12,25 +12,27 @@ model Gamma {
   laws {
     
     logf(shape, rate, realization) {
-      check(shape > 0 && rate > 0)
-      (shape - 1.0) * log(realization * rate)
+      if (shape <= 0.0 || rate <= 0) return NEGATIVE_INFINITY
+      if (realization <= 0.0) return NEGATIVE_INFINITY
+      return (shape - 1.0) * log(realization * rate)
     }
     
     logf(realization, rate) {
-      - realization * rate
+      if (rate <= 0) return NEGATIVE_INFINITY
+      if (realization <= 0.0) return NEGATIVE_INFINITY
+      return - realization * rate
     }
     
     logf(shape) {
-      - lnGamma(shape)
+      if (shape <= 0.0)  return NEGATIVE_INFINITY
+      return - lnGamma(shape)
     }
     
     logf(rate) {
-      log(rate)
+      if (rate <= 0.0) return NEGATIVE_INFINITY
+      return log(rate)
     }
-    
-    indicator(realization) {
-      realization > 0.0
-    }
+
   }
   
   generate(rand) {

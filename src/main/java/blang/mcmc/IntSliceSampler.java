@@ -17,9 +17,34 @@ public class IntSliceSampler implements Sampler
   @ConnectedFactor
   protected List<LogScaleFactor> numericFactors;
   
+  private final Integer fixedWindowLeft, fixedWindowRight;
+  
+  public boolean useFixedWindow()
+  {
+    return fixedWindowLeft != null;
+  }
+  
+  private static final int maxNDoublingRounds = 10;
+  
+  private IntSliceSampler(Integer fixedWindowLeft, Integer fixedWindowRight) 
+  {
+    this.fixedWindowLeft = fixedWindowLeft;
+    this.fixedWindowRight = fixedWindowRight;
+  }
+  
+  private IntSliceSampler()
+  {
+    this(null, null);
+  }
+  
   public static IntSliceSampler build(WritableIntVar variable, List<LogScaleFactor> numericFactors)
   {
-    IntSliceSampler result = new IntSliceSampler();
+    return build(variable, numericFactors, null, null);
+  }
+  
+  public static IntSliceSampler build(WritableIntVar variable, List<LogScaleFactor> numericFactors, Integer fixedWinLeft, Integer fixedWinRight)
+  {
+    IntSliceSampler result = new IntSliceSampler(fixedWinLeft, fixedWinRight);
     result.variable = variable;
     result.numericFactors = numericFactors;
     return result;
@@ -31,30 +56,41 @@ public class IntSliceSampler implements Sampler
     final double logSliceHeight = RealSliceSampler.nextLogSliceHeight(random, logDensity());  // log(Y) in Neal's paper
     final int oldState = variable.intValue();        // x0 in Neal's paper
    
-    // doubling procedure
-    int 
-      leftProposalEndPoint = oldState, // L in Neal's paper
+    int leftProposalEndPoint, rightProposalEndPoint;
+    
+    if (useFixedWindow())
+    {
+      leftProposalEndPoint = fixedWindowLeft;
+      rightProposalEndPoint = fixedWindowRight;
+    }
+    else
+    {
+      // doubling procedure
+      leftProposalEndPoint = oldState; // L in Neal's paper
       rightProposalEndPoint = leftProposalEndPoint + 1;          // R in Neal's paper
-    
-    // convention: left is inclusive, right is exclusive
-    
-    while (logSliceHeight < logDensityAt(leftProposalEndPoint) || logSliceHeight < logDensityAt(rightProposalEndPoint - 1)) 
-      if (random.nextBernoulli(0.5))
-      {
-        leftProposalEndPoint += - (rightProposalEndPoint - leftProposalEndPoint);
-        // note 1: check we don't diverge to INF 
-        // this as that can arise e.g. when encountering an improper posterior
-        // avoid infinite loop then and warn user.
-        if (leftProposalEndPoint == Double.NEGATIVE_INFINITY)
-          throw new RuntimeException(RealSliceSampler.INFINITE_SLICE_MESSAGE);
-      }
-      else
-      {
-        rightProposalEndPoint += rightProposalEndPoint - leftProposalEndPoint;
-     // same as note 1 above
-        if (rightProposalEndPoint == Double.POSITIVE_INFINITY)
-          throw new RuntimeException(RealSliceSampler.INFINITE_SLICE_MESSAGE);
-      }
+      
+      // convention: left is inclusive, right is exclusive
+      
+      int iter = 0;
+      while (iter++ < maxNDoublingRounds && 
+          (logSliceHeight < logDensityAt(leftProposalEndPoint) || logSliceHeight < logDensityAt(rightProposalEndPoint - 1))) 
+        if (random.nextBernoulli(0.5))
+        {
+          leftProposalEndPoint += - (rightProposalEndPoint - leftProposalEndPoint);
+          // note 1: check we don't diverge to INF 
+          // this as that can arise e.g. when encountering an improper posterior
+          // avoid infinite loop then and warn user.
+          if (leftProposalEndPoint == Double.NEGATIVE_INFINITY)
+            throw new RuntimeException(RealSliceSampler.INFINITE_SLICE_MESSAGE);
+        }
+        else
+        {
+          rightProposalEndPoint += rightProposalEndPoint - leftProposalEndPoint;
+          // same as note 1 above
+          if (rightProposalEndPoint == Double.POSITIVE_INFINITY)
+            throw new RuntimeException(RealSliceSampler.INFINITE_SLICE_MESSAGE);
+        }
+    }
     
     // shrinkage procedure
     int 

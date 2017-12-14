@@ -1,5 +1,6 @@
 package blang.distributions
 
+@Samplers(CategoricalSampler)
 model Categorical {
   random IntVar realization
   param Simplex probabilities
@@ -8,9 +9,7 @@ model Categorical {
     logf(probabilities, realization)  {
       log(probabilities.get(realization)) 
     }
-    indicator(probabilities, realization)  {
-      realization >= 0 && realization < probabilities.nEntries
-    }
+    realization is Constrained
   }
   
   generate(rand) {

@@ -110,5 +110,9 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return logFactorial(n) - logFactorial(k) - logFactorial(n-k);
   }
   
+  def static double NEGATIVE_INFINITY() {
+    Double.NEGATIVE_INFINITY
+  }
+  
   private new() {}
 }

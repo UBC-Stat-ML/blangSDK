@@ -12,31 +12,33 @@ model Beta {
   laws {
     
     logf(alpha, realization) {
+      if (realization <= 0.0 || realization >= 1.0) return NEGATIVE_INFINITY
+      if (alpha <= 0.0) return NEGATIVE_INFINITY
       Helpers::checkDirichletOrBetaParam(alpha)
-      (alpha - 1.0) * log(realization)
+      return (alpha - 1.0) * log(realization)
     }
     
     logf(beta, realization) {
+      if (realization <= 0.0 || realization >= 1.0) return NEGATIVE_INFINITY
+      if (beta <= 0.0) return NEGATIVE_INFINITY
       Helpers::checkDirichletOrBetaParam(beta)
-      // better precision than log(1.0-realization)
-      (beta - 1.0) * log1p(-realization)
+      return (beta - 1.0) * log1p(-realization)
     }
         
     logf(alpha, beta) {
-      lnGamma(alpha + beta)
+      if (alpha <= 0.0) return NEGATIVE_INFINITY
+      if (beta <= 0.0) return NEGATIVE_INFINITY
+      return lnGamma(alpha + beta)
     }
     
     logf(alpha) {
-      - lnGamma(alpha)
+      if (alpha <= 0.0) return NEGATIVE_INFINITY
+      return - lnGamma(alpha)
     }
     
     logf(beta) {
-      - lnGamma(beta)
-    }
-    
-    indicator(realization) {
-      // We follow Feller and exclude end points
-      realization > 0.0 && realization < 1.0
+      if (beta <= 0.0) return NEGATIVE_INFINITY
+      return - lnGamma(beta)
     }
   }
   

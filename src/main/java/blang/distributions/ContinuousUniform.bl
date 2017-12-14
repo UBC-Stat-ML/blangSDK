@@ -11,12 +11,12 @@ model ContinuousUniform {
   laws {
     
     logf(min, max) {
-      - log(max - min)
+      if (max - min <= 0.0) return NEGATIVE_INFINITY
+      return - log(max - min)
     }
     
     indicator(realization, min, max) {
-      min <= realization &&
-      realization <= max
+      min <= realization && realization <= max
     }
     
   }

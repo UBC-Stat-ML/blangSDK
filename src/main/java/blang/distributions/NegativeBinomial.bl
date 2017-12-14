@@ -9,17 +9,14 @@ model NegativeBinomial {
   laws {
     
     logf(k, r) {
-      logBinomial(k+r-1.0, k)
+      if (r <= 0 || k < 0) return NEGATIVE_INFINITY
+      return logBinomial(k+r-1.0, k)
     }
     
     logf(r, k, p) {
-      check(p >= 0.0 && p <= 1.0)
-      check(r > 0)
-      k * log(p) + r * log(1.0 - p)
-    }
-    
-    indicator(k) {
-      k >= 0
+      if (p < 0.0 || p > 1.0) return NEGATIVE_INFINITY
+      if (r <= 0 || k < 0) return NEGATIVE_INFINITY
+      return k * log(p) + r * log(1.0 - p)
     }
     
   }

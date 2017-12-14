@@ -9,16 +9,13 @@ model Bernoulli {
   laws {
     
     logf(probability, realization)  {
-      check(probability >= 0.0 && probability <= 1.0)
+      if (probability < 0.0 || probability > 1.0) return NEGATIVE_INFINITY
+      if (!realization.isBool) return NEGATIVE_INFINITY
       if (realization == 0) {
-        log(1.0 -  probability)
+        return log(1.0 -  probability)
       } else {
-        log(probability)
+        return log(probability)
       }
-    }
-    
-    indicator(realization)  { 
-      realization.isBool
     }
     
   }

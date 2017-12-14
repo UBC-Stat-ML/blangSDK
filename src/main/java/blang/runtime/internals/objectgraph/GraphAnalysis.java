@@ -60,7 +60,7 @@ public class GraphAnalysis
   private final Observations observations;
   private final RealScalar annealingParameter = new RealScalar(1.0);
   private final boolean wrapInAnnealableFactors = true;
-  private final boolean wrapInSafeFactor = true;
+  private final boolean wrapInSafeFactor = false;
   
   public LinkedHashSet<Node> getLatentVariables() 
   {
@@ -277,7 +277,11 @@ public class GraphAnalysis
           if (allRandomNodesObserved)
           {
             if (f instanceof ExponentiatedFactor)
-              annealingStructure.exponentiatedFactors.add((ExponentiatedFactor) f);
+            {
+              ExponentiatedFactor expFactor = (ExponentiatedFactor) f;
+              ((ExponentiatedFactor) f).setAnnealingParameter(annealingStructure.annealingParameter);
+              annealingStructure.exponentiatedFactors.add(expFactor);
+            }
             else
               annealingStructure.otherAnnealedFactors.add((AnnealedFactor) f);
           }

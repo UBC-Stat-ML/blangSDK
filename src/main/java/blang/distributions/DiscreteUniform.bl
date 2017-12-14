@@ -10,7 +10,8 @@ model DiscreteUniform {
   laws {
     
     logf(minInclusive, maxExclusive) {
-      -log(maxExclusive - minInclusive)
+      if (maxExclusive - minInclusive <= 0.0) return NEGATIVE_INFINITY
+      return -log(maxExclusive - minInclusive)
     }
     
     indicator(realization, minInclusive, maxExclusive) {

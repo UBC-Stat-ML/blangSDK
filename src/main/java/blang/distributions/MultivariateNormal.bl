@@ -5,6 +5,9 @@ model MultivariateNormal {
   random Matrix realization
   
   param Matrix mean
+  
+  // Note: no need to mark as constrained since CholeskyDecomposition is read-only 
+  // so won't attempt to do naive sampling by default
   param CholeskyDecomposition precision
   
   laws {

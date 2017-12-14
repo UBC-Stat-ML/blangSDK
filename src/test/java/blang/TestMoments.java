@@ -126,7 +126,7 @@ public class TestMoments
     SampledModel sampledModel = new SampledModel(new GraphAnalysis(distribution), new BuiltSamplers());
     for (int i = 0; i < nSamples; i++)
     {
-      sampledModel.forwardSample(random); 
+      sampledModel.forwardSample(random, true); 
       //distribution.generate(random);
       Object realization = distribution.realization();
       double current; 

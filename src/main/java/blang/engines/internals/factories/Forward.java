@@ -37,7 +37,7 @@ public class Forward implements PosteriorInferenceEngine
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results);
     for (int i = 0; i < nSamples; i++) 
     {
-      model.forwardSample(random);
+      model.forwardSample(random, false);
       model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++)); 
     }
   }

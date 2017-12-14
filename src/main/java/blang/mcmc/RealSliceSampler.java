@@ -25,6 +25,7 @@ public class RealSliceSampler implements Sampler
   }
   
   private static final double initialWindowSize = 1.0;
+  private static final int maxNDoublingRounds = 10;
   
   private RealSliceSampler(double fixedWindowLeft, double fixedWindowRight) 
   {
@@ -69,7 +70,9 @@ public class RealSliceSampler implements Sampler
       leftProposalEndPoint = oldState - initialWindowSize * random.nextDouble(); // L in Neal's paper
       rightProposalEndPoint = leftProposalEndPoint + initialWindowSize;          // R in Neal's paper
       
-      while (logSliceHeight < logDensityAt(leftProposalEndPoint) || logSliceHeight < logDensityAt(rightProposalEndPoint)) 
+      int iter = 0;
+      while (iter ++ < maxNDoublingRounds &&
+          (logSliceHeight < logDensityAt(leftProposalEndPoint) || logSliceHeight < logDensityAt(rightProposalEndPoint)))
         if (random.nextBernoulli(0.5))
         {
           leftProposalEndPoint += - (rightProposalEndPoint - leftProposalEndPoint);

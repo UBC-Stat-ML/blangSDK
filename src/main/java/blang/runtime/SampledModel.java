@@ -111,7 +111,7 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
       if (f.getAnnotation(Param.class) == null) // TODO: filter out fully observed stuff too
         objectsToOutput.put(f.getName(), ReflexionUtils.getFieldValue(f, model));
     
-    forwardSample(initRandom); 
+    forwardSample(initRandom, true); 
   }
   
   public int nPosteriorSamplers()
@@ -203,8 +203,10 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
     posteriorSamplingStep(random, samplerIndex);
   }
   
-  public void forwardSample(Random random)
+  public void forwardSample(Random random, boolean force)
   {
+    if (!force && sparseUpdateAnnealedIndices.size() > 0 && getExponent() != 0.0)
+      throw new RuntimeException("Forward sampling only possible at temperature zero.");
     for (ForwardSimulator sampler : forwardSamplers) 
       sampler.generate(random); 
     updateAll();
