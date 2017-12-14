@@ -37,7 +37,7 @@ class TestSMCUnbiasness {
     val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis, samplerOptions)
     Assert.assertEquals(chainLen, kernels.list.size)
     val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels)
-    
+    sampledModel.exponent = 0.0
     val exhausiveRand = new ExhaustiveDebugRandom
     
     val AdaptiveJarzynski<SampledModel> engine = new AdaptiveJarzynski<SampledModel>() => [

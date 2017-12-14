@@ -3,8 +3,10 @@ package blang.validation.internals.fixtures;
 import java.util.List;
 
 import bayonet.distributions.Random;
+import blang.core.Constrained;
 import blang.core.LogScaleFactor;
 import blang.core.WritableIntVar;
+import blang.mcmc.ConnectedFactor;
 import blang.mcmc.MHSampler;
 import blang.mcmc.SampledVariable;
 import blang.mcmc.internals.Callback;
@@ -16,6 +18,9 @@ public class IntNaiveMHSampler extends MHSampler
 {
   @SampledVariable
   WritableIntVar variable;
+  
+  @ConnectedFactor
+  Constrained constrained;
   
   public static IntNaiveMHSampler build(WritableIntVar variable, List<LogScaleFactor> numericFactors)
   {
@@ -30,7 +35,7 @@ public class IntNaiveMHSampler extends MHSampler
   {
     final int oldValue = variable.intValue();
     callback.setProposalLogRatio(0.0);
-    variable.set(oldValue + (random.nextBoolean() ? 1 : -1));
+    variable.set(1 - oldValue);
     if (!callback.sampleAcceptance())
       variable.set(oldValue);
   }

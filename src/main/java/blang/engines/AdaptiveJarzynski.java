@@ -49,8 +49,7 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     while (temperature < 1.0)
     {
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature); 
-      if (temperature > 0.0) // at temperature 0.0, we assume the samples are already exact
-        population = propose(parallelRandomStreams, population, temperature, nextTemperature);
+      population = propose(parallelRandomStreams, population, temperature, nextTemperature);
       if (resamplingNeeded(population, nextTemperature))
         population = resample(random, population);
       temperature = nextTemperature;
