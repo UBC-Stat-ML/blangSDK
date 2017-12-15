@@ -51,7 +51,7 @@ model NBMix {
           RealVar geneExpressivity = geneExpressivities.get(gene),
           RealVar cellExpressivity = cellExpressivities.get(cell),
           List<RealVar> relCNsPerCluster = relativeCNs.slice(gene).asList(clusters)
-           ~ NegativeBinomial_MeanParam(geneExpressivity * cellExpressivity * relCNsPerCluster.safeGet(allocation), overdispersion) 
+           ~ NegativeBinomial_MeanParam(geneExpressivity * cellExpressivity * relCNsPerCluster.get(allocation), overdispersion) 
       }
     }
     

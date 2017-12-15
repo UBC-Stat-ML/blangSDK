@@ -23,14 +23,6 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
       return getRealVar(m, index, 0)
   }
   
-  def static <T> T safeGet(List<T> list, int index) {
-    if (index < 0 || index >= list.size) {
-      return list.get(0) // assumes that the configuration has zero probability so we can return an arbitrary item
-    } else {
-      return list.get(index)
-    }
-  }
-  
   def static boolean asBool(int integer) {
     switch (integer) {
       case 0  : false

@@ -35,7 +35,7 @@ model DynamicNormalMixture  {
         means, 
         variances, 
         IntVar curIndic = states.get(obsIdx)
-      ~ Normal(means.safeGet(curIndic), variances.safeGet(curIndic))
+      ~ Normal(means.get(curIndic), variances.get(curIndic))
     }
   }
 }
