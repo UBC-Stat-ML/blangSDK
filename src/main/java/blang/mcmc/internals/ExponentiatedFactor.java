@@ -53,6 +53,13 @@ public class ExponentiatedFactor implements AnnealedFactor
     return expValue * enclosedLogDensity;
   }
   
+//  Proposed strategy:
+//    
+//    - remove the constraint that temperature zero constraint violation should be penalized at time zero
+//    - instead, do no move at first iteration - first move should be pi0 invar, but we already have perfect samples!
+//    - now set this to have an enclosed and a back up. for now use simple rule -> real, int have something, o.w. constant
+//    - this grea
+  
   /**
    * @return -INF if exponent is one, o.w., - (0.5 + 0.5 * exponent) * 1E100
    * 

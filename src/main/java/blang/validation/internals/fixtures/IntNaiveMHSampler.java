@@ -13,7 +13,9 @@ import blang.mcmc.internals.Callback;
 
 
 
-
+/**
+ * Warning: not a general purpose move - specialized to SmallHMM test
+ */
 public class IntNaiveMHSampler extends MHSampler
 {
   @SampledVariable
