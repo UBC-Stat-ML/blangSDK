@@ -21,9 +21,13 @@ import blang.types.IntScalar
 import blang.runtime.Observations
 import java.util.ArrayList
 import blang.validation.internals.fixtures.IntNaiveMHSampler
+import briefj.BriefLog
 
 class TestSMCUnbiasness {
   @Test def void testHMM() {
+    
+    SampledModel::check = true
+    
     val int chainLen = 2
     
     val Observations observationsMarker = new Observations
@@ -36,7 +40,8 @@ class TestSMCUnbiasness {
     val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis, samplerOptions)
     Assert.assertEquals(chainLen, kernels.list.size)
     val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels)
-    sampledModel.exponent = 0.0
+    
+    
     val exhausiveRand = new ExhaustiveDebugRandom
     
     val AdaptiveJarzynski engine = new AdaptiveJarzynski() => [

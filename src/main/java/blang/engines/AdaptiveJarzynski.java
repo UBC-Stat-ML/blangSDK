@@ -77,8 +77,8 @@ public class AdaptiveJarzynski
     
     BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
     {
-      boolean needsCloning = particleIndex > 0 && population.particles.get(particleIndex) == population.particles.get(particleIndex - 1);
       SampledModel current = population.particles.get(particleIndex);
+      boolean needsCloning = particleIndex > 0 && current == population.particles.get(particleIndex - 1);
       cloned[particleIndex] = needsCloning ? current.duplicate() : current;
     });
     
@@ -96,11 +96,12 @@ public class AdaptiveJarzynski
     BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
     {
       Random random = randoms[particleIndex];
-      SampledModel proposed = isInitial ?
-        sampleInitial(random) :
-        sampleNext(random, currentPopulation.particles.get(particleIndex), nextTemperature);
       logWeights[particleIndex] = 
         (isInitial ? 0.0 : currentPopulation.particles.get(particleIndex).logDensityRatio(temperature, nextTemperature) + Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
+      // Note: order important since computation is done in place: weight computation should be done first
+      SampledModel proposed = isInitial ?
+          sampleInitial(random) :
+          sampleNext(random, currentPopulation.particles.get(particleIndex), nextTemperature);
       particles[particleIndex] = proposed;
     });
     

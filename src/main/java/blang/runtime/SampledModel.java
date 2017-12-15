@@ -157,27 +157,7 @@ public class SampledModel
   
   public double logDensityRatio(double temperature, double nextTemperature) 
   {
-    double otherAnnealedDiff = 0.0;
-    if (!otherAnnealedFactors.isEmpty())
-    {
-      final double currentExp = getExponent();
-      
-      annealingExponent.set(nextTemperature);
-      otherAnnealedDiff += sumOtherAnnealed();
-      annealingExponent.set(temperature);
-      otherAnnealedDiff -= sumOtherAnnealed();
-      
-      annealingExponent.set(currentExp);
-    }
-    
-    double delta = nextTemperature - temperature;
-    return
-      otherAnnealedDiff
-        + delta * sumPreannealedFiniteDensities
-        // ?: to avoid 0 * -INF
-        + (nOutOfSupport == 0 ? 
-            0.0 : 
-            nOutOfSupport * (ExponentiatedFactor.annealedMinusInfinity(nextTemperature) - ExponentiatedFactor.annealedMinusInfinity(temperature)));
+    return logDensity(nextTemperature) - logDensity(temperature);
   }
   
   private double sumOtherAnnealed()
