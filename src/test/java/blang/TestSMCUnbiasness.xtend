@@ -14,7 +14,6 @@ import org.junit.Assert
 import blang.runtime.SampledModel
 import blang.engines.AdaptiveJarzynski
 import java.util.function.Supplier
-import blang.runtime.internals.model2kernel.ChangeOfMeasureKernel
 import java.util.List
 import blang.core.IntVar
 import blang.validation.internals.fixtures.ExactHMMCalculations
@@ -40,7 +39,7 @@ class TestSMCUnbiasness {
     sampledModel.exponent = 0.0
     val exhausiveRand = new ExhaustiveDebugRandom
     
-    val AdaptiveJarzynski<SampledModel> engine = new AdaptiveJarzynski<SampledModel>() => [
+    val AdaptiveJarzynski engine = new AdaptiveJarzynski() => [
       resamplingESSThreshold = 1.0 
       temperatureSchedule = new FixedTemperatureSchedule => [
         nTemperatures = 3
@@ -50,9 +49,8 @@ class TestSMCUnbiasness {
       nThreads = new Cores(1)
       random = exhausiveRand
     ]
-    val ChangeOfMeasureKernel kernel = new ChangeOfMeasureKernel(sampledModel)
     
-    val expectedZEstimate = expectedZEstimate([engine.getApproximation(kernel).logNormEstimate], exhausiveRand)
+    val expectedZEstimate = expectedZEstimate([engine.getApproximation(sampledModel).logNormEstimate], exhausiveRand)
     
     val ExactHMMCalculations exactCalc = new ExactHMMCalculations => [
       parameters = new ExactHMMCalculations.SimpleTwoStates()

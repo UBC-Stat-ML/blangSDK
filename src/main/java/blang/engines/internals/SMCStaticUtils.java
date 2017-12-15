@@ -2,10 +2,11 @@ package blang.engines.internals;
 
 import bayonet.distributions.Multinomial;
 import bayonet.smc.ParticlePopulation;
+import blang.runtime.SampledModel;
 
 public class SMCStaticUtils
 {
-  public static double relativeESS(ParticlePopulation<? extends AnnealedParticle> population, double temperature, double nextTemperature, boolean conditional)
+  public static double relativeESS(ParticlePopulation<SampledModel> population, double temperature, double nextTemperature, boolean conditional)
   {
     double [] incrementalWeights = incrementalWeights(population, temperature, nextTemperature);
     double 
@@ -20,7 +21,7 @@ public class SMCStaticUtils
     return numerator * numerator / denominator / (conditional ? 1.0 : population.nParticles()); 
   }
   
-  public static double[] incrementalWeights(ParticlePopulation<? extends AnnealedParticle> population, double temperature,
+  public static double[] incrementalWeights(ParticlePopulation<SampledModel> population, double temperature,
       double nextTemperature)
   {
     double [] result = new double[population.nParticles()];

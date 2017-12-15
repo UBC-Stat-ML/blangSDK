@@ -2,9 +2,8 @@ package blang.engines.internals.ladders;
 
 import java.util.List;
 
-import blang.engines.internals.AnnealingKernels;
-import blang.engines.internals.TemperedParticle;
 import blang.inits.Implementations;
+import blang.runtime.SampledModel;
 
 /**
  * Provides a temperature ladder for parallel tempering-type algorithms.
@@ -12,12 +11,12 @@ import blang.inits.Implementations;
  * be provided at once. 
  */
 @Implementations({Geometric.class})
-public interface TemperatureLadder<P extends TemperedParticle>
+public interface TemperatureLadder
 {
   /**
    * Fill the provided temperingParameters with annealing parameters (first one should be 1 ~ room temperature)
    * 
    * Optionally, also fill in initialStates with states at the corresponding temperature. 
    */
-  void temperingParameters(AnnealingKernels<P> kernels, List<Double> temperingParameters, List<P> initialStates, int nThreads);
+  void temperingParameters(List<Double> temperingParameters, List<SampledModel> initialStates, int nThreads);
 }

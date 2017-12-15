@@ -5,16 +5,15 @@ import java.util.Arrays;
 import bayonet.distributions.Random;
 import bayonet.smc.ParticlePopulation;
 import bayonet.smc.ResamplingScheme;
-import blang.engines.internals.AnnealedParticle;
-import blang.engines.internals.AnnealingKernels;
 import blang.engines.internals.schedules.AdaptiveTemperatureSchedule;
 import blang.engines.internals.schedules.TemperatureSchedule;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.experiments.Cores;
+import blang.runtime.SampledModel;
 import briefj.BriefParallel;
 
-public class AdaptiveJarzynski<P extends AnnealedParticle> 
+public class AdaptiveJarzynski
 {
   @Arg                    @DefaultValue("0.5")
   public double resamplingESSThreshold = 0.5;
@@ -34,16 +33,16 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
   
-  AnnealingKernels<P> kernels;
+  private SampledModel prototype;
   
   /**
    * @return The particle population at the last step
    */
-  public ParticlePopulation<P> getApproximation(AnnealingKernels<P> kernels)
+  public ParticlePopulation<SampledModel> getApproximation(SampledModel model)
   {
-    this.kernels = kernels;
+    prototype = model;
     Random [] parallelRandomStreams = Random.parallelRandomStreams(random, nSamplesPerTemperature);
-    ParticlePopulation<P> population = initialize(parallelRandomStreams);
+    ParticlePopulation<SampledModel> population = initialize(parallelRandomStreams);
     
     double temperature = 0.0;
     while (temperature < 1.0)
@@ -57,7 +56,7 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     return population;
   }
   
-  private boolean resamplingNeeded(ParticlePopulation<P> population, double nextTemperature) 
+  private boolean resamplingNeeded(ParticlePopulation<SampledModel> population, double nextTemperature) 
   {
     for (int i = 0; i < population.nParticles(); i++)
       if (population.getNormalizedWeight(i) == 0.0)
@@ -65,43 +64,41 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
     return population.getRelativeESS() < resamplingESSThreshold && nextTemperature < 1.0;
   }
 
-  private ParticlePopulation<P> resample(Random random, ParticlePopulation<P> population)
+  private ParticlePopulation<SampledModel> resample(Random random, ParticlePopulation<SampledModel> population)
   {
     population = population.resample(random, resamplingScheme);
-    if (kernels.inPlace())
-      deepCopyParticles(population);
+    deepCopyParticles(population);
     return population;
   }
 
-  private void deepCopyParticles(final ParticlePopulation<P> population) 
+  private void deepCopyParticles(final ParticlePopulation<SampledModel> population) 
   {
-    @SuppressWarnings("unchecked")
-    P [] cloned = (P[]) new AnnealedParticle[nSamplesPerTemperature];
+    SampledModel [] cloned = (SampledModel[]) new SampledModel[nSamplesPerTemperature];
     
     BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
     {
       boolean needsCloning = particleIndex > 0 && population.particles.get(particleIndex) == population.particles.get(particleIndex - 1);
-      P current = population.particles.get(particleIndex);
-      cloned[particleIndex] = needsCloning ? kernels.deepCopy(current) : current;
+      SampledModel current = population.particles.get(particleIndex);
+      cloned[particleIndex] = needsCloning ? current.duplicate() : current;
     });
     
     for (int i = 0; i < nSamplesPerTemperature; i++)
       population.particles.set(i, cloned[i]);
   }
 
-  private ParticlePopulation<P> propose(Random [] randoms, final ParticlePopulation<P> currentPopulation, double temperature, double nextTemperature)
+  private ParticlePopulation<SampledModel> propose(Random [] randoms, final ParticlePopulation<SampledModel> currentPopulation, double temperature, double nextTemperature)
   {
     final boolean isInitial = currentPopulation == null;
     
     final double [] logWeights = new double[nSamplesPerTemperature];
-    @SuppressWarnings("unchecked")
-    final P [] particles = (P[]) new AnnealedParticle[nSamplesPerTemperature];
+    final SampledModel [] particles = (SampledModel[]) new SampledModel[nSamplesPerTemperature];
     
     BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
     {
-      P proposed = isInitial ?
-        kernels.sampleNext(randoms[particleIndex], null, 0.0) :
-        kernels.sampleNext(randoms[particleIndex], currentPopulation.particles.get(particleIndex), nextTemperature);
+      Random random = randoms[particleIndex];
+      SampledModel proposed = isInitial ?
+        sampleInitial(random) :
+        sampleNext(random, currentPopulation.particles.get(particleIndex), nextTemperature);
       logWeights[particleIndex] = 
         (isInitial ? 0.0 : currentPopulation.particles.get(particleIndex).logDensityRatio(temperature, nextTemperature) + Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
       particles[particleIndex] = proposed;
@@ -113,7 +110,23 @@ public class AdaptiveJarzynski<P extends AnnealedParticle>
         isInitial ? 0.0 : currentPopulation.logScaling);
   }
   
-  private ParticlePopulation<P> initialize(Random [] randoms)
+  private SampledModel sampleInitial(Random random)
+  {
+    SampledModel copy = prototype.duplicate();
+    copy.setExponent(0.0);
+    copy.forwardSample(random, false);
+    copy.dropForwardSimulator();
+    return copy;
+  }
+  
+  private SampledModel sampleNext(Random random, SampledModel current, double temperature)
+  {
+    current.setExponent(temperature);
+    current.posteriorSamplingStep_deterministicScanAndShuffle(random); 
+    return current;
+  }
+  
+  private ParticlePopulation<SampledModel> initialize(Random [] randoms)
   {
     return propose(randoms, null, Double.NaN, Double.NaN);
   }

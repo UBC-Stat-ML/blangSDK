@@ -3,12 +3,11 @@ package blang.engines.internals.ladders;
 import java.util.List;
 import java.util.Optional;
 
-import blang.engines.internals.AnnealingKernels;
-import blang.engines.internals.TemperedParticle;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
+import blang.runtime.SampledModel;
 
-public class Geometric<P extends TemperedParticle> implements TemperatureLadder<P>
+public class Geometric implements TemperatureLadder
 {
   @Arg(description = "Number of chains, set to the number of threads if unspecified.") 
   public Optional<Integer> nChains = Optional.empty();
@@ -18,11 +17,10 @@ public class Geometric<P extends TemperedParticle> implements TemperatureLadder<
   
   @Override
   public void temperingParameters(
-      AnnealingKernels<P> kernels, 
       List<Double> temperingParameters,
-      List<P> initialStates,
+      List<SampledModel> initialStates,
       int nThreads) 
-  {
+  { 
     temperingParameters(temperingParameters, nChains.orElse(nThreads));
   }
 

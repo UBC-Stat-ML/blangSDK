@@ -9,24 +9,22 @@ import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.io.BlangTidySerializer;
 import blang.runtime.SampledModel;
-import blang.runtime.internals.model2kernel.ChangeOfMeasureKernel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import briefj.BriefIO;
 
 /**
  * Sequential Change of Measure implementation.
  */
-public class SCM extends AdaptiveJarzynski<SampledModel> implements PosteriorInferenceEngine
+public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
 {
   @GlobalArg ExperimentResults results = new ExperimentResults();
   
-  ChangeOfMeasureKernel kernel;
+  SampledModel model;
   
   @Override
   public void setSampledModel(SampledModel model) 
   { 
-    model.setExponent(0.0);
-    this.kernel = new ChangeOfMeasureKernel(model);
+    this.model = model;
   }
 
   @SuppressWarnings("unchecked")
@@ -34,7 +32,7 @@ public class SCM extends AdaptiveJarzynski<SampledModel> implements PosteriorInf
   public void performInference() 
   {
     // create approx
-    ParticlePopulation<SampledModel> approximation = getApproximation(kernel);
+    ParticlePopulation<SampledModel> approximation = getApproximation(model);
     
     // resample for now the last iteration to simplify processing downstream
     approximation = approximation.resample(random, resamplingScheme);

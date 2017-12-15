@@ -6,13 +6,13 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.PegasusSolver;
 
 import bayonet.smc.ParticlePopulation;
-import blang.engines.internals.AnnealedParticle;
 import blang.engines.internals.SMCStaticUtils;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.DesignatedConstructor;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
+import blang.runtime.SampledModel;
 import briefj.BriefIO;
 
 public class AdaptiveTemperatureSchedule implements TemperatureSchedule
@@ -39,7 +39,7 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   }
   
   @Override
-  public double nextTemperature(ParticlePopulation<? extends AnnealedParticle> population, double temperature)
+  public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature)
   {
     UnivariateFunction objective = objective(population, temperature);
     double nextTemperature = objective.value(1.0) >= 0 ? 
@@ -50,7 +50,7 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
     return nextTemperature;
   }
 
-  private UnivariateFunction objective(ParticlePopulation<? extends AnnealedParticle> population, double temperature)
+  private UnivariateFunction objective(ParticlePopulation<SampledModel> population, double temperature)
   {
     double previousRelativeESS = useConditional ? Double.NaN : population.getRelativeESS();
     return useConditional ? 

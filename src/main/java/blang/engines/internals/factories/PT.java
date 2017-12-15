@@ -12,11 +12,9 @@ import blang.inits.experiments.ExperimentResults;
 import blang.inits.experiments.tabwriters.TabularWriter;
 import blang.io.BlangTidySerializer;
 import blang.runtime.SampledModel;
-import blang.runtime.internals.model2kernel.ChangeOfMeasureKernel;
-import blang.runtime.internals.model2kernel.ExactSamplerKernel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 
-public class PT extends ParallelTempering<SampledModel> implements PosteriorInferenceEngine  
+public class PT extends ParallelTempering implements PosteriorInferenceEngine  
 {
   @GlobalArg ExperimentResults results;
   
@@ -32,7 +30,7 @@ public class PT extends ParallelTempering<SampledModel> implements PosteriorInfe
   @Override
   public void setSampledModel(SampledModel model) 
   {
-    initialize(new ChangeOfMeasureKernel(model), new ExactSamplerKernel(model), random);
+    initialize(model, random);
   }
 
   @SuppressWarnings("unchecked")

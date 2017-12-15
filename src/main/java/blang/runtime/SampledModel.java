@@ -19,8 +19,6 @@ import blang.core.ForwardSimulator;
 import blang.core.LogScaleFactor;
 import blang.core.Model;
 import blang.core.Param;
-import blang.engines.internals.AnnealedParticle;
-import blang.engines.internals.TemperedParticle;
 import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.mcmc.Sampler;
 import blang.mcmc.internals.BuiltSamplers;
@@ -35,7 +33,7 @@ import briefj.BriefLists;
 import briefj.BriefLog;
 import briefj.ReflexionUtils;
 
-public class SampledModel implements AnnealedParticle, TemperedParticle
+public class SampledModel 
 {
   public final Model model;
   private final List<Sampler> posteriorInvariantSamplers;
@@ -130,7 +128,6 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
         + (nOutOfSupport == 0 ? 0.0 : nOutOfSupport * ExponentiatedFactor.annealedMinusInfinity(exponentValue));
   }
   
-  @Override
   public double logDensity(double temperingParameter) 
   {
     final double previousValue = annealingExponent.doubleValue();
@@ -140,7 +137,6 @@ public class SampledModel implements AnnealedParticle, TemperedParticle
     return result;
   }
   
-  @Override
   public double logDensityRatio(double temperature, double nextTemperature) 
   {
     double otherAnnealedDiff = 0.0;

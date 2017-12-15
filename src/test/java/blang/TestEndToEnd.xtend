@@ -10,17 +10,18 @@ class TestEndToEnd {
   @Test
   def void doomsday() {
     
-    Assert.assertEquals(
-      0, 
-      Runner::start(
-        "--model", Doomsday.canonicalName,
-        "--model.rate", "1.0",
-        "--model.z", "NA",
-        "--model.y", "1.2",
-        "--engine.nSamplesPerTemperature", "100"
+    for (engine : #["SCM", "PT"]) {
+      Assert.assertEquals(
+        0, 
+        Runner::start(
+          "--model", Doomsday.canonicalName,
+          "--model.rate", "1.0",
+          "--model.z", "NA",
+          "--model.y", "1.2",
+          "--engine", engine
+        )
       )
-    )
-    
+    }
   }
   
 }
