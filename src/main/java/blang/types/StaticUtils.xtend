@@ -16,11 +16,13 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   //// Initialization utilities
   
   def static IntScalar intVar() {
-    return intVar(Integer::MIN_VALUE)
+    return intVar(0)
   }
   
+  // Needed for now in Bernoulli to set to within [0,1]
+  // But in process of changing that
   def static RealScalar realVar() {
-    return realVar(Double::NaN)
+    return realVar(0.0)
   }
   
   def static IntScalar intVar(int initialValue) {

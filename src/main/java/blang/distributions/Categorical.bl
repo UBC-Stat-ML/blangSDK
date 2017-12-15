@@ -6,7 +6,7 @@ model Categorical {
   param Simplex probabilities
   
   laws {
-    logf(probabilities, realization)  {
+    logf(probabilities, realization) {
       log(probabilities.get(realization)) 
     }
     realization is Constrained

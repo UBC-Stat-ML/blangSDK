@@ -2,7 +2,6 @@ package blang.mcmc
 
 import bayonet.distributions.Random
 import blang.core.Factor
-import blang.distributions.NormalField
 import blang.mcmc.internals.SamplerBuilderContext
 import java.util.List
 import blang.distributions.Categorical
@@ -21,7 +20,6 @@ class CategoricalSampler implements Sampler {
   List<Factor> _factors
   
   List<LogScaleFactor> logScaleFactors = null
-  
 
   override void execute(Random rand) {
     val int max = categorical.probabilities.nEntries
@@ -49,6 +47,5 @@ class CategoricalSampler implements Sampler {
     }
     return true
   }
-  
 
 }

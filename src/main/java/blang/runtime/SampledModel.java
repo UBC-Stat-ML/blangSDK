@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import bayonet.distributions.Random;
+import bayonet.math.NumericalUtils;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -117,15 +119,31 @@ public class SampledModel
     return posteriorInvariantSamplers.size();
   }
   
+  public static boolean check = false;
+  
   public double logDensity()
   {
     final double exponentValue = annealingExponent.doubleValue();
-    return 
+    final double result = 
       sumOtherAnnealed() 
         + sumFixedDensities 
         + exponentValue * sumPreannealedFiniteDensities
         // ?: to avoid 0 * -INF
         + (nOutOfSupport == 0 ? 0.0 : nOutOfSupport * ExponentiatedFactor.annealedMinusInfinity(exponentValue));
+    if (check) check(result);
+    return result;
+  }
+  
+  private void check(double expected) 
+  {
+    double sum = 0.0;
+    for (ExponentiatedFactor f : sparseUpdateFactors)
+      sum += f.logDensity();
+    for (LogScaleFactor f : otherAnnealedFactors)
+      sum += f.logDensity();
+    if (expected == Double.NEGATIVE_INFINITY && sum == Double.NEGATIVE_INFINITY)
+      return;
+    NumericalUtils.checkIsClose(expected, sum);
   }
   
   public double logDensity(double temperingParameter) 
@@ -316,7 +334,6 @@ public class SampledModel
   
   //// Utility methods setting up caches
   
-  @SuppressWarnings("unlikely-arg-type")
   private void initSampler2FactorIndices(GraphAnalysis graphAnalysis, BuiltSamplers samplers, AnnealingStructure annealingStructure) 
   {
     Map<ExponentiatedFactor, Integer> factor2Index = factor2index(sparseUpdateFactors);
@@ -332,8 +349,8 @@ public class SampledModel
       List<Integer> 
         annealedIndices = new ArrayList<>(),
         fixedIndices = new ArrayList<>();
-      for (Factor f : factors)
-        (annealedFactors.contains(factors) ? annealedIndices : fixedIndices).add(factor2Index.get(f));
+      for (Factor f : factors) 
+        (annealedFactors.contains(f) ? annealedIndices : fixedIndices).add(factor2Index.get(f));
       sampler2sparseUpdateAnnealed[samplerIndex] = annealedIndices.stream().mapToInt(i->i).toArray();
       sampler2sparseUpdateFixed   [samplerIndex] = fixedIndices   .stream().mapToInt(i->i).toArray();
     }

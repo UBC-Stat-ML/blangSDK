@@ -4,11 +4,14 @@ import blang.runtime.Runner
 import org.junit.Assert
 import org.junit.Test
 import blang.validation.internals.fixtures.Doomsday
+import blang.runtime.SampledModel
 
 class TestEndToEnd {
   
   @Test
   def void doomsday() {
+    
+    SampledModel::check = true
     
     for (engine : #["SCM", "PT"]) {
       Assert.assertEquals(

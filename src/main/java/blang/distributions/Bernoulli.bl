@@ -1,26 +1,13 @@
 package blang.distributions
 
 model Bernoulli {
-  
   random IntVar realization   
-  
   param RealVar probability   
   
   laws {
-    
-    logf(probability, realization)  {
-      if (probability < 0.0 || probability > 1.0) return NEGATIVE_INFINITY
-      if (!realization.isBool) return NEGATIVE_INFINITY
-      if (realization == 0) {
-        return log(1.0 -  probability)
-      } else {
-        return log(probability)
-      }
-    }
-    
-  }
-  
-  generate(rand) {
-    Generators::bernoulli(rand, probability).asInt
+    realization | probability ~ Categorical({
+      // TODO: handle probability not in 0, 1
+      denseSimplex(#[1.0 - probability, probability])
+    })
   }
 }

@@ -2,6 +2,7 @@ package blang.engines;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
@@ -21,6 +22,9 @@ public class ParallelTempering
   
   @Arg                   @DefaultValue("Geometric")
   public TemperatureLadder ladder = new Geometric();
+  
+  @Arg(description = "If unspecified, use the number of threads.")
+  public Optional<Integer> nChains = Optional.empty();
   
   // convention: state index 0 is room temperature (target of interest)
   private SampledModel [] states;
@@ -42,7 +46,7 @@ public class ParallelTempering
   {
     temperingParameters = new ArrayList<>();
     List<SampledModel> initStates = new ArrayList<>();
-    ladder.temperingParameters(temperingParameters, initStates, nThreads.available);
+    ladder.temperingParameters(temperingParameters, initStates, nChains.orElse(nThreads.available));
     System.out.println("Temperatures: " + temperingParameters);
     int nChains = temperingParameters.size();
     states = initStates.isEmpty() ? defaultInit(prototype, nChains, random) : (SampledModel[]) initStates.toArray();
