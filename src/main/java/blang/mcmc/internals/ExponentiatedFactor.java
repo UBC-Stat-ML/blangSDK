@@ -4,11 +4,24 @@ import blang.core.AnnealedFactor;
 import blang.core.LogScaleFactor;
 import blang.core.RealVar;
 import blang.runtime.internals.objectgraph.SkipDependency;
+import blang.types.internals.InvalidParameter;
 
 
 public class ExponentiatedFactor implements AnnealedFactor
 {
-  public final LogScaleFactor enclosed;
+  private final LogScaleFactor enclosed;
+  
+  /**
+   * Compute the density of the enclosed density.
+   * Catch exceptions of type InvalidParameter 
+   * (thrown by calling StaticUtils.invalidParameter()) 
+   * and return negative infinity in such case.
+   */
+  public double enclosedLogDensity()
+  {
+    try { return enclosed.logDensity(); } 
+    catch (InvalidParameter ip) { return Double.NEGATIVE_INFINITY; }
+  }
   
   /*
    * Note: we are using a RealVar here to allow O(1) 
@@ -49,7 +62,7 @@ public class ExponentiatedFactor implements AnnealedFactor
     double expValue = getExponentValue();
     if (expValue == 0.0)
       return 0.0;
-    double enclosedLogDensity = enclosed.logDensity();
+    double enclosedLogDensity = enclosedLogDensity();
     if (enclosedLogDensity == Double.NEGATIVE_INFINITY)
       return annealedMinusInfinity(expValue);  
     return expValue * enclosedLogDensity;

@@ -10,6 +10,7 @@ import static xlinear.MatrixOperations.*
 import blang.core.IntConstant
 import blang.core.RealConstant
 import bayonet.math.SpecialFunctions
+import blang.types.internals.InvalidParameter
 
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
@@ -114,6 +115,19 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   
   def static double NEGATIVE_INFINITY() {
     Double.NEGATIVE_INFINITY
+  }
+  
+  /**
+   * Exception caught in ExponentiatedFactor.
+   * 
+   * Implementation note: does not record stack trace, so should not 
+   * incur the full performance hit of exception throwing.
+   * However this could still become the performance bottleneck. In such 
+   * case, consider designing a sampler that avoid proposing invalid 
+   * parameters as much as possible.
+   */
+  def static void invalidParameter() {
+    throw InvalidParameter.instance;
   }
   
   private new() {}

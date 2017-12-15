@@ -58,7 +58,6 @@ public class GraphAnalysis
   private final Map<ObjectNode<ModelComponent>,String> factorDescriptions = new LinkedHashMap<>();
   private final Observations observations;
   private final RealScalar annealingParameter = new RealScalar(1.0);
-  private final boolean wrapInAnnealableFactors = true;
   
   public LinkedHashSet<Node> getLatentVariables() 
   {
@@ -199,8 +198,7 @@ public class GraphAnalysis
         String description = subComponent.toString();
         boolean isLogScale = subComponent instanceof LogScaleFactor;
         boolean isCustomAnneal = subComponent instanceof AnnealedFactor;
-        if (   wrapInAnnealableFactors  // we asked to wrap things in annealers
-            && isLogScale  // and it's numeric (not a measure-zero constraint-based factor)
+        if (isLogScale  // if it's numeric (not a measure-zero constraint-based factor)
             && !isCustomAnneal)  // and it's not already annealed via custom mechanism
           subComponent = new ExponentiatedFactor((LogScaleFactor) subComponent);
         ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);

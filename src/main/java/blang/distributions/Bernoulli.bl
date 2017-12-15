@@ -6,8 +6,8 @@ model Bernoulli {
   
   laws {
     realization | probability ~ Categorical({
-      // TODO: handle probability not in 0, 1
-      denseSimplex(#[1.0 - probability, probability])
+      if (probability < 0.0 || probability > 1.0) invalidParameter
+      return denseSimplex(#[1.0 - probability, probability])
     })
   }
 }

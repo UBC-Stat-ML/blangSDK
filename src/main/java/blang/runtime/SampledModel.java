@@ -283,7 +283,7 @@ public class SampledModel
     nOutOfSupport = 0;
     for (int annealedIndex : sparseUpdateAnnealedIndices)
     {
-      double newPreAnnealedCache = sparseUpdateFactors.get(annealedIndex).enclosed.logDensity();
+      double newPreAnnealedCache = sparseUpdateFactors.get(annealedIndex).enclosedLogDensity();
       caches[annealedIndex] = newPreAnnealedCache;
       
       if (newPreAnnealedCache == Double.NEGATIVE_INFINITY)
@@ -321,7 +321,7 @@ public class SampledModel
       }
       
       {
-        double newPreAnnealedCache = sparseUpdateFactors.get(annealedIndex).enclosed.logDensity();
+        double newPreAnnealedCache = sparseUpdateFactors.get(annealedIndex).enclosedLogDensity();
         caches[annealedIndex] = newPreAnnealedCache;
         
         if (newPreAnnealedCache == Double.NEGATIVE_INFINITY)
