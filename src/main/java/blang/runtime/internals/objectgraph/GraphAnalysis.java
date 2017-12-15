@@ -31,7 +31,6 @@ import blang.core.LogScaleFactor;
 import blang.core.Model;
 import blang.core.ModelComponent;
 import blang.core.Param;
-import blang.core.SupportFactor;
 import blang.mcmc.internals.ExponentiatedFactor;
 import blang.runtime.Observations;
 import blang.types.RealScalar;
@@ -60,7 +59,6 @@ public class GraphAnalysis
   private final Observations observations;
   private final RealScalar annealingParameter = new RealScalar(1.0);
   private final boolean wrapInAnnealableFactors = true;
-  private final boolean wrapInSafeFactor = false;
   
   public LinkedHashSet<Node> getLatentVariables() 
   {
@@ -145,58 +143,8 @@ public class GraphAnalysis
       accessibilityGraph.getAccessibleNodes(factorNode)
         .filter(node -> freeMutableNodes.contains(node))
         .forEachOrdered(node -> mutableToFactorCache.put(node, factorNode));
-    
-    if (wrapInSafeFactor)
-      initializeSafeFactors();
   }
   
-  private void initializeSafeFactors() 
-  {
-    for (ObjectNode<Factor> factorNode : factorNodes)
-    {
-      Factor factor = factorNode.object;
-      SafeFactor safe = getSafeFactor(factor);
-      if (safe != null)
-      {
-        Set<ObjectNode<SupportFactor>> supports = new LinkedHashSet<>();
-        Set<Node> accessibilityConstraint = getFreeMutableNodes(factorNode);
-        
-        for (Node node : accessibilityConstraint)
-        {
-          Set<ObjectNode<Factor>> candidates = mutableToFactorCache.get(node);
-          for (ObjectNode<Factor> candidateNode : candidates)
-          {
-            SupportFactor candidate = getSupportFactor(candidateNode.object);
-            if (candidate != null && accessibilityConstraint.containsAll(getFreeMutableNodes(candidateNode)))
-              supports.add(new ObjectNode<SupportFactor>(candidate));
-          }
-        }
-        for (ObjectNode<SupportFactor> supportNode : supports)
-          safe.preconditions.add(supportNode.object);
-      }
-    }
-  }
-
-  private SupportFactor getSupportFactor(Factor factor)  
-  {
-    if (factor instanceof SupportFactor)
-      return (SupportFactor) factor;
-    if (factor instanceof ExponentiatedFactor)
-      return getSupportFactor(((ExponentiatedFactor) factor).enclosed);
-    if (factor instanceof SafeFactor)
-      return getSupportFactor(((SafeFactor) factor).enclosed);
-    return null;
-  }
-
-  private SafeFactor getSafeFactor(Factor factor) 
-  {
-    if (factor instanceof SafeFactor)
-      return (SafeFactor) factor;
-    if (factor instanceof ExponentiatedFactor)
-      return getSafeFactor(((ExponentiatedFactor) factor).enclosed);
-    return null;
-  }
-
   private void buildAccessibilityGraph() 
   {
     accessibilityGraph = new AccessibilityGraph();
@@ -251,8 +199,6 @@ public class GraphAnalysis
         String description = subComponent.toString();
         boolean isLogScale = subComponent instanceof LogScaleFactor;
         boolean isCustomAnneal = subComponent instanceof AnnealedFactor;
-        if (wrapInSafeFactor && isLogScale && !(subComponent instanceof SupportFactor))
-          subComponent = new SafeFactor((LogScaleFactor) subComponent);
         if (   wrapInAnnealableFactors  // we asked to wrap things in annealers
             && isLogScale  // and it's numeric (not a measure-zero constraint-based factor)
             && !isCustomAnneal)  // and it's not already annealed via custom mechanism
