@@ -1,24 +1,17 @@
 package blang.distributions
 
-
 model ContinuousUniform {
-  
   random RealVar realization
-   
-  param  RealVar min, 
-                 max
+  param  RealVar min, max
   
   laws {
-    
     logf(min, max) {
       if (max - min <= 0.0) return NEGATIVE_INFINITY
       return - log(max - min)
     }
-    
     indicator(realization, min, max) {
       min <= realization && realization <= max
     }
-    
   }
   
   generate(rand) {

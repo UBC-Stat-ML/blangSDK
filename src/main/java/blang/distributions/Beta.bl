@@ -3,39 +3,31 @@ package blang.distributions
 import blang.distributions.internals.Helpers
 
 model Beta {
-   
   random RealVar realization
-  
-  param  RealVar alpha, 
-                 beta
+  param  RealVar alpha, beta
   
   laws {
-    
     logf(alpha, realization) {
       if (realization <= 0.0 || realization >= 1.0) return NEGATIVE_INFINITY
       if (alpha <= 0.0) return NEGATIVE_INFINITY
       Helpers::checkDirichletOrBetaParam(alpha)
       return (alpha - 1.0) * log(realization)
     }
-    
     logf(beta, realization) {
       if (realization <= 0.0 || realization >= 1.0) return NEGATIVE_INFINITY
       if (beta <= 0.0) return NEGATIVE_INFINITY
       Helpers::checkDirichletOrBetaParam(beta)
       return (beta - 1.0) * log1p(-realization)
     }
-        
     logf(alpha, beta) {
       if (alpha <= 0.0) return NEGATIVE_INFINITY
       if (beta <= 0.0) return NEGATIVE_INFINITY
       return lnGamma(alpha + beta)
     }
-    
     logf(alpha) {
       if (alpha <= 0.0) return NEGATIVE_INFINITY
       return - lnGamma(alpha)
     }
-    
     logf(beta) {
       if (beta <= 0.0) return NEGATIVE_INFINITY
       return - lnGamma(beta)

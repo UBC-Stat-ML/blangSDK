@@ -142,9 +142,4 @@ public class IntSliceSampler implements Sampler
       sum += f.logDensity();
     return sum;
   }
-   
-  public boolean setup(SamplerBuilderContext context) 
-  {
-    return true;
-  }
 }

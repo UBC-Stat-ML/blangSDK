@@ -1,23 +1,17 @@
 package blang.distributions
 
 model Normal {
-  
   random RealVar realization 
-  
-  param RealVar mean,
-                variance
+  param RealVar mean, variance
   
   laws {  
-    
     logf() {
       - log(2*PI) / 2.0
     }
-    
     logf(variance) {
       if (variance < 0.0) return NEGATIVE_INFINITY
       return - 0.5 * log(variance)
     }
-    
     logf(mean, variance, realization)  {
       if (variance < 0.0) return NEGATIVE_INFINITY
       return - 0.5 * pow(mean - realization, 2) / variance

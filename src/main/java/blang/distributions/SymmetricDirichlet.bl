@@ -1,20 +1,14 @@
 package blang.distributions
 
 model SymmetricDirichlet {
-  
   param Integer dim
-  
   /*
    * SymmetricDirichlet(alpha, dim) = Dirichlet(alpha/dim, alpha/dim, ..., alpha/dim)
    */
   param RealVar concentration
-  
   random Simplex realization
   
   laws {
-    
     realization | dim, concentration ~ Dirichlet(ones(dim) * (concentration.doubleValue / dim))
-    
   }
-  
 }

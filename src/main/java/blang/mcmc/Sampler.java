@@ -14,6 +14,9 @@ public interface Sampler
   /**
    * @return Is the sampler compatible?
    */
-  public boolean setup(SamplerBuilderContext context);
+  default public boolean setup(SamplerBuilderContext context)  
+  {
+    return true;
+  }
   
 }

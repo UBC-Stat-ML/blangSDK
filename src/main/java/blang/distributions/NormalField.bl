@@ -13,18 +13,14 @@ import briefj.Indexer
  */
 @Samplers(EllipticalSliceSampler)
 model NormalField {
-
-
   /**
    * precision.support is assumed to be constant.
    * TODO: add some construct that test this exponentially less and less frequently
    */
   param Precision precision
-  
   random Plated<RealVar> realization
     
   laws {
-    
     for (UnorderedPair pair : precision.support) {
       logf(
         precision,
@@ -40,11 +36,9 @@ model NormalField {
         }
       }
     }
-    
     logf(int dim = precision.plate.indices.size) {
       - dim * log(2*PI) / 2.0
     }
-    
     logf(precision) {
       0.5 * precision.logDet
     }

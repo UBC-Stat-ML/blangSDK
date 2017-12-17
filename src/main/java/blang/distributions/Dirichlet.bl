@@ -3,13 +3,10 @@ package blang.distributions
 import blang.distributions.internals.Helpers
 
 model Dirichlet {
-  
   random Simplex realization 
-  
   param  Matrix concentrations 
   
   laws {
-    
     logf(concentrations, realization) {
       var sum = 0.0
       for (int dim : 0 ..< concentrations.nEntries) {
@@ -19,7 +16,6 @@ model Dirichlet {
       }
       return sum
     }
-      
     logf(concentrations) {
       var sum = 0.0
       for (int dim : 0 ..< concentrations.nEntries) {
@@ -27,7 +23,6 @@ model Dirichlet {
       }
       return sum + lnGamma(concentrations.sum) 
     }
-    
     realization is Constrained
   }
   

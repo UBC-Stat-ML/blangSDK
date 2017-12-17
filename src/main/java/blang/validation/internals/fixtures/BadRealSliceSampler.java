@@ -118,11 +118,6 @@ public class BadRealSliceSampler implements Sampler
     return sum;
   }
   
-  public boolean setup(SamplerBuilderContext context) 
-  {
-    return true;
-  }
-  
   private static final String INFINITE_SLICE_MESSAGE = "Slice diverged to infinity. "
       + "Possible cause is that a variable has no distribution attached to it, i.e. the model is improper.";
 }

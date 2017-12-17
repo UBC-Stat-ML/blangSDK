@@ -22,7 +22,7 @@ class BootstrapHTMLRenderer implements Renderer  {
   def void renderInto(File folder) {
     for (Document document : documents) {
       val File file = new File(folder, document.fileName)
-      BriefIO.write(file, document.render(this).replaceFirst("\\s*" + NO_TRAILING_SPACE, "").replaceAll("\\s*" + NO_TRAILING_SPACE, "\n")) 
+      BriefIO.write(file, document.render(this).replaceAll("\\s*" + NO_TRAILING_SPACE, "\n"))  // replaceAll("\\s*" + NO_TRAILING_SPACE + "[^\n]", "")
     }
   } 
   
@@ -161,14 +161,19 @@ class BootstrapHTMLRenderer implements Renderer  {
     state.codeModes += code.language
     val String processedCode = noTrailingSpace(code.contents)
     return '''
-      <div id="editor«state.codeModes.size - 1»" style="height: «(code.contents.split("\\R").size * 1.5) as int»em;">«processedCode»</div>
+      <div id="editor«state.codeModes.size - 1»" style="height: «codeHeight(code.contents)»em;">«processedCode»</div>
       <br />
     '''
   }
   
+  def String codeHeight(String contents) {
+    val int n = (contents.split("\\R").size * 1.4) as int
+    return "" + (n+1)
+  }
+  
   public static val String NO_TRAILING_SPACE = "____NO_TRAILING_SPACE"
   def public static String noTrailingSpace(String text) {
-    text.split("\\R").map[NO_TRAILING_SPACE + it].join('\n')
+    return text.split("\\R").map[NO_TRAILING_SPACE + it].join('\n').replaceFirst(NO_TRAILING_SPACE, "")
   }
   
   def protected List<String> recurse(DocElement element) {

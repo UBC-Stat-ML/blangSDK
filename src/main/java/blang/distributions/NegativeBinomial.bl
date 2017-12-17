@@ -1,28 +1,22 @@
 package blang.distributions
 
 model NegativeBinomial {
-  
   random IntVar k
-  
   param RealVar r, p
   
   laws {
-    
     logf(k, r) {
       if (r <= 0 || k < 0) return NEGATIVE_INFINITY
       return logBinomial(k+r-1.0, k)
     }
-    
     logf(r, k, p) {
       if (p < 0.0 || p > 1.0) return NEGATIVE_INFINITY
       if (r <= 0 || k < 0) return NEGATIVE_INFINITY
       return k * log(p) + r * log(1.0 - p)
     }
-    
   }
   
   generate(rand) {
     Generators::negativeBinomial(rand, r, p)
   }
-  
 }

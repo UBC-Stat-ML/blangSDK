@@ -16,12 +16,6 @@ public abstract class MHSampler implements Sampler
   protected List<LogScaleFactor> numericFactors;
   
   @Override
-  public boolean setup(SamplerBuilderContext context) 
-  {
-    return true;
-  }
-  
-  @Override
   public void execute(Random random)
   {
     // record likelihood before

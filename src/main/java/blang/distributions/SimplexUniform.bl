@@ -1,15 +1,10 @@
 package blang.distributions
 
 model SimplexUniform {
-  
   param Integer dim
-  
   random Simplex realization
   
   laws {
-    
     realization | dim ~ Dirichlet(ones(dim))
-    
   }
-  
 }

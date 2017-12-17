@@ -1,19 +1,13 @@
 package blang.distributions
 
-
 model NegativeBinomial_MeanParam {
-
   random IntVar k
-  
   param RealVar mean, overdispersion
 
   laws {
-    
     k | mean, overdispersion ~ NegativeBinomial(
       mean * mean / overdispersion, 
       1.0 - mean/(mean + overdispersion)
     )
-    
   }
-
 }

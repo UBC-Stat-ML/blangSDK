@@ -1,36 +1,28 @@
 package blang.distributions
 
 model MultivariateNormal {
-  
   random Matrix realization
-  
   param Matrix mean
-  
   // Note: no need to mark as constrained since CholeskyDecomposition is read-only 
   // so won't attempt to do naive sampling by default
   param CholeskyDecomposition precision
   
   laws {
-    
     logf(double dim = realization.nEntries) {
       - dim * log(2*PI) / 2.0
     }
-    
     logf(precision) {
       0.5 * precision.logDet
     }
-    
     logf(mean, precision, realization)  {
       val Matrix centered = mean - realization
       val Matrix L = precision.L
       // Note: caching L L' would not change the asymptotic running time of d^2
       return - 0.5 * (centered.transpose * L * L.transpose * centered).doubleValue
     }
-    
   }
   
   generate(rand) {
     realization.setTo(Generators::multivariateNormal(rand, mean, precision))
   }
-  
 }

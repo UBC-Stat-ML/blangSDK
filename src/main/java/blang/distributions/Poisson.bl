@@ -1,29 +1,23 @@
 package blang.distributions
 
 model Poisson {
-  
   random IntVar realization
-  
   param RealVar mean
   
   laws {
-    
     logf(realization, mean) {
       if (mean <= 0) return NEGATIVE_INFINITY
       if (realization < 0) return NEGATIVE_INFINITY
       return realization * log(mean)
     }
-    
     logf(mean) {
       if (mean <= 0) return NEGATIVE_INFINITY
       return - mean; 
     }
-    
     logf(realization) {
       if (realization < 0) return NEGATIVE_INFINITY
       return - factorialLog(realization)
     }
-
   }
   
   generate(rand) {
