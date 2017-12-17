@@ -17,7 +17,10 @@ model SimpleHierarchicalModel  {
       numberOfFailures.get(rocketType) 
         | RealVar failureProbability = failureProbabilities.get(rocketType),
           IntVar numberOfLaunch = numberOfLaunches.get(rocketType)
-        ~ Binomial(numberOfLaunch, failureProbability)
+        ~ Binomial(1+numberOfLaunch, failureProbability)
+        // we add one here since for testing here we need to generate
+        // numberOfLaunches, and we use a Poisson here so adding one so that 
+        // we avoid getting zero as argument
     }
   }
 }
