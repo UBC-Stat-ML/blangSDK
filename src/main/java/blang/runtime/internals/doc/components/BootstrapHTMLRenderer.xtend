@@ -7,6 +7,8 @@ import java.util.List
 import java.util.ArrayList
 import blang.runtime.internals.doc.components.Code.Language
 import blang.runtime.internals.doc.components.LinkTarget.LinkURL
+import java.util.LinkedHashMap
+import briefj.BriefMaps
 
 class BootstrapHTMLRenderer implements Renderer  {
   
@@ -168,6 +170,23 @@ class BootstrapHTMLRenderer implements Renderer  {
     '''
   }
   
+  def dispatch String render(MiniDoc miniDoc) {
+    return '''
+      <p>
+        <strong>«miniDoc.declaration»</strong>: «miniDoc.doc»
+        «IF !miniDoc.children.empty»
+          <ul>
+            «FOR children : miniDoc.children»
+              <li>
+                <code>«children.declaration»</code>: «children.doc»
+              </li>
+            «ENDFOR»
+          </ul>
+        «ENDIF»
+      </p>
+    '''
+  }
+  
   def String codeHeight(String contents) {
     val int n = (contents.split("\\R").size * 1.4) as int
     return "" + (n+1)
@@ -189,26 +208,76 @@ class BootstrapHTMLRenderer implements Renderer  {
   }
   
   def private navBar(Document document) {
-    '''
-    <div class="header clearfix">
-      <nav>
-        <ul class="nav nav-pills pull-right">
-          «FOR menuItem : documents»
-            «navLink(menuItem, menuItem === document)»
-          «ENDFOR»
-        </ul>
-      </nav>
-      <h3 class="text-muted">«siteName»</h3>
-    </div>
+    val NavStructure navStructure = new NavStructure(documents)
+    return '''
+      <div class="header clearfix">
+        <nav>
+          <ul class="nav nav-pills pull-right">
+            «FOR heading : navStructure.headings»
+              «IF navStructure.isCategory(heading)»
+                «navLinkCategory(heading, navStructure.documentsInCategory(heading))»
+              «ELSE»
+                «navLink(navStructure.document(heading), navStructure.document(heading) === document)»
+              «ENDIF»
+            «ENDFOR»
+          </ul>
+        </nav>
+        <h3 class="text-muted">«siteName»</h3>
+      </div>
     '''
   }
   
   def private navLink(Document menuItem, boolean isActive) {
     '''
-    <li role="presentation"«IF isActive» class="active"«ENDIF»>
-      <a href="«menuItem.fileName»">«menuItem.name»</a>
-    </li>
+      <li role="presentation"«IF isActive» class="active"«ENDIF»>
+        <a href="«menuItem.fileName»">«menuItem.name»</a>
+      </li>
     '''
+  }
+  
+  def private navLinkCategory(String categoryName, List<Document> documents) {
+    val String id = "category" + categoryName.hashCode
+    return '''
+      <li>
+        <a id="«id»" data-target="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          «categoryName»
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="«id»">
+          «FOR document : documents»
+            <li><a href="«document.fileName»">«document.name»</a></li>
+          «ENDFOR»
+        </ul>
+      </li>
+    '''
+  }
+  
+  static class NavStructure {
+    val LinkedHashMap map = new LinkedHashMap
+    new(Collection<Document> documents) {
+      for (Document doc : documents) {
+        if (doc.category === null) {
+          if (map.containsKey(doc.name)) {
+            throw new RuntimeException("Two pages with same name not allowed.")
+          }
+          map.put(doc.name, doc)
+        } else {
+          BriefMaps.getOrPutList(map, doc.category).add(doc)
+        }
+      }
+    }
+    def Collection<String> headings() {
+      map.keySet
+    }
+    def boolean isCategory(String heading) {
+      map.get(heading) instanceof Collection
+    }
+    def List<Document> documentsInCategory(String heading) {
+      map.get(heading) as List
+    }
+    def Document document(String heading) {
+      map.get(heading) as Document
+    }
   }
   
   def private header(Document document) {
@@ -246,6 +315,7 @@ class BootstrapHTMLRenderer implements Renderer  {
   }
   
   def static String fileName(Document document) {
+    if (document.isIndex) return "index.html"
     document.name.replaceAll(" ", "_") + ".html"
   }
 }

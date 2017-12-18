@@ -6,12 +6,12 @@ import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.doc.contents.Home
 import blang.runtime.internals.doc.components.BootstrapHTMLRenderer
 import blang.runtime.internals.doc.components.DocElement
-import blang.runtime.internals.doc.contents.Reference
 import blang.runtime.internals.doc.contents.GettingStarted
 import java.util.List
 import java.util.ArrayList
 import blang.runtime.internals.doc.contents.BlangIDE
 import blang.runtime.internals.doc.contents.BlangWeb
+import blang.runtime.internals.doc.contents.CommonTypes
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
@@ -20,8 +20,10 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     GettingStarted::page,
     BlangIDE::page,
     BlangWeb::page,
-    Reference::page
+    CommonTypes::page
   ]
+  
+
   
   override protected List<String> recurse(DocElement page) {
     val List<String> result = new ArrayList

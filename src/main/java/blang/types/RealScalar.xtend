@@ -4,6 +4,7 @@ import blang.mcmc.Samplers
 import blang.core.WritableRealVar
 import blang.mcmc.RealSliceSampler
 
+/** A latent random real variable. */
 @Samplers(RealSliceSampler)
 class RealScalar implements WritableRealVar { 
   

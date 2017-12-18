@@ -7,8 +7,35 @@ import blang.runtime.internals.doc.components.Code.Language
 import briefj.BriefIO
 import briefj.repo.RepositoryUtils
 import java.util.function.Function
+import briefj.BriefStrings
+import blang.runtime.internals.doc.components.MiniDoc
 
 class DocElementExtensions {
+  
+  def static void documentClass(DocElement element, Class<?> type) {
+    val Code code = loadCode(type, null)
+    element += parse(type.simpleName, code.contents)
+  }
+  
+  def static MiniDoc parse(String name, String code) {
+    var MiniDoc parent = null
+    var String currentComment = null
+    for (String line : code.split("\\R")) {
+      if (line.contains("/**")) {
+        currentComment = BriefStrings.firstGroupFromFirstMatch("[/][*][*](.*)", line).replaceAll("[*][/].*", "")
+      } else if (currentComment !== null && !line.contains("*") && !line.matches("\\s*[@].*")) {
+        if (parent === null) {
+          parent = new MiniDoc(name, currentComment)
+        } else {
+          val String currentDecl = line.replace("public", "").replace("def", "").replace("override", "").replaceFirst("[{].*", "")
+          val MiniDoc current = new MiniDoc(currentDecl.trim, currentComment)
+          parent.children.add(current)
+        }
+        currentComment = null
+      }
+    }
+    return parent
+  }
 
   def static void code(DocElement element, Class<?> code) { 
     element += loadCode(code, null)

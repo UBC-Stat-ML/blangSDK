@@ -5,11 +5,12 @@ import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.doc.components.Code.Language
 
 import blang.runtime.internals.doc.components.LinkTarget
-import briefj.BriefStrings
 
 class Home {
   
-  public val static Document page = Document.create("Home") [
+  public val static Document page = new Document("Home") [
+    
+    isIndex = true
     
     code(Language.blang, firstExample)
     

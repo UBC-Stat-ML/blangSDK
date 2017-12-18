@@ -4,6 +4,7 @@ import blang.mcmc.Samplers
 import blang.core.WritableIntVar
 import blang.mcmc.IntSliceSampler
 
+/** A latent integer random variable. */
 @Samplers(IntSliceSampler) 
 class IntScalar implements WritableIntVar {
   

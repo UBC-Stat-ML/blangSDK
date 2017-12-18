@@ -10,11 +10,14 @@ import xlinear.internals.MatrixVisitorEditInPlace
 import static extension xlinear.MatrixExtensions.*
 import bayonet.math.NumericalUtils
 
-@Data class DenseTransitionMatrix implements TransitionMatrix, DenseMatrix, Delegator<DenseMatrix> {
+/** Matrix where each row is a DenseSimple. */
+@Data 
+class DenseTransitionMatrix implements TransitionMatrix, DenseMatrix, Delegator<DenseMatrix> {
   @Accessors(PUBLIC_GETTER)
   @Delegate
   val DenseMatrix delegate 
   
+  /** Get a view into a row. */
   override DenseSimplex row(int i) {
     return new DenseSimplex(delegate.row(i)) 
   }

@@ -1,11 +1,13 @@
 package blang.runtime.internals.doc.contents
 
 import blang.runtime.internals.doc.components.Document
-
+import blang.runtime.internals.doc.Categories
 
 class BlangWeb {
   
-  public val static Document page = Document.create("Blang via web") [
+  public val static Document page = new Document("Blang via web") [
+    
+    category = Categories::tools
     
     section("Blang on the cloud via the browser") [
     

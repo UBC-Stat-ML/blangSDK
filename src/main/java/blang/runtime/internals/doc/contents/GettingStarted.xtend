@@ -12,7 +12,7 @@ import blang.mcmc.SimplexSampler
 
 class GettingStarted {
   
-  public static val page = Document::create("Getting started") [
+  public static val page = new Document("Getting started") [
     
     section("Blang: a fifteen minutes tutorial") [
       
@@ -32,7 +32,7 @@ class GettingStarted {
       section("Variables") [
         it += '''
           Variables need to specify their type, e.g.: «SYMB»random RealVar z«ENDSYMB» is of type «SYMB»RealVar«ENDSYMB» and
-           we give it the name «SYMB»z«ENDSYMB».'''
+           we give it the name «SYMB»z«ENDSYMB». Some of the other important built-in types are «SYMB»IntVar«ENDSYMB» and «SYMB»DenseMatrix«ENDSYMB». '''
         it += '''«SYMB»random«ENDSYMB» and «SYMB»param«ENDSYMB» are Blang keyword. We will get back to the difference between the two. '''
         it += '''As a convention, types are capitalized, variable names are not.''' 
       ]

@@ -1,13 +1,13 @@
 package blang.runtime.internals.doc.components
 
-import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
-@Data
 class Document extends DocElement implements LinkTarget {
-  val String name
-  
-  def static Document create(String name, Procedure1<Document> init) {
-    return new Document(init, name)
+  public val String name
+  public var String category
+  public var boolean isIndex
+  new(String name, Procedure1<? extends Document> init) { 
+    super(init)
+    this.name = name
   }
 }

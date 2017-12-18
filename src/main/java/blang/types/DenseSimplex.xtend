@@ -11,8 +11,9 @@ import bayonet.math.NumericalUtils
 import static extension xlinear.MatrixExtensions.*
 import xlinear.internals.MatrixVisitorEditInPlace
 
-/**
+/** Vector of entries summing to one.
  * 
+ * We do not enforce positive constraints here to facilitate undoing sampling moves.
  */
 @Samplers(SimplexSampler)
 class DenseSimplex implements Simplex, DenseMatrix, Delegator<DenseMatrix> {
@@ -29,6 +30,7 @@ class DenseSimplex implements Simplex, DenseMatrix, Delegator<DenseMatrix> {
     NumericalUtils::checkIsClose(this.sum, 1.0)
   }
   
+  /** Set a pair of entries, checking their sum is the same before and after */
   def void setPair(int index1, double value1, int index2, double value2) {
     val double old = get(index1) + get(index2)
     NumericalUtils::checkIsClose(old, value1 + value2)

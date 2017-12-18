@@ -1,7 +1,7 @@
 package blang.distributions
 
-model Binomial {
-  random IntVar numberOfSuccesses
+model Binomial { 
+  random IntVar numberOfSuccesses 
   param IntVar numberOfTrials
   param RealVar probabilityOfSuccess
   
@@ -15,7 +15,6 @@ model Binomial {
       if (numberOfTrials <= 0 || numberOfSuccesses > numberOfTrials) return NEGATIVE_INFINITY
       return logBinomial(numberOfTrials, numberOfSuccesses)
     }
-
   }
   
   generate (rand) {

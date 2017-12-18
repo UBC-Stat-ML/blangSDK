@@ -12,6 +12,9 @@ import blang.core.RealConstant
 import bayonet.math.SpecialFunctions
 import blang.types.internals.InvalidParameter
 
+// [type][Fixed/Latent]
+
+/** Automatically imported statically meaning can call "StaticUtils::function" as "function". */
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
   //// Initialization utilities
@@ -20,8 +23,6 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return intVar(0)
   }
   
-  // Needed for now in Bernoulli to set to within [0,1]
-  // But in process of changing that
   def static RealScalar realVar() {
     return realVar(0.0)
   }

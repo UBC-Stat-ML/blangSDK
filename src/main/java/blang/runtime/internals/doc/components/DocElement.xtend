@@ -11,8 +11,13 @@ abstract class DocElement {
   private val Procedure1 documentSpecification
   private var Renderer renderer = null
   
+  private static class EmptyRenderer implements Renderer {
+    override render(Object object) { "" }
+  }
+  
   new(Procedure1<? extends DocElement> documentSpecification) {
     this.documentSpecification = documentSpecification
+    render(new EmptyRenderer)
   }
   
   def String render(Renderer renderer) {

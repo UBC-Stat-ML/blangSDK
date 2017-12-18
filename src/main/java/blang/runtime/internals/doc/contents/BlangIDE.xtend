@@ -1,11 +1,13 @@
 package blang.runtime.internals.doc.contents
 
 import blang.runtime.internals.doc.components.Document
-
+import blang.runtime.internals.doc.Categories
 
 class BlangIDE {
   
-  public val static Document page = Document.create("Blang IDE") [
+  public val static Document page = new Document("Blang IDE") [
+    
+    category = Categories::tools
     
     section("Blang IDE setup instructions") [
 

@@ -22,7 +22,6 @@ import blang.runtime.internals.objectgraph.VariableUtils;
 import briefj.ReflexionUtils;
 
 
-
 public class SamplerBuilder
 {
   public static BuiltSamplers build(GraphAnalysis graphAnalysis)
