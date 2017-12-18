@@ -32,7 +32,8 @@ class GettingStarted {
       section("Variables") [
         it += '''
           Variables need to specify their type, e.g.: «SYMB»random RealVar z«ENDSYMB» is of type «SYMB»RealVar«ENDSYMB» and
-           we give it the name «SYMB»z«ENDSYMB». Some of the other important built-in types are «SYMB»IntVar«ENDSYMB» and «SYMB»DenseMatrix«ENDSYMB». '''
+           we give it the name «SYMB»z«ENDSYMB». Some of the «LINK(BuiltInRandomVariables::page)»other important built-in types«ENDLINK» 
+           are «SYMB»IntVar«ENDSYMB» and «SYMB»DenseMatrix«ENDSYMB». '''
         it += '''«SYMB»random«ENDSYMB» and «SYMB»param«ENDSYMB» are Blang keyword. We will get back to the difference between the two. '''
         it += '''As a convention, types are capitalized, variable names are not.''' 
       ]

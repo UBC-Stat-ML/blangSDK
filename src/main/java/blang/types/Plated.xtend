@@ -21,30 +21,27 @@ import java.util.function.Supplier
 import blang.types.internals.LatentFactoryAsParser
 import java.util.Collection
 
-/**
- * A random variable or parameter of type T enclosed in one or more Plates.
- */
+/** a random variable or parameter of type T enclosed in one or more Plates. */
 interface Plated<T>  {
   
-  /**
-   * Get the random variable or parameter indexed by the provided indices. 
-   * "Getting" may involve creating a new latent variable, a new observed variable, 
-   * or just returning a previously created variable.
-   */
+  /** get the random variable or parameter indexed by the provided indices. */
   def T get(Index<?> ... indices) 
+  // "Getting" may involve creating a new latent variable, a new observed variable, or just returning a previously created variable.
   
-  /**
-   * List all variables obtained through get(..) so far. 
-   * Each returned entry contains the variable as well as the associated indices 
-   * (called a Query).
-   */
+  /** list all variables obtained through get(..) so far. Each returned entry contains the variable as well as the associated indices (Query). */
   def Collection<Entry<Query, T>> entries()
   
+  /** a view into a subset. */
   def Plated<T> slice(Index<?> ... indices) {
     return new PlatedSlice(this, Query::build(indices)) 
   }
   
-  /**
+  /** use the provided lambda expression to initialize several latent variables. */
+  def static <T> Plated<T> latent(ColumnName name, Supplier<T> supplier) {
+    return new HashPlated(name, DataSource::empty, new LatentFactoryAsParser(supplier))
+  }
+  
+  /*
    * Parser automatically called by the inits infrastructure. 
    * 
    * If a DataSource is available, the values will be parsed from the strings in that DataSource, otherwise,
@@ -74,9 +71,5 @@ interface Plated<T>  {
       TypeLiteral.get((typeLiteral.type as ParameterizedType).actualTypeArguments.get(0))
       as TypeLiteral<T>
     return new HashPlated(columnName, scopedDataSource, new SimpleParser(creator, typeArgument))
-  }
-  
-  def static <T> Plated<T> latent(ColumnName name, Supplier<T> supplier) {
-    return new HashPlated(name, DataSource::empty, new LatentFactoryAsParser(supplier))
   }
 }

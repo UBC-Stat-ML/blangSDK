@@ -13,6 +13,7 @@ import blang.runtime.internals.doc.contents.BlangIDE
 import blang.runtime.internals.doc.contents.BlangWeb
 import blang.runtime.internals.doc.contents.CommonTypes
 import blang.runtime.internals.doc.contents.BuiltInRandomVariables
+import blang.runtime.internals.doc.contents.CommandLineArguments
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
@@ -22,7 +23,8 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     BlangIDE::page,
     BlangWeb::page,
     BuiltInRandomVariables::page,
-    CommonTypes::page
+    CommonTypes::page,
+    CommandLineArguments::page
   ]
   
 

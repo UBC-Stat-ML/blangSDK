@@ -18,43 +18,30 @@ import blang.io.internals.GlobalDataSourceStore
 import java.util.Collection
 import com.rits.cloning.Immutable
 
-/**
- * A plate in a graphical mode. 
- * 
- * K is the type indexing the replicates, typically an Integer or String.
- * 
- * We assume these indices are not random variables.
- */
+/** in the following, K is the type indexing the replicates, typically an Integer or String. We assume these indices are not random variables. */
 @Immutable
 interface Plate<K> {
   
-  /**
-   * Human-readable name for the plate, typically automatically extracted from a DataSource column name.
-   */
+  /** Human-readable name for the plate, typically automatically extracted from a DataSource column name. */
   def ColumnName getName() 
   
-  /**
-   * Get the indices available given the indices of the parent (enclosing) plates.
-   */
+  /** Get the indices available given the indices of the parent (enclosing) plates. */
   def Collection<Index<K>> indices(Index<?> ... parentIndices)
   
-  /**
-   * Used to parse data from a DataSource
-   */
   def K parse(String string)
   
   def Index<K> index(K key) { 
     return new Index<K>(this, key)
   }
   
-  /*
-   * Builders
-   */
+  // Builders
   
+  /** a plate with indices 0, 1, 2, ..., size-1 */
   def static Plate<Integer> simpleIntegerPlate(ColumnName columnName, int size) {
     return new SimplePlate(columnName, (0 ..< size).toSet)
   }
   
+  /** a plate with indices category_0, category_1, ... */
   def static Plate<String> simpleStringPlate(ColumnName columnName, int size) {
     return new SimplePlate(columnName, (0 ..< size).map[index | "category_" + index].toSet)
   }
@@ -69,7 +56,7 @@ interface Plate<K> {
     }
   }
   
-  /**
+  /*
    * Parser automatically called by the inits infrastructure.
    *  
    * Parsing works as follows:

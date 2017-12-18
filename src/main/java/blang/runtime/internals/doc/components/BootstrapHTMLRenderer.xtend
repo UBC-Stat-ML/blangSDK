@@ -9,7 +9,7 @@ import blang.runtime.internals.doc.components.Code.Language
 import blang.runtime.internals.doc.components.LinkTarget.LinkURL
 import java.util.LinkedHashMap
 import briefj.BriefMaps
-import org.apache.commons.lang3.StringEscapeUtils
+import static extension org.apache.commons.lang3.StringEscapeUtils.escapeHtml4
 
 class BootstrapHTMLRenderer implements Renderer  {
   
@@ -166,7 +166,7 @@ class BootstrapHTMLRenderer implements Renderer  {
   
   def dispatch String render(Code code) {
     state.codeModes += code.language
-    val String processedCode = noTrailingSpace(StringEscapeUtils::escapeHtml4(code.contents))
+    val String processedCode = noTrailingSpace(code.contents.escapeHtml4)
     return '''
       <div id="editor«state.codeModes.size - 1»" style="height: «codeHeight(code.contents)»em;">«processedCode»</div>
       <br />
@@ -176,12 +176,12 @@ class BootstrapHTMLRenderer implements Renderer  {
   def dispatch String render(MiniDoc miniDoc) {
     return '''
       <p>
-        <strong>«miniDoc.declaration»</strong>: «miniDoc.doc»
+        <strong>«miniDoc.declaration.escapeHtml4»</strong>: «miniDoc.doc.escapeHtml4»
         «IF !miniDoc.children.empty»
           <ul>
             «FOR children : miniDoc.children»
               <li>
-                <code>«children.declaration»</code>: «children.doc»
+                <code>«children.declaration.escapeHtml4»</code>«IF !children.doc.matches("\\s*")»: «children.doc.escapeHtml4»«ENDIF»
               </li>
             «ENDFOR»
           </ul>
