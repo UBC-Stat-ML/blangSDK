@@ -6,7 +6,7 @@ model HierarchicalModel  {
   param Plated<IntVar> numberOfLaunches
   random Plated<RealVar> failureProbabilities
   random Plated<IntVar> numberOfFailures
-  random RealVar a ?: realVar, b ?: realVar
+  random RealVar a ?: latentReal, b ?: latentReal
   
   laws {
     a ~ Exponential(1)

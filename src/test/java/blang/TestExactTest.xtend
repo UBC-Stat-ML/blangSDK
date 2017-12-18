@@ -22,7 +22,7 @@ class TestExactTest {
   @SuppressWarnings("unchecked") @Test def void checkBadNormalDetected() {
     var ExactInvarianceTest test = new ExactInvarianceTest()
     test.add(new Instance(
-      new BadNormal.Builder().setMean(StaticUtils.constant(0.2)).setVariance(StaticUtils.constant(0.1)).setRealization(new RealScalar(1.0)).build(),
+      new BadNormal.Builder().setMean(StaticUtils.constantReal(0.2)).setVariance(StaticUtils.constantReal(0.1)).setRealization(new RealScalar(1.0)).build(),
       new RealRealizationSquared()))
     ensureTestFails(test)
   }

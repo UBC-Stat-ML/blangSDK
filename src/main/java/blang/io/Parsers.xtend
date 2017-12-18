@@ -99,7 +99,7 @@ class Parsers {
         val int col = Integer.parseInt(line.get(1))
         val String str = line.get(2)
         if (str.isNA) {
-          // nothing, leave set to 0
+          // nothing to do, leave set to 0
         } else {
           initContext.markAsObserved(new MatrixConstituentNode(result, row, col))
           result.set(row, col, Double.parseDouble(str))
@@ -131,24 +131,32 @@ class Parsers {
   
   @ProvidesFactory
   def static DenseSimplex parseSimplex(
-    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the value. Include the redundant one.") File file,
+    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the value. Include the redundant entry, i.e. the sum of the read values should be one.") File file,
     @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") Optional<Integer> nRows,
     @ConstructorArg(value = "nCols") Optional<Integer> nCols
   ) {
+    val int nObservedBefore = initContext.observationRoots.size
     val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
-    return StaticUtils::denseSimplex(m)
+    if (initContext.observationRoots.size - nObservedBefore != m.nEntries) {
+      throw new RuntimeException("Only supporting fully observed or fully unobserved simplex at the moment.")
+    }
+    return new DenseSimplex(m.readOnlyView)
   }
   
   @ProvidesFactory
   def static DenseTransitionMatrix parseTransitionMatrix(
-    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value. Include the redundant ones.") File file,
+    @ConstructorArg(value = "file", description = "CSV file where the first entry is the row index (starting at 0), the second is the col index (starting at 0), and the last is the value. Include the redundant ones, i.e. the sum of the read rows should be one..") File file,
     @GlobalArg Observations initContext,
     @ConstructorArg(value = "nRows") Optional<Integer> nRows,
     @ConstructorArg(value = "nCols") Optional<Integer> nCols
   ) {
+    val int nObservedBefore = initContext.observationRoots.size
     val DenseMatrix m = parseDenseMatrix(file, initContext, nRows, nCols)
-    return StaticUtils::denseTransitionMatrix(m)
+    if (initContext.observationRoots.size - nObservedBefore != m.nCols * m.nRows) {
+      throw new RuntimeException("Only supporting fully observed or fully unobserved transition matrices at the moment.")
+    }
+    return new DenseTransitionMatrix(m.readOnlyView)
   }
   
   @ProvidesFactory

@@ -6,7 +6,7 @@ model Multimodal {
   param RealDistribution dist1 ?: Normal::distribution(0.0, 1.0)
   param RealDistribution dist2 ?: Normal::distribution(3.0, 1.0)
   
-  random RealVar x ?: realVar
+  random RealVar x ?: latentReal
   
   laws {
     logf(x, dist1, dist2) {

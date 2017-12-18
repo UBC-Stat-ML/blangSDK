@@ -18,8 +18,8 @@ class SpikedRealVar implements RealVar {
   public val WritableIntVar isZero
   
   new() {
-    realPart = StaticUtils::realVar
-    isZero = StaticUtils::intVar 
+    realPart = StaticUtils::latentReal
+    isZero = StaticUtils::latentInt 
   }
   
   override doubleValue() {

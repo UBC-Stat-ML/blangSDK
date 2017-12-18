@@ -2,7 +2,7 @@ package blang.validation.internals.fixtures
 
 model UnspecifiedParam { 
   
-  random RealVar myRandom ?: realVar
+  random RealVar myRandom ?: latentReal
   
   param  RealVar myParam 
   

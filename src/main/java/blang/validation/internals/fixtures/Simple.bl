@@ -2,7 +2,7 @@ package blang.validation.internals.fixtures
 
 model Simple { 
 
-    random RealVar x ?: realVar
+    random RealVar x ?: latentReal
     
     laws {
         

@@ -7,7 +7,6 @@ import org.apache.commons.math3.distribution.PoissonDistribution;
 
 import bayonet.math.NumericalUtils;
 import blang.types.DenseSimplex;
-import blang.types.StaticUtils;
 import blang.types.internals.Delegator;
 import xlinear.CholeskyDecomposition;
 import xlinear.DenseMatrix;
@@ -105,7 +104,7 @@ public class Generators
   {
     DenseMatrix result = MatrixOperations.dense(concentrations.nEntries());
     dirichletInPlace(random, concentrations, result);
-    return StaticUtils.denseSimplex(result);
+    return new DenseSimplex(result);
   }
   
   @SuppressWarnings("unchecked")

@@ -23,7 +23,7 @@ class TestSparseDirichletAndBetaWarnings {
       val instance = new Instance<Dirichlet>(
         new Dirichlet.Builder()
           .setConcentrations(MatrixOperations::denseCopy(#[0.1, 0.1]))
-          .setRealization(StaticUtils::denseSimplex(2)).build, 
+          .setRealization(StaticUtils::latentSimplex(2)).build, 
         [getRealization.get(0)])
       add(instance) 
     ] //.check(0.05)  After changing 1->500 above this would crash (p value is 0.036631052707119305 on commit of Nov 10 4pm). See Issue #62
@@ -38,9 +38,9 @@ class TestSparseDirichletAndBetaWarnings {
       nPosteriorSamplesPerIndep = 1 //500
       val instance = new Instance<Beta>(
         new Beta.Builder()
-          .setAlpha(StaticUtils::constant(0.1))
-          .setBeta(StaticUtils::constant(0.1))
-          .setRealization(StaticUtils::realVar).build, 
+          .setAlpha(StaticUtils::constantReal(0.1))
+          .setBeta(StaticUtils::constantReal(0.1))
+          .setRealization(StaticUtils::latentReal).build, 
         [getRealization.doubleValue]
       )
       add(instance)

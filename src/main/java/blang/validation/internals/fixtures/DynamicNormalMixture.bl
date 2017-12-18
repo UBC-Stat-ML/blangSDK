@@ -5,11 +5,11 @@ model DynamicNormalMixture  {
   param  int               nLatentStates 
   
   random List<RealVar>     observations 
-  random List<IntVar>      states ?: listOfIntVars(observations.size)  
+  random List<IntVar>      states ?: latentListOfInt(observations.size)  
   
-  random DenseSimplex           initialDistribution ?: denseSimplex(nLatentStates) 
-  random DenseTransitionMatrix  transitionProbabilities ?: transitionMatrix(nLatentStates)
-  random List<RealVar>     means ?: listOfRealVars(nLatentStates), variances ?: listOfRealVars(nLatentStates)
+  random DenseSimplex           initialDistribution ?: latentSimplex(nLatentStates) 
+  random DenseTransitionMatrix  transitionProbabilities ?: latentTransitionMatrix(nLatentStates)
+  random List<RealVar>     means ?: latentListOfReal(nLatentStates), variances ?: latentListOfReal(nLatentStates)
          
   param  Matrix            concentrations ?: ones(nLatentStates)
   

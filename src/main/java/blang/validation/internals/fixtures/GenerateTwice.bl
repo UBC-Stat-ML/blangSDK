@@ -2,7 +2,7 @@ package blang.testmodels
 
 model GenerateTwice {
   
-  random RealVar x ?: realVar
+  random RealVar x ?: latentReal
   
   laws {
     x ~ Normal(0.0, 1.0)

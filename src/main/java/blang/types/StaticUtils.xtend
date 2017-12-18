@@ -12,63 +12,62 @@ import blang.core.RealConstant
 import bayonet.math.SpecialFunctions
 import blang.types.internals.InvalidParameter
 
-// [type][Fixed/Latent]
 
 /** Automatically statically imported in Blang meaning can call "StaticUtils::function(..)" as just "function(..)". */
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
-  //// Initialization utilities
+  // Utilities for creating latent and constant variables
   
-  def static IntScalar intVar() {
+  def static IntScalar latentInt() {
     return new IntScalar(0)
   }
   
-  def static RealScalar realVar() {
+  def static RealScalar latentReal() {
     return new RealScalar(0.0)
   }
   
-  def static IntConstant constant(int value) {
+  def static IntConstant constantInt(int value) {
     return new IntConstant(value)
   }
   
-  def static RealConstant constant(double value) {
+  def static RealConstant constantReal(double value) {
     return new RealConstant(value)
   }
   
-  def static List<IntVar> listOfIntVars(int size) {
+  def static List<IntVar> latentListOfInt(int size) {
     val List<IntVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
-      result.add(intVar)
+      result.add(blang.types.StaticUtils.latentInt)
     }
     return new ArrayList(result)
   }
   
-  def static List<RealVar> listOfRealVars(int size) {
+  def static List<RealVar> latentListOfReal(int size) {
     val List<RealVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
-      result.add(realVar)
+      result.add(blang.types.StaticUtils.latentReal)
     }
     return new ArrayList(result)
   }
   
-  def static DenseSimplex denseSimplex(int nStates) {
+  def static DenseSimplex latentSimplex(int nStates) {
     val double unif = 1.0 / (nStates as double)
     val DenseMatrix m = dense(nStates)
     for (int index : 0 ..< nStates) {
       m.set(index, unif)
     }
-    return StaticUtils.denseSimplex(m)
-  }
-  
-  def static DenseSimplex denseSimplex(DenseMatrix m) {
     return new DenseSimplex(m)
   }
   
-  def static DenseSimplex denseSimplex(double [] probabilities) {
-    return StaticUtils.denseSimplex(denseCopy(probabilities))
+  def static DenseSimplex constantSimplex(double ... probabilities) {
+    return new DenseSimplex(denseCopy(probabilities).readOnlyView)
   }
   
-  def static DenseTransitionMatrix transitionMatrix(int nStates) {
+  def static DenseSimplex constantSimplex(DenseMatrix probabilities) {
+    return new DenseSimplex(probabilities.readOnlyView)
+  }
+  
+  def static DenseTransitionMatrix latentTransitionMatrix(int nStates) {
     val double unif = 1.0 / (nStates as double)
     val DenseMatrix m = dense(nStates, nStates)
     for (int r : 0 ..< nStates) {
@@ -76,24 +75,15 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
         m.set(r, c, unif)
       }
     }
-    return StaticUtils.denseTransitionMatrix(m)
-  }
-  
-  def static DenseTransitionMatrix denseTransitionMatrix(DenseMatrix m) {
     return new DenseTransitionMatrix(m)
   }
   
-  def static DenseTransitionMatrix denseTransitionMatrix(double [][] probabilities) {
-    return StaticUtils.denseTransitionMatrix(denseCopy(probabilities))
+  def static DenseTransitionMatrix constantTransitionMatrix(DenseMatrix probabilities) {
+    return new DenseTransitionMatrix(probabilities.readOnlyView)
   }
   
-  /**
-   * An assertion check that is always performed.
-   */
-  def static void check(boolean condition) {
-    if (!condition) {
-      throw new RuntimeException("Assertion violated")
-    }
+  def static DenseTransitionMatrix constantTransitionMatrix(double [][] probabilities) {
+    return new DenseTransitionMatrix(denseCopy(probabilities).readOnlyView)
   }
 
   def static double logFactorial(double input) 

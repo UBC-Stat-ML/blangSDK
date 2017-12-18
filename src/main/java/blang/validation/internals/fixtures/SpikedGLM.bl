@@ -15,7 +15,7 @@ model SpikedGLM {
     ]
   } 
   
-  random RealVar zeroProbability ?: realVar
+  random RealVar zeroProbability ?: latentReal
   
   laws {
     

@@ -8,7 +8,7 @@ model NBMix {
   
   param Plated<RealVar> relativeCNs   // gene, cluster // observed
   
-  random Simplex gamma ?: denseSimplex(clusters.indices.size)
+  random Simplex gamma ?: latentSimplex(clusters.indices.size)
   
   random Plated<IntVar> 
     allocations,         // cell
@@ -18,11 +18,11 @@ model NBMix {
     geneExpressivities   // per gene
    
   random RealVar 
-    cellShape ?: realVar, 
-    cellRate ?: realVar,
-    geneShape ?: realVar, 
-    geneRate ?: realVar,
-    overdispersion ?: realVar
+    cellShape ?: latentReal, 
+    cellRate ?: latentReal,
+    geneShape ?: latentReal, 
+    geneRate ?: latentReal,
+    overdispersion ?: latentReal
 
   laws { 
     
