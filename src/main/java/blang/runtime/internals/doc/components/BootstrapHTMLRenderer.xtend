@@ -9,6 +9,7 @@ import blang.runtime.internals.doc.components.Code.Language
 import blang.runtime.internals.doc.components.LinkTarget.LinkURL
 import java.util.LinkedHashMap
 import briefj.BriefMaps
+import org.apache.commons.lang3.StringEscapeUtils
 
 class BootstrapHTMLRenderer implements Renderer  {
   
@@ -163,7 +164,7 @@ class BootstrapHTMLRenderer implements Renderer  {
   
   def dispatch String render(Code code) {
     state.codeModes += code.language
-    val String processedCode = noTrailingSpace(code.contents)
+    val String processedCode = noTrailingSpace(StringEscapeUtils::escapeHtml4(code.contents))
     return '''
       <div id="editor«state.codeModes.size - 1»" style="height: «codeHeight(code.contents)»em;">«processedCode»</div>
       <br />
