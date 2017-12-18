@@ -5,8 +5,8 @@ package blang.testmodel
 model Cyclic {
   
   random RealVar 
-    x ?: realVar(1.0),
-    y ?: realVar(1.0)
+    x ?: realVar,
+    y ?: realVar
   
   laws {
     x | y ~ Normal(y, 1.0)

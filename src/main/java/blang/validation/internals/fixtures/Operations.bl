@@ -8,10 +8,10 @@ model Operations {
     
     logf() {
       
-      val RealVar r2 = realVar(2.2)
-      val RealVar r3 = realVar(3.3)
-      val IntVar i4 = intVar(4)
-      val IntVar i7 = intVar(7)
+      val RealVar r2 = new RealScalar(2.2)
+      val RealVar r3 = new RealScalar(3.3)
+      val IntVar i4 = new IntScalar(4)
+      val IntVar i7 = new IntScalar(7)
       
       // those are taken care of by special rules in BlangExtensions (to avoid clashes with String -)
       Assert.assertEquals(r2 - r3, 2.2 - 3.3, 0.0)
@@ -29,8 +29,8 @@ model Operations {
       Assert.assertEquals(2.2 - i4, 2.2 - 4, 0.0)
       Assert.assertEquals(4 - r3, 4 - 3.3, 0.0)
       
-      val RealVar r2_2 = realVar(2.2)
-      val IntVar i4_2 = intVar(4)
+      val RealVar r2_2 = new RealScalar(2.2)
+      val IntVar i4_2 = new IntScalar(4)
       
       Assert.assertTrue(r2 == r2_2)
       Assert.assertTrue(r2 !== r2_2)

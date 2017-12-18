@@ -11,7 +11,7 @@ model AutoBoxDeboxTests {
       val Function<Double,Double> d2d = Function.identity
       val Function<Integer,Integer> i2i = Function.identity
       val RealVar rv = realVar
-      val IntVar iv = intVar(1)
+      val IntVar iv = new IntScalar(1)
       val List<Object> list = #[1,2]
       
       d2d.apply(rv) // test 1: realvar -> Double

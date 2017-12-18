@@ -14,25 +14,17 @@ import blang.types.internals.InvalidParameter
 
 // [type][Fixed/Latent]
 
-/** Automatically imported statically meaning can call "StaticUtils::function" as "function". */
+/** Automatically statically imported in Blang meaning can call "StaticUtils::function(..)" as just "function(..)". */
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
   //// Initialization utilities
   
   def static IntScalar intVar() {
-    return intVar(0)
+    return new IntScalar(0)
   }
   
   def static RealScalar realVar() {
-    return realVar(0.0)
-  }
-  
-  def static IntScalar intVar(int initialValue) {
-    return new IntScalar(initialValue)
-  }
-  
-  def static RealScalar realVar(double initialValue) {
-    return new RealScalar(initialValue)
+    return new RealScalar(0.0)
   }
   
   def static IntConstant constant(int value) {
@@ -46,7 +38,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   def static List<IntVar> listOfIntVars(int size) {
     val List<IntVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
-      result.add(intVar(0))
+      result.add(intVar)
     }
     return new ArrayList(result)
   }
@@ -54,7 +46,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   def static List<RealVar> listOfRealVars(int size) {
     val List<RealVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
-      result.add(realVar(0.0))
+      result.add(realVar)
     }
     return new ArrayList(result)
   }
