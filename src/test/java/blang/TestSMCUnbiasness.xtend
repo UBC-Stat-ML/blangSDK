@@ -17,11 +17,10 @@ import java.util.function.Supplier
 import java.util.List
 import blang.core.IntVar
 import blang.validation.internals.fixtures.ExactHMMCalculations
-import blang.types.IntScalar
+import blang.types.internals.IntScalar
 import blang.runtime.Observations
 import java.util.ArrayList
 import blang.validation.internals.fixtures.IntNaiveMHSampler
-import briefj.BriefLog
 
 class TestSMCUnbiasness {
   @Test def void testHMM() {

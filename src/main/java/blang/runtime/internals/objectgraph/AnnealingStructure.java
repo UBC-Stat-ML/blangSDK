@@ -7,7 +7,7 @@ import blang.core.AnnealedFactor;
 import blang.core.Factor;
 import blang.core.LogScaleFactor;
 import blang.mcmc.internals.ExponentiatedFactor;
-import blang.types.RealScalar;
+import blang.types.internals.RealScalar;
 
 public class AnnealingStructure 
 {

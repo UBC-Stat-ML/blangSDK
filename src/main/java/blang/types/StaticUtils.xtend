@@ -11,7 +11,8 @@ import blang.core.IntConstant
 import blang.core.RealConstant
 import bayonet.math.SpecialFunctions
 import blang.types.internals.InvalidParameter
-
+import blang.types.internals.RealScalar
+import blang.types.internals.IntScalar
 
 /** Automatically statically imported in Blang meaning can call "StaticUtils::function(..)" as just "function(..)". */
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures

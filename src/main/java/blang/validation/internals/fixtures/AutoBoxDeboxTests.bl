@@ -1,6 +1,7 @@
 package blang.validation.internals.fixtures
 
 import java.util.function.Function
+import blang.types.internals.IntScalar
 
 model AutoBoxDeboxTests { 
   laws {

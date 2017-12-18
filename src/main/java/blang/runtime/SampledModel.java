@@ -30,7 +30,7 @@ import blang.runtime.internals.objectgraph.DeepCloner;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.runtime.internals.objectgraph.Node;
 import blang.runtime.internals.objectgraph.StaticUtils;
-import blang.types.RealScalar;
+import blang.types.internals.RealScalar;
 import briefj.BriefLists;
 import briefj.BriefLog;
 import briefj.ReflexionUtils;

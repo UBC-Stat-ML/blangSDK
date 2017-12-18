@@ -12,6 +12,7 @@ import java.util.ArrayList
 import blang.runtime.internals.doc.contents.BlangIDE
 import blang.runtime.internals.doc.contents.BlangWeb
 import blang.runtime.internals.doc.contents.CommonTypes
+import blang.runtime.internals.doc.contents.BuiltInRandomVariables
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
@@ -20,6 +21,7 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     GettingStarted::page,
     BlangIDE::page,
     BlangWeb::page,
+    BuiltInRandomVariables::page,
     CommonTypes::page
   ]
   

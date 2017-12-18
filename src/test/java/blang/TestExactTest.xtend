@@ -12,7 +12,8 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import blang.validation.Instance import blang.types.RealScalar
+import blang.validation.Instance 
+import blang.types.internals.RealScalar
 
 /** 
  * A test for the exact test, to make sure it catches some common types of errors.

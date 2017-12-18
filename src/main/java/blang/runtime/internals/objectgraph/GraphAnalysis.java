@@ -33,7 +33,7 @@ import blang.core.ModelComponent;
 import blang.core.Param;
 import blang.mcmc.internals.ExponentiatedFactor;
 import blang.runtime.Observations;
-import blang.types.RealScalar;
+import blang.types.internals.RealScalar;
 import briefj.ReflexionUtils;
 import briefj.collections.UnorderedPair;
 

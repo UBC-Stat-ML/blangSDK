@@ -140,9 +140,11 @@ class BootstrapHTMLRenderer implements Renderer  {
       case DocElement._ENDLINK : "</a>"
       default :
         '''
-          <p>
-            «object.toString»
-          </p>
+          «FOR segment : object.toString.split("\\R\\s*\\R")»
+            <p>
+              «segment»
+            </p>
+          «ENDFOR»
         '''
     }
   }

@@ -15,9 +15,9 @@ import blang.core.IntVar
 import blang.inits.Input
 import blang.inits.GlobalArg
 import java.util.Optional
-import blang.types.IntScalar
+import blang.types.internals.IntScalar
 import blang.core.RealVar
-import blang.types.RealScalar
+import blang.types.internals.RealScalar
 import blang.inits.providers.CoreProviders
 import xlinear.Matrix
 import xlinear.MatrixOperations
@@ -26,7 +26,6 @@ import xlinear.SparseMatrix
 import blang.runtime.Observations
 import blang.inits.DefaultValue
 import blang.runtime.internals.objectgraph.MatrixConstituentNode
-import blang.types.StaticUtils
 import static extension blang.io.NA.isNA
 import blang.types.DenseSimplex
 import blang.types.DenseTransitionMatrix

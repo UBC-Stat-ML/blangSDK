@@ -1,4 +1,4 @@
-package blang.types
+package blang.types.internals
 
 import blang.mcmc.Samplers
 import blang.core.WritableRealVar

@@ -1,6 +1,8 @@
 package blang.validation.internals.fixtures
 
 import org.junit.Assert
+import blang.types.internals.RealScalar
+import blang.types.internals.IntScalar
 
 model Operations {
   
