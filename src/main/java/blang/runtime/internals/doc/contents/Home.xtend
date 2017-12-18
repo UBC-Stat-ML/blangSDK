@@ -5,6 +5,7 @@ import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.doc.components.Code.Language
 
 import blang.runtime.internals.doc.components.LinkTarget
+import briefj.BriefStrings
 
 class Home {
   
@@ -65,9 +66,9 @@ class Home {
         Massive distribution is in the pipeline. 
       '''
       it += '''
-        The method provides an estimate of the evidence, here «SYMB»-1227.75«ENDSYMB», which is critical for model 
+        The method provides an estimate of the evidence, here «SYMB»-1216.12«ENDSYMB», which is critical for model 
         selection and lacking in many 
-        existing tools. Running again the method with twice as many particles, we get «SYMB»-1227.15«ENDSYMB», 
+        existing tools. Running again the method with twice as many particles, we get «SYMB»-1215.95«ENDSYMB», 
         suggesting the estimate is getting close to the true value. In contrast, variational methods will 
         typically only give a bound on the true evidence.
       '''
@@ -101,7 +102,11 @@ class Home {
     // - have animated gif with Desktop IDE, Web IDE, Command line and links
   ]
   
+  // TODO: test case that link address ok
+  
   val static public LinkTarget downloadLink = LinkTarget::url("downloads/blang-mac-latest.zip")
+  
+  // TODO: have those ran automatically as test cases
   
   def static String firstExample() { 
     '''
@@ -140,13 +145,15 @@ class Home {
         --engine.nThreads MAX 
       
       Preprocessing started
+      4 samplers constructed with following prototypes:
       RealScalar sampled via: [RealSliceSampler]
       UnrootedTree sampled via: [SingleNNI, SingleBranchScaling]
       Sampling started
-      Normalization constant estimate: -1227.7537992263346
-      Preprocessing time: 154.2 ms
-      Sampling time: 1.901 min
-      outputFolder : /Users/bouchard/w/conifer/results/all/2017-11-30-19-43-22-C7VMR7rK.exec
+      Normalization constant estimate: -1216.1211229417504
+      Preprocessing time: 141.4 ms
+      Sampling time: 2.304 min
+      executionMilliseconds : 138405
+      outputFolder : /Users/bouchard/blangExample/results/all/2017-12-15-14-00-21-3aKAx62h.exec
     '''
   }
   

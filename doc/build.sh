@@ -3,8 +3,10 @@
 
 # copy blang file
 cp blang.js ace-master/lib/ace/mode/
+cp xtend.js ace-master/lib/ace/mode/
 
 cd ace-master
+npm clean
 npm install
 node Makefile.dryice.js
 cd ..

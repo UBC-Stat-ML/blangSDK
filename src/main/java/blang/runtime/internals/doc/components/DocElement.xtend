@@ -72,4 +72,14 @@ abstract class DocElement {
   def String ENDSYMB() {
     renderer.render(_ENDSYMB)
   }
+  
+  val static public Object _EMPH = new Object
+  def String EMPH() {
+    renderer.render(_EMPH)
+  }
+  
+  val static public Object _ENDEMPH = new Object
+  def String ENDEMPH() {
+    renderer.render(_ENDEMPH)
+  }
 }

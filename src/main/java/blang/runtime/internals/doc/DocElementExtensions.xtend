@@ -22,8 +22,9 @@ class DocElementExtensions {
   } 
   
   def private static Code loadCode(Class<?> code, Function<String,String> transform) {
-    if (findFile(code, "bl")   !== null) return new Code(Language.blang, readSource(findFile(code, "bl"), transform))
-    if (findFile(code, "java") !== null) return new Code(Language.java,  readSource(findFile(code, "java"), transform))
+    if (findFile(code, "bl")    !== null) return new Code(Language.blang,  readSource(findFile(code, "bl"), transform))
+    if (findFile(code, "java")  !== null) return new Code(Language.java,   readSource(findFile(code, "java"), transform))
+    if (findFile(code, "xtend") !== null) return new Code(Language.xtend,  readSource(findFile(code, "xtend"), transform))
     throw new RuntimeException
   }
   

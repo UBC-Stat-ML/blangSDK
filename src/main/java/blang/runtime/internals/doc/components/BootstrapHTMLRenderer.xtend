@@ -132,6 +132,8 @@ class BootstrapHTMLRenderer implements Renderer  {
     switch (object) {
       case DocElement._SYMB : "<code>"
       case DocElement._ENDSYMB : "</code>"
+      case DocElement._EMPH : "<em>"
+      case DocElement._ENDEMPH : "</em>"
       case DocElement._ENDLINK : "</a>"
       default :
         '''
