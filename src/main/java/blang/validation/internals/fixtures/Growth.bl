@@ -1,0 +1,22 @@
+package blang.validation.internals.fixtures
+
+import blang.validation.internals.Helpers
+
+model Growth {
+    param IntVar current ?: latentInt
+    random IntVar next ?: latentInt
+    
+    laws {
+        logf(current, next) {
+                 if (next == current - 1) return log(1.0/10.0)
+            else if (next == current)     return log(7.0/10.0)
+            else if (next == current + 1) return log(2.0/10.0)
+            else return NEGATIVE_INFINITY
+        }
+    }
+    generate (rand) {
+        val int delta = Generators::categorical(rand, #[1.0/10.0, 7.0/10.0, 2.0/10.0]) - 1
+        Helpers.checkOkToUseDefectiveImplementation
+        return /*current + */ delta
+    }
+}

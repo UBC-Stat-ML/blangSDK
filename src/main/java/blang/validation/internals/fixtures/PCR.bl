@@ -1,0 +1,11 @@
+package blang.validation.internals.fixtures
+
+model PCR {
+    random List<IntVar> states ?: latentListOfInt(5)
+    
+    laws {
+        for (int i : 1 ..< states.size) {
+            states.get(i) | IntVar previous = states.get(i - 1) ~ Growth(previous)
+        }
+    }
+}

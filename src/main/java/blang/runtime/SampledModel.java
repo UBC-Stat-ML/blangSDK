@@ -157,8 +157,13 @@ public class SampledModel
   
   public double logDensityRatio(double temperature, double nextTemperature) 
   {
-    return logDensity(nextTemperature) - logDensity(temperature);
+    double num = logDensity(nextTemperature);
+    double denom = logDensity(temperature);
+    if (num == Double.NEGATIVE_INFINITY && denom == Double.NEGATIVE_INFINITY)
+      throw new RuntimeException(INVALID_LOG_RATIO);
+    return num - denom;
   }
+  static final String INVALID_LOG_RATIO = "Invalid logDensity ratio (0/0): this could be caused by a generate(rand){..} block not faithful with its laws{..} block.";
   
   private double sumOtherAnnealed()
   {
