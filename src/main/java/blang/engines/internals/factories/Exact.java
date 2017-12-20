@@ -2,24 +2,17 @@ package blang.engines.internals.factories;
 
 import org.eclipse.xtext.xbase.lib.Pair;
 
-import bayonet.distributions.Random;
+import bayonet.distributions.ExhaustiveDebugRandom;
+import bayonet.math.NumericalUtils;
 import blang.engines.internals.PosteriorInferenceEngine;
-import blang.inits.Arg;
-import blang.inits.DefaultValue;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.io.BlangTidySerializer;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 
-public class Forward implements PosteriorInferenceEngine
+public class Exact implements PosteriorInferenceEngine
 {
-  @Arg               @DefaultValue("1")
-  public Random random = new Random(1);
-  
-  @Arg   @DefaultValue("1_000")
-  public int nSamples = 1_000;
-  
   @GlobalArg ExperimentResults results;
   
   SampledModel model;
@@ -35,10 +28,16 @@ public class Forward implements PosteriorInferenceEngine
   public void performInference() 
   {
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples"));
-    for (int i = 0; i < nSamples; i++) 
+    ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
+    int i = 0;
+    while (exhaustive.hasNext())
     {
-      model.forwardSample(random, false);
-      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++)); 
+      model.forwardSample(exhaustive, false);
+      double logWeightFromModel = model.logDensity(1.0);
+      double logWeightFromGeneration = Math.log(exhaustive.lastProbability()) + model.logDensity(1.0) - model.logDensity(0.0);
+      if (!NumericalUtils.isClose(logWeightFromModel, logWeightFromGeneration, NumericalUtils.THRESHOLD))
+        throw new RuntimeException("Generate(rand){..} block not faithful with its laws{..} block.");
+      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++), Pair.of("logWeight", logWeightFromModel)); 
     }
   }
 
