@@ -52,10 +52,10 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       Versions::updateIfNeeded(requestedVersion, compiler.blangSDKRepository, compiler.getBlangRestarter(args))
     } catch (BinaryExecutionException bee) {
       // don't print: mirroring showed it already
-      System.exit(1)
+      exitWithError
     } catch (BadVersion bv) {
       System.err.println(bv.message)
-      System.exit(1)
+      exitWithError
     }
     
     println("Blang SDK version " + Versions::resolveVersion(requestedVersion, compiler.blangSDKRepository))
@@ -65,11 +65,11 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     } catch (BinaryExecutionException bee) {
       System.err.println("Compilation error:")
       System.err.println(clean(bee.output.toString()))
-      System.exit(1)
+      exitWithError
       throw new RuntimeException
     } catch (Exception e) {
       System.err.println(e)
-      System.exit(1)
+      exitWithError
       throw new RuntimeException
     }
     
@@ -78,12 +78,18 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       compiler.runCompiledModel(classpath, args)
     } catch (BinaryExecutionException bee) {
       // don't print: mirroring showed it already
-      System.exit(1)
+      exitWithError
     } catch (Exception e) {
       System.err.println(e)
-      System.exit(1)
+      exitWithError
       throw new RuntimeException
     }
+  }
+  
+  def static void exitWithError() {
+    System.out.flush
+    System.err.flush
+    System.exit(1)
   }
   
   def static Optional<String> requestedVersion(String[] strings) {
