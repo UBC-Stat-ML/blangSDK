@@ -18,15 +18,15 @@ class Home {
     
     unorderedList[
       it += '''
-        Blang can go beyond simple real and integer valued random variables, for example we have a type of 
-        phylogenetic tree here, «SYMB»UnrootedTree«ENDSYMB». 
-        We believe Bayesian inference over combinatorial spaces is important in practice and currently neglected. 
+        Blang goes beyond simple real and integer valued random variables. Here we have a type of 
+        phylogenetic tree, «SYMB»UnrootedTree«ENDSYMB». 
+        Bayesian inference over combinatorial spaces is important and currently neglected. 
         So Blang uses an open type system and assists you in creating complex random types and correct sampling 
         algorithms for these types. 
       '''
       it += '''
         All the distributions shown, e.g. «SYMB»Exponential«ENDSYMB», «SYMB»NonClockTreePrior«ENDSYMB», etc, 
-        including those in the SDK, are themselves written in Blang.
+        in particular, those in the SDK, are themselves written in Blang. 
         This is important for extensibility and, crucially, for teaching. When using the Blang IDE, the student 
         can command click on a distribution to see its definition in the language they are familiar with. 
       '''
@@ -64,7 +64,7 @@ class Home {
       '''
       it += '''
         The algorithm trivially parallelize to hundreds of CPUs, here only 8 cores were used. 
-        Massive distribution is in the pipeline. 
+        Massive distribution over many nodes is in the pipeline. 
       '''
       it += '''
         The method provides an estimate of the evidence, here «SYMB»-1216.12«ENDSYMB», which is critical for model 
@@ -93,7 +93,10 @@ class Home {
         You can also call any Java or Xtend code, and there is a good interoperability potential with the 
         industrial data science stack such as Hadoop, Spark and DL4J. 
       '''
-      it += '''Blang is free and open source (permissive Berkeley License).'''
+      it += '''
+        Blang is free and open source (permissive Berkeley License for both the «LINK("https://github.com/UBC-Stat-ML/blangSDK")»SDK«ENDLINK» and the 
+        «LINK("https://github.com/UBC-Stat-ML/blangDSL")»language infrastructure«ENDLINK»).
+      '''
     ]
     downloadButton[
       label = "Get started"
@@ -116,7 +119,7 @@ class Home {
       import static conifer.Utils.*
       
       model Example {
-        random RealVar shape ?: realVar, rate ?: realVar
+        random RealVar shape ?: latentReal, rate ?: latentReal
         random SequenceAlignment observations
         random UnrootedTree tree ?: unrootedTree(observations.observedTreeNodes)
         param EvolutionaryModel evoModel ?: kimura(observations.nSites)

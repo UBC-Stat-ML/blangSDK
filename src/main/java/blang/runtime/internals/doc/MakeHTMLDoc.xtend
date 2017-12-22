@@ -14,6 +14,7 @@ import blang.runtime.internals.doc.contents.BlangWeb
 import blang.runtime.internals.doc.contents.CommonTypes
 import blang.runtime.internals.doc.contents.BuiltInRandomVariables
 import blang.runtime.internals.doc.contents.CommandLineArguments
+import blang.runtime.internals.doc.contents.Syntax
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
@@ -22,6 +23,7 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     GettingStarted::page,
     BlangIDE::page,
     BlangWeb::page,
+    Syntax::page,
     BuiltInRandomVariables::page,
     CommonTypes::page,
     CommandLineArguments::page
@@ -43,7 +45,7 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
           <p class="lead">
             Blang is a language and software development kit for doing Bayesian analysis. 
             Our design philosophy is centered around the day-to-day requirements of real world 
-            data analysis. We have also used Blang as a teaching tool, both for basic probability 
+            data science. We have also used Blang as a teaching tool, both for basic probability 
             concepts and more advanced Bayesian modelling. Here is the one minute tour:
           </p>
         '''
