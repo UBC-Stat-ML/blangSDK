@@ -25,7 +25,7 @@ class BuiltInRandomVariables {
           
           «SYMB»RealVar«ENDSYMB» and «SYMB»IntVar«ENDSYMB» are closely related to Java's «SYMB»Double«ENDSYMB» 
           and «SYMB»Integer«ENDSYMB» but 
-          the latter have implementations allowing mutability for the purpose of efficient sampling. 
+          the former have implementations allowing mutability for the purpose of efficient sampling. 
           Java's «SYMB»Double«ENDSYMB» and «SYMB»Integer«ENDSYMB» are automatically converted back and forth 
           to «SYMB»RealVar«ENDSYMB» and «SYMB»IntVar«ENDSYMB» (some kind of generalization of 
           «LINK("https://docs.oracle.com/javase/tutorial/java/data/autoboxing.html")»auto-boxing«ENDLINK»). 
