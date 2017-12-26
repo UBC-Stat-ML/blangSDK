@@ -11,7 +11,7 @@ model DynamicNormalMixture  {
   random DenseTransitionMatrix  transitionProbabilities ?: latentTransitionMatrix(nLatentStates)
   random List<RealVar>     means ?: latentListOfReal(nLatentStates), variances ?: latentListOfReal(nLatentStates)
          
-  param  Matrix            concentrations ?: ones(nLatentStates)
+  param  Matrix            concentrations ?: ones(nLatentStates).readOnlyView
   
   laws {
     // Priors on initial and transition probabilities

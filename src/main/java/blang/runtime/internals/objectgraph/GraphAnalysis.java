@@ -158,13 +158,11 @@ public class GraphAnalysis
   {
     LinkedHashSet<Node> result = new LinkedHashSet<>();
     result.addAll(observations.getObservationRoots());
-    // mark params in top level model as frozen
-    for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
-      if (f.getAnnotation(Param.class) != null) 
-        result.add(StaticUtils.node(ReflexionUtils.getFieldValue(f, model))); 
     
+    // verify all nodes that were marked observed are indeed in the accessibility graph
     if (!accessibilityGraph.graph.vertexSet().containsAll(result))
     {
+      // if not, prepare a friendly error message identifying culpits
       LinkedHashSet<Node> copy = new LinkedHashSet<>(result);
       copy.removeAll(accessibilityGraph.graph.vertexSet());
       throw new RuntimeException("Observed variables should be subsets of the accessibility graph: " + copy);

@@ -56,6 +56,7 @@ import static blang.types.StaticUtils.latentListOfInt
 import static blang.types.StaticUtils.latentListOfReal
 import static blang.types.StaticUtils.latentSimplex
 import static blang.types.StaticUtils.constantSimplex
+import xlinear.DenseMatrix
 
 class Examples {
   
@@ -151,7 +152,7 @@ class Examples {
   
   public val dirichlet = add(
     new Dirichlet.Builder()
-      .setConcentrations(denseCopy(#[Helpers::concentrationWarningThreshold, 3.1, 5.0]))
+      .setConcentrations(denseCopy(#[Helpers::concentrationWarningThreshold, 3.1, 5.0]).readOnlyView)
       .setRealization(latentSimplex(3))
         .build, 
     vectorHash
@@ -159,7 +160,7 @@ class Examples {
   
   public val dirichlet2 = add(
     new Dirichlet.Builder()
-      .setConcentrations(denseCopy(#[5.2, 3.1]))
+      .setConcentrations(denseCopy(#[5.2, 3.1]).readOnlyView)
       .setRealization(latentSimplex(2))
         .build, 
     vectorHash
@@ -201,7 +202,7 @@ class Examples {
   
   public val mvn = add(
     new MultivariateNormal.Builder()
-      .setMean(denseCopy(#[-3.1, 0.0, 1.2]))
+      .setMean(denseCopy(#[-3.1, 0.0, 1.2]).readOnlyView)
       .setPrecision(precision.cholesky)
       .setRealization(dense(3))
         .build,  
@@ -290,7 +291,7 @@ class Examples {
     [getLatents().get(plate.indices.iterator.next).doubleValue ** 2]
   )
   
-  public static Matrix precision = denseCopy(#[
+  public static DenseMatrix precision = denseCopy(#[
     #[2.0, -1.3,  0.0],
     #[-1.3, 2.0, -0.8],
     #[0.0, -0.8,  2.1]
