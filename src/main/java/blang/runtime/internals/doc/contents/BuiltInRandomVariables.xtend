@@ -8,6 +8,7 @@ import blang.types.DenseTransitionMatrix
 import blang.types.StaticUtils
 import blang.types.Plate
 import blang.types.Plated
+import blang.types.ExtensionUtils
 
 class BuiltInRandomVariables {
   
@@ -59,13 +60,14 @@ class BuiltInRandomVariables {
           «SYMB»param RealVar myVariable«ENDSYMB», then it will be initialized using the command line 
           arguments with prefix «SYMB»model.myVariable«ENDSYMB». 
           Use «SYMB»--help«ENDSYMB» to see the list of arguments. How to customize this 
-          behaviour is describe «LINK(CommandLineArguments::page)»here«ENDLINK».
+          behaviour is describe «LINK(InputOutput::page)»here«ENDLINK».
           
           If a variable is provided with a default value, as in «SYMB»random RealVar myVariable ?: constantReal(42.0)«ENDSYMB» 
           or «SYMB»param RealVar myVariable ?: { /* init block */ }«ENDSYMB», then the initialization block will be used whenever 
           no command line arguments are provided for this variable. The following are useful for creating initialization blocks:
         '''
         documentClass(StaticUtils)
+        documentClass(ExtensionUtils)
       ]
     ]
     

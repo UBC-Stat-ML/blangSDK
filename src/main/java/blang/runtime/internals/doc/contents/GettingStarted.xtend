@@ -264,7 +264,17 @@ class GettingStarted {
     ]
     
     section("More pointers") [
-      it += "TODO"
+      it += '''
+        Additional tutorial and reference materials to go more in-depth:
+      '''
+      unorderedList[
+        it += '''«LINK(BuiltInRandomVariables::page)»Built in random variables«ENDLINK»: building blocks for Blang models.'''
+        it += '''
+          «LINK(InferenceAndRuntime::page)»Inference and runtime«ENDLINK»: how the Blang runtime system performs inference 
+          based on Blang models. 
+        ''' 
+        it += '''«LINK(Syntax::page)»Complete description of Blang's syntax.«ENDLINK»'''  
+      ]
     ]
 
   ]

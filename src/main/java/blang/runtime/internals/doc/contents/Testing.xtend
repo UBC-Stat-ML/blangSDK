@@ -5,7 +5,7 @@ import blang.runtime.internals.doc.Categories
 
 class Testing {
   
-  public val static Document page = new Document("Template") [
+  public val static Document page = new Document("Testing Blang models") [
     
     category = Categories::reference
     

@@ -33,6 +33,7 @@ class BootstrapHTMLRenderer implements Renderer  {
     var int currentSectionDepth = 0
     var int currentOrderedListDepth = 0
     var int currentUnorderedListDepth = 0
+    // var boolean usesMathJax = false // always load; since they recommend placing the tag early 
     val List<Language> codeModes = new ArrayList
     val List<DownloadButton> downloadButtons = new ArrayList
   }
@@ -135,6 +136,8 @@ class BootstrapHTMLRenderer implements Renderer  {
     switch (object) {
       case DocElement._SYMB : "<code>"
       case DocElement._ENDSYMB : "</code>"
+      case DocElement._MATH : "\\( "
+      case DocElement._ENDMATH : " \\)"
       case DocElement._EMPH : "<em>"
       case DocElement._ENDEMPH : "</em>"
       case DocElement._ENDLINK : "</a>"
@@ -293,6 +296,8 @@ class BootstrapHTMLRenderer implements Renderer  {
         <meta name="description" content="Blang documentation">
     
         <title>«document.name»</title>
+        
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
     
         <!-- Bootstrap core CSS -->
         <link href="dist/css/bootstrap.min.css" rel="stylesheet">

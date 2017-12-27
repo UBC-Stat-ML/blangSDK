@@ -11,12 +11,12 @@ import java.util.List
 import java.util.ArrayList
 import blang.runtime.internals.doc.contents.BlangIDE
 import blang.runtime.internals.doc.contents.BlangWeb
-import blang.runtime.internals.doc.contents.CommonTypes
 import blang.runtime.internals.doc.contents.BuiltInRandomVariables
-import blang.runtime.internals.doc.contents.CommandLineArguments
 import blang.runtime.internals.doc.contents.Syntax
 import blang.runtime.internals.doc.contents.InferenceAndRuntime
 import blang.runtime.internals.doc.contents.Testing
+import blang.runtime.internals.doc.contents.InputOutput
+import blang.runtime.internals.doc.contents.CreatingTypes
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
@@ -28,9 +28,9 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     BuiltInRandomVariables::page,
     InferenceAndRuntime::page,
     Syntax::page,
+    CreatingTypes::page,
     Testing::page,
-    CommonTypes::page,
-    CommandLineArguments::page
+    InputOutput::page
   ]
   
 
@@ -83,7 +83,7 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
   }
   
   new() {
-    super("Blang Doc", documents)
+    super("Blang", documents)
   }
   
   def static void main(String [] args) {
