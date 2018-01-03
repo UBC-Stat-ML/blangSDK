@@ -26,6 +26,9 @@ public class ParallelTempering
   @Arg(description = "If unspecified, use the number of threads.")
   public Optional<Integer> nChains = Optional.empty();
   
+  @Arg              @DefaultValue("true")
+  public boolean usePriorSamples = true;
+  
   // convention: state index 0 is room temperature (target of interest)
   private SampledModel [] states;
   private List<Double> temperingParameters;
@@ -34,6 +37,8 @@ public class ParallelTempering
   
   public SampledModel getTargetState()
   {
+    if (temperingParameters.get(0) != 1.0)
+      throw new RuntimeException();
     return states[0];
   }
   
@@ -46,7 +51,9 @@ public class ParallelTempering
   {
     temperingParameters = new ArrayList<>();
     List<SampledModel> initStates = new ArrayList<>();
-    ladder.temperingParameters(temperingParameters, initStates, nChains.orElse(nThreads.available));
+    ladder.temperingParameters(temperingParameters, initStates, nThreads.available);
+    if (temperingParameters.get(0) != 1.0)
+      throw new RuntimeException();
     System.out.println("Temperatures: " + temperingParameters);
     int nChains = temperingParameters.size();
     states = initStates.isEmpty() ? defaultInit(prototype, nChains, random) : (SampledModel[]) initStates.toArray();
@@ -56,11 +63,14 @@ public class ParallelTempering
     parallelRandomStreams =  Random.parallelRandomStreams(random, nChains);
   }
   
-  private static SampledModel [] defaultInit(SampledModel prototype, int nChains, Random random)
+  private SampledModel [] defaultInit(SampledModel prototype, int nChains, Random random)
   {
     SampledModel [] result = (SampledModel []) new SampledModel[nChains];
     for (int i = 0; i < nChains; i++)
+    {
       result[i] = prototype.duplicate();
+      result[i].setExponent(temperingParameters.get(i)); 
+    }
     return result;
   }
   
@@ -82,24 +92,12 @@ public class ParallelTempering
     {
       Random random = parallelRandomStreams[chainIndex];
       SampledModel current = states[chainIndex];
-      if (chainIndex == 0)
-        sampleFromPrior(random, current);
+      if (temperingParameters.get(chainIndex) == 0 && usePriorSamples)
+        current.forwardSample(random, false);
       else
         for (int i = 0; i < nPasses; i++)
-          sampleMove(random, current, temperingParameters.get(chainIndex));
+          current.posteriorSamplingStep_deterministicScanAndShuffle(random); 
     });
-  }
-  
-  private void sampleFromPrior(Random random, SampledModel model) 
-  {
-    model.setExponent(0.0);
-    model.forwardSample(random, false);
-  }
-
-  private void sampleMove(Random random, SampledModel model, double temperature)
-  {
-    model.setExponent(temperature);
-    model.posteriorSamplingStep_deterministicScanAndShuffle(random); 
   }
   
   /**
@@ -129,5 +127,7 @@ public class ParallelTempering
     SampledModel tmp = states[i];
     states[i] = states[j];
     states[j] = tmp;
+    states[i].setExponent(temperingParameters.get(i));
+    states[j].setExponent(temperingParameters.get(j));
   }
 }
