@@ -147,6 +147,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   override void run() {
     println("Preprocessing started")
     val Stopwatch preprocessingTime = Stopwatch.createStarted
+    samplers.monitoringStatistics = results.child("monitoring") 
     val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations)
     engine.check(graphAnalysis)
     if (printAccessibilityGraph) {

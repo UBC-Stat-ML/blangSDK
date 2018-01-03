@@ -1,12 +1,12 @@
 package blang.mcmc.internals;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import blang.core.Factor;
+import blang.inits.experiments.ExperimentResults;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.runtime.internals.objectgraph.Node;
 import blang.runtime.internals.objectgraph.ObjectNode;
@@ -17,11 +17,13 @@ public class SamplerBuilderContext
   private GraphAnalysis graphAnalysis;
   private Node sampledVariable;
   private Set<Node> _sampledNodes = null;
+  public final ExperimentResults monitoringStatistics; 
   
-  SamplerBuilderContext(GraphAnalysis graphAnalysis, Node sampledVariable)
+  SamplerBuilderContext(GraphAnalysis graphAnalysis, Node sampledVariable, ExperimentResults monitoringStatistics)
   {
     this.graphAnalysis = graphAnalysis;
     this.sampledVariable = sampledVariable;
+    this.monitoringStatistics = monitoringStatistics;
   }
   
   private Set<Node> getSampledNodes()

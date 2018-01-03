@@ -2,6 +2,7 @@ package blang.mcmc.internals;
 
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
+import blang.inits.experiments.ExperimentResults;
 import blang.mcmc.Sampler;
 
 public class SamplerBuilderOptions
@@ -14,6 +15,8 @@ public class SamplerBuilderOptions
   
   @Arg
   public SamplerSet excluded = new SamplerSet();
+  
+  public ExperimentResults monitoringStatistics = new ExperimentResults();
   
   public static SamplerBuilderOptions startWithOnly(Class<? extends Sampler> thisTypeOfSampler) 
   {

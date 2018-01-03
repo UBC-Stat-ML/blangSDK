@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import blang.core.Factor;
 import blang.core.Model;
+import blang.inits.experiments.ExperimentResults;
 import blang.mcmc.ConnectedFactor;
 import blang.mcmc.SampledVariable;
 import blang.mcmc.Sampler;
@@ -39,7 +40,7 @@ public class SamplerBuilder
       SamplerMatch current = new SamplerMatch(latent);
       for (Class<? extends Sampler> typeMatch : typeMatcher.matches(latent.getClass()))
       {
-        Sampler o = tryInstantiate(typeMatch, latentNode, graphAnalysis);
+        Sampler o = tryInstantiate(typeMatch, latentNode, graphAnalysis, options.monitoringStatistics);
         if (o != null)
           add(result, current, o, latentNode);
       }
@@ -58,7 +59,8 @@ public class SamplerBuilder
   private static Sampler tryInstantiate(
       Class<? extends Sampler> operatorClass, 
       Node variable,
-      GraphAnalysis graphAnalysis)
+      GraphAnalysis graphAnalysis,
+      ExperimentResults monitoringResults)
   {
     List<? extends Factor> factors = 
         graphAnalysis.getConnectedFactor(variable).stream()
@@ -83,7 +85,7 @@ public class SamplerBuilder
     // fill the variable node too; make sure there is only one such field
     SamplerMatchingUtils.assignVariable(instantiated, GraphAnalysis.getLatentObject(variable));
     
-    SamplerBuilderContext context = new SamplerBuilderContext(graphAnalysis, variable);
+    SamplerBuilderContext context = new SamplerBuilderContext(graphAnalysis, variable, monitoringResults);
     if (!((Sampler) instantiated).setup(context))
       return null;
     context.tearDown();
