@@ -92,6 +92,53 @@ public interface Precision<K>
     public Plate<K> getPlate() {
       return plate;
     }
+  }
+  
+  public static class SimpleBrownian implements Precision<Integer>
+  {
+    final RealVar sigma;
+    final Plate<Integer> plate;
+    final int dim;
     
+    public SimpleBrownian(RealVar sigma, Plate<Integer> plate) 
+    {
+      this.plate = plate;
+      this.dim = plate.indices().size();
+      this.sigma = sigma;
+    }
+
+    @Override
+    public Plate<Integer> getPlate() 
+    {
+      return plate;
+    }
+
+    @Override
+    public Set<UnorderedPair<Integer, Integer>> support() 
+    {
+      LinkedHashSet<UnorderedPair<Integer, Integer>> result = new LinkedHashSet<>();
+      for (int i = 0; i < dim; i++) 
+      {
+        result.add(new UnorderedPair<>(i, i));
+        if (i - 1 >= 0.0)
+          result.add(new UnorderedPair<>(i, i - 1)); 
+        if (i + 1 < dim)
+          result.add(new UnorderedPair<>(i, i + 1)); 
+      }
+      return result;
+    }
+
+    @Override
+    public double logDet() 
+    {
+      return Math.log(sigma.doubleValue());
+    }
+
+    @Override
+    public double get(UnorderedPair<Integer, Integer> pair) 
+    {
+      boolean isDiagonal = pair.getFirst().equals(pair.getSecond());
+      return sigma.doubleValue() * (isDiagonal ? 2.0 : - 1.0);
+    }
   }
 }

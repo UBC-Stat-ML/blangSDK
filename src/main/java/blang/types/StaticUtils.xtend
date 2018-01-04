@@ -13,6 +13,8 @@ import bayonet.math.SpecialFunctions
 import blang.types.internals.InvalidParameter
 import blang.types.internals.RealScalar
 import blang.types.internals.IntScalar
+import blang.types.Precision.Diagonal
+import blang.types.Precision.SimpleBrownian
 
 /** Automatically statically imported in Blang meaning can call "StaticUtils::function(..)" as just "function(..)". */
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
@@ -99,14 +101,20 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return new DenseTransitionMatrix(denseCopy(probabilities).readOnlyView)
   }
 
-  def static double logFactorial(double input) 
-  {
+  def static double logFactorial(double input) {
     return SpecialFunctions.lnGamma(input+1);
   }
 
-  def static double logBinomial(double n, double k)
-  {
+  def static double logBinomial(double n, double k) {
     return logFactorial(n) - logFactorial(k) - logFactorial(n-k);
+  }
+  
+  def static <K> Diagonal<K> diagonalPrecision(RealVar diagonalPrecisionValue, Plate<K> plate) {
+    return new Diagonal<K>(diagonalPrecisionValue, plate)
+  }
+  
+  def static <K> SimpleBrownian simpleBrownian(RealVar sigma, Plate<Integer> plate) {
+    return new SimpleBrownian(sigma, plate)
   }
   
   def static double NEGATIVE_INFINITY() {

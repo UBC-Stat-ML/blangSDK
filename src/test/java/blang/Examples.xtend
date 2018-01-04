@@ -291,6 +291,16 @@ class Examples {
     [getLatents().get(plate.indices.iterator.next).doubleValue ** 2]
   )
   
+  public val poissonNormalBM = add(
+    new PoissonNormalField.Builder()
+      .setDiagonal(false)
+      .setPlate(plate)
+      .setLatents(Plated::latent(col, [latentReal]))
+      .setObservations(Plated::latent(col, [latentInt]))
+        .build,
+    [getLatents().get(plate.indices.iterator.next).doubleValue ** 2]
+  )
+  
   public static DenseMatrix precision = denseCopy(#[
     #[2.0, -1.3,  0.0],
     #[-1.3, 2.0, -0.8],
