@@ -1,0 +1,24 @@
+package blang.validation.internals.fixtures
+
+import blang.types.Precision.Diagonal
+
+model NormalFieldExamples {
+  
+  param Boolean diagonal ?: true 
+  
+  param Plate<Integer> plate
+  
+  random Plated<RealVar> latents
+  
+  laws {
+    
+    // Prior:
+    //hyperParam ~ Exponential(1.0)
+    latents 
+      | Precision<Integer> precision = 
+          if (diagonal) diagonalPrecision(1.0, plate) 
+          else          simpleBrownian(1.0, plate)
+      ~ NormalField(precision)
+    
+  }
+}
