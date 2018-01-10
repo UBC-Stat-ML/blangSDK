@@ -1,0 +1,18 @@
+package blang.distributions
+
+model PoissonAllInOne {
+  random IntVar realization
+  param RealVar mean
+  
+  laws {
+    logf(realization, mean) {
+      if (mean <= 0) return NEGATIVE_INFINITY
+      if (realization < 0) return NEGATIVE_INFINITY
+      return realization * log(mean) - mean - factorialLog(realization)
+    }
+  }
+  
+  generate(rand) {
+    Generators::poisson(rand, mean)
+  }
+}
