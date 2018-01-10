@@ -112,6 +112,7 @@ public class StandaloneCompiler  {
         .throwOnNonZeroReturnCode()
         .appendArg("-cp").appendArg(classpath)
         .appendArg(Runner.class.getTypeName());
+    runnerCmd = runnerCmd.appendArg("--experimentConfigs.recordGitInfo").appendArg("false");
     for (String arg : args) {
       runnerCmd = runnerCmd.appendArg(arg);
     }
