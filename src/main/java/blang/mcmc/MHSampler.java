@@ -6,7 +6,6 @@ import bayonet.distributions.Random;
 import blang.core.LogScaleFactor;
 import blang.distributions.Generators;
 import blang.mcmc.internals.Callback;
-import blang.mcmc.internals.SamplerBuilderContext;
 
 
 

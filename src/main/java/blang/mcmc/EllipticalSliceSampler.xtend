@@ -17,10 +17,10 @@ import blang.core.WritableRealVar
 class EllipticalSliceSampler<K> implements Sampler {
   
   @SampledVariable(skipFactorsFromSampledModel=true) 
-  protected NormalField field
+  NormalField field
   
   @ConnectedFactor 
-  protected List<LogScaleFactor> likelihoods
+  List<LogScaleFactor> likelihoods
   
   int dim = -1
   Indexer<K> indexer = null
