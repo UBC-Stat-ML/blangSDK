@@ -26,6 +26,6 @@ model Gamma {
   }
   
   generate(rand) {
-    Generators::gamma(rand, shape, rate)
+    rand.gamma(shape, rate)
   }
 }

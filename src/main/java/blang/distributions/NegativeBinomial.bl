@@ -17,6 +17,6 @@ model NegativeBinomial {
   }
   
   generate(rand) {
-    Generators::negativeBinomial(rand, r, p)
+    rand.negativeBinomial(r, p)
   }
 }

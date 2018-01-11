@@ -19,6 +19,6 @@ model Normal {
   }
   
   generate(rand) {
-    Generators::normal(rand, mean, variance)
+    rand.normal(mean, variance)
   }
 }

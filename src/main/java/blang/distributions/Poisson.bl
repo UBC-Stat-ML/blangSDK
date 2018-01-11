@@ -21,6 +21,6 @@ model Poisson {
   }
   
   generate(rand) {
-    Generators::poisson(rand, mean)
+    rand.poisson(mean)
   }
 }

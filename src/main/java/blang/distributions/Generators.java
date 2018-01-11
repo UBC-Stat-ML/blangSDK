@@ -17,7 +17,7 @@ import static blang.types.ExtensionUtils.generator;
 
 import java.util.Random;
 
-public class Generators  
+public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
   public static double gamma(Random random, double shape, double rate)
   {

@@ -11,7 +11,7 @@ import briefj.Indexer
  * for the precision, outside of which the precision is guaranteed to be zero. This 
  * can speed up sampling considerably.
  */
-@Samplers(EllipticalSliceSampler, BouncyParticleSampler)
+//@Samplers(EllipticalSliceSampler, BouncyParticleSampler) // Specialized samplers disabled for now make tests too slow - re-enable once new BPS impl is finished
 model NormalField {
   /**
    * precision.support is assumed to be constant.
@@ -48,7 +48,7 @@ model NormalField {
     val Precision<Object> p = precision 
     val Indexer<Object> indexer = Precision::indexer(p.plate)
     val Matrix precisionMatrix = Precision::asMatrix(p, indexer)
-    val Matrix result = MatrixOperations::sampleNormalByPrecision(rand, precisionMatrix)
+    val Matrix result = sampleNormalByPrecision(rand, precisionMatrix)
     for (Index<Object> index : p.plate.indices) { 
       (realization.get(index) as WritableRealVar).set(result.get(indexer.o2i(index.key)))
     }

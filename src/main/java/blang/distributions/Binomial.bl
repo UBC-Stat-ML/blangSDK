@@ -18,6 +18,6 @@ model Binomial {
   }
   
   generate (rand) {
-    Generators::binomial(rand, numberOfTrials, probabilityOfSuccess)
+    rand.binomial(numberOfTrials, probabilityOfSuccess)
   }
 }

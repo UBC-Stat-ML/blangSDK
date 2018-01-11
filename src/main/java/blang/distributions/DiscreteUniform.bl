@@ -16,7 +16,7 @@ model DiscreteUniform {
   }
   
   generate(rand) {
-    Generators::discreteUniform(rand, minInclusive, maxExclusive)
+    rand.discreteUniform(minInclusive, maxExclusive)
   }
   
 }

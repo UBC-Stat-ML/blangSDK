@@ -27,6 +27,6 @@ model Dirichlet {
   }
   
   generate(rand) { 
-    Generators::dirichletInPlace(rand, concentrations, realization) 
+    rand.dirichletInPlace(concentrations, realization) 
   }
 }

@@ -35,6 +35,6 @@ model Beta {
   }
   
   generate(rand) {
-    Generators::beta(rand, alpha, beta)
+    rand.beta(alpha, beta)
   }
 }

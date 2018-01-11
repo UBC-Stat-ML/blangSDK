@@ -13,6 +13,6 @@ model Categorical {
   }
   
   generate(rand) {
-    Generators::categorical(rand, probabilities.vectorToArray)
+    rand.categorical(probabilities.vectorToArray)
   }
 }
