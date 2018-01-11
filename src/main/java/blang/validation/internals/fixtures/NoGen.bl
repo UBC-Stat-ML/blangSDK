@@ -1,0 +1,17 @@
+package blang.validation.internals.fixtures
+
+model NoGen {
+  
+  random RealVar 
+    x1 ?: latentReal, 
+    x2 ?: latentReal
+  
+  laws {
+    
+    x1 ~ Normal(0,1)
+    logf(x2) {
+      0.0
+    }
+    
+  }
+}

@@ -47,6 +47,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   @Arg         @DefaultValue("true")
   public boolean checkIsDAG = true
   
+  @Arg                             @DefaultValue("false")
+  public boolean skipForwardSamplerConstruction = false
+  
   @Arg                   @DefaultValue("1")
   public Random initRandom = new Random(1)
   
@@ -124,7 +127,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs, Creator creator) {
     if (useSimplifiedArguments(rawArguments) && !new File(CONFIG_FILE_NAME).exists) {
-      System.err.println("Paste the following into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:\n\n")
+      System.err.println("Configure by pasting command line diagnosis into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:\n\n")
     }
   }
   
@@ -163,7 +166,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         throw new NotDAG(re.toString + "\nTo disable check for DAG, use the option --checkIsDAG")
       }
     }
-    val SampledModel sampledModel = new SampledModel(graphAnalysis, kernels, initRandom)
+    val SampledModel sampledModel = if (skipForwardSamplerConstruction) SampledModel.stripped(graphAnalysis, kernels) else new SampledModel(graphAnalysis, kernels, initRandom)
     engine.sampledModel = sampledModel
     preprocessingTime.stop
     val Stopwatch samplingTime = Stopwatch.createStarted

@@ -87,10 +87,11 @@ public class SampledModel
   
   public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers, Random initRandom) 
   {
+    boolean stripped = initRandom == null;
     this.model = graphAnalysis.model;
     this.posteriorInvariantSamplers = samplers.list;
-    this.forwardSamplers = graphAnalysis.createForwardSimulator();
-    AnnealingStructure annealingStructure = graphAnalysis.createLikelihoodAnnealer();
+    this.forwardSamplers = stripped ? null : graphAnalysis.createForwardSimulator();
+    AnnealingStructure annealingStructure = stripped ? graphAnalysis.noAnnealer() : graphAnalysis.createLikelihoodAnnealer();
     this.annealingExponent = annealingStructure.annealingParameter;
     
     otherAnnealedFactors = annealingStructure.otherAnnealedFactors;
@@ -111,7 +112,16 @@ public class SampledModel
       if (f.getAnnotation(Param.class) == null) // TODO: filter out fully observed stuff too
         objectsToOutput.put(f.getName(), ReflexionUtils.getFieldValue(f, model));
     
-    forwardSample(initRandom, true); 
+    if (initRandom != null)
+      forwardSample(initRandom, true); 
+  }
+  
+  /**
+   * A simplified SampledModel without annealing nor forward sampling
+   */
+  public static SampledModel stripped(GraphAnalysis graphAnalysis, BuiltSamplers samplers)
+  {
+    return new SampledModel(graphAnalysis, samplers, null);
   }
   
   public int nPosteriorSamplers()
@@ -223,6 +233,8 @@ public class SampledModel
   
   public void setExponent(double value)
   {
+    if (value == 1.0 && annealingExponent == null)
+      return; // nothing to do, if null we consider identical to 1.0
     annealingExponent.set(value);
   }
   

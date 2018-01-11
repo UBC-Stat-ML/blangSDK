@@ -103,6 +103,17 @@ public class GraphAnalysis
     return result;
   }
   
+  public AnnealingStructure noAnnealer()
+  {
+    AnnealingStructure result = new AnnealingStructure(null);
+    for (ObjectNode<Factor> node : factorNodes)
+      if (node.object instanceof LogScaleFactor)
+        result.fixedLogScaleFactors.add((LogScaleFactor) node.object);
+      else
+        result.otherFactors.add(node.object);
+    return result;
+  }
+  
   public GraphAnalysis(Model model)
   {
     this (model, new Observations());
