@@ -1,0 +1,25 @@
+model Diffusion {
+  
+  
+  param Double startPoint ?: 0.5
+  param Double variance ?: 0.01
+  
+  random List<RealVar> process 
+  param int length ?: process.size
+  
+  laws {
+    process.get(0) | startPoint, variance ~ Normal(startPoint, variance * sqrt(startPoint * (1.0 - startPoint)))
+    
+    for (int i : 1 ..< length) {
+      process.get(i) | variance, RealVar prev = process.get(i - 1) 
+        ~ Normal(
+            prev, 
+            {
+              if (prev <= 0.0 || prev >= 1.0) return 1e-5
+              else variance * sqrt(prev * (1.0 - prev))
+            }
+        )
+    }
+  }
+  
+}
