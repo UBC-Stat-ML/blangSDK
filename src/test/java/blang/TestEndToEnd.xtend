@@ -6,6 +6,7 @@ import org.junit.Test
 import blang.validation.internals.fixtures.Doomsday
 import blang.runtime.SampledModel
 import blang.validation.internals.fixtures.NoGen
+import blang.validation.internals.fixtures.Diffusion
 
 class TestEndToEnd {
   
@@ -26,6 +27,18 @@ class TestEndToEnd {
         )
       )
     }
+  }
+  
+  @Test
+  def void diffusion() {
+    
+    Assert.assertEquals(
+      0, 
+      Runner::start(
+        "--model", Diffusion.canonicalName
+      )
+    )
+    
   }
   
   @Test
