@@ -19,7 +19,12 @@ public class ExponentiatedFactor implements AnnealedFactor
    */
   public double enclosedLogDensity()
   {
-    try { return enclosed.logDensity(); } 
+    try { 
+      double result = enclosed.logDensity();
+      if (Double.isNaN(result))
+        throw new RuntimeException("Factors should not return NaN. Use NEGATIVE_INFINITY to forbid configurations. Caused by: " + enclosed.getClass().getCanonicalName());
+      return result; 
+    } 
     catch (InvalidParameter ip) { return Double.NEGATIVE_INFINITY; }
   }
   
