@@ -88,6 +88,16 @@ abstract class DocElement {
     renderer.render(_ENDMATH)
   }
   
+  val static public Object _EQN = new Object
+  def String EQN() {
+    renderer.render(_EQN)
+  }
+  
+  val static public Object _ENDEQN = new Object
+  def String ENDEQN() {
+    renderer.render(_ENDEQN)
+  }
+  
   val static public Object _EMPH = new Object
   def String EMPH() {
     renderer.render(_EMPH)

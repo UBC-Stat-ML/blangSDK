@@ -26,14 +26,12 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     BlangIDE::page,
     BlangWeb::page,
     BuiltInRandomVariables::page,
-    InferenceAndRuntime::page,
     Syntax::page,
     CreatingTypes::page,
     Testing::page,
-    InputOutput::page
+    InputOutput::page,
+    InferenceAndRuntime::page
   ]
-  
-
   
   override protected List<String> recurse(DocElement page) {
     val List<String> result = new ArrayList

@@ -138,6 +138,8 @@ class BootstrapHTMLRenderer implements Renderer  {
       case DocElement._ENDSYMB : "</code>"
       case DocElement._MATH : "\\( "
       case DocElement._ENDMATH : " \\)"
+      case DocElement._EQN : "\\[\\begin{align} "
+      case DocElement._ENDEQN : " \\end{align}\\]"
       case DocElement._EMPH : "<em>"
       case DocElement._ENDEMPH : "</em>"
       case DocElement._ENDLINK : "</a>"

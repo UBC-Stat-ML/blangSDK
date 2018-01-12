@@ -9,6 +9,7 @@ import blang.types.StaticUtils
 import blang.types.Plate
 import blang.types.Plated
 import blang.types.ExtensionUtils
+import blang.distributions.Generators
 
 class BuiltInRandomVariables {
   
@@ -78,6 +79,20 @@ class BuiltInRandomVariables {
       '''      
       documentClass(Plate)
       documentClass(Plated)
+    ]
+    
+    section("Generation of random variables") [
+      it += '''
+        For random generation, Blang uses «SYMB»bayonet.distributions.Random«ENDSYMB», a replacement for 
+        «SYMB»java.util.Random«ENDSYMB» which by default uses under the hood 
+        the Math Commons implementation of MarsenneTwister and is compatible both with Java and Math Commons 
+        random types. 
+        
+        To generate specific distributions, use «SYMB»blang.distributions.Generators«ENDSYMB», the methods of 
+        which are automatically imported in Blang model as static extensions, meaning for example to generate 
+        a gamma you can just write «SYMB»rand.gamma(shape, rate)«ENDSYMB».
+      '''
+      documentClass(Generators)
     ]
     
   ]

@@ -17,8 +17,10 @@ import static blang.types.ExtensionUtils.generator;
 
 import java.util.Random;
 
+/** Various random number generators. */
 public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
+  /** */
   public static double gamma(Random random, double shape, double rate)
   {
     double result = new GammaDistribution(generator(random), shape, 1.0/rate).sample();
@@ -27,6 +29,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     return result;
   }
 
+  /** */
   public static double beta(Random random, double alpha, double beta)
   {
     double result = 
@@ -38,6 +41,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     return result;
   }
   
+  /** */
   public static boolean bernoulli(Random random, double p) 
   {
     if (random instanceof bayonet.distributions.Random)
@@ -45,6 +49,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     return bayonet.distributions.Random.nextBernoulli(random, p);
   }
   
+  /** */
   public static int categorical(Random random, double [] probabilities)
   {
     if (random instanceof bayonet.distributions.Random)
@@ -52,11 +57,13 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     return bayonet.distributions.Random.nextCategorical(random, probabilities);
   }
   
+  /** */
   public static int binomial(Random random, int numberOfTrials, double probabilityOfSuccess)
   {
     return new BinomialDistribution(generator(random), numberOfTrials, probabilityOfSuccess).sample();
   }
   
+  /** */
   public static int negativeBinomial(Random random, double r, double p) 
   {
     // Use Gamma-Poisson mixture
@@ -64,16 +71,19 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     return poisson(random, lambda);
   }
   
+  /** */
   public static double unitRateExponential(Random random)
   {
     return - Math.log(random.nextDouble());
   }
   
+  /** */
   public static double exponential(Random random, double rate)
   {
     return unitRateExponential(random) / rate;
   }
   
+  /** */
   public static double uniform(Random random, double min, double max)
   {
     if (max < min)
@@ -81,6 +91,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     return min + random.nextDouble() * (max - min);
   }
   
+  /** */
   public static int discreteUniform(Random rand, int minInclusive, int maxExclusive)
   {
     if (maxExclusive <= minInclusive)
@@ -100,6 +111,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     }
   }
   
+  /** */
   public static DenseSimplex dirichlet(Random random, Matrix concentrations) 
   {
     DenseMatrix result = MatrixOperations.dense(concentrations.nEntries());
@@ -149,26 +161,31 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     }
   }
   
+  /** */
   public static Matrix multivariateNormal(Random rand, Matrix mean, CholeskyDecomposition precision) 
   {
     return MatrixOperations.sampleNormalByPrecision(rand, precision).add(mean);
   }
   
+  /** */
   public static Matrix standardMultivariateNormal(Random rand, int dim)
   {
     return MatrixOperations.sampleStandardNormal(rand, dim);
   }
   
+  /** */
   public static double normal(Random rand, double mean, double variance)
   {
     return rand.nextGaussian() * Math.sqrt(variance) + mean;
   }
   
+  /** */
   public static double standardNormal(Random rand) 
   {
     return rand.nextGaussian();
   }
   
+  /** */
   public static int poisson(Random rand, double mean) 
   {
     return new PoissonDistribution(generator(rand), mean, PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS).sample();
