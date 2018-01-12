@@ -15,6 +15,9 @@ import briefj.BriefParallel;
 
 public class AdaptiveJarzynski
 {
+  @Arg               @DefaultValue("1")
+  public Random random = new Random(1);
+  
   @Arg                    @DefaultValue("0.5")
   public double resamplingESSThreshold = 0.5;
   
@@ -24,16 +27,14 @@ public class AdaptiveJarzynski
   @Arg                                         @DefaultValue("STRATIFIED")            
   public ResamplingScheme resamplingScheme = ResamplingScheme.STRATIFIED;
 
-  @Arg                 @DefaultValue("1_000")
-  public int nSamplesPerTemperature = 1_000;
+  @Arg     @DefaultValue("1_000")
+  public int nParticles = 1_000;
 
   @Arg   
   public Cores nThreads = Cores.maxAvailable(); 
   
-  @Arg               @DefaultValue("1")
-  public Random random = new Random(1);
-  
-  private SampledModel prototype;
+  protected SampledModel prototype;
+  protected Random [] parallelRandomStreams;
   
   /**
    * @return The particle population at the last step
@@ -41,18 +42,25 @@ public class AdaptiveJarzynski
   public ParticlePopulation<SampledModel> getApproximation(SampledModel model)
   {
     prototype = model;
-    Random [] parallelRandomStreams = Random.parallelRandomStreams(random, nSamplesPerTemperature);
+    parallelRandomStreams = Random.parallelRandomStreams(random, nParticles);
+    
     ParticlePopulation<SampledModel> population = initialize(parallelRandomStreams);
     
+    int iter = 0;
     double temperature = 0.0;
     while (temperature < 1.0)
     {
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature); 
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
       if (resamplingNeeded(population, nextTemperature))
+      {
         population = resample(random, population);
+        System.out.println("Resampling [iter=" + iter + ", Z_{" + nextTemperature + "}= " + population.logNormEstimate() + "]");
+      }
       temperature = nextTemperature;
+      iter++;
     }
+    System.out.println("Change of measure complete [iter=" + iter + ", Z=" + population.logNormEstimate() + "]");
     return population;
   }
   
@@ -71,18 +79,18 @@ public class AdaptiveJarzynski
     return population;
   }
 
-  private void deepCopyParticles(final ParticlePopulation<SampledModel> population) 
+  protected void deepCopyParticles(final ParticlePopulation<SampledModel> population) 
   {
-    SampledModel [] cloned = (SampledModel[]) new SampledModel[nSamplesPerTemperature];
+    SampledModel [] cloned = (SampledModel[]) new SampledModel[nParticles];
     
-    BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
+    BriefParallel.process(nParticles, nThreads.available, particleIndex ->
     {
       SampledModel current = population.particles.get(particleIndex);
       boolean needsCloning = particleIndex > 0 && current == population.particles.get(particleIndex - 1);
       cloned[particleIndex] = needsCloning ? current.duplicate() : current;
     });
     
-    for (int i = 0; i < nSamplesPerTemperature; i++)
+    for (int i = 0; i < nParticles; i++)
       population.particles.set(i, cloned[i]);
   }
 
@@ -90,10 +98,10 @@ public class AdaptiveJarzynski
   {
     final boolean isInitial = currentPopulation == null;
     
-    final double [] logWeights = new double[nSamplesPerTemperature];
-    final SampledModel [] particles = (SampledModel[]) new SampledModel[nSamplesPerTemperature];
+    final double [] logWeights = new double[nParticles];
+    final SampledModel [] particles = (SampledModel[]) new SampledModel[nParticles];
     
-    BriefParallel.process(nSamplesPerTemperature, nThreads.available, particleIndex ->
+    BriefParallel.process(nParticles, nThreads.available, particleIndex ->
     {
       Random random = randoms[particleIndex];
       logWeights[particleIndex] = 

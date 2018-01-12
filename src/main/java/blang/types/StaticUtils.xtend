@@ -59,7 +59,27 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return new ArrayList(result)
   }
   
-  /** latent n-by-1 matrix with entries summing to one. */
+  /** an n-by-1 latent dense vector (initialized at zero) */
+  def static DenseMatrix latentVector(int n) {
+    return dense(n)
+  }
+  
+  /** an n-by-1 constant dense vector  */
+  def static DenseMatrix constantVector(double ... entries) {
+    return denseCopy(entries).readOnlyView
+  }
+  
+  /** an n-by-m latent dense matrix (initialized at zero) */
+  def static DenseMatrix latentMatrix(int nRows, int nCols) {
+    return dense(nRows, nCols)
+  }
+  
+  /** a constant dense matrix */
+  def static DenseMatrix constantMatrix(double [][] entries) {
+    return denseCopy(entries).readOnlyView
+  }
+  
+  /** latent n-by-1 matrix with entries summing to one (initialized at uniform). */
   def static DenseSimplex latentSimplex(int n) {
     val double unif = 1.0 / (n as double)
     val DenseMatrix m = dense(n)

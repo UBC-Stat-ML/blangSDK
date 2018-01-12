@@ -263,7 +263,8 @@ class Examples {
     new MixtureModel.Builder()
       .setObservations(latentListOfReal(2))
         .build,
-    [observations.get(0).doubleValue] 
+    [observations.get(0).doubleValue],
+    [concentration.get(0)]
   )
   
   public val multimodal = add(

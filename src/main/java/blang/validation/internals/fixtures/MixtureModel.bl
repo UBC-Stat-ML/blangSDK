@@ -7,7 +7,7 @@ model MixtureModel {
   random  Simplex        pi                 ?:  latentSimplex(2)
   random  List<RealVar>  means              ?:  latentListOfReal(2), 
                          variances          ?:  latentListOfReal(2)
-  param   Matrix         concentration      ?:  denseCopy(#[1.0, 1.0])  
+  param   Matrix         concentration      ?:  constantVector(1.0, 1.0)
   
   laws {
      

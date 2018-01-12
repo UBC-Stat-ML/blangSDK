@@ -49,7 +49,7 @@ class TestSMCUnbiasness {
         nTemperatures = 3
       ]
       resamplingScheme = ResamplingScheme.MULTINOMIAL
-      nSamplesPerTemperature = 2
+      nParticles = 2
       nThreads = new Cores(1)
       random = exhausiveRand
     ]

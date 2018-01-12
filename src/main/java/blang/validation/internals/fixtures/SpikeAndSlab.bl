@@ -11,6 +11,7 @@ model SpikeAndSlab {
   laws {
     for (int index : 0 ..< variables.size) {
       logf(zeroProbability, nonZeroLogDensity, RealVar variable = variables.get(index)) {
+        if (zeroProbability < 0.0 || zeroProbability > 1.0) return NEGATIVE_INFINITY
         if (variable == 0.0) {
           log(zeroProbability)
         } else { 

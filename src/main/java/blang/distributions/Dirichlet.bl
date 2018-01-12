@@ -11,6 +11,7 @@ model Dirichlet {
       var sum = 0.0
       for (int dim : 0 ..< concentrations.nEntries) {
         val concentration = concentrations.get(dim)
+        if (concentration < 0.0) return NEGATIVE_INFINITY
         Helpers::checkDirichletOrBetaParam(concentration)
         sum += (concentration - 1.0) * log(realization.get(dim))
       }
@@ -19,7 +20,9 @@ model Dirichlet {
     logf(concentrations) {
       var sum = 0.0
       for (int dim : 0 ..< concentrations.nEntries) {
-        sum += - lnGamma(concentrations.get(dim))
+        val concentration = concentrations.get(dim)
+        if (concentration < 0.0) return NEGATIVE_INFINITY
+        sum += - lnGamma(concentration)
       }
       return sum + lnGamma(concentrations.sum) 
     }

@@ -8,10 +8,12 @@ model Binomial {
   laws {
     logf(numberOfSuccesses, numberOfTrials, probabilityOfSuccess) {
       if (probabilityOfSuccess < 0.0 || probabilityOfSuccess > 1.0) return NEGATIVE_INFINITY
+      if (numberOfSuccesses < 0) return NEGATIVE_INFINITY
       if (numberOfTrials <= 0 || numberOfSuccesses > numberOfTrials) return NEGATIVE_INFINITY
       return numberOfSuccesses * log(probabilityOfSuccess) + (numberOfTrials - numberOfSuccesses) * log(1.0 - probabilityOfSuccess)
     }
     logf(numberOfTrials, numberOfSuccesses) {
+      if (numberOfSuccesses < 0) return NEGATIVE_INFINITY
       if (numberOfTrials <= 0 || numberOfSuccesses > numberOfTrials) return NEGATIVE_INFINITY
       return logBinomial(numberOfTrials, numberOfSuccesses)
     }
