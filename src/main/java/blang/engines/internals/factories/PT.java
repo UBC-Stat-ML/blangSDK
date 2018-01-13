@@ -21,8 +21,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg @DefaultValue("10_000")
   public int nScans = 10_000;
   
-  @Arg         @DefaultValue("100")
-  public int nPassesPerScan = 100;
+  @Arg         @DefaultValue("5")
+  public int nPassesPerScan = 5;
   
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);

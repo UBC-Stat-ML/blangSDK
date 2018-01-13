@@ -240,7 +240,8 @@ class InferenceAndRuntime {
         In this representation, the factors correspond to nodes in the graph. We split the factors into two groups according to 
         whether the node is observed or unobserved node. Let us denote the product of the factors in each of the two groups by 
         «MATH»\ell(x) = \prod_{i\in I} \ell_i(x)«ENDMATH» and «MATH»p(x) = \prod_{j\in J} p_j(x)«ENDMATH» respectively (here 
-        «MATH»x«ENDMATH» encompasses all latent variables). In simple cases, «MATH»\ell(x)«ENDMATH» corresponds to the 
+        «MATH»x«ENDMATH» encompasses all latent variables). The target posterior distribution satisfies 
+        «MATH»\pi(x) \propto p(x)\ell(x)«ENDMATH». In simple cases, «MATH»\ell(x)«ENDMATH» corresponds to the 
         likelihood and «MATH»p(x)«ENDMATH», to the prior; however we avoid the terminology since the formal definition 
         given below generalizes to complex models where there is not necessarily a clear cut prior and likelihood. We do have
         that «MATH»\int p(x) \text{d} x = 1«ENDMATH» in general though. Assuming the problem is well posed, the posterior 
@@ -311,22 +312,77 @@ class InferenceAndRuntime {
     
     section("Inference algorithms") [
       it += '''
-        Several inference algorithms are available built-in. The selection is controlled with the 
+        Several inference algorithms are available built-in. 
+        They can be configured by providing various arguments to the main application. To get a full list, 
+        you can always use the switch «SYMB»--help«ENDSYMB». Grep «SYMB»engine«ENDSYMB» to find the subset 
+        related to inference algorithms. 
+        The selection is controlled with the 
         switch «SYMB»--engine«ENDSYMB»:
       '''
       unorderedList[
         it += '''
           «SYMB»SCM«ENDSYMB»: Sequential Change of Measure. This pushes a population of particles from 
-          the distribution «MATH»\pi_0«ENDMATH» into «MATH»\pi_1«ENDMATH». The forward simulation machinery is used to get 
-          exact samples from «MATH»\pi_0«ENDMATH». Then temperature is increase progressively. The amount of increase at each 
-          step is controlled by «SYMB»--engine.temperatureSchedule«ENDSYMB», and the default value, 
-          «SYMB»AdaptiveTemperatureSchedule«ENDSYMB». 
+          the distribution «MATH»\pi_0«ENDMATH» into «MATH»\pi = \pi_1«ENDMATH». In summary:
+        '''
+        unorderedList[
+          it += '''
+            First, the forward simulation machinery is used to get 
+            exact samples from «MATH»\pi_0«ENDMATH». Several «EMPH»particles«ENDEMPH» are hence created. 
+            The number of particles is controlled with «SYMB»--engine.nParticles«ENDSYMB» and controls 
+            the quality of the approximation. 
+          '''
+          it += '''
+            Then annealing parameter («MATH»t«ENDMATH» indexing «MATH»\pi_t«ENDMATH») is then increased 
+            sequentially from zero to one. 
+            At each iteration, each particle is perturbed by a transition kernel invariant with respect
+            to the next annealed target and reweighted to take into account the annealing parameter increase. 
+            The amount of increase at each 
+            iteration is controlled by «SYMB»--engine.temperatureSchedule«ENDSYMB», and the default value, 
+            «SYMB»AdaptiveTemperatureSchedule«ENDSYMB», is based on an adaptative strategy, see 
+            «LINK("https://arxiv.org/abs/1303.3123")»Zhou, Johansen and Aston (2013)«ENDLINK». 
+          '''
+          it += '''
+            When the relative Effective Sample Size (ESS) falls under a threshold 
+            (specified by the command line argument «SYMB»--engine.resamplingESSThreshold«ENDSYMB»), resampling is performed. 
+            The «LINK("https://arxiv.org/abs/physics/9803008")»Annealed Importance Sampling«ENDLINK» algorithm 
+            can be recovered as special case by 
+            setting «SYMB»--engine.resamplingESSThreshold 0.0«ENDSYMB». 
+            
+          '''
+          it += '''
+            After obtaining particles approximately distributed according to «MATH»\pi_1 = \pi«ENDMATH» the quality of the 
+            approximation can be optionally increased by performing rejuvenation steps on each particles, i.e. scans 
+            where all transition kernels targeting «MATH»\pi«ENDMATH» are applied in a random order. The number of 
+            such scans is set by «SYMB»--engine.nFinalRejuvenations«ENDSYMB». Set to zero disable.
+          '''
+        ]
+        it += '''
+          «SYMB»PT«ENDSYMB»: Parallel Tempering. This creates parallel MCMC chains, each targeting different annealing 
+          parameters. Documentation under construction (and some arugments might change a bit).
+        '''
+        it += '''
+          «SYMB»Forward«ENDSYMB»: Use the forward simulation machinery for the subset of the states that are not 
+          observed.
+        '''
+        it += '''
+          «SYMB»Exact«ENDSYMB»: For models that are fully discrete, this enumerates all the configurations. The current
+          algorithm 
+          does not attempt to exploit conditional independence assumptions and has exponential computational complexity. 
+          It is still useful for debugging and pedagogy. 
         '''
       ]
     ]
     
     section("Advanced graph analysis") [
-      
+      it += '''
+        The construction of the object graph (used for determining sparsity patterns) can be customized. 
+        The main use case for such customization is to construct views into larger objects, e.g. 
+        slices of matrices. 
+        
+        How the object graph is explored is controlled in «SYMB»blang.runtime.internals.objectgraph.ExplorationRules«ENDSYMB». 
+        To customize, one would change the list of rules in the static field «SYMB»defaultExplorationRules«ENDSYMB» via 
+        static initialization.
+      '''
     ]
   ]
 }

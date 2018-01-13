@@ -46,6 +46,7 @@ public class ExplorationRules
     if (!(object instanceof Map))
       return null;
     ArrayList<MapConstituentNode> result = new ArrayList<>();
+    @SuppressWarnings("rawtypes")
     Map m = (Map) object;
     for (Object key : m.keySet())
       result.add(new MapConstituentNode(object, key));

@@ -15,13 +15,17 @@ import briefj.BriefParallel;
 
 public class AdaptiveJarzynski
 {
-  @Arg               @DefaultValue("1")
+  @Arg(description = "Random seed used for proposals and resampling.")
+                     @DefaultValue("1")
   public Random random = new Random(1);
   
-  @Arg                    @DefaultValue("0.5")
+  @Arg(description = "If the (relative) Effective Sample Size (ESS) falls below, "
+      + "perform a resampling round.")
+                          @DefaultValue("0.5")
   public double resamplingESSThreshold = 0.5;
   
-  @Arg                                  @DefaultValue("AdaptiveTemperatureSchedule")
+  @Arg(description = "Algorithm selecting annealing parameter increments.")
+                                        @DefaultValue("AdaptiveTemperatureSchedule")
   public TemperatureSchedule temperatureSchedule = new AdaptiveTemperatureSchedule();
   
   @Arg                                         @DefaultValue("STRATIFIED")            
@@ -30,7 +34,7 @@ public class AdaptiveJarzynski
   @Arg     @DefaultValue("1_000")
   public int nParticles = 1_000;
 
-  @Arg   
+  @Arg
   public Cores nThreads = Cores.maxAvailable(); 
   
   protected SampledModel prototype;

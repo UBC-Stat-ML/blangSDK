@@ -23,7 +23,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
 {
   @GlobalArg ExperimentResults results = new ExperimentResults();
   
-  @Arg(description = "Number of rejuvenation passes to do on the target distribution")     
+  @Arg(description = "Number of rejuvenation passes to do after the change of measure.")     
                     @DefaultValue("5")
   public int nFinalRejuvenations = 5;
   

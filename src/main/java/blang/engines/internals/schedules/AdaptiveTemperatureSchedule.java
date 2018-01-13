@@ -17,10 +17,13 @@ import briefj.BriefIO;
 
 public class AdaptiveTemperatureSchedule implements TemperatureSchedule
 {
-  @Arg             @DefaultValue("true")
+  @Arg(description = "See Zhou, Johansen and Aston (2013).")
+                   @DefaultValue("true")
   public boolean useConditional = true;
   
-  @Arg       @DefaultValue("0.9999")
+  @Arg(description = "Annealing parameter is selected to get the (conditional) "
+      + "ESS decrease specified by this parameter.")
+             @DefaultValue("0.9999")
   public double threshold = 0.9999;
   
   final Writer log;
