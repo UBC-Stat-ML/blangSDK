@@ -370,6 +370,11 @@ class InferenceAndRuntime {
           does not attempt to exploit conditional independence assumptions and has exponential computational complexity. 
           It is still useful for debugging and pedagogy. 
         '''
+        it += '''
+          To use a custom inference scheme, implement the interface 
+          «SYMB»PosteriorInferenceEngine«ENDSYMB», and input the 
+          fully qualified name of the implementation as argument.
+        '''
       ]
     ]
     

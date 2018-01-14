@@ -22,7 +22,9 @@ public class SamplerSet
   
   @SuppressWarnings("unchecked")
   @DesignatedConstructor
-  public static SamplerSet parse(@Input Optional<List<String>> qualifiedNames) throws ClassNotFoundException
+  public static SamplerSet parse(
+      @Input(formatDescription = "Fully qualified instances of blang.mcmc.Sampler") 
+      Optional<List<String>> qualifiedNames) throws ClassNotFoundException
   {
     SamplerSet result = new SamplerSet();
     for (String qualifiedName : qualifiedNames.orElse(Collections.emptyList()))

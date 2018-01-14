@@ -158,11 +158,11 @@ class BootstrapHTMLRenderer implements Renderer  {
   def dispatch String render(Section section) {
     val int depth = state.currentSectionDepth++
     val int hDepth = firstDepth + depth
-    if (hDepth >= 6 || hDepth < 1) {
+    if (hDepth >= 5 || hDepth < 1) {
       throw new RuntimeException("Invalid hX level: " + hDepth)
     }
     val String result = '''
-      <h«hDepth»«IF depth == 1» class="page-header"«ENDIF»>«section.name»</h«hDepth»>
+      <h«hDepth+1»«IF depth == 1» class="page-header"«ENDIF»>«section.name»</h«hDepth+1»>
       «recurse(section).join("\n")»
       '''
     state.currentSectionDepth--

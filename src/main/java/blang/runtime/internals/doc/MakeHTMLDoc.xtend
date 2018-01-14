@@ -17,6 +17,7 @@ import blang.runtime.internals.doc.contents.InferenceAndRuntime
 import blang.runtime.internals.doc.contents.Testing
 import blang.runtime.internals.doc.contents.InputOutput
 import blang.runtime.internals.doc.contents.CreatingTypes
+import blang.runtime.internals.doc.contents.BuiltInDistributions
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
@@ -26,11 +27,12 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     BlangIDE::page,
     BlangWeb::page,
     BuiltInRandomVariables::page,
+    BuiltInDistributions::page,
     Syntax::page,
-    CreatingTypes::page,
-    Testing::page,
     InputOutput::page,
-    InferenceAndRuntime::page
+    InferenceAndRuntime::page,
+    CreatingTypes::page,
+    Testing::page
   ]
   
   override protected List<String> recurse(DocElement page) {
