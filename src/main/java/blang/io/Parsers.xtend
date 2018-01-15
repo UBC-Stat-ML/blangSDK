@@ -31,6 +31,7 @@ import blang.types.DenseSimplex
 import blang.types.DenseTransitionMatrix
 import blang.core.RealConstant
 import blang.core.IntConstant
+import blang.inits.providers.CollectionsProviders
 
 class Parsers {
   
@@ -160,21 +161,35 @@ class Parsers {
   
   @ProvidesFactory
   def static <T> List<T> parseList(
-    @ConstructorArg(value = "file", description = "Each line will be an item in the list") File file,
+    @Input(formatDescription = 
+      "Space separated items or \"" + LOAD_KEYWORD + 
+      " <path>\" to load from newline separated file") 
+    List<String> _strings,
     @InitService TypeLiteral<List<T>> actualType,
     @InitService Creator              creator
   ) {
-    if (!file.exists) {
-      throw new RuntimeException("File not found: " + file)
+    val Optional<File> sourceFile = fileSource(_strings)
+    val List<String> strings = if (sourceFile.present) {
+      val List<String> loaded = new ArrayList
+      for (String line : BriefIO.readLines(sourceFile.get)) {
+        loaded.add(line)
+      }
+      loaded
+    } else 
+      _strings
+    return CollectionsProviders::parseList(strings, actualType, creator)
+  }
+  
+  val static String LOAD_KEYWORD = "file"
+  def static Optional<File> fileSource(List<String> strings) {
+    if (strings.empty) return Optional.empty
+    if (strings.get(0) != LOAD_KEYWORD) return Optional.empty
+    if (strings.size != 2) throw new RuntimeException("Load file keyword takes exactly one argument (the path to the file)")
+    val File result = new File(strings.get(1))
+    if (!result.exists) {
+      throw new RuntimeException("File not found: " + result)
     }
-    val TypeLiteral<T> typeArgument = 
-      TypeLiteral.get((actualType.type as ParameterizedType).actualTypeArguments.get(0))
-      as TypeLiteral<T>
-    val List<T> result = new ArrayList
-    for (String string : BriefIO.readLines(file)) {
-      result.add(creator.init(typeArgument, SimpleParser.parse(string)))
-    }
-    return result
+    return Optional.of(result)
   }
   
 }

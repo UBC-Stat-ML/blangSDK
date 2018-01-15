@@ -12,6 +12,7 @@ import blang.inits.DefaultValue;
 import blang.inits.DesignatedConstructor;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
+import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import briefj.BriefIO;
 
@@ -37,7 +38,7 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   @DesignatedConstructor
   public AdaptiveTemperatureSchedule(@GlobalArg ExperimentResults results)
   {
-    log = results.getAutoClosedBufferedWriter("temperatures.csv");
+    log = results.child(Runner.MONITORING_FOLDER).getAutoClosedBufferedWriter("temperatures.csv");
     BriefIO.println(log, "iteration,temperature");
   }
   

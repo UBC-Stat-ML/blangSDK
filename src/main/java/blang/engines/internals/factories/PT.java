@@ -11,6 +11,7 @@ import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.inits.experiments.tabwriters.TabularWriter;
 import blang.io.BlangTidySerializer;
+import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 
@@ -37,7 +38,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Override
   public void performInference() 
   {
-    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples")); 
+    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     for (int iter = 0; iter < nScans; iter++)
     {
       moveKernel(nPassesPerScan);

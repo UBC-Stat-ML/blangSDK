@@ -8,6 +8,7 @@ import blang.engines.internals.PosteriorInferenceEngine;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.io.BlangTidySerializer;
+import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 
@@ -27,7 +28,7 @@ public class Exact implements PosteriorInferenceEngine
   @Override
   public void performInference() 
   {
-    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples"));
+    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER));
     ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
     int i = 0;
     while (exhaustive.hasNext())

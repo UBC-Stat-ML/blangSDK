@@ -33,6 +33,7 @@ import blang.mcmc.internals.SamplerBuilderOptions
 import com.google.common.base.Stopwatch
 import briefj.BriefIO
 import java.util.concurrent.TimeUnit
+import java.util.List
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
@@ -52,6 +53,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   @Arg                   @DefaultValue("1")
   public Random initRandom = new Random(1)
+  
+  @Arg
+  public Optional<List<String>> excludeFromOutput = Optional.empty
   
   @Arg
   public SamplerBuilderOptions samplers = new SamplerBuilderOptions
@@ -150,7 +154,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   override void run() {
     println("Preprocessing started")
     val Stopwatch preprocessingTime = Stopwatch.createStarted
-    samplers.monitoringStatistics = results.child("monitoring") 
+    samplers.monitoringStatistics = results.child(MONITORING_FOLDER) 
     val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations)
     engine.check(graphAnalysis)
     if (printAccessibilityGraph) {
@@ -168,6 +172,14 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     }
     val SampledModel sampledModel = if (skipForwardSamplerConstruction) SampledModel.stripped(graphAnalysis, kernels) else new SampledModel(graphAnalysis, kernels, initRandom)
     engine.sampledModel = sampledModel
+    if (excludeFromOutput.present) {
+      for (String exclusion : excludeFromOutput.get) {
+        val boolean found = sampledModel.objectsToOutput.remove(exclusion) !== null
+        if (!found) {
+          throw new RuntimeException("In argument excludeFromOutput, did not find a match for " + exclusion)
+        }
+      }
+    }
     preprocessingTime.stop
     val Stopwatch samplingTime = Stopwatch.createStarted
     println("Sampling started")
@@ -177,7 +189,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   def void reportTiming(Stopwatch preprocessingTime, Stopwatch samplingTime) {
-    BriefIO.write(results.getFileInResultFolder(RUNNING_TIME_SUMMARY), 
+    BriefIO.write(results.child(MONITORING_FOLDER).getFileInResultFolder(RUNNING_TIME_SUMMARY), 
       "preprocessingTime_ms\t" + preprocessingTime.elapsed(TimeUnit.MILLISECONDS) + "\n" +
       "samplingTime_ms\t" + samplingTime.elapsed(TimeUnit.MILLISECONDS) + "\n"
     )
@@ -185,5 +197,8 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     println("Sampling time: " + samplingTime.toString)
   }
   
-  val static String RUNNING_TIME_SUMMARY = "runningTimeSummary.tsv";
+  public val static String RUNNING_TIME_SUMMARY = "runningTimeSummary.tsv"
+  public val static String LOG_NORM_ESTIMATE = "logNormEstimate.txt"
+  public val static String MONITORING_FOLDER = "monitoring"
+  public val static String SAMPLES_FOLDER = "samples"
 }

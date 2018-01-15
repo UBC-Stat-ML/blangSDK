@@ -78,7 +78,7 @@ public class SampledModel
   private List<Integer> currentSamplingOrder = null;
   private int currentPosition = -1;
   
-  private final Map<String, Object> objectsToOutput;
+  public final Map<String, Object> objectsToOutput;
   
   public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers)
   {

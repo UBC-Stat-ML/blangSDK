@@ -11,6 +11,7 @@ import blang.inits.DefaultValue;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.io.BlangTidySerializer;
+import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import briefj.BriefIO;
@@ -45,14 +46,14 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     // write Z estimate
     double logNormEstimate = approximation.logNormEstimate();
     System.out.println("Normalization constant estimate: " + logNormEstimate);
-    BriefIO.write(results.getFileInResultFolder("logNormEstimate.txt"), "" + logNormEstimate);
+    BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
     
     // resample & rejuvenate the last iteration to simplify processing downstream
     approximation = approximation.resample(random, resamplingScheme);
     rejuvenate(parallelRandomStreams, approximation);
     
     // write samples
-    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples")); 
+    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     int particleIndex = 0;
     for (SampledModel model : approximation.particles)  
       model.getSampleWriter(tidySerializer).write(Pair.of("sample", particleIndex++)); 

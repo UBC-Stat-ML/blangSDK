@@ -152,6 +152,7 @@ class GettingStarted {
           one given in the Blang file. We only need to override this default for the «SYMB»rocketTypes«ENDSYMB» plate, by setting 
           the command line argument «SYMB»--model.rocketTypes.name LV.Type«ENDSYMB».
         '''
+        // TODO: nested plates
         // TODO: Plated, synthetic version
         // TODO: remove + 0.5? 
       ]

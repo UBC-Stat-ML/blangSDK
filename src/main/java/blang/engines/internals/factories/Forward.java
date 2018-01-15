@@ -9,6 +9,7 @@ import blang.inits.DefaultValue;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.io.BlangTidySerializer;
+import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 
@@ -34,7 +35,7 @@ public class Forward implements PosteriorInferenceEngine
   @Override
   public void performInference() 
   {
-    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child("samples"));
+    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER));
     for (int i = 0; i < nSamples; i++) 
     {
       model.forwardSample(random, false);
