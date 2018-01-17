@@ -1,7 +1,10 @@
 package blang.distributions
 
+/** Any random variable taking values in \(\{0, 1\}\). */
 model Bernoulli {
   random IntVar realization   
+  
+  /** Probability \(p \in [0, 1]\) that the realization is one. */
   param RealVar probability   
   
   laws {

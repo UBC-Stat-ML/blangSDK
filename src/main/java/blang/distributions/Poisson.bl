@@ -1,7 +1,10 @@
 package blang.distributions
 
+/** Poisson random variable. Values in \(0, 1, 2, \dots\) */
 model Poisson {
   random IntVar realization
+  
+  /** Mean parameter \(\lambda\). \(\lambda > 0\) */
   param RealVar mean
   
   laws {

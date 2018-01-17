@@ -2,8 +2,11 @@ package blang.distributions
 
 import blang.distributions.internals.Helpers
 
+/** The Dirichlet distribution over vectors of probabilities \((p_0, p_1, \dots, p_{n-1})\). \(p_i \in (0, 1), \sum_i p_i = 1.\) */
 model Dirichlet {
   random Simplex realization 
+  
+  /** Vector \((\alpha_0, \alpha_1, \dots, \alpha_{n-1})\) such that increasing the \(i\)th component increases the mean of entry \(p_i\). */
   param  Matrix concentrations 
   
   laws {

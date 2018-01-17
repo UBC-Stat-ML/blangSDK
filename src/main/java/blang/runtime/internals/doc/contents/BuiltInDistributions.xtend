@@ -2,6 +2,24 @@ package blang.runtime.internals.doc.contents
 
 import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.doc.Categories
+import blang.distributions.Bernoulli
+
+import static extension blang.runtime.internals.doc.DocElementExtensions.documentClass
+import blang.distributions.Beta
+import blang.distributions.Binomial
+import blang.distributions.Categorical
+import blang.distributions.ContinuousUniform
+import blang.distributions.Dirichlet
+import blang.distributions.DiscreteUniform
+import blang.distributions.Exponential
+import blang.distributions.Gamma
+import blang.distributions.MultivariateNormal
+import blang.distributions.NegativeBinomial
+import blang.distributions.Normal
+import blang.distributions.NormalField
+import blang.distributions.Poisson
+import blang.distributions.SimplexUniform
+import blang.distributions.SymmetricDirichlet
 
 class BuiltInDistributions {
   
@@ -9,7 +27,31 @@ class BuiltInDistributions {
     
     category = Categories::reference
     
-    // TODO: use the mini doc stuff to present the built-in distributions
+    section("Discrete") [
+      documentClass(Bernoulli)
+      documentClass(Binomial)
+      documentClass(Categorical)
+      documentClass(DiscreteUniform)
+      documentClass(Poisson)
+      documentClass(NegativeBinomial)
+    ]
+    
+    section("Continuous") [
+      documentClass(ContinuousUniform)
+      documentClass(Exponential)
+      documentClass(Normal)
+      documentClass(Beta)
+      documentClass(Gamma)
+    ]
+    
+    section("Multivariate") [
+      documentClass(MultivariateNormal)
+      documentClass(NormalField)
+      documentClass(Dirichlet)
+      documentClass(SymmetricDirichlet)
+      documentClass(SimplexUniform)
+    ]
+
   ]
   
 }

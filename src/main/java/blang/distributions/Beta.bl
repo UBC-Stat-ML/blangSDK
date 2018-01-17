@@ -2,9 +2,15 @@ package blang.distributions
 
 import blang.distributions.internals.Helpers
 
+/** Beta random variable on the open interval \((0, 1)\). */
 model Beta {
   random RealVar realization
-  param  RealVar alpha, beta
+  
+  /** Higher values brings mean closer to one. \(\alpha > 0 \) */
+  param  RealVar alpha
+  
+  /** Higher values brings mean closer to zero. \(\beta > 0 \) */
+  param  RealVar beta
   
   laws {
     logf(alpha, realization) {

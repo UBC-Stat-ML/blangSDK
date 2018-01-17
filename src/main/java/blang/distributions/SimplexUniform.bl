@@ -1,8 +1,11 @@
 package blang.distributions
 
+/** \(n\) dimensional Dirichlet with all concentrations equal to one.  */
 model SimplexUniform {
-  param Integer dim
   random Simplex realization
+  
+  /** The dimensionality \(n\). \( n > 0 \) */
+  param Integer dim
   
   laws {
     realization | dim ~ Dirichlet(ones(dim))

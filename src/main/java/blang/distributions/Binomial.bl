@@ -1,8 +1,13 @@
 package blang.distributions
 
+/** A sum of \(n\) iid Bernoulli variables. Values in \([0, n]\). */
 model Binomial { 
   random IntVar numberOfSuccesses 
+  
+  /** The number \(n\) of Bernoulli variables being summed. \(n > 0\) */
   param IntVar numberOfTrials
+  
+  /** The parameter \(p \in [0, 1]\) shared by all the Bernoulli variables (probability that they be equal to 1). */
   param RealVar probabilityOfSuccess
   
   laws {

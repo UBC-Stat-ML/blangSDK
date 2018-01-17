@@ -1,8 +1,14 @@
 package blang.distributions
 
+/** Number of successes in a sequence of iid Bernoulli until \(r\) failures occur. Values in \(\{0, 1, 2, \dots\}\).  */
 model NegativeBinomial {
   random IntVar k
-  param RealVar r, p
+  
+  /** Number of failures until experiment is stopped (generalized to the reals). \(r > 0\) */
+  param RealVar r
+  
+  /** Probability of success of each experiment. \(p \in (0, 1)\) */
+  param RealVar p
   
   laws {
     logf(k, r) {
@@ -10,7 +16,7 @@ model NegativeBinomial {
       return logBinomial(k+r-1.0, k)
     }
     logf(r, k, p) {
-      if (p < 0.0 || p > 1.0) return NEGATIVE_INFINITY
+      if (p <= 0.0 || p >= 1.0) return NEGATIVE_INFINITY
       if (r <= 0 || k < 0) return NEGATIVE_INFINITY
       return k * log(p) + r * log(1.0 - p)
     }

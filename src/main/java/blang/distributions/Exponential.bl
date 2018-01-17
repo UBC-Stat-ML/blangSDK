@@ -1,7 +1,10 @@
 package blang.distributions
 
+/** Exponential random variable. Values in \((0, \infty)\) */
 model Exponential {
   random RealVar realization
+  
+  /** The rate \(\lambda\), inversely proportional to the mean. \( \lambda > 0 \) */
   param  RealVar rate
   
   laws {

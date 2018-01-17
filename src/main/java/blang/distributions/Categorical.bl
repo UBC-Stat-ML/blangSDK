@@ -1,8 +1,11 @@
 package blang.distributions
 
+/** Any random variable over a finite set \(\{0, 1, 2, \dots, n-1\}\). */
 @Samplers(CategoricalSampler)
 model Categorical {
   random IntVar realization
+  
+  /** Vector of probabilities \((p_0, p_1, \dots, p_{n-1})\) for each of the \(n\) integers. */
   param Simplex probabilities
   
   laws {

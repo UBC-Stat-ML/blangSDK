@@ -1,8 +1,14 @@
 package blang.distributions
 
+/** Normal random variables. Values in \(\mathbb{R}\) */
 model Normal {
   random RealVar realization 
-  param RealVar mean, variance
+  
+  /** Mean \(\mu\). \(\mu \in \mathbb{R}\) */
+  param RealVar mean
+  
+  /** Variance \(\sigma^2\). \(\sigma^2 > 0\) */
+  param RealVar variance
   
   laws {  
     logf() {

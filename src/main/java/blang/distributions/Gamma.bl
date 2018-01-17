@@ -1,8 +1,14 @@
 package blang.distributions
 
+/** Gamma random variable. Values in \((0, \infty)\). */
 model Gamma {
   random RealVar realization
-  param  RealVar shape, rate
+  
+  /** The shape \(\alpha\) is proportional to the mean and variance. \( \alpha > 0 \) */
+  param  RealVar shape
+  
+  /** The rate \(\beta\) is inverse proportional to the mean and quadratically inverse proportional to the variance. \( \beta > 0 \) */
+  param  RealVar rate
   
   laws {
     logf(shape, rate, realization) {

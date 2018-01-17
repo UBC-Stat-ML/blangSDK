@@ -1,10 +1,14 @@
 package blang.distributions
 
+/** Arbitrary linear transformations of \(n\) iid standard normal random variables. */
 model MultivariateNormal {
   random Matrix realization
+  
+  /** An \(n \times 1\) vector \(m\). \(m \in \mathbb{R}^n\)  */
   param Matrix mean
   // Note: no need to mark as constrained since CholeskyDecomposition is read-only 
   // so won't attempt to do naive sampling by default
+  /** Inverse covariance matrix \(\Lambda\), a positive definite \(n \times n\) matrix. */
   param CholeskyDecomposition precision
   
   laws {

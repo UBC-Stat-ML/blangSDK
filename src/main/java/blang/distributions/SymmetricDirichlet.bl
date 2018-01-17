@@ -1,12 +1,14 @@
 package blang.distributions
 
+/** \(n\) dimensional Dirichlet with all concentrations equal to \(\alpha / n\).  */
 model SymmetricDirichlet {
-  param Integer dim
-  /*
-   * SymmetricDirichlet(alpha, dim) = Dirichlet(alpha/dim, alpha/dim, ..., alpha/dim)
-   */
-  param RealVar concentration
   random Simplex realization
+  
+  /** The dimensionality \(n\). \( n > 0 \) */
+  param Integer dim
+
+  /** The shared concentration parameter \(\alpha\) before normalization by the dimensionality. \(\alpha > 0\) */
+  param RealVar concentration
   
   laws {
     realization | dim, concentration ~ Dirichlet(ones(dim) * (concentration.doubleValue / dim))

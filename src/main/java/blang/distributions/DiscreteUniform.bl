@@ -1,8 +1,14 @@
 package blang.distributions
 
+/** Uniform random variable over the contiguous set of integers \(\{m, m+1, \dots, M-1\}\). */
 model DiscreteUniform {
   random IntVar realization
-  param IntVar minInclusive, maxExclusive
+  
+  /** The left point of the set (inclusive). \(m \in (-\infty, M)\) */
+  param IntVar minInclusive
+  
+  /** The right point of the set (exclusive). \(M \in (m, \infty)\) */
+  param IntVar maxExclusive
   
   laws {
     logf(minInclusive, maxExclusive) {
