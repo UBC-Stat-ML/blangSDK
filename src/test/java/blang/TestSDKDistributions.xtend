@@ -6,15 +6,6 @@ import blang.validation.DeterminismTest
 
 class TestSDKDistributions { 
   
-  @Test
-  def void determinismTest() {
-    new DeterminismTest => [
-      for (instance : new Examples().all) {
-        check(instance)
-      }
-    ]
-  } 
-  
   @Test 
   def void exactInvarianceTest() {
     test(new ExactInvarianceTest)
@@ -34,4 +25,13 @@ class TestSDKDistributions {
       }
     ]
   }
+  
+  @Test
+  def void determinismTest() {
+    new DeterminismTest => [
+      for (instance : new Examples().all) {
+        check(instance)
+      }
+    ]
+  } 
 }

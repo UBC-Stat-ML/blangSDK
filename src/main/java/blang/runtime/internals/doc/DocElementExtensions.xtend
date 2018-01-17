@@ -36,13 +36,24 @@ class DocElementExtensions {
     }
     return parent
   }
+  
+  val public static GIT_RAW_SRC_URL = "https://raw.githubusercontent.com"
+  def static void codeFromGit(DocElement element, Language language, String repoPath, String filePath) {
+    val String path = #[GIT_RAW_SRC_URL, repoPath, filePath].join("/")
+    element += new Code(language, BriefIO::urlToString(path))
+  }
+  
+  // Workaround: importing files from test using usual method breaks gradle build, so using URL instead
+  def static void codeFromBlangSDKRepo(DocElement element, Language language, String filePath) {
+    DocElementExtensions::codeFromGit(element, language, "UBC-Stat-ML/blangSDK/master", filePath)
+  }
 
   def static void code(DocElement element, Class<?> code) { 
     element += loadCode(code, null)
   } 
   
   /**
-   * Use to remove package declaration line
+   * E.g. of use: removing package declaration line.
    */
   def static void code(DocElement element, Class<?> code, Function<String,String> transform) { 
     element += loadCode(code, transform)
@@ -65,8 +76,9 @@ class DocElementExtensions {
   def private static File findFile(Class<?> code, String ext) {
     val File repoRoot = findRepositoryRoot(code)
     var File file = new File(repoRoot, "src/main/java/" + code.name.replace(".", "/") + "." + ext)
-    if (file.exists) return file
-    file = new File(repoRoot, "src/test/java/" + code.name.replace(".", "/") + "." + ext)
+    // Note: do not look into test directory; when used this will break xtext's gradle build
+    //    if (file.exists) return file
+    //    file = new File(repoRoot, "src/test/java/" + code.name.replace(".", "/") + "." + ext)
     return if (file.exists) file else null
   }
   
