@@ -2,7 +2,6 @@ package blang;
 
 import org.junit.Test;
 
-import blang.distributions.ContinuousUniform;
 import blang.distributions.Generators;
 import blang.validation.NormalizationTest;
 
