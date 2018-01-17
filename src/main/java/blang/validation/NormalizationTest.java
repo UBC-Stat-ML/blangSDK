@@ -1,10 +1,9 @@
-package blang;
+package blang.validation;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
 import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
 import org.junit.Assert;
-import org.junit.Test;
 
 import bayonet.math.NumericalUtils;
 import blang.core.DistributionAdaptor;
@@ -13,28 +12,19 @@ import blang.core.RealDistributionAdaptor;
 import blang.core.RealVar;
 import blang.core.UnivariateModel;
 
-public class TestNormalization 
+public class NormalizationTest 
 {
-  private UnivariateIntegrator integrator = new SimpsonIntegrator();
-  private int maxEval = 100_000_000;
-  private int initialAutoRadius = 8;
-  private int maxNExpansions = 10;
+  protected UnivariateIntegrator integrator = new SimpsonIntegrator();
+  protected int maxEval = 100_000_000;
+  protected int initialAutoRadius = 8;
+  protected int maxNExpansions = 10;
   
-  private Examples examples = new Examples();
-  
-  @Test
-  public void normal()
-  {
-    checkNormalization(examples.normal.model);
-//    checkNormalization(examples.sparseBeta.model, Generators.ZERO_PLUS_EPS, Generators.ONE_MINUS_EPS); // Fails (numerical issue - see #62)
-  }
-  
-  private void checkNormalization(UnivariateModel<RealVar> distribution)
+  protected void checkNormalization(UnivariateModel<RealVar> distribution)
   {
     checkNormalization(distribution, Double.NaN, Double.NaN);
   }
   
-  private void checkNormalization(UnivariateModel<RealVar> distribution, double left, double right)
+  protected void checkNormalization(UnivariateModel<RealVar> distribution, double left, double right)
   {
     System.out.println("Checking normalization for " + distribution.getClass().getSimpleName());
     

@@ -64,7 +64,9 @@ class DocElementExtensions {
   
   def private static File findFile(Class<?> code, String ext) {
     val File repoRoot = findRepositoryRoot(code)
-    val File file = new File(repoRoot, "src/main/java/" + code.name.replace(".", "/") + "." + ext)
+    var File file = new File(repoRoot, "src/main/java/" + code.name.replace(".", "/") + "." + ext)
+    if (file.exists) return file
+    file = new File(repoRoot, "src/test/java/" + code.name.replace(".", "/") + "." + ext)
     return if (file.exists) file else null
   }
   

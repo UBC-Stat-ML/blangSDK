@@ -5,7 +5,6 @@ import blang.runtime.internals.doc.Categories
 import blang.engines.internals.PosteriorInferenceEngine
 
 import static extension blang.runtime.internals.doc.DocElementExtensions.code
-import blang.runtime.internals.doc.DocElementExtensions
 import blang.runtime.internals.doc.components.Code.Language
 import blang.runtime.Runner
 
