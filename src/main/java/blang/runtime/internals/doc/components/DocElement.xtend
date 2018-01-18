@@ -34,7 +34,7 @@ abstract class DocElement {
   }
   
   def void section(String name, Procedure1<Section> init) { 
-    children += new Section(init, name) 
+    children += new Section(name, init) 
   }
   
   def void orderedList(Procedure1<Bullets> init) {

@@ -2,6 +2,7 @@ package blang.runtime.internals.doc.contents
 
 import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.doc.Categories
+import blang.runtime.internals.doc.components.Section
 
 class BlangIDE {
   
@@ -17,24 +18,14 @@ class BlangIDE {
         it += '''
           The only requirement is that 
           «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html")»Java 8 SDK«ENDLINK»
-          should be installed on the system (version 9 not yet tested).'''
+          should be installed on the system (version 9 not yet tested but is likely to work).'''
         it += '''        
           We only package the IDE for Mac at the moment but we can post instructions 
           on how to setup the IDE for other platforms (just email us). The command line 
           tools are already shipped multi-platform.'''
       ]
       
-      section("Install") [
-        it += '''
-          Really, "installing" amounts to unzipping and copying the contents. 
-          The folder contains both the IDE, a template for your own projects, 
-          and some command line tools. '''
-        it += '''
-          The first time you open BlangIDE use «SYMB»command-O«ENDSYMB» to open 
-          the app instead of double clicking (the app is not signed by an authority 
-          at the moment, and «SYMB»command-O«ENDSYMB» by-passes the stringent default policy of not opening 
-          such app. After the first time you can open it any way you want.'''
-        ]
+      it += installBlang
         
       section("Creating a Blang project") [
         orderedList[
@@ -69,6 +60,34 @@ class BlangIDE {
         ]
       ]
     ]
+  ]
+  
+  public val static Section installBlang = new Section("Installing BlangIDE") [
+      it += '''
+        Really, "installing" amounts to unzipping and copying the contents. 
+        The folder contains both the IDE, a template for your own projects, 
+        and some command line tools. 
+        
+        The first time you try to launch BlangIDE, 
+        depending on the version of Mac OS X and/or security settings, you may get 
+        a message saying the "app is not registered with Apple by an identified developer". 
+        To work around this, follow these instructions 
+        («LINK("https://support.apple.com/kb/PH25088?locale=en_US")»from Apple«ENDLINK») 
+        the first time you open the BlangIDE 
+        (then Mac OS will remember your decision for subsequent launches):
+      '''
+      orderedList[
+        it += '''
+          In the Finder, locate BlangIDE (don't use Launchpad to do this). 
+        '''
+        it += '''
+          Control-click the app icon, then choose Open from the shortcut menu.
+        '''
+      ] 
+      it += '''
+        If this does not work, an alternative is also described in the 
+        «LINK("https://support.apple.com/kb/PH25088?locale=en_US")»same Apple help page«ENDLINK». 
+      '''
   ]
   
 }

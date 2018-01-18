@@ -14,6 +14,8 @@ class GettingStarted {
   
   public static val page = new Document("Getting started") [
     
+    it += BlangIDE::installBlang
+    
     section("Blang: a fifteen minutes tutorial") [
       
       it += '''While the download proceeds, here is short tutorial on Blang. '''
