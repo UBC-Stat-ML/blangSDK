@@ -10,4 +10,6 @@ Blang's SDK (Software Development Kit), containing:
 - Examples.
 
 
-See the [documentation page](https://www.stat.ubc.ca/~bouchard/blang/index.html) for more information.
+**Blang users**: see the [documentation page](https://www.stat.ubc.ca/~bouchard/blang/index.html) for more information.
+
+**Blang developers**: in addition to the above resources, see also the [documentation repository](https://github.com/UBC-Stat-ML/blangDoc) for more information.
