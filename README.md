@@ -4,10 +4,10 @@ Summary [![Build Status](https://travis-ci.org/UBC-Stat-ML/blangSDK.png?branch=m
 
 Blang's SDK (Software Development Kit), containing:
 
-- Basic datatypes suitable for sampling such as ``Real``, ``Int``, etc.
-- MCMC algorithms for such datatypes.
+- Basic datatypes suitable for sampling such as ``Real``, ``Int``, ``Simplex``, etc.
+- Inference algorithms for such datatypes, such as Sequential Change of Measure and Parallel Tempering.
 - Standard probability distributions.
 - Examples.
 
 
-See the [documentation repository](https://github.com/UBC-Stat-ML/blangDoc) for more information.
+See the [documentation page](https://www.stat.ubc.ca/~bouchard/blang/index.html) for more information.
