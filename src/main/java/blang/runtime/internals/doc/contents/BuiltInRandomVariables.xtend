@@ -44,7 +44,7 @@ class BuiltInRandomVariables {
           «SYMB»2.0 * matrix«ENDSYMB», etc. 
           Vectors do not have a distinct type, they are just 1-by-n or n-by-1 matrix. 
           Standard operations are supported using unsurprising syntaxes, e.g.  
-          «SYMB»identity(100_000)«ENDSYMB», «SYMB»ones(3,3)«ENDSYMB» «SYMB»norm(matrix)«ENDSYMB», «SYMB»sum(matrix)«ENDSYMB», 
+          «SYMB»identity(100_000)«ENDSYMB», «SYMB»ones(3,3)«ENDSYMB» «SYMB»matrix.norm«ENDSYMB», «SYMB»matrix.sum«ENDSYMB», 
           «SYMB»matrix.readOnlyView«ENDSYMB», «SYMB»matrix.slice(1, 3, 0, 2)«ENDSYMB», 
           «SYMB»matrix.cholesky«ENDSYMB», etc. 
           See «LINK("https://github.com/alexandrebouchard/xlinear")»xlinear«ENDLINK» for more info.
