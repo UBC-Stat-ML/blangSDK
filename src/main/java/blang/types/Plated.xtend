@@ -24,7 +24,7 @@ import java.util.Collection
 /** a random variable or parameter of type T enclosed in one or more Plates. */
 interface Plated<T>  {
   
-  /** get the random variable or parameter indexed by the provided indices. */
+  /** get the random variable or parameter indexed by the provided indices. The indices can be given in any order. */
   def T get(Index<?> ... indices) 
   // "Getting" may involve creating a new latent variable, a new observed variable, or just returning a previously created variable.
   

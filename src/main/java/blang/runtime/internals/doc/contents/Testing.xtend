@@ -1,13 +1,11 @@
 package blang.runtime.internals.doc.contents
 
-import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.doc.Categories
+import blang.runtime.internals.doc.components.Code.Language
+import blang.runtime.internals.doc.components.Document
+import blang.validation.UnbiasnessTest
 
 import static extension blang.runtime.internals.doc.DocElementExtensions.*
-import blang.validation.UnbiasnessTest
-import blang.validation.NormalizationTest
-import blang.runtime.internals.doc.components.Code.Language
-import briefj.BriefIO
 
 class Testing {
   
@@ -18,7 +16,8 @@ class Testing {
     section("Testing correctness: overview") [
       
       it += '''
-        There is considerable emphasis in the MCMC and SMC literatures on «EMPH»efficiency«ENDEMPH» (computational time spent to get stable answers), 
+        There is considerable emphasis in the MCMC and SMC literatures on «EMPH»efficiency«ENDEMPH» (in the computational sense 
+        of efficiency), 
         but much less on «EMPH»correctness«ENDEMPH». Here we define correctness as follows: an MCMC procedure producing samples 
         «MATH»X_1, X_2, \dots«ENDMATH» is «EMPH»correct«ENDEMPH» if ergodic averages based any integrable functions 
         «MATH»f«ENDMATH» admit a law of large number converging to the posterior expectation of the function under the target posterior 
@@ -39,8 +38,9 @@ class Testing {
         variables are relatively expensive to simulate in problems of practical interest. 
         Hence our definition of correctness appears hopelessly difficult to check. 
         
-        Surprisingly, there exists a set of  effective tools to approach the MCMC and SMC correctness problems. 
-        Some of these tools are in the literature but not emphasized. We compile and improve them in this document.
+        Surprisingly, there exists a set of  effective tools to check MCMC and SMC correctness. 
+        Some of these tools are in the literature but not emphasized. We compile and improve them in this document, and describe 
+        their implementation in Blang.
         
         Analysis of MCMC and SMC correctness is a great example of an area where fairly theoretical concepts can have a 
         large impact to a practical problem. Crucially, as we show here, MC theory will allow us to derive useful tests that are 
@@ -57,9 +57,9 @@ class Testing {
         it += '''
           We provide a non-standard replacement implementation of 
           «LINK("https://github.com/alexandrebouchard/bayonet/blob/master/src/main/java/bayonet/distributions/Random.java")»bayonet.distributions.Random«ENDLINK» 
-          which can be used to enumerates all the probability traces of using discrete randomness.
+          which can be used to enumerates all the probability traces used by an arbitrary discrete random process.
           In particular, many inference engines' code manipulate models through interfaces that are agnostic to the model being 
-          continuous or discrete, so we can achived code coverage of the inference engines using discrete models.  
+          continuous or discrete, so we can achieve code coverage of the inference engines using discrete models.  
           See «LINK("https://github.com/alexandrebouchard/bayonet/blob/master/src/main/java/bayonet/distributions/ExhaustiveDebugRandom.java")»bayonet.distributions.ExhaustiveRandom«ENDLINK».
           
           We use this for example to test the unbiasness of the normalization constant estimate provided by our 
@@ -71,8 +71,17 @@ class Testing {
           «LINK("https://github.com/UBC-Stat-ML/blangSDK/blob/master/src/test/java/blang/TestSMCUnbiasness.xtend")»a short HMM here«ENDLINK», 
           but making it is large enough to achieve «LINK("https://en.wikipedia.org/wiki/Code_coverage")»code coverage«ENDLINK» 
           (Blang and the BlangIDE are compatible with the «LINK("http://www.eclemma.org/")»eclemma«ENDLINK» code coverage tool). 
+          
+          The output of the test has the form:
         '''
+        code(Language.text, '''
+          nProgramTraces = 23868
+          true normalization constant Z: 0.345
+          expected Z estimate over all traces: 0.34500000000000164
+        ''')
         it += '''
+          Showing that indeed our implementation of SMC is unbiased.
+
           This can also be used to test numerically that transition probabilities of small state space discrete kernels are indeed invariant 
           with respect to the target (facilities to help automating this will be developed as part of a future release). 
         '''
@@ -88,8 +97,8 @@ class Testing {
             
             Given a Blang model, 
             as in the Geweke paper, we assume it supports two methods for simulating the random variables in the model: one via forward simulation (and since 
-            not data is use in this correctness check, it is reasonable to assume all variables can be filled independently this way; this will be 
-            true as long a appropriate «SYMB»generate«ENDSYMB» blocks are provided for the constituents); the other, via application of transition 
+            no data is used in this correctness check, it is reasonable to assume all variables can be filled in this fashion; this will be 
+            true as long appropriate «SYMB»generate«ENDSYMB» blocks are provided for the constituents); the other, via application of MCMC transition 
             kernels. 
             
             Let «MATH»X«ENDMATH» denote all the variables in the model. Let «MATH»X \sim \pi«ENDMATH» denote the forward simulation process. Let 
@@ -99,7 +108,7 @@ class Testing {
             «MATH»T«ENDMATH» is irreducible but not the individual «MATH»T_i«ENDMATH»'s. 
             
             Both our test and Geweke's depend on one or several real-valued test functions «MATH»f«ENDMATH», and on comparing  
-            two sets of simulations. However the way we have a different method for defining these two sets. 
+            two sets of simulations. However these two sets will be defined differently. 
             
             In Geweke's method, the two sets are:
           '''
@@ -135,7 +144,7 @@ class Testing {
               '''
               unorderedList[
                 it += '''
-                  «MATH»X_m | X_{m-1} \sim T(\cdot|X_{m-1})«ENDMATH». Here «MATH»T«ENDMATH» includes some 
+                  «MATH»X_m | X_{m-1} \sim T(\cdot|X_{m-1})«ENDMATH». Here our definition of «MATH»T«ENDMATH» hides some 
                   details in Geweke's method, in particular that one of the «MATH»T_i«ENDMATH»'s re-generate
                   the data given the current parameter values. 
                 '''
@@ -155,7 +164,7 @@ class Testing {
             it += '''
               The validity of the approximate test relies on «MATH»T«ENDMATH» being irreducible, which means 
               that individual kernels «MATH»T_i«ENDMATH» cannot be tested in isolation. Therefore, when the 
-              test fails, it can be very difficult to determine the root cause.
+              test fails, it can be time consuming to determine the root cause.
             '''
             it += '''
               Whether the «MATH»p«ENDMATH» value exceed a set threshold cannot be known exactly. A leap of faith is 
@@ -173,12 +182,12 @@ class Testing {
             '''
           ]
           it += '''
-            We call our alternative the «EMPH»Exact Invariance Test«ENDEMPH» (EIT), and use it heavily to establish Blang's SDK correctness. 
+            We call our alternative the «EMPH»Exact Invariance Test«ENDEMPH» (EIT), and we use it heavily to establish Blang's SDK correctness. 
             EIT has the following properties:
           '''
           unorderedList[
             it += '''
-              The test does not rely on irreducibility. This means that individual kernels «SYMB»T_i«ENDSYMB» can be
+              The test does not rely on irreducibility. This means that individual kernels «MATH»T_i«ENDMATH» can be
               tested individually, which markedly narrows down the code to be reviewed in the event of bug detection.
             '''
             it += '''
@@ -225,18 +234,21 @@ class Testing {
             the random variable «MATH»F_j«ENDMATH» is equal 
             in distribution to the random variable «MATH»F_l«ENDMATH» if and only if the kernel «MATH»T_i«ENDMATH» is 
             «MATH»\pi«ENDMATH» invariant. 
-            This means that an exact test can be trivially constructed for example by binning. Alternatively, 
-            tests with simpler asymptotics 
-            such as Kolmogorov–Smirnov can be used. Critically the asymptotics here do not depend on irreducibility or  
-            geometric ergodicity, and off-the-shelf tool for iid tests can be leveraged. The terminology "Exact" in EIT 
-            refers to the random variables being exactly equal in distribution under the null rather than the frequentist 
-            procedure being used to assess if indeed the two sets are equal in distribution. This is a rare scenario 
-            where a point null hypothesis is indeed a valid approach, even when using very large values for «MATH»M_1, M_3«ENDMATH».
+            This means that an exact test can be trivially constructed (for example if «MATH»f«ENDMATH» takes on a 
+            finite number of values, Fisher's exact test can be used). Alternatively, 
+            tests with simple to analyze asymptotics 
+            such as the Kolmogorov–Smirnov can be used. Critically, since the «MATH»H_m«ENDMATH»'s are independent, 
+            the asymptotics here do not depend on irreducibility or  
+            geometric ergodicity, and off-the-shelf iid tests can be used directly. The terminology "Exact" in EIT 
+            refers to the random variables being exactly equal in distribution under the null rather than the exactness of the
+            frequentist 
+            procedure being used to assess if indeed the two sets are equal in distribution. Note that we have here a rare instance  
+            where a point null hypothesis is indeed a well grounded approach, even when using very large values for «MATH»M_1, M_3«ENDMATH».
             
             Here «MATH»K \ge 1«ENDMATH» is a parameter controlling the power of test. Exact tests are available for any 
             finite value. 
             
-            For completeness, we also review below the Cook et al. test below. 
+            For completeness, we also review below the Cook et al. test. 
           '''
           /*
             Not great argument b/c loop over i will be there, but outside. Instead in paper can compare to Cook which 
@@ -245,7 +257,7 @@ class Testing {
             EIT may seem expensive at first glance because of the double loops over «MATH»M_2«ENDMATH» and 
             «MATH»K«ENDMATH». However the body of the inner loop only involves «MATH»T_i«ENDMATH» rather than «MATH»T«ENDMATH» 
             which can lead to an over cost that is actually lower than Geweke's test in certain models. Moreover, in 
-            contrast to Geweke's test, EIT is embarassingly parallelizable. 
+            contrast to Geweke's test, EIT is embarrassingly parallelizable. 
            */
           unorderedList[
             it += '''
@@ -254,7 +266,7 @@ class Testing {
             unorderedList[
               it += '''
                 «MATH»\tilde X_{m} \sim \pi«ENDMATH». A subset of the coordinates is held fix 
-                for the rest and viewed as synthetic data (i.e. in contast to Geweke's test, «MATH»T«ENDMATH» does not contain 
+                for the rest and viewed as synthetic data (i.e. in contrast to Geweke's test, «MATH»T«ENDMATH» does not contain 
                 kernels modifying the "data" coordinates of «MATH»X«ENDMATH»).
               '''
               it += '''
@@ -286,8 +298,8 @@ class Testing {
         section("Implementation of EIT in Blang") [
           
           it += '''
-            Prepare the EIS tests by assembling objects of type «SYMB»Instance«ENDSYMB». The constructor's first argument 
-            is a Blang model, and the following are one or more test functions, playing the role of «MATH»f«ENDMATH» in the 
+            Prepare the EIS tests by assembling objects of type «SYMB»Instance«ENDSYMB», for which the constructor's first argument 
+            is a Blang model, and the following arguments are one or more test functions, playing the role of «MATH»f«ENDMATH» in the 
             previous section. See for example 
             «LINK("https://github.com/UBC-Stat-ML/blangSDK/blob/master/src/test/java/blang/Examples.xtend")»the list of 
             instances used to test Blang's SDK«ENDLINK».
@@ -301,7 +313,7 @@ class Testing {
             This takes multiple testing correction under account. The example above also shows a related test, «SYMB»DeterminismTest«ENDSYMB» 
             which ensure reproducibility, i.e. that using the same random seed leads to exactly the same result. 
             
-            By virtue of being standard JUnit tests, it is easy to use continuous intration tools such as 
+            By virtue of being standard JUnit tests, it is easy to use continuous integration tools such as 
             «LINK("https://travis-ci.org/")»Travis«ENDLINK» so that the tests are ran on a remote server each time a commit is made.
           ''' 
         ]

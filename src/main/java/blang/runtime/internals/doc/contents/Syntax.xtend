@@ -31,7 +31,7 @@ class Syntax {
         
         Concretely, types in Blang are equivalent to «EMPH»Java types«ENDEMPH» (a terminology that encompasses 
         Java classes, interfaces, primitives, enumerations and annotation interfaces). This means any 
-        Java type can be imported and used and Blang, and any model defined in Blang can be imported and used 
+        Java type can be imported and used in Blang, and any model defined in Blang can be imported and used 
         in Java with no extra work needed.
       '''
     ]
@@ -138,7 +138,7 @@ class Syntax {
           «LINK(GettingStarted::page)»must be met by these types«ENDLINK». 
           
           Initialization blocks are XExpressions, which admit a rich and concise, Turing-complete syntax, 
-          described in more details below. For multi-line expressions, surround by curly braces, 
+          described in more details below. For multi-line expressions, surround the code with curly braces, 
           «SYMB»{«ENDSYMB», «SYMB»}«ENDSYMB». For one-line expressions, braces can be skipped.
           
           Initialization blocks are used in the main model to provide alternatives to command line 
@@ -154,8 +154,8 @@ class Syntax {
       
       section("Laws") [
         it += '''
-          Laws (prior or conditional distributions) can be either defined by invoking another blang model 
-          («EMPH»composite laws«ENDEMPH» or by defining one or several «EMPH»factors«ENDEMPH».
+          Laws (prior or conditional distributions) can be either defined by invoking another Blang model 
+          («EMPH»composite laws«ENDEMPH») or by defining one or several «EMPH»factors«ENDEMPH».
           
           During initialization, composite laws are recursively unrolled until a list of all factors is 
           created. The final model is the product of all these factors (more precisely, the sum of all the 
@@ -182,7 +182,7 @@ class Syntax {
             is executed once at initialization time. An example of the latter from an HMM: «SYMB»IntVar prevState = states.get(time - 1)«ENDSYMB».
             
             Each argument in «SYMB»expression1«ENDSYMB», «SYMB»expression2«ENDSYMB», ... is an XExpression matched from left to right in the same 
-            order as the «SYMB»param«ENDSYMB» variables are declared in the imported Blang model. In contrast to the other XExpression discussed above,
+            order as the «SYMB»param«ENDSYMB» variables are declared in the imported Blang model. In contrast to the other XExpressions discussed above,
             the XExpression in the arguments are recomputed each time the factors are evaluated during inference. This correspond to the natural 
             behaviour one would expect from the mathematical notation. For example, if we write «SYMB»x | y ~ Normal(f(y), 1.0)«ENDSYMB», we expect the 
             expression for the mean, «SYMB»f(y)«ENDSYMB» to be recomputed at each evaluation.
@@ -255,18 +255,18 @@ class Syntax {
         '''
         orderedList[
           it += '''
-            Sequential change of measure methods use exact samples from the prior as the initial probability measure in a sequence of 
+            Sequential change of measure methods, which use exact samples from the prior as the initial probability measure in a sequence of 
             measures ending in the target posterior distribution.
           '''
           it += '''
-            Powerful correctness tests are provided that rely on testing the equivalence between the «SYMB»laws«ENDSYMB» and «SYMB»generate«ENDSYMB»
+            Correctness tests, which rely on testing the equivalence between the «SYMB»laws«ENDSYMB» and «SYMB»generate«ENDSYMB»
             implementations. 
           '''
         ]
         it += '''
           The argument name «SYMB»nameOfRandomObject«ENDSYMB» in «SYMB»generate(nameOfRandomObject)«ENDSYMB» provides an arbitrary name to the 
           input random number generator. No type is provided as the argument is always a subtype of «SYMB»java.util.Random«ENDSYMB». In practice, 
-          the runtime uses the subtype «SYMB»bayonet.distributions.Random«ENDSYMB» which provides a better algorithm (a Marsenne twister) as well 
+          the runtime uses the subtype «SYMB»bayonet.distributions.Random«ENDSYMB» which provides a better algorithm (a Mersenne twister) as well 
           as cross compatibility between «SYMB»java.util.Random«ENDSYMB» and Apache common's «SYMB»RandomGenerator«ENDSYMB» objects and more. 
           
           If the model has exactly one «SYMB»random«ENDSYMB» variable of type «SYMB»IntVar«ENDSYMB» or «SYMB»RealVar«ENDSYMB» then the 
@@ -279,9 +279,9 @@ class Syntax {
       it += '''
         The syntax for XExpressions is provided by the Xtext language engineering framework.
         
-        XExpressions are also used by Xtend, an expressive language built on top of Java providing, as described in Xtend's documentation, as a
-         "powerful macros, lambdas, operator overloading 
-        and many more modern language features". We use Xtend to write some parts of the runtime machinery.
+        XExpressions are also used by Xtend, an expressive language built on top of Java providing 
+        «LINK("https://www.eclipse.org/xtend/index.html")»"powerful macros, lambdas, operator overloading 
+        and many more modern language features"«ENDLINK». We use Xtend to write some parts of the runtime machinery.
         
         We review the main aspects of XExpressions relevant 
         for writting Blang models here for completeness, 
@@ -310,7 +310,7 @@ class Syntax {
         unorderedList[
           it += '''«SYMB»boolean«ENDSYMB»: «SYMB»true«ENDSYMB», «SYMB»false«ENDSYMB»'''
           it += '''«SYMB»int«ENDSYMB»: e.g. «SYMB»42«ENDSYMB», «SYMB»12_000«ENDSYMB»'''
-          it += '''«SYMB»double«ENDSYMB»: e.g. making sure to add a decimal suffix, «SYMB»1.0«ENDSYMB», or the scientific notation «SYMB»1.3e2«ENDSYMB»'''
+          it += '''«SYMB»double«ENDSYMB»: make sure to add a decimal suffix, «SYMB»1.0«ENDSYMB», or the scientific notation «SYMB»1.3e2«ENDSYMB»'''
           it += '''type literals, e.g. «SYMB»String«ENDSYMB», which is equivalent to Java's «SYMB»String.class«ENDSYMB»'''
           it += '''«SYMB»List«ENDSYMB»: e.g. «SYMB»#[true, false]«ENDSYMB»'''
           it += '''«SYMB»Set«ENDSYMB»: e.g. «SYMB»#{"red", "blue", "green"}«ENDSYMB»'''
@@ -326,15 +326,16 @@ class Syntax {
           var typeInferred = #[1, 2, 3]
         ''')
         it += '''
-          In the first example, «SYMB»val«ENDSYMB» encodes that the variable cannot be changed (immutable), while the other example 
+          In the first example, «SYMB»val«ENDSYMB» encodes that the variable cannot be changed (in the same sense as Java's final keyword for variables), while the other example 
           use «SYMB»var«ENDSYMB» encoding the fact the variable can be changed afterwards. 
           
           The meaning of immutability is simple to understand in the case of primitive, but it should be interpreted carefully
           in the context of references. In the latter, it means that the reference will always point to the same object in the heap, 
           however the internal state of that object might change over its life time.
           
-          In the third line of the example, the type is inferred automatically (here as «SYMB»List<Integer>«ENDSYMB»). This often, but 
-          not always possible. We recommend avoiding this construct however to easy readability.
+          In the third line of the example, the type is inferred automatically (here as «SYMB»List<Integer>«ENDSYMB»). Such automatic type 
+          inference is often, but 
+          not always possible. We recommend avoiding this construct however to maintain readability.
         '''
       ]
       section("Conditionals") [
@@ -392,13 +393,13 @@ class Syntax {
           Functions are called as in most languages, i.e. «SYMB»nameOfFunction(expression1, expression2, ...)«ENDSYMB», where each 
           element in «SYMB»expression1, expression2, ...«ENDSYMB» are themselves XExpressions. These expressions are evaluated 
           first, then the results of these evaluations are passed in to the function ("eager evaluation", as in Java for example). 
-          The only exception is the composite laws listed in «SYMB»laws { .. }«ENDSYMB», as described above, in which cas evaluation 
+          The only exception is the composite laws listed in «SYMB»laws { .. }«ENDSYMB», as described above, in which case evaluation 
           of the argument is delayed at initialization and instead repeated each time the density is evaluated during MCMC sampling 
           (a form of "lazy evaluation" in this unique special case). 
           
           In all cases, the actual function call only involves copying a constant size register so that function calls are always very 
           cheap. For primitives, the value of the primitive is copied (and hence the original primitive can never suffer side effects from 
-          the call). For references, the memory address in the reference is copied (and hence the original reference cannot be change, 
+          the call). For references, the memory address in the reference is copied (and hence the original reference cannot be changed, 
           although the object it points to might have its state changed by the function call). 
         '''
       ]
@@ -428,7 +429,7 @@ class Syntax {
           }
         ''')
         it += '''
-          Then, add «SYMB»import static my.pack.MyFunction.*«ENDSYMB» to your blang file. You will now be able to call
+          Then, add «SYMB»import static my.pack.MyFunction.*«ENDSYMB» to your Blang file. You will now be able to call
           «SYMB»myFunction(arg1, arg2)«ENDSYMB».
         '''
       ]
@@ -445,7 +446,7 @@ class Syntax {
         it += '''
           Classes have «EMPH»instance variables or field«ENDEMPH» (variables guaranteed to be available for a given type), as well as 
           «EMPH»(instance) methods«ENDEMPH» (functions associated with the object having access to the object's instance variables). 
-          Collectively, fields adn methods are called «EMPH»features«ENDEMPH». 
+          Collectively, fields and methods are called «EMPH»features«ENDEMPH». 
           
           Features are accessed using the "dot" notation: «SYMB»object.variable«ENDSYMB» and «SYMB»object.method(...)«ENDSYMB». When a 
           method has no argument, the call can be shortened to «SYMB»object.method«ENDSYMB». 
@@ -469,7 +470,7 @@ class Syntax {
         it += '''
           A "lambda expression" is an unfortunate name for a simple concept: a succinct way to write function without having to 
           give it a name. This makes it easy to call functions which take functions as argument (e.g. to apply the function to 
-          each item in a list, etc.) Since they are so useful, many syntactic shortcut are available. 
+          each item in a list, etc). Since they are so useful, many syntactic shortcut are available. 
           
           Explicit syntax for lambda expressions is:
         '''
@@ -540,10 +541,13 @@ class Syntax {
           Some useful operators automatically imported:
         '''
         unorderedList[
-          it += '''«SYMB»object => lambdaExpression«ENDSYMB», e.g. «SYMB»new ArrayList => [add("to be added in list")]«ENDSYMB»'''
+          it += '''
+            «SYMB»object => lambdaExpression«ENDSYMB»: calls the lambda expression with the input given by object, 
+            e.g. «SYMB»new ArrayList => [add("to be added in list")]«ENDSYMB»
+          '''
           it += '''
             range operators, for example «SYMB»0 .. 10«ENDSYMB», «SYMB»0 ..< 11«ENDSYMB», «SYMB»-1 >.. 10«ENDSYMB»; all these 
-            examples return the integers from zero to ten inclusively.
+            examples return the integers «MATH»0, 1, 2, ..., 10«ENDMATH».
           '''
         ]
         it += '''  
@@ -565,7 +569,7 @@ class Syntax {
       section("Parameterized types") [
         it += '''
           Types can be parameterized, for example to use Java's «SYMB»List«ENDSYMB» type, it is preferable to specify the 
-          type that will stored in the list. For example to declare that strings will be stored, use «SYMB»List<String>«ENDSYMB» 
+          type that will stored in the list. For example to declare that strings will be stored, use «SYMB»List&lt;String&gt;«ENDSYMB» 
           as in Java or Xtend. 
           
           Models can use variables with type parameters but models themselves cannot have type parameters at the moment.
@@ -579,11 +583,11 @@ class Syntax {
           throw new RuntimeException("Some error message.")
         ''')
         it += '''
-          To signal that the current factor has invalid parameters, by returning the value -INFINITY for the log factor instead 
-          of terminating, use instead «SYMB»blang.types.StaticUtils.invalidParameter«ENDSYMB».
+          To signal that the current factor has invalid parameters: if possible just return the value -INFINITY, or if it is not 
+          easy for a certain code structure, use instead «SYMB»blang.types.StaticUtils.invalidParameter«ENDSYMB», which will 
+          be caught and interpreted as the factor having zero probability.
           
-          In contrast to Java, exception are never required to be declared or caught. If they need to be caught, an unlikely scenario 
-          in typical Blang models, the syntax is:
+          In contrast to Java, exception are never required to be declared or caught. If they need to be caught, the syntax is:
         '''
         code(Language.blang, '''
           try {
@@ -599,19 +603,18 @@ class Syntax {
       ]
       section("Other aspects not covered") [
         it += '''
-          There are a few other aspects of XExpressions that we haven't covered since they are unlikely 
-          to be used in typical Blang models:
+          There are a few other aspects of XExpressions that we haven't covered here:
         '''
         unorderedList[
           it += '''
-            the «SYMB»synchronized«ENDSYMB» keyword and 
-            «LINK("https://docs.oracle.com/javase/tutorial/essential/concurrency/")»rich associated parallelizaton library«ENDLINK»; 
+            the «SYMB»synchronized«ENDSYMB» keyword and a 
+            «LINK("https://docs.oracle.com/javase/tutorial/essential/concurrency/")»rich parallelization library«ENDLINK»; 
           '''
           it += '''
             optional dispatch method, allowing to mix and match static and runtime method polymorphism;
           '''
           it += '''
-            active annotation, which along with the reflection API, allow powerful meta-programming; 
+            active annotation, which along with the reflection API, allows powerful meta-programming; 
           '''
           it += '''
             built-in string templates.

@@ -4,7 +4,7 @@ package blang.distributions
 model MultivariateNormal {
   random Matrix realization
   
-  /** An \(n \times 1\) vector \(m\). \(m \in \mathbb{R}^n\)  */
+  /** An \(n \times 1\) vector \(\mu\). \(\mu \in \mathbb{R}^n\)  */
   param Matrix mean
   // Note: no need to mark as constrained since CholeskyDecomposition is read-only 
   // so won't attempt to do naive sampling by default

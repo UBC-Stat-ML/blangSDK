@@ -37,6 +37,10 @@ public class AdaptiveJarzynski
   @Arg
   public Cores nThreads = Cores.maxAvailable(); 
   
+  @Arg(description = "Silence the progress report printed in standard out.")
+           @DefaultValue("false")       
+  public boolean silent = true;
+  
   protected SampledModel prototype;
   protected Random [] parallelRandomStreams;
   
@@ -59,12 +63,12 @@ public class AdaptiveJarzynski
       if (resamplingNeeded(population, nextTemperature))
       {
         population = resample(random, population);
-        System.out.println("Resampling [iter=" + iter + ", Z_{" + nextTemperature + "}= " + population.logNormEstimate() + "]");
+        log("Resampling [iter=" + iter + ", Z_{" + nextTemperature + "}= " + population.logNormEstimate() + "]");
       }
       temperature = nextTemperature;
       iter++;
     }
-    System.out.println("Change of measure complete [iter=" + iter + ", Z=" + population.logNormEstimate() + "]");
+    log("Change of measure complete [iter=" + iter + ", Z=" + population.logNormEstimate() + "]");
     return population;
   }
   
@@ -142,5 +146,11 @@ public class AdaptiveJarzynski
   private ParticlePopulation<SampledModel> initialize(Random [] randoms)
   {
     return propose(randoms, null, Double.NaN, Double.NaN);
+  }
+  
+  protected void log(String message) 
+  {
+    if (!silent)
+      System.out.println(message);
   }
 }

@@ -45,7 +45,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     
     // write Z estimate
     double logNormEstimate = approximation.logNormEstimate();
-    System.out.println("Normalization constant estimate: " + logNormEstimate);
+    log("Normalization constant estimate: " + logNormEstimate);
     BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
     
     // resample & rejuvenate the last iteration to simplify processing downstream
@@ -63,7 +63,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   {
     if (nFinalRejuvenations == 0) 
       return;
-    System.out.println("Final rejuvenation started");
+    log("Final rejuvenation started");
     deepCopyParticles(finalPopulation);
     BriefParallel.process(nParticles, nThreads.available, particleIndex ->
     {

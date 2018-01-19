@@ -89,12 +89,12 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return new DenseSimplex(m)
   }
   
-  /** checks the provided list of number sums to one. */
+  /** creates a constant simplex, also checks the provided list of number sums to one. */
   def static DenseSimplex constantSimplex(double ... probabilities) {
     return new DenseSimplex(denseCopy(probabilities).readOnlyView)
   }
   
-  /** checks the provided vector sums to one. */
+  /** creates a constant simplex, also checks the provided vector sums to one. */
   def static DenseSimplex constantSimplex(DenseMatrix probabilities) {
     return new DenseSimplex(probabilities.readOnlyView)
   }
@@ -111,12 +111,12 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return new DenseTransitionMatrix(m)
   }
   
-  /** checks the provided rows all sum to one. */
+  /** creates a constant transition matrix, also checks the provided rows all sum to one. */
   def static DenseTransitionMatrix constantTransitionMatrix(DenseMatrix probabilities) {
     return new DenseTransitionMatrix(probabilities.readOnlyView)
   }
   
-  /** checks the provided rows all sum to one. */
+  /** creates a constant transition matrix, also checks the provided rows all sum to one. */
   def static DenseTransitionMatrix constantTransitionMatrix(double [][] probabilities) {
     return new DenseTransitionMatrix(denseCopy(probabilities).readOnlyView)
   }

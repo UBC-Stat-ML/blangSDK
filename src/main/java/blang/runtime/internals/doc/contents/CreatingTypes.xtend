@@ -51,8 +51,8 @@ class CreatingTypes {
           categorical realization sampling, «SYMB»CategoricalSampler«ENDSYMB».
         '''
         it += '''
-          «SYMB»MHSampler«ENDSYMB»: an abstract class providing basis for custom 
-          simple Metropolis-Hastings samplers. See  
+          «SYMB»MHSampler«ENDSYMB»: an abstract class providing a basis for custom 
+          Metropolis-Hastings samplers. See  
           «SYMB»blang.validation.internals.fixtures.IntNaiveSampler«ENDSYMB» for an example.
         '''
       ]

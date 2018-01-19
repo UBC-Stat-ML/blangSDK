@@ -24,14 +24,14 @@ class InputOutput {
         '''
         orderedList[
           it += '''
-             fixing random variables' value to 
-             a given  value, i.e. conditioning on that value or observation,
+             fixing a random variable's value to 
+             a given observation (conditioning),
           '''
           it += '''
-             setting the parameters of models,
+             setting the hyper-parameters of models,
           '''
           it += '''
-             setting the parameters of inference algorithms.
+             setting the tuning parameters of inference algorithms.
           '''
         ]
         it += '''
@@ -94,12 +94,12 @@ class InputOutput {
                 then calling «SYMB»initContext.markAsObserved(object)«ENDSYMB».
               '''
               it += '''
-                To recursively parse other string to be converted to 
+                To recursively parse other strings to be converted to 
                 arbitrary types, declare a constructor argument 
                 «SYMB»@InitService Creator creator«ENDSYMB» and call 
                 «SYMB»creator.init(type, arguments)«ENDSYMB» where 
-                type can be a class or «SYMB»TypeLiteral«ENDSYMB», and 
-                arguments can be obtained via «SYMB»SimpleParser.parse(string)«ENDSYMB» 
+                type can be a class literal (such as String, Integer) or an instance of «SYMB»TypeLiteral«ENDSYMB».  
+                Arguments can be obtained via «SYMB»SimpleParser.parse(string)«ENDSYMB» 
                 in most cases.
               '''
             ]
@@ -111,9 +111,9 @@ class InputOutput {
             '''
             it += '''
               Both for «SYMB»@Arg«ENDSYMB» and «SYMB»@ConstructorArg«ENDSYMB», 
-              you can give default value to arguments via 
+              you can give a default value to the argument via 
               «SYMB»@DefaultValue«ENDSYMB», or make it optional by enclosing the 
-              declared types into an «SYMB»Optional<..>«ENDSYMB».
+              declared type into an «SYMB»Optional<..>«ENDSYMB».
             '''
           ]
           it += '''
@@ -125,8 +125,7 @@ class InputOutput {
               with a list of comma-separated implementations. 
             '''
             it += '''
-              Then use the annotations «SYMB»@Arg«ENDSYMB» and «SYMB»@ConstructorArg«ENDSYMB» 
-              as described above for each possible implementation.
+              Then follow the above process for each implementation.
             '''
           ]
           it += '''
@@ -152,7 +151,7 @@ class InputOutput {
           care of (by introspection of the injection framework's annotations). 
           Naming of switches is done hierarchically. 
   
-          Here is a concrete example to show how it works. In blang's main 
+          Here is a concrete example to show how it works. In Blang's main 
           class, there is an annotated field «SYMB»@Arg PosteriorInferenceEngine engine«ENDSYMB». 
           This type declares the following implementations:
         '''

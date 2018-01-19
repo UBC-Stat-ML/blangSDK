@@ -37,7 +37,7 @@ class Home {
       '''
       it += '''
         As hinted by the keyword «SYMB»package«ENDSYMB», you can use other people's models, and package yours easily 
-        (and in a versioned fashion). This is useful to dissiminate your work and critical to create reproducible analyses. 
+        (and in a versioned fashion). This is useful to disseminate your work and critical to create reproducible analyses. 
         Details such as dependency resolution are taken care of automatically. 
       '''
     ]
@@ -45,7 +45,7 @@ class Home {
     it += '''
       If you have one more minute to spare, let us see what happen when we run this model (if you want to try at home, 
       all you need to run this is «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html")»Java 8 SDK«ENDLINK» 
-      and git intalled):
+      and git installed):
     '''
     
     code(Language.text, runningByShell)
@@ -63,7 +63,7 @@ class Home {
         include Parallel Tempering, various non-reversible methods, and users can add other inference frameworks as well.
       '''
       it += '''
-        The algorithm trivially parallelize to hundreds of CPUs, here only 8 cores were used. 
+        The algorithm trivially parallelize to a large number of CPUs, here only 8 cores were used. 
         Massive distribution over many nodes is in the pipeline. 
       '''
       it += '''
@@ -146,14 +146,17 @@ class Home {
         --model.observations.file primates.fasta \
         --model.observations.encoding DNA \
         --engine SCM \
-        --engine.nThreads MAX 
+        --engine.nThreads MAX \
+        --excludeFromOutput observations 
       
       Preprocessing started
       4 samplers constructed with following prototypes:
       RealScalar sampled via: [RealSliceSampler]
       UnrootedTree sampled via: [SingleNNI, SingleBranchScaling]
       Sampling started
+      [sampling progress report]
       Normalization constant estimate: -1216.1211229417504
+      Final rejuvenation started
       Preprocessing time: 141.4 ms
       Sampling time: 2.304 min
       executionMilliseconds : 138405

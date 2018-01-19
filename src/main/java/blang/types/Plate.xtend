@@ -25,7 +25,7 @@ interface Plate<K> {
   /** Human-readable name for the plate, typically automatically extracted from a DataSource column name. */
   def ColumnName getName() 
   
-  /** Get the indices available given the indices of the parent (enclosing) plates. */
+  /** Get the indices available given the indices of the parent (enclosing) plates. The parents can be provided in any order. */
   def Collection<Index<K>> indices(Index<?> ... parentIndices)
   
   def K parse(String string)

@@ -36,7 +36,7 @@ class GettingStarted {
           Variables need to specify their type, e.g.: «SYMB»random RealVar z«ENDSYMB» is of type «SYMB»RealVar«ENDSYMB» and
            we give it the name «SYMB»z«ENDSYMB». Some of the «LINK(BuiltInRandomVariables::page)»other important built-in types«ENDLINK» 
            are «SYMB»IntVar«ENDSYMB» and «SYMB»DenseMatrix«ENDSYMB». '''
-        it += '''«SYMB»random«ENDSYMB» and «SYMB»param«ENDSYMB» are Blang keyword. We will get back to the difference between the two. '''
+        it += '''«SYMB»random«ENDSYMB» and «SYMB»param«ENDSYMB» are Blang keywords. We will get back to the difference between the two. '''
         it += '''As a convention, types are capitalized, variable names are not.''' 
       ]
       
@@ -50,12 +50,12 @@ class GettingStarted {
       
       section("Performing inference") [ 
         it += '''
-          Each blang model is turned into a program supporting various inference methods. 
+          Each Blang model is turned into a program supporting various inference methods. 
           To demonstrate that, let's run the above example. '''
         orderedList[
           it += '''
             Setup one of these two methods: 
-            «LINK(BlangWeb::page)»running blang with the Web App«ENDLINK», or 
+            «LINK(BlangWeb::page)»running Blang with the Web App«ENDLINK», or 
             «LINK(BlangIDE::page)»with the Blang IDE«ENDLINK».''' 
           it += '''
             Once you follow the above steps, you will get a message about missing arguments. 
@@ -73,7 +73,7 @@ class GettingStarted {
           The most important piece of information here is the «SYMB»outputFolder«ENDSYMB». 
           Look into that directory. You will find in «SYMB»samples/z.csv«ENDSYMB» the samples in a tidy format, 
           ready to be used by any sane data analytic tool.
-        ''' // TODO: how inference works
+        ''' 
         it += '''You can also view the list of all arguments by adding the argument «SYMB»--help«ENDSYMB».'''
       ]
       
@@ -92,13 +92,13 @@ class GettingStarted {
             «SYMB»logf«ENDSYMB» listed («SYMB»indicator«ENDSYMB» is just a shortcut for 0-1 factors),'''
           it += '''
             the optional «SYMB»generate«ENDSYMB» block specifies a forward sampling procedure. 
-          ''' // TODO: forward sampling and testing
+          ''' 
         ]
         it += '''
           The body of «SYMB»logf«ENDSYMB», «SYMB»indicator«ENDSYMB», and «SYMB»generate«ENDSYMB» 
           admit a rich and concise, Turing-complete syntax. We will refer to such block as an 
           XExpression. We will talk more about it later on. 
-        ''' // TODO: xexpressions
+        ''' 
         it += '''
           Another important method for creating models is by composing and transforming one or several 
           other distribution. Look at the definition of «SYMB»Exponential«ENDSYMB» for example:
@@ -110,7 +110,7 @@ class GettingStarted {
         '''
         code(Language.blang, '''
           randomVariable1, ... | conditioning ~ NameOfModel(parameter1, ...)
-        ''') // TODO: complex conditioning
+        ''') 
         it += '''
           where the random variables are listed in the same order as the variables marked by the keyword 
           «SYMB»random«ENDSYMB» appear in the invoked model definition, and the parameters are listed in the same 
@@ -130,7 +130,7 @@ class GettingStarted {
         '''
         code(Language.text, dataFileTop)
         it += '''
-          Each row contains a Launch Vehicule (LV) type, and the number of successful lauches for that type of rocket, as well 
+          Each row contains a Launch Vehicle (LV) type, and the number of successful launches for that type of rocket, as well 
           as the total number of launches. We would like to get a posterior distribution over the failure probability of each 
           LV type via a hierarchical model that borrows strength across types. Here is a Blang model that does that:
         '''
@@ -154,15 +154,12 @@ class GettingStarted {
           one given in the Blang file. We only need to override this default for the «SYMB»rocketTypes«ENDSYMB» plate, by setting 
           the command line argument «SYMB»--model.rocketTypes.name LV.Type«ENDSYMB».
         '''
-        // TODO: nested plates
-        // TODO: Plated, synthetic version
-        // TODO: remove + 0.5? 
       ]
       
       section("Creating new types") [
         it += '''
           Arbitrary Java or Xtend types are inter-operable with Blang. When you want to use them as latent variables, some 
-          additional work is needed. However Blang provides utilities to assist, in particular for testing correctness.  
+          additional work is needed. However Blang provides utilities to assist you in this process, in particular for testing correctness.  
         '''
         it += '''
           As a first example, let's look at how sampling is implemented for «SYMB»Simplex«ENDSYMB» variables in the SDK (i.e. 
@@ -207,62 +204,10 @@ class GettingStarted {
             ]
             it += '''
               The optional method «SYMB»setup«ENDSYMB» performs additional initialization checks if needed. 
-              It should return a boolean indicating whether this sampler should be peformed or not in the current context. 
+              It should return a boolean indicating whether this sampler should be used or not in the current context. 
             '''
-          ] // TODO: MH, output, input
+          ] 
         ]
-        
-//        it += '''
-//          As a first example, let's revisit the phylogenetic example from «LINK(Home::page)»the documentation home page«ENDLINK». 
-//          At the top of the declaration of the class «SYMB»UnrootedTree«ENDSYMB», there is an annotation to the moves used to 
-//          perform sampling on that type:
-//        '''
-//        code(
-//          Language.text,
-//          '''
-//            ...
-//            @Samplers(SingleNNI, SingleBranchScaling)
-//            class UnrootedTree {
-//              ...
-//            }
-//          '''
-//        )
-//        it += '''
-//          You will usually not have to start from scratch to define these samplers. For example, Blang SDK provides excellent 
-//          implementations of slice samplers for continuous and discrete variables. We show here a simpler example which uses 
-//          a Metropolis-Hastings algorithm used to resample branch lengths in the same way as is done in MrBayes:
-//        '''
-//        code( // Go over a more basic example first? 
-//          Language.blang,
-//          '''
-//            package conifer.moves
-//            
-//            import blang.mcmc.internals.Callback
-//            import blang.mcmc.MHSampler
-//            import blang.mcmc.SampledVariable
-//            import briefj.collections.UnorderedPair
-//            import bayonet.distributions.Random
-//            import conifer.TreeNode
-//            import conifer.UnrootedTree
-//            import conifer.RandomUtils.DiscreteUniform
-//            
-//            class SingleBranchScaling extends MHSampler {
-//              @SampledVariable UnrootedTree tree
-//              
-//              override void propose(Random rand, Callback callback) {
-//                val UnorderedPair<TreeNode, TreeNode> edge = DiscreteUniform.sample(tree.edgeList, rand)
-//                val double oldValue = tree.getBranchLength(edge)
-//                var double u = rand.nextDouble()
-//                val double m = Math.exp(2.0 * Math.log(2.0) * (u - 0.5))
-//                val double newValue = m * oldValue
-//                callback.setProposalLogRatio(Math.log(m))
-//                tree.updateBranchLength(edge, newValue)
-//                if(!callback.sampleAcceptance()) tree.updateBranchLength(edge, oldValue)
-//              }
-//            }
-//            
-//          '''
-//        )
       ]
     ]
     
@@ -271,12 +216,29 @@ class GettingStarted {
         Additional tutorial and reference materials to go more in-depth:
       '''
       unorderedList[
-        it += '''«LINK(BuiltInRandomVariables::page)»Built in random variables«ENDLINK»: building blocks for Blang models.'''
+        it += '''
+          «LINK(BuiltInRandomVariables::page)»Built in random variables«ENDLINK»: building blocks for Blang models.
+        '''
+        it += '''
+          «LINK(BuiltInDistributions::page)»Built in distributions«ENDLINK».
+        '''
+        it += '''
+          «LINK(Syntax::page)»Complete description of Blang's syntax.«ENDLINK»
+        '''  
+        it += '''
+          «LINK(InputOutput::page)»Input and Output«ENDLINK»: how to get data into Blang for conditioning, and samples out.
+        '''
         it += '''
           «LINK(InferenceAndRuntime::page)»Inference and runtime«ENDLINK»: how the Blang runtime system performs inference 
           based on Blang models. 
         ''' 
-        it += '''«LINK(Syntax::page)»Complete description of Blang's syntax.«ENDLINK»'''  
+        it += '''
+          «LINK(CreatingTypes::page)»Custom types«ENDLINK»: more details on creating your own types.
+        '''
+        it += '''
+          «LINK(Testing::page)»Testing«ENDLINK»: tests used to check the correctness of Blang SDK as well as your 
+          distributions, samplers and types.
+        '''
       ]
     ]
 

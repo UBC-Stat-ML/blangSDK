@@ -20,7 +20,7 @@ class BlangWeb {
       
       section("Creating a Blang project") [
         orderedList[
-          it += '''After signin up, create a «SYMB»Model«ENDSYMB».'''
+          it += '''After signing up, create a «SYMB»Model«ENDSYMB».'''
           it += '''Using the gear icon, create a new file, name it to end in «SYMB».bl«ENDSYMB».'''
           it += '''With the gear icon again, set the file as «SYMB»entry«ENDSYMB»'''
         ]

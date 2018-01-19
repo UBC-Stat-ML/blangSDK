@@ -38,7 +38,7 @@ class BlangIDE {
           orderedList[
             it += '''When asked which workspace to use, pick «SYMB»[downloaded blang folder]/workspace«ENDSYMB».'''
             it += '''Select menu «SYMB»File > Open Projects from File System...«ENDSYMB»'''
-            it += '''Select «SYMB»[downloaded blang folder]/workspace/blangExample«ENDSYMB»'''
+            it += '''Select «SYMB»[downloaded Blang folder]/workspace/blangExample«ENDSYMB»'''
           ]
           it += 
           '''

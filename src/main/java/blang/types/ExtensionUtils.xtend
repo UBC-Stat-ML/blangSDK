@@ -62,7 +62,7 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
     return result
   }
   
-  /** Upgrade a java.util.Random into to the type of Random we use. */
+  /** Upgrade a java.util.Random into to the type of Random we use, bayonet.distributions.Random. */
   def static Random generator(java.util.Random random) {
     if (random instanceof Random) {
       return random
