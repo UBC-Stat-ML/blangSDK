@@ -228,12 +228,15 @@ class BootstrapHTMLRenderer implements Renderer  {
                 «navLink(navStructure.document(heading), navStructure.document(heading) === document)»
               «ENDIF»
             «ENDFOR»
+            «navAdditionalLogos»
           </ul>
         </nav>
         <h3 class="text-muted">«siteName»</h3>
       </div>
     '''
   }
+  
+  def protected String navAdditionalLogos() { "" }
   
   def private navLink(Document menuItem, boolean isActive) {
     '''

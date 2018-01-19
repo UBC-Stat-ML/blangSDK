@@ -82,6 +82,16 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     return result
   }
   
+  override protected String navAdditionalLogos() {
+    '''
+      <li>
+        <a href="https://github.com/UBC-Stat-ML/blangSDK">
+          <img alt="Github Repo" src="GitHub-logo.png" height="20px">
+        </a>
+      </li>
+    '''
+  }
+  
   new() {
     super("Blang", documents)
   }
