@@ -20,9 +20,6 @@ model MarkovChain {
           if (previous >= 0 && previous < transitionProbabilities.nRows)
             transitionProbabilities.row(previous)
           else {
-            // to avoid picking invalid submatrix; 
-            // if we get here state will be set to probability zero by support
-            // required even with the SafeSupport as it crashes in the support itself
             transitionProbabilities.row(0) 
           }
         }) 

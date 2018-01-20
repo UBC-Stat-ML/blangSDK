@@ -19,6 +19,7 @@ import blang.runtime.internals.doc.contents.InputOutput
 import blang.runtime.internals.doc.contents.CreatingTypes
 import blang.runtime.internals.doc.contents.BuiltInDistributions
 import blang.runtime.internals.doc.contents.BuiltInFunctions
+import blang.runtime.internals.doc.contents.Examples
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
@@ -27,6 +28,7 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     GettingStarted::page,
     BlangIDE::page,
     BlangWeb::page,
+    Examples::page,
     BuiltInRandomVariables::page,
     BuiltInDistributions::page,
     BuiltInFunctions::page,

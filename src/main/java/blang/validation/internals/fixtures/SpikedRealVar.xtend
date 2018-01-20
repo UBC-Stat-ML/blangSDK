@@ -37,4 +37,8 @@ class SpikedRealVar implements RealVar {
     }
     return sum
   }
+  
+  override String toString() {
+    return Double.toString(doubleValue) 
+  }
 }

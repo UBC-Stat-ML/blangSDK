@@ -1,4 +1,4 @@
-package blang.examples
+package blang.validation.internals.fixtures
 
 model DynamicNormalMixture  { 
   
