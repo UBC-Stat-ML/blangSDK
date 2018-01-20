@@ -13,7 +13,6 @@ import blang.distributions.Gamma
 import blang.distributions.MultivariateNormal
 import blang.distributions.Normal
 import blang.distributions.Poisson
-import blang.examples.DynamicNormalMixture
 import blang.examples.MixtureModel
 import blang.validation.internals.fixtures.SimpleHierarchicalModel
 import blang.io.GlobalDataSource
@@ -57,6 +56,7 @@ import static blang.types.StaticUtils.latentListOfReal
 import static blang.types.StaticUtils.latentSimplex
 import static blang.types.StaticUtils.constantSimplex
 import xlinear.DenseMatrix
+import blang.validation.internals.fixtures.DynamicNormalMixture
 
 class Examples {
   
