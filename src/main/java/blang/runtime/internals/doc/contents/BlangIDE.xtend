@@ -21,8 +21,13 @@ class BlangIDE {
           should be installed on the system (version 9 not yet tested but is likely to work).'''
         it += '''        
           We only package the IDE for Mac at the moment but we can post instructions 
-          on how to setup the IDE for other platforms (just email us). The command line 
-          tools are already shipped multi-platform.'''
+          on how to setup the IDE for other platforms (just email us). If you are a Linux or other 
+          non-Mac Unix user, you can also use
+          «LINK("https://github.com/UBC-Stat-ML/blangDoc/blob/master/using-eclipse-ide.md")»these provisional instructions«ENDLINK».
+          
+          The command line 
+          tools are already shipped multi-platform.
+        '''
       ]
       
       it += installBlang
