@@ -93,7 +93,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
       // add the one argument (after fixing it)
       val String modelString = fixModelBuilderArgument(args.get(0))
       fromFile.setOrCreateChild("model", Collections.singletonList(modelString))
-      fromFile.child("experimentConfigs").setOrCreateChild("recordGitInfo", Collections.singletonList("false"));
+      fromFile.getOrCreateDesc(Collections.singletonList("experimentConfigs")).setOrCreateChild("recordGitInfo", Collections.singletonList("false"));
       return fromFile
     } else {
       fixModelBuilderArgument(args)

@@ -19,12 +19,12 @@ public class Exact implements PosteriorInferenceEngine
   @GlobalArg ExperimentResults results;
   
   @Arg(description = "Stop and warn the user if more than this number of random draws is used in a simulation.")
-         @DefaultValue("20")
-  public int maxDepth = 20;
+         @DefaultValue("15")
+  public int maxDepth = 15;
   
   @Arg(description = "Stop and warn the user if more than this number of traces is used in a simulation.")
-          @DefaultValue("2_000_000")
-  public int maxTraces = 2_000_000;
+          @DefaultValue("100_000")
+  public int maxTraces = 100_000;
   
   @SuppressWarnings("unchecked")
   @Override

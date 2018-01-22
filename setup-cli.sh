@@ -5,6 +5,7 @@
 
 # Fix problem arising if eclipse is used jointly
 mkdir build/xtend/test
+mkdir build/blang/test
 
 if hash blang 2>/dev/null; then
     echo "Done"
