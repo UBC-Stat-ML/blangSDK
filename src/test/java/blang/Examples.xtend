@@ -41,7 +41,6 @@ import blang.validation.internals.fixtures.Multimodal
 import blang.validation.internals.fixtures.RealRealizationSquared
 import blang.distributions.internals.Helpers
 import blang.distributions.NegativeBinomial
-import blang.distributions.NegativeBinomial_MeanParam
 import blang.distributions.NormalField
 import blang.types.Precision.Diagonal
 import blang.validation.internals.fixtures.PoissonNormalField
@@ -93,15 +92,6 @@ class Examples {
       .setK(latentInt)
       .setP(constantReal(0.1))
       .setR(constantReal(2.1))
-        .build,
-    intRealizationSquared
-  )
-  
-  public val negBinomial_mv = add( 
-    new NegativeBinomial_MeanParam.Builder()
-      .setK(latentInt)
-      .setMean(constantReal(1.1))
-      .setOverdispersion(constantReal(0.3))
         .build,
     intRealizationSquared
   )
