@@ -62,6 +62,7 @@ class EllipticalSliceSampler<K> implements Sampler {
 
   @SuppressWarnings("unchecked") 
   override boolean setup(SamplerBuilderContext context) {
+    // TODO: check manually each latent entry in the field in latent
     precision = field.getPrecision()
     indexer = Precision.indexer(precision.getPlate())
     dim = indexer.size()

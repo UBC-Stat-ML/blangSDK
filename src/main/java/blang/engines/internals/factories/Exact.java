@@ -3,7 +3,6 @@ package blang.engines.internals.factories;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.ExhaustiveDebugRandom;
-import bayonet.math.NumericalUtils;
 import blang.engines.internals.PosteriorInferenceEngine;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
@@ -13,6 +12,7 @@ import blang.io.BlangTidySerializer;
 import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
+import blang.types.ExtensionUtils;
 
 public class Exact implements PosteriorInferenceEngine
 {
@@ -35,7 +35,7 @@ public class Exact implements PosteriorInferenceEngine
     int i = 0;
     while (exhaustive.hasNext())
     {
-      model.forwardSample(exhaustive, false);
+      model.forwardSample(exhaustive, true);
       
       // check this is not going to take forever
       if (exhaustive.lastDepth() > maxDepth || i > maxTraces)
@@ -48,8 +48,10 @@ public class Exact implements PosteriorInferenceEngine
       
       // checks agreement of generate and law blocks
       double logWeightFromGeneration = Math.log(exhaustive.lastProbability()) + model.logDensity(1.0) - model.logDensity(0.0);
-      if (!NumericalUtils.isClose(logWeightFromModel, logWeightFromGeneration, NumericalUtils.THRESHOLD))
-        throw new RuntimeException("generate(rand){..} block not faithful with its laws{..} block.");
+      if (!ExtensionUtils.isClose(logWeightFromModel, logWeightFromGeneration))
+        throw new RuntimeException("generate(rand){..} block not faithful with its laws{..} block. \n"
+            + "Common mistake: forgetting to take the log of the answer in logf() { .. } constructs. \n"
+            + "Diverging values: " + logWeightFromModel + " vs " + logWeightFromGeneration);
       
       model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++), Pair.of("logWeight", logWeightFromModel)); 
     }

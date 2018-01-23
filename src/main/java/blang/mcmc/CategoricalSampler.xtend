@@ -29,6 +29,11 @@ class CategoricalSampler implements Sampler {
 
   @SuppressWarnings("unchecked") 
   override boolean setup(SamplerBuilderContext context) {
+    if (!context.isLatent(categorical.getRealization) ||
+        !(categorical.getRealization instanceof WritableIntVar)
+    ) {
+      return false
+    }
     /*
      * More complex init needed to avoid pulling too many 
      * dependencies (i.e. those coming from categorical.probabilities

@@ -138,7 +138,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   }
   
   def static double NEGATIVE_INFINITY() {
-    Double.NEGATIVE_INFINITY
+    return Double.NEGATIVE_INFINITY
   }
   
   /*

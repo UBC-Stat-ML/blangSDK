@@ -7,6 +7,8 @@ import blang.runtime.internals.objectgraph.MatrixConstituentNode
 import java.util.List
 import blang.core.IntVar
 import java.util.ArrayList
+import bayonet.math.NumericalUtils
+import java.util.Map
 
 /** Automatically imported as extension methods, meaning functions f(a, b, ..) can be called as a.f(b, ...). */
 class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
@@ -77,6 +79,26 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
     }
     one *= 0.0
     one += another
+  }
+  
+  /**  */
+  def static double sum(Iterable<? extends Number> numbers) {
+    var sum = 0.0
+    for (number : numbers) sum += number
+    return sum
+  }
+  
+  /** Increment an entry of a map to double, setting to the value if the key is missing. */
+  def static <T> void increment(Map<T, Double> map, T key, double value) {
+    val double old = map.get(key) ?: 0.0
+    map.put(key, old + value)
+  }
+  
+  /** Check if two numbers are within 1e-6 of each other. */
+  def static boolean isClose(double n1, double n2) {
+    if (n1 === Double.POSITIVE_INFINITY && n2 === Double.POSITIVE_INFINITY) return true
+    if (n1 === Double.NEGATIVE_INFINITY && n2 === Double.NEGATIVE_INFINITY) return true
+    return NumericalUtils.isClose(n1, n2, NumericalUtils::THRESHOLD) 
   }
   
   def static **(double base, double exp) {

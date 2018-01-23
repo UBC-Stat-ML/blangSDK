@@ -1,6 +1,7 @@
 package blang.mcmc.internals;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,6 +50,11 @@ public class SamplerBuilderContext
     for (ObjectNode<Factor> n : graphAnalysis.getConnectedFactor(node))
       result.add(n.object);
     return result;
+  }
+  
+  public boolean isLatent(Object object) 
+  {
+    return contain(graphAnalysis.getLatentVariables(), object);
   }
   
   public static boolean contain(Set<Node> nodes, Object object)
