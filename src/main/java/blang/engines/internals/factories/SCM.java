@@ -69,7 +69,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     {
       Random random = randoms[particleIndex];
       for (int i = 0; i < nFinalRejuvenations; i++)
-        finalPopulation.particles.get(particleIndex).posteriorSamplingStep_deterministicScanAndShuffle(random);
+        finalPopulation.particles.get(particleIndex).posteriorSamplingScan(random);
     });
   }
 

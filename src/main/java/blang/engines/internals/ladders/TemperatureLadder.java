@@ -10,7 +10,7 @@ import blang.runtime.SampledModel;
  * Difference with a TemperatureSchedule is that the whole chain has to 
  * be provided at once. 
  */
-@Implementations({Geometric.class})
+@Implementations({Geometric.class, EquallySpaced.class})
 public interface TemperatureLadder
 {
   /**

@@ -139,7 +139,7 @@ public class AdaptiveJarzynski
   private SampledModel sampleNext(Random random, SampledModel current, double temperature)
   {
     current.setExponent(temperature);
-    current.posteriorSamplingStep_deterministicScanAndShuffle(random); 
+    current.posteriorSamplingStep(random); 
     return current;
   }
   

@@ -19,11 +19,11 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
 {
   @GlobalArg ExperimentResults results;
   
-  @Arg @DefaultValue("10_000")
-  public int nScans = 10_000;
+  @Arg @DefaultValue("1_000")
+  public int nScans = 1_000;
   
-  @Arg         @DefaultValue("5")
-  public int nPassesPerScan = 5;
+  @Arg         @DefaultValue("3")
+  public int nPassesPerScan = 3;
   
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
@@ -50,7 +50,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
 
   private void reportAcceptanceRatios() 
   {
-    TabularWriter tabularWriter = results.getTabularWriter("swapPrs");
+    TabularWriter tabularWriter = results.child(Runner.MONITORING_FOLDER).getTabularWriter("swapPrs");
     for (int i = 0; i < nChains() - 1; i++)
       tabularWriter.write(Pair.of("chain", i), Pair.of("pr", swapAcceptPrs[i].getMean()));
   }

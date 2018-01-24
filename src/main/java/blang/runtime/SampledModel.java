@@ -194,7 +194,13 @@ public class SampledModel
     update(kernelIndex);
   }
   
-  public void posteriorSamplingStep_deterministicScanAndShuffle(Random random)
+  public void posteriorSamplingScan(Random random) 
+  {
+    for (int i = 0; i < posteriorInvariantSamplers.size(); i++)
+      posteriorSamplingStep(random);
+  }
+  
+  public void posteriorSamplingStep(Random random)
   {
     if (posteriorInvariantSamplers.isEmpty()) 
     {

@@ -232,7 +232,7 @@ public class ExactInvarianceTest
       Map<Function<M,Double>,Double> before = withPosterior ? eval((M) sampledModel.model, testFunctions) : null;
       if (withPosterior)
         for (int j = 0; j < nPosteriorSamplesPerIndep; j++)
-          sampledModel.posteriorSamplingStep_deterministicScanAndShuffle(random);
+          sampledModel.posteriorSamplingStep(random);
       
       Map<Function<M,Double>,Double> after = eval((M) sampledModel.model, testFunctions);
       if (withPosterior)

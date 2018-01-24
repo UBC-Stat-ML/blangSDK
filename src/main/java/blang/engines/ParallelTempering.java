@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import bayonet.distributions.Random;
-import blang.engines.internals.ladders.Geometric;
+import blang.engines.internals.ladders.EquallySpaced;
 import blang.engines.internals.ladders.TemperatureLadder;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
@@ -20,8 +20,8 @@ public class ParallelTempering
   @Arg   
   public Cores nThreads = Cores.maxAvailable();  
   
-  @Arg                   @DefaultValue("Geometric")
-  public TemperatureLadder ladder = new Geometric();
+  @Arg                   @DefaultValue("EquallySpaced")
+  public TemperatureLadder ladder = new EquallySpaced();
   
   @Arg(description = "If unspecified, use the number of threads.")
   public Optional<Integer> nChains = Optional.empty();
@@ -64,7 +64,7 @@ public class ParallelTempering
         current.forwardSample(random, false);
       else
         for (int i = 0; i < nPasses; i++)
-          current.posteriorSamplingStep_deterministicScanAndShuffle(random); 
+          current.posteriorSamplingScan(random); 
     });
   }
   
