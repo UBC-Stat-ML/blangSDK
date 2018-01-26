@@ -11,6 +11,13 @@ class BlangCLI {
     
     section("Blang Command Line Interface (CLI) setup") [
       
+      it += '''
+        This page explains the simple possible method for using Blang from the command line. A more advanced 
+        method is to use Blang within a Nextflow pipeline. This makes it easier to share and reproduce results, 
+        and to systematically explore and combine several command line arguments. An example of how to do 
+        this is available «LINK("https://github.com/UBC-Stat-ML/blang-mixture-tempering")»at this repository«ENDLINK».
+      '''
+      
       section("Prerequisites") [
         unorderedList[
           it += '''Java 8+ installed.'''
@@ -47,8 +54,7 @@ class BlangCLI {
               This will compile every «SYMB».bl«ENDSYMB» file in «SYMB»blangProject«ENDSYMB» (and its subdirectories, if any)
             '''
             it += '''
-              After compilation, the model «SYMB»MyModel«ENDSYMB» will be ran (note that the file extension should be stripped here, in 
-              parallel to standard Java conventions).
+              After compilation, the model «SYMB»MyModel«ENDSYMB» will be ran.
             '''
           ]
         ]

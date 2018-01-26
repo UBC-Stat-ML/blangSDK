@@ -143,7 +143,7 @@ class Home {
       [downloading dependencies and compiling]
       
       > ./build/install/example/bin/example \
-        --model.observations.file primates.fasta \
+        --model.observations.file data/primates.fasta \
         --model.observations.encoding DNA \
         --engine SCM \
         --engine.nThreads MAX \
