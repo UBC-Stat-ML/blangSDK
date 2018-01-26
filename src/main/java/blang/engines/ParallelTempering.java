@@ -80,6 +80,8 @@ public class ParallelTempering
         states[i].logDensity(temperingParameters.get(j)) + states[j].logDensity(temperingParameters.get(i))
       - states[i].logDensity(temperingParameters.get(i)) - states[j].logDensity(temperingParameters.get(j));
     double acceptPr = Math.min(1.0, Math.exp(logRatio));
+    if (Double.isNaN(acceptPr))
+      acceptPr = 0.0; // should only happen right at the beginning
     if (random.nextBernoulli(acceptPr));
       doSwap(i);
     return acceptPr;
