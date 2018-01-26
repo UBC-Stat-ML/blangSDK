@@ -52,7 +52,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     TabularWriter tabularWriter = results.child(Runner.MONITORING_FOLDER).getTabularWriter("swapPrs");
     for (int i = 0; i < nChains() - 1; i++)
-      tabularWriter.write(Pair.of("chain", i), Pair.of("pr", swapAcceptPrs[i].getMean()));
+      tabularWriter.write(Pair.of("chain", i), Pair.of("parameter", temperingParameters.get(i)), Pair.of("pr", swapAcceptPrs[i].getMean()));
   }
 
   @Override

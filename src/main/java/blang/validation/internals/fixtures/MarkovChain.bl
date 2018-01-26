@@ -16,13 +16,12 @@ model MarkovChain {
       chain.get(step) |
         IntVar previous = chain.get(step - 1),
         transitionProbabilities
-        ~ Categorical({
+        ~ Categorical(
           if (previous >= 0 && previous < transitionProbabilities.nRows)
             transitionProbabilities.row(previous)
-          else {
+          else 
             transitionProbabilities.row(0) 
-          }
-        }) 
+        ) 
     }
   }
 }

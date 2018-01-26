@@ -31,7 +31,7 @@ public class ParallelTempering
   
   // convention: state index 0 is room temperature (target of interest)
   private SampledModel [] states;
-  private List<Double> temperingParameters;
+  protected List<Double> temperingParameters;
   private Random [] parallelRandomStreams;
   protected SummaryStatistics [] swapAcceptPrs;
   private int iterationIndex = 0;
@@ -49,8 +49,8 @@ public class ParallelTempering
     BriefParallel.process((nChains() - offset) / 2, nThreads.available, swapIndex ->
     {
       int chainIndex = offset + 2 * swapIndex;
-      boolean accepted = swapKernel(parallelRandomStreams[chainIndex], chainIndex);
-      swapAcceptPrs[chainIndex].addValue(accepted ? 1.0 : 0.0);
+      double acceptPr = swapKernel(parallelRandomStreams[chainIndex], chainIndex);
+      swapAcceptPrs[chainIndex].addValue(acceptPr);
     });
   }
   
@@ -71,21 +71,18 @@ public class ParallelTempering
   /**
    * @param random
    * @param i one of the indices to swap, the other being i+1
-   * @return If accepted.
+   * @return Accept pr
    */
-  public boolean swapKernel(Random random, int i)
+  public double swapKernel(Random random, int i)
   {
     int j = i + 1;
     double logRatio = 
         states[i].logDensity(temperingParameters.get(j)) + states[j].logDensity(temperingParameters.get(i))
-      - states[i].logDensity(temperingParameters.get(i)) + states[j].logDensity(temperingParameters.get(j));
-    if (random.nextBernoulli(Math.min(1.0, Math.exp(logRatio))))
-    {
+      - states[i].logDensity(temperingParameters.get(i)) - states[j].logDensity(temperingParameters.get(j));
+    double acceptPr = Math.min(1.0, Math.exp(logRatio));
+    if (random.nextBernoulli(acceptPr));
       doSwap(i);
-      return true;
-    }
-    else
-      return false;
+    return acceptPr;
   }
   
   private void doSwap(int i) 
