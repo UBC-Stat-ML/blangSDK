@@ -69,7 +69,5 @@ public class Exact implements PosteriorInferenceEngine
   @Override
   public void check(GraphAnalysis analysis) 
   {
-    if (analysis.hasObservations())
-      throw new RuntimeException();
   }
 }

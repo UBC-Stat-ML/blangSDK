@@ -81,11 +81,6 @@ public class GraphAnalysis
     return result;
   }
   
-  public boolean hasObservations()
-  {
-    return !observations.getObservationRoots().isEmpty();
-  }
-  
   public List<ForwardSimulator> createForwardSimulator()
   {
     return createForwardSimulator(model);

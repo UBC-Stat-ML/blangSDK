@@ -5,6 +5,11 @@ import java.util.LinkedHashSet
 import blang.runtime.internals.objectgraph.StaticUtils
 import blang.runtime.internals.objectgraph.Node
 
+/**
+ * One of several mechanisms to set nodes as observed. Another mechanism is to make the 
+ * observed immutable. The present mechanism is need for cases such as matrices or arrays where 
+ * some but not all the entries are required to be observed. 
+ */
 @Data
 class Observations {
   /**

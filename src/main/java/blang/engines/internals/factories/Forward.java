@@ -46,7 +46,5 @@ public class Forward implements PosteriorInferenceEngine
   @Override
   public void check(GraphAnalysis analysis) 
   {
-    if (analysis.hasObservations())
-      throw new RuntimeException();
   }
 }
