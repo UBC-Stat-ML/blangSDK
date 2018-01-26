@@ -38,7 +38,7 @@ public class ParallelTempering
   
   public SampledModel getTargetState()
   {
-    if (temperingParameters.get(0) != 1.0)
+    if (states[0].getExponent() != 1.0)
       throw new RuntimeException();
     return states[0];
   }
@@ -82,7 +82,7 @@ public class ParallelTempering
     double acceptPr = Math.min(1.0, Math.exp(logRatio));
     if (Double.isNaN(acceptPr))
       acceptPr = 0.0; // should only happen right at the beginning
-    if (random.nextBernoulli(acceptPr));
+    if (random.nextBernoulli(acceptPr))
       doSwap(i);
     return acceptPr;
   }
