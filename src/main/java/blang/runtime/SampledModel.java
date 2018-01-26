@@ -41,7 +41,7 @@ public class SampledModel
   private final List<Sampler> posteriorInvariantSamplers;
 
   private List<ForwardSimulator> forwardSamplers;
-  private final RealScalar annealingExponent;
+  private final RealScalar annealingExponent; // can be null when called from GraphAnalysis.noAnnealer()
   
   //// Various caches to make it quick to compute the global density
   
@@ -246,6 +246,8 @@ public class SampledModel
   
   public double getExponent()
   {
+    if (annealingExponent == null) 
+      return 1.0;
     return annealingExponent.doubleValue(); 
   }
   
