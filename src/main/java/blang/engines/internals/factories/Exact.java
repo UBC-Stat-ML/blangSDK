@@ -26,6 +26,12 @@ public class Exact implements PosteriorInferenceEngine
           @DefaultValue("100_000")
   public int maxTraces = 100_000;
   
+  @Arg(description = "If all generate blocks have the property that for each realization there is at most "
+      + "one execution trace generating it, then we can check that the logf and randomness used in the "
+      + "generate block match.")
+                               @DefaultValue("false")
+  public boolean checkLawsGenerateAgreement = false;
+  
   @SuppressWarnings("unchecked")
   @Override
   public void performInference() 
@@ -46,12 +52,14 @@ public class Exact implements PosteriorInferenceEngine
       
       double logWeightFromModel = model.logDensity(1.0);
       
-      // checks agreement of generate and law blocks
-      double logWeightFromGeneration = Math.log(exhaustive.lastProbability()) + model.logDensity(1.0) - model.logDensity(0.0);
-      if (!ExtensionUtils.isClose(logWeightFromModel, logWeightFromGeneration))
-        throw new RuntimeException("generate(rand){..} block not faithful with its laws{..} block. \n"
-            + "Common mistake: forgetting to take the log of the answer in logf() { .. } constructs. \n"
-            + "Diverging values: " + logWeightFromModel + " vs " + logWeightFromGeneration);
+      if (checkLawsGenerateAgreement) 
+      {
+        double logWeightFromGeneration = Math.log(exhaustive.lastProbability()) + model.logDensity(1.0) - model.logDensity(0.0);
+        if (!ExtensionUtils.isClose(logWeightFromModel, logWeightFromGeneration))
+          throw new RuntimeException("generate(rand){..} block not faithful with its laws{..} block. \n"
+              + "Common mistake: forgetting to take the log of the answer in logf() { .. } constructs. \n"
+              + "Diverging values: " + logWeightFromModel + " vs " + logWeightFromGeneration);
+      }
       
       model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++), Pair.of("logWeight", logWeightFromModel)); 
     }
@@ -64,7 +72,6 @@ public class Exact implements PosteriorInferenceEngine
   {
     this.model = model;
   }
-
 
   @Override
   public void check(GraphAnalysis analysis) 

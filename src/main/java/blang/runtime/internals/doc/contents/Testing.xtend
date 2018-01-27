@@ -84,7 +84,14 @@ class Testing {
 
           This can also be used to test numerically that transition probabilities of small state space discrete kernels are indeed invariant 
           with respect to the target (facilities to help automating this will be developed as part of a future release). 
+          
+          Finally, when a model is fully discrete and all generate{..} blocks have the property that for each realization there is at most
+          one execution trace generating it, then we can check that the logf and randomness used in the 
+          generate block match by using the arguments:
         '''
+        code(Language.text, '''
+          --engine Exact --engine.checkLawsGenerateAgreement true
+        ''')
       ]
       
       section("Exact invariance test") [
