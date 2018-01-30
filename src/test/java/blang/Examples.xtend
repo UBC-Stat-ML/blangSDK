@@ -231,10 +231,10 @@ class Examples {
   
   public val shm = add(
     new SimpleHierarchicalModel.Builder()
-      .setRocketTypes(Plate::simpleStringPlate(new ColumnName("rocketType"), 2))
-      .setNumberOfLaunches(Plated::latent(new ColumnName("nLaunches"), [latentInt]))
-      .setFailureProbabilities(Plated::latent(new ColumnName("failPrs"), [latentReal]))
-      .setNumberOfFailures(Plated::latent(new ColumnName("failPrs"), [latentInt]))
+      .setRocketTypes(Plate::ofStrings("rocketType", 2))
+      .setNumberOfLaunches(Plated::latent("nLaunches", [latentInt]))
+      .setFailureProbabilities(Plated::latent("failPrs", [latentReal]))
+      .setNumberOfFailures(Plated::latent("failPrs", [latentInt]))
       .setData(GlobalDataSource::empty)
         .build,
     [a.doubleValue]
@@ -264,7 +264,7 @@ class Examples {
   )
   
   val col = new ColumnName("plate")
-  val plate = Plate::simpleIntegerPlate(col, 2)
+  val plate = Plate::ofIntegers(col, 2)
   public val normalField = add(
     new NormalField.Builder()
       .setRealization(Plated::latent(col, [latentReal]))

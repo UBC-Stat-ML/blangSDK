@@ -37,23 +37,36 @@ interface Plate<K> {
   // Builders
   
   /** a plate with indices 0, 1, 2, ..., size-1 */
-  def static Plate<Integer> simpleIntegerPlate(ColumnName columnName, int size) {
+  def static Plate<Integer> ofIntegers(ColumnName columnName, int size) {
     return new SimplePlate(columnName, (0 ..< size).toSet)
   }
   
   /** a plate with indices category_0, category_1, ... */
-  def static Plate<String> simpleStringPlate(ColumnName columnName, int size) {
+  def static Plate<String> ofStrings(ColumnName columnName, int size) {
     return new SimplePlate(columnName, (0 ..< size).map[index | "category_" + index].toSet)
   }
   
-  def static <T> Plate<T> simplePlate(ColumnName columnName, TypeLiteral<T> type, int size) {
+  def static <T> Plate<T> ofType(TypeLiteral<T> type, ColumnName columnName, int size) {
     if (type.rawType == Integer) {
-      return simpleIntegerPlate(columnName, size) as Plate<T>
+      return blang.types.Plate.ofIntegers(columnName, size) as Plate<T>
     } else if (type.rawType == String) {
-      return simpleStringPlate(columnName, size) as Plate<T>
+      return blang.types.Plate.ofStrings(columnName, size) as Plate<T>
     } else {
       throw new RuntimeException("Unable to create a simple plate of type " + type)
     }
+  }
+  
+  def static Plate<Integer> ofIntegers(String columnName, int size) {
+    return Plate::ofIntegers(new ColumnName(columnName), size)
+  }
+  
+  /** a plate with indices category_0, category_1, ... */
+  def static Plate<String> ofStrings(String columnName, int size) {
+    return Plate::ofStrings(new ColumnName(columnName), size)
+  }
+  
+  def static <T> Plate<T> ofType(TypeLiteral<T> type, String columnName, int size) {
+    return Plate::ofType(type, new ColumnName(columnName), size)
   }
   
   /*
@@ -87,7 +100,7 @@ interface Plate<K> {
       if (!maxSize.present) {
         throw new RuntimeException("Plates lacking a DataSource must specify a maxSize argument")
       }
-      return simplePlate(columnName, typeArgument, maxSize.get)
+      return Plate::ofType(typeArgument, columnName, maxSize.get)
     }
     return new HashPlate(columnName, scopedDataSource, new SimpleParser(creator, typeArgument), maxSize)
   }

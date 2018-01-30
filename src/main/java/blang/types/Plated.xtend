@@ -41,6 +41,10 @@ interface Plated<T>  {
     return new HashPlated(name, DataSource::empty, new LatentFactoryAsParser(supplier))
   }
   
+  def static <T> Plated<T> latent(String name, Supplier<T> supplier) {
+    return latent(new ColumnName(name), supplier)
+  }
+  
   /*
    * Parser automatically called by the inits infrastructure. 
    * 
