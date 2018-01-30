@@ -18,8 +18,8 @@ public class Forward implements PosteriorInferenceEngine
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
   
-  @Arg   @DefaultValue("1_000")
-  public int nSamples = 1_000;
+  @Arg   @DefaultValue("1")
+  public int nSamples = 1;
   
   @GlobalArg ExperimentResults results;
   

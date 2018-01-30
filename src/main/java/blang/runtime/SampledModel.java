@@ -204,7 +204,7 @@ public class SampledModel
   {
     if (posteriorInvariantSamplers.isEmpty()) 
     {
-      BriefLog.warnOnce("WARNING: no posterior sampler defined");
+      BriefLog.warnOnce("no posterior sampler defined");
       return;
     }
     if (currentSamplingOrder == null)

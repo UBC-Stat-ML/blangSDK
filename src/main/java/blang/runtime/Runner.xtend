@@ -132,7 +132,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs, Creator creator) {
     if (useSimplifiedArguments(rawArguments) && !new File(CONFIG_FILE_NAME).exists) {
-      System.err.println("Configure by pasting command line diagnosis into a file called '" + CONFIG_FILE_NAME + "' and uncomment and edit the required missing information:\n\n")
+      System.err.println("Configure by pasting command line diagnosis into a file called '" + CONFIG_FILE_NAME)
     }
   }
   
