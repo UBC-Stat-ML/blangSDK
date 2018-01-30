@@ -3,6 +3,7 @@ package blang.engines.internals.factories;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.ExhaustiveDebugRandom;
+import bayonet.math.NumericalUtils;
 import blang.engines.internals.PosteriorInferenceEngine;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
@@ -37,6 +38,7 @@ public class Exact implements PosteriorInferenceEngine
   public void performInference() 
   {
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER));
+    double logNormalization = logNormalization();
     ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
     int i = 0;
     while (exhaustive.hasNext())
@@ -50,21 +52,43 @@ public class Exact implements PosteriorInferenceEngine
             + "You can also increase these limits via command line arguments if you are sure. "
             + "currentDepth=" + exhaustive.lastDepth() + " nTraces=" + i);
       
-      double logWeightFromModel = model.logDensity(1.0);
-      
       if (checkLawsGenerateAgreement) 
       {
-        double logWeightFromGeneration = Math.log(exhaustive.lastProbability()) + model.logDensity(1.0) - model.logDensity(0.0);
-        if (!ExtensionUtils.isClose(logWeightFromModel, logWeightFromGeneration))
+        double logPrior = model.logDensity(0.0);
+        double logPriorRealization = Math.log(exhaustive.lastProbability());
+        if (!ExtensionUtils.isClose(logPrior, logPriorRealization))
           throw new RuntimeException("generate(rand){..} block not faithful with its laws{..} block. \n"
               + "Common mistake: forgetting to take the log of the answer in logf() { .. } constructs. \n"
-              + "Diverging values: " + logWeightFromModel + " vs " + logWeightFromGeneration);
+              + "Diverging values: " + logPrior + " vs " + logPriorRealization);
       }
       
-      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++), Pair.of("logWeight", logWeightFromModel)); 
+      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++), Pair.of("logProbability", logWeight(exhaustive) - logNormalization)); 
     }
   }
   
+  private double logWeight(ExhaustiveDebugRandom exhaustive)
+  {
+    double logLikelihood = model.logDensity(1.0) - model.logDensity(0.0);
+    /*
+     * Prior is not necessarily just model.logDensity(0.0), because the generate code 
+     * might potentially have several exec traces generating the same prior realization. 
+     */
+    double priorRealization = Math.log(exhaustive.lastProbability()); 
+    return priorRealization + logLikelihood;
+  }
+  
+  private double logNormalization() 
+  {
+    double logSum = Double.NEGATIVE_INFINITY;
+    ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
+    while (exhaustive.hasNext())
+    {
+      model.forwardSample(exhaustive, true);
+      logSum = NumericalUtils.logAdd(logSum, logWeight(exhaustive));
+    }
+    return logSum;
+  }
+
   SampledModel model;
 
   @Override
