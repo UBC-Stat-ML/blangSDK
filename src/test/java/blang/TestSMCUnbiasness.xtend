@@ -49,7 +49,7 @@ class TestSMCUnbiasness {
       ]
       resamplingScheme = ResamplingScheme.MULTINOMIAL
       nParticles = 2
-      nThreads = new Cores(1)
+      nThreads = Cores.single
       random = exhausiveRand
     ]
     

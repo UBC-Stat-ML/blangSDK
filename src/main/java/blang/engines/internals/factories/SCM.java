@@ -65,7 +65,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
       return;
     log("Final rejuvenation started");
     deepCopyParticles(finalPopulation);
-    BriefParallel.process(nParticles, nThreads.available, particleIndex ->
+    BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
     {
       Random random = randoms[particleIndex];
       for (int i = 0; i < nFinalRejuvenations; i++)

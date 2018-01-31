@@ -34,8 +34,8 @@ public class AdaptiveJarzynski
   @Arg     @DefaultValue("1_000")
   public int nParticles = 1_000;
 
-  @Arg
-  public Cores nThreads = Cores.maxAvailable(); 
+  @Arg           @DefaultValue("Dynamic")
+  public Cores nThreads = Cores.dynamic();
   
   @Arg(description = "Silence the progress report printed in standard out.")
            @DefaultValue("false")       
@@ -91,7 +91,7 @@ public class AdaptiveJarzynski
   {
     SampledModel [] cloned = (SampledModel[]) new SampledModel[nParticles];
     
-    BriefParallel.process(nParticles, nThreads.available, particleIndex ->
+    BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex -> 
     {
       SampledModel current = population.particles.get(particleIndex);
       boolean needsCloning = particleIndex > 0 && current == population.particles.get(particleIndex - 1);
@@ -109,7 +109,7 @@ public class AdaptiveJarzynski
     final double [] logWeights = new double[nParticles];
     final SampledModel [] particles = (SampledModel[]) new SampledModel[nParticles];
     
-    BriefParallel.process(nParticles, nThreads.available, particleIndex ->
+    BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
     {
       Random random = randoms[particleIndex];
       logWeights[particleIndex] = 

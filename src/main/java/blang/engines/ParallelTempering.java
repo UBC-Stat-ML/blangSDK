@@ -17,8 +17,8 @@ import briefj.BriefParallel;
 
 public class ParallelTempering
 {
-  @Arg   
-  public Cores nThreads = Cores.maxAvailable();  
+  @Arg           @DefaultValue("Dynamic")
+  public Cores nThreads = Cores.dynamic();  
   
   @Arg                   @DefaultValue("EquallySpaced")
   public TemperatureLadder ladder = new EquallySpaced();
@@ -46,7 +46,7 @@ public class ParallelTempering
   public void swapKernel()
   {
     int offset = iterationIndex++ % 2;
-    BriefParallel.process((nChains() - offset) / 2, nThreads.available, swapIndex ->
+    BriefParallel.process((nChains() - offset) / 2, nThreads.numberAvailable(), swapIndex ->
     {
       int chainIndex = offset + 2 * swapIndex;
       double acceptPr = swapKernel(parallelRandomStreams[chainIndex], chainIndex);
@@ -56,7 +56,7 @@ public class ParallelTempering
   
   public void moveKernel(int nPasses) 
   {
-    BriefParallel.process(nChains(), nThreads.available, chainIndex -> 
+    BriefParallel.process(nChains(), nThreads.numberAvailable(), chainIndex -> 
     {
       Random random = parallelRandomStreams[chainIndex];
       SampledModel current = states[chainIndex];
@@ -106,7 +106,7 @@ public class ParallelTempering
   {
     temperingParameters = new ArrayList<>();
     List<SampledModel> initStates = new ArrayList<>();
-    ladder.temperingParameters(temperingParameters, initStates, nThreads.available);
+    ladder.temperingParameters(temperingParameters, initStates, nThreads.numberAvailable());
     if (temperingParameters.get(0) != 1.0)
       throw new RuntimeException();
     System.out.println("Temperatures: " + temperingParameters);
