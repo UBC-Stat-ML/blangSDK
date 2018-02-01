@@ -24,15 +24,15 @@ model NormalField {
     for (UnorderedPair pair : precision.support) {
       logf(
         precision,
-        UnorderedPair currentPair = pair,
+        pair,
         RealVar x0 = realization.get(precision.plate.index(pair.first)),
         RealVar x1 = realization.get(precision.plate.index(pair.second))
       ) {
-        if (currentPair.first == currentPair.second) {
-          return - 0.5 * precision.get(currentPair) * x0 * x0
+        if (pair.first == pair.second) {
+          return - 0.5 * precision.get(pair) * x0 * x0
         } else {
           // 0.5 * 2 = 1 (because we iterate over set of unordered pairs)
-          return - precision.get(currentPair) * x0 * x1
+          return - precision.get(pair) * x0 * x1
         }
       }
     }
