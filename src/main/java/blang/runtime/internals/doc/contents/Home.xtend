@@ -146,7 +146,7 @@ class Home {
         --model.observations.file data/primates.fasta \
         --model.observations.encoding DNA \
         --engine SCM \
-        --engine.nThreads MAX \
+        --engine.nThreads Max \
         --excludeFromOutput observations 
       
       Preprocessing started
