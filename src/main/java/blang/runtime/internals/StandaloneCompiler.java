@@ -175,7 +175,7 @@ public class StandaloneCompiler  {
     catch (Exception e) { throw new RuntimeException(e); }
   }
   
-  private static final PathMatcher BLANG_MATCHER = FileSystems.getDefault().getPathMatcher("glob:**.bl");
+  private static final PathMatcher BLANG_MATCHER = FileSystems.getDefault().getPathMatcher("glob:**.{java,bl,xtend}");
   
   class FileTransferProcessor extends SimpleFileVisitor<Path> {
     @Override
