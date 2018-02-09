@@ -22,8 +22,8 @@ class BuiltInRandomVariables {
       section("Built-in primitives") [
         it += '''
           The interfaces «SYMB»RealVar«ENDSYMB» and «SYMB»IntVar«ENDSYMB» are automatically imported. 
-          As for most random variables, they can be either latent (unobserved, sampled), or constant 
-          (observed, fixed). 
+          As for most random variables, they can be either latent (unobserved, sampled), or fixed 
+          (conditioned upon). 
           
           «SYMB»RealVar«ENDSYMB» and «SYMB»IntVar«ENDSYMB» are closely related to Java's «SYMB»Double«ENDSYMB» 
           and «SYMB»Integer«ENDSYMB» but 
@@ -63,7 +63,7 @@ class BuiltInRandomVariables {
           Use «SYMB»--help«ENDSYMB» to see the list of arguments. How to customize this 
           behaviour is describe «LINK(InputOutput::page)»here«ENDLINK».
           
-          If a variable is provided with a default value, as in «SYMB»random RealVar myVariable ?: constantReal(42.0)«ENDSYMB» 
+          If a variable is provided with a default value, as in «SYMB»random RealVar myVariable ?: fixedReal(42.0)«ENDSYMB» 
           or «SYMB»param RealVar myVariable ?: { /* init block */ }«ENDSYMB», then the initialization block will be used whenever 
           no command line arguments are provided for this variable. The following are useful for creating initialization blocks:
         '''

@@ -38,8 +38,8 @@ class TestSparseDirichletAndBetaWarnings {
       nPosteriorSamplesPerIndep = 1 //500
       val instance = new Instance<Beta>(
         new Beta.Builder()
-          .setAlpha(StaticUtils::constantReal(0.1))
-          .setBeta(StaticUtils::constantReal(0.1))
+          .setAlpha(StaticUtils::fixedReal(0.1))
+          .setBeta(StaticUtils::fixedReal(0.1))
           .setRealization(StaticUtils::latentReal).build, 
         [getRealization.doubleValue]
       )

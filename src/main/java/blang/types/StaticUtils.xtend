@@ -19,25 +19,25 @@ import blang.types.Precision.SimpleBrownian
 /** Automatically statically imported in Blang meaning can call "StaticUtils::function(..)" as just "function(..)". */
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
   
-  // Utilities for creating latent and constant variables
+  // Utilities for creating latent and fixed variables
   
-  /** */
+  /** unobserved integer variable (initialized at zero). */
   def static IntScalar latentInt() {
     return new IntScalar(0)
   }
   
-  /** */
+  /** unobserved real variable (represented in double precision, initialized at zero).  */
   def static RealScalar latentReal() {
     return new RealScalar(0.0)
   }
   
-  /** */
-  def static IntConstant constantInt(int value) {
+  /** fixed (constant or conditioned upon) integer scalar. */
+  def static IntConstant fixedInt(int value) {
     return new IntConstant(value)
   }
   
-  /** */
-  def static RealConstant constantReal(double value) {
+  /** fixed real scalar. */
+  def static RealConstant fixedReal(double value) {
     return new RealConstant(value)
   }
   
@@ -47,7 +47,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     for (var int i = 0; i < size; i++) {
       result.add(blang.types.StaticUtils.latentInt)
     }
-    return new ArrayList(result)
+    return result
   }
   
   /** size specifies the length of the list. */
@@ -56,26 +56,43 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     for (var int i = 0; i < size; i++) {
       result.add(blang.types.StaticUtils.latentReal)
     }
-    return new ArrayList(result)
+    return result
   }
   
-  /** an n-by-1 latent dense vector (initialized at zero) */
+  /** list where the integer valued entries are fixed to the provided values. */
+  def static List<IntVar> fixedListOfInt(int ... entries) {
+    val List<IntVar> result = new ArrayList
+    for (int entry : entries) {
+      result.add(fixedInt(entry))
+    }
+    return result
+  }
+  
+  def static List<RealVar> fixedListOfReal(double ... entries) {
+    val List<RealVar> result = new ArrayList
+    for (double entry : entries) {
+      result.add(fixedReal(entry))
+    }
+    return result
+  }
+  
+  /** an n-by-1 latent dense vector (initialized at zero). */
   def static DenseMatrix latentVector(int n) {
     return dense(n)
   }
   
-  /** an n-by-1 constant dense vector  */
-  def static DenseMatrix constantVector(double ... entries) {
+  /** an n-by-1 fixed dense vector. */
+  def static DenseMatrix fixedVector(double ... entries) {
     return denseCopy(entries).readOnlyView
   }
   
-  /** an n-by-m latent dense matrix (initialized at zero) */
+  /** an n-by-m latent dense matrix (initialized at zero). */
   def static DenseMatrix latentMatrix(int nRows, int nCols) {
     return dense(nRows, nCols)
   }
   
-  /** a constant dense matrix */
-  def static DenseMatrix constantMatrix(double [][] entries) {
+  /** a constant dense matrix. */
+  def static DenseMatrix fixedMatrix(double [][] entries) {
     return denseCopy(entries).readOnlyView
   }
   
@@ -90,12 +107,12 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   }
   
   /** creates a constant simplex, also checks the provided list of number sums to one. */
-  def static DenseSimplex constantSimplex(double ... probabilities) {
+  def static DenseSimplex fixedSimplex(double ... probabilities) {
     return new DenseSimplex(denseCopy(probabilities).readOnlyView)
   }
   
   /** creates a constant simplex, also checks the provided vector sums to one. */
-  def static DenseSimplex constantSimplex(DenseMatrix probabilities) {
+  def static DenseSimplex fixedSimplex(DenseMatrix probabilities) {
     return new DenseSimplex(probabilities.readOnlyView)
   }
   
@@ -112,12 +129,12 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   }
   
   /** creates a constant transition matrix, also checks the provided rows all sum to one. */
-  def static DenseTransitionMatrix constantTransitionMatrix(DenseMatrix probabilities) {
+  def static DenseTransitionMatrix fixedTransitionMatrix(DenseMatrix probabilities) {
     return new DenseTransitionMatrix(probabilities.readOnlyView)
   }
   
   /** creates a constant transition matrix, also checks the provided rows all sum to one. */
-  def static DenseTransitionMatrix constantTransitionMatrix(double [][] probabilities) {
+  def static DenseTransitionMatrix fixedTransitionMatrix(double [][] probabilities) {
     return new DenseTransitionMatrix(denseCopy(probabilities).readOnlyView)
   }
 

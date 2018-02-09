@@ -7,10 +7,8 @@ import java.io.File
 import blang.inits.InitService
 import com.google.inject.TypeLiteral
 import blang.inits.Creator
-import java.lang.reflect.ParameterizedType
 import java.util.ArrayList
 import briefj.BriefIO
-import blang.inits.parsing.SimpleParser
 import blang.core.IntVar
 import blang.inits.Input
 import blang.inits.GlobalArg
@@ -90,6 +88,7 @@ class Parsers {
       } else {
         MatrixOperations::dense(nRows, nCols)
       }
+    var boolean foundNA = false
     for (List<String> line : BriefIO.readLines(file).splitCSV()) {
       if (!line.isEmpty()) {
         if (line.size() != 3) {
@@ -99,6 +98,7 @@ class Parsers {
         val int col = Integer.parseInt(line.get(1))
         val String str = line.get(2)
         if (str.isNA) {
+          foundNA = true
           // nothing to do, leave set to 0
         } else {
           initContext.markAsObserved(new MatrixConstituentNode(result, row, col))
@@ -106,7 +106,11 @@ class Parsers {
         }
       }
     }
-    return result
+    return if (foundNA) {
+      result
+    } else {
+      result.readOnlyView
+    }
   }
   
   @ProvidesFactory

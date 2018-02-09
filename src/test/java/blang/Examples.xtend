@@ -48,12 +48,12 @@ import blang.distributions.SymmetricDirichlet
 import blang.distributions.SimplexUniform
 import static blang.types.StaticUtils.latentInt
 import static blang.types.StaticUtils.latentReal
-import static blang.types.StaticUtils.constantInt
-import static blang.types.StaticUtils.constantReal
+import static blang.types.StaticUtils.fixedInt
+import static blang.types.StaticUtils.fixedReal
 import static blang.types.StaticUtils.latentListOfInt
 import static blang.types.StaticUtils.latentListOfReal
 import static blang.types.StaticUtils.latentSimplex
-import static blang.types.StaticUtils.constantSimplex
+import static blang.types.StaticUtils.fixedSimplex
 import xlinear.DenseMatrix
 import blang.validation.internals.fixtures.DynamicNormalMixture
 
@@ -63,8 +63,8 @@ class Examples {
   
   public val normal = add(
     new Normal.Builder()
-      .setMean(constantReal(0.2))
-      .setVariance(constantReal(0.1))
+      .setMean(fixedReal(0.2))
+      .setVariance(fixedReal(0.1))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
@@ -72,7 +72,7 @@ class Examples {
       
   public val bern = add(
     new Bernoulli.Builder()
-      .setProbability(constantReal(0.2))
+      .setProbability(fixedReal(0.2))
       .setRealization(latentInt)
         .build, 
     intRealizationSquared
@@ -80,8 +80,8 @@ class Examples {
       
   public val beta = add(
     new Beta.Builder()
-      .setAlpha(constantReal(1.0))
-      .setBeta(constantReal(3.0))
+      .setAlpha(fixedReal(1.0))
+      .setBeta(fixedReal(3.0))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
@@ -90,16 +90,16 @@ class Examples {
   public val negBinomial = add( 
     new NegativeBinomial.Builder()
       .setK(latentInt)
-      .setP(constantReal(0.1))
-      .setR(constantReal(2.1))
+      .setP(fixedReal(0.1))
+      .setR(fixedReal(2.1))
         .build,
     intRealizationSquared
   )
   
   public val sparseBeta = add(
     new Beta.Builder()
-      .setAlpha(constantReal(Helpers::concentrationWarningThreshold))
-      .setBeta(constantReal(Helpers::concentrationWarningThreshold))
+      .setAlpha(fixedReal(Helpers::concentrationWarningThreshold))
+      .setBeta(fixedReal(Helpers::concentrationWarningThreshold))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
@@ -107,8 +107,8 @@ class Examples {
       
   public val binom = add(
     new Binomial.Builder()
-      .setProbabilityOfSuccess(constantReal(0.3))
-      .setNumberOfTrials(constantInt(3))
+      .setProbabilityOfSuccess(fixedReal(0.3))
+      .setNumberOfTrials(fixedInt(3))
       .setNumberOfSuccesses(latentInt)
         .build, 
     intRealizationSquared 
@@ -116,7 +116,7 @@ class Examples {
   
   public val cat = add(
     new Categorical.Builder()
-      .setProbabilities(constantSimplex(0.2, 0.3, 0.5))
+      .setProbabilities(fixedSimplex(0.2, 0.3, 0.5))
       .setRealization(latentInt)
         .build, 
     intRealizationSquared
@@ -124,8 +124,8 @@ class Examples {
   
   public val contunif = add(
     new ContinuousUniform.Builder()
-      .setMin(constantReal(-1.1))
-      .setMax(constantReal(-0.05))
+      .setMin(fixedReal(-1.1))
+      .setMax(fixedReal(-0.05))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
@@ -133,8 +133,8 @@ class Examples {
   
   public val discrunif = add(
     new DiscreteUniform.Builder()
-      .setMinInclusive(constantInt(-1))
-      .setMaxExclusive(constantInt(5))
+      .setMinInclusive(fixedInt(-1))
+      .setMaxExclusive(fixedInt(5))
       .setRealization(latentInt)
         .build, 
     intRealizationSquared
@@ -158,7 +158,7 @@ class Examples {
   
   public val dirichletSymm = add(
     new SymmetricDirichlet.Builder()
-      .setConcentration(constantReal(4.4))
+      .setConcentration(fixedReal(4.4))
       .setDim(3)
       .setRealization(latentSimplex(3))
         .build, 
@@ -175,7 +175,7 @@ class Examples {
   
   public val exp = add(
     new Exponential.Builder()
-      .setRate(constantReal(2.3))
+      .setRate(fixedReal(2.3))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
@@ -183,8 +183,8 @@ class Examples {
   
   public val gamma = add(
     new Gamma.Builder()
-      .setRate(constantReal(2.1))
-      .setShape(constantReal(0.9))
+      .setRate(fixedReal(2.1))
+      .setShape(fixedReal(0.9))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
@@ -201,7 +201,7 @@ class Examples {
   
   public val poi = add(
     new Poisson.Builder()
-      .setMean(constantReal(3.4))
+      .setMean(fixedReal(3.4))
       .setRealization(latentInt)
         .build, 
     intRealizationSquared
@@ -212,7 +212,7 @@ class Examples {
   
   public val mc = add(
     new MarkovChain.Builder()
-      .setInitialDistribution(constantSimplex(0.3, 0.7))
+      .setInitialDistribution(fixedSimplex(0.3, 0.7))
       .setTransitionProbabilities(transitionMatrix)
       .setChain(latentListOfInt(4))
         .build,  
@@ -268,7 +268,7 @@ class Examples {
   public val normalField = add(
     new NormalField.Builder()
       .setRealization(Plated::latent(col, [latentReal]))
-      .setPrecision(new Diagonal(constantReal(1.4), plate))
+      .setPrecision(new Diagonal(fixedReal(1.4), plate))
         .build,
     [getRealization().get(plate.indices.iterator.next).doubleValue ** 2]
   )
@@ -298,7 +298,7 @@ class Examples {
     #[0.0, -0.8,  2.1]
   ])
   
-  public static DenseTransitionMatrix transitionMatrix = StaticUtils.constantTransitionMatrix(#[
+  public static DenseTransitionMatrix transitionMatrix = StaticUtils.fixedTransitionMatrix(#[
     #[0.1, 0.9],
     #[0.6, 0.4]
   ])

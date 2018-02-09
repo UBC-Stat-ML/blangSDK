@@ -10,7 +10,7 @@ model Bernoulli {
   laws {
     realization | probability ~ Categorical({
       if (probability < 0.0 || probability > 1.0) invalidParameter
-      return constantSimplex(1.0 - probability, probability)
+      return fixedSimplex(1.0 - probability, probability)
     })
   }
 }

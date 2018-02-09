@@ -2,14 +2,14 @@ package blang.validation.internals.fixtures
 
 model SmallHMM {
   
-  param TransitionMatrix trMatrix ?: constantTransitionMatrix(new ExactHMMCalculations.SimpleTwoStates().transitionPrs)
+  param TransitionMatrix trMatrix ?: fixedTransitionMatrix(new ExactHMMCalculations.SimpleTwoStates().transitionPrs)
   
   random List<IntVar> observations 
   random List<IntVar> latents ?: latentListOfInt(observations.size)
   
   laws {
     
-    latents | trMatrix ~ MarkovChain(constantSimplex(new ExactHMMCalculations.SimpleTwoStates().initialPrs), trMatrix)
+    latents | trMatrix ~ MarkovChain(fixedSimplex(new ExactHMMCalculations.SimpleTwoStates().initialPrs), trMatrix)
     
     for (int i : 0 ..< latents.size) {
       observations.get(i) | trMatrix, IntVar latent = latents.get(i) ~ Categorical({
