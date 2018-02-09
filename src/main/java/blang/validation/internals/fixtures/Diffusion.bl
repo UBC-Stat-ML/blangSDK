@@ -3,7 +3,7 @@ package blang.validation.internals.fixtures
 model Diffusion {
   param Double startPoint ?: 0.5
   param Double variance ?: 0.01
-  random List<RealVar> process ?: latentListOfReal(10)
+  random List<RealVar> process ?: latentRealList(10)
   param int length ?: process.size
   
   laws {

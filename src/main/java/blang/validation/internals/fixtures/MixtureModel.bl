@@ -3,10 +3,10 @@ package blang.examples
 model MixtureModel { 
   
   random  List<RealVar>  observations 
-  random  List<IntVar>   clusterIndicators  ?:  latentListOfInt(observations.size) 
+  random  List<IntVar>   clusterIndicators  ?:  latentIntList(observations.size) 
   random  Simplex        pi                 ?:  latentSimplex(2)
-  random  List<RealVar>  means              ?:  latentListOfReal(2), 
-                         variances          ?:  latentListOfReal(2)
+  random  List<RealVar>  means              ?:  latentRealList(2), 
+                         variances          ?:  latentRealList(2)
   param   Matrix         concentration      ?:  fixedVector(1.0, 1.0)
   
   laws {

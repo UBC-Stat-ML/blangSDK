@@ -1,7 +1,7 @@
 package blang.validation.internals.fixtures
 
 model PCR {
-    random List<IntVar> states ?: latentListOfInt(5)
+    random List<IntVar> states ?: latentIntList(5)
     
     laws {
         for (int i : 1 ..< states.size) {

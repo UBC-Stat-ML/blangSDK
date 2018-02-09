@@ -5,7 +5,7 @@ model SmallHMM {
   param TransitionMatrix trMatrix ?: fixedTransitionMatrix(new ExactHMMCalculations.SimpleTwoStates().transitionPrs)
   
   random List<IntVar> observations 
-  random List<IntVar> latents ?: latentListOfInt(observations.size)
+  random List<IntVar> latents ?: latentIntList(observations.size)
   
   laws {
     

@@ -42,7 +42,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   }
   
   /** size specifies the length of the list. */
-  def static List<IntVar> latentListOfInt(int size) {
+  def static List<IntVar> latentIntList(int size) {
     val List<IntVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
       result.add(blang.types.StaticUtils.latentInt)
@@ -51,7 +51,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   }
   
   /** size specifies the length of the list. */
-  def static List<RealVar> latentListOfReal(int size) {
+  def static List<RealVar> latentRealList(int size) {
     val List<RealVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
       result.add(blang.types.StaticUtils.latentReal)
@@ -60,7 +60,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
   }
   
   /** list where the integer valued entries are fixed to the provided values. */
-  def static List<IntVar> fixedListOfInt(int ... entries) {
+  def static List<IntVar> fixedIntList(int ... entries) {
     val List<IntVar> result = new ArrayList
     for (int entry : entries) {
       result.add(fixedInt(entry))
@@ -68,7 +68,7 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return result
   }
   
-  def static List<RealVar> fixedListOfReal(double ... entries) {
+  def static List<RealVar> fixedRealList(double ... entries) {
     val List<RealVar> result = new ArrayList
     for (double entry : entries) {
       result.add(fixedReal(entry))

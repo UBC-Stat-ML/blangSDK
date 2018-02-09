@@ -50,8 +50,8 @@ import static blang.types.StaticUtils.latentInt
 import static blang.types.StaticUtils.latentReal
 import static blang.types.StaticUtils.fixedInt
 import static blang.types.StaticUtils.fixedReal
-import static blang.types.StaticUtils.latentListOfInt
-import static blang.types.StaticUtils.latentListOfReal
+import static blang.types.StaticUtils.latentIntList
+import static blang.types.StaticUtils.latentRealList
 import static blang.types.StaticUtils.latentSimplex
 import static blang.types.StaticUtils.fixedSimplex
 import xlinear.DenseMatrix
@@ -214,14 +214,14 @@ class Examples {
     new MarkovChain.Builder()
       .setInitialDistribution(fixedSimplex(0.3, 0.7))
       .setTransitionProbabilities(transitionMatrix)
-      .setChain(latentListOfInt(4))
+      .setChain(latentIntList(4))
         .build,  
     listHash
   )
   
   public val dnm = add(
     new DynamicNormalMixture.Builder()
-      .setObservations(latentListOfReal(4))
+      .setObservations(latentRealList(4))
       .setNLatentStates(2)
         .build,  
     [ListHash.hash(states)], 
@@ -242,7 +242,7 @@ class Examples {
   
   public val sglm = add(
     new SpikedGLM.Builder()
-      .setOutput(latentListOfInt(3))
+      .setOutput(latentIntList(3))
       .setDesignMatrix(designMatrix)
         .build,
     [coefficients.get(0).realPart.doubleValue],
@@ -251,7 +251,7 @@ class Examples {
   
   public val mix = add(
     new MixtureModel.Builder()
-      .setObservations(latentListOfReal(2))
+      .setObservations(latentRealList(2))
         .build,
     [observations.get(0).doubleValue],
     [concentration.get(0)]
