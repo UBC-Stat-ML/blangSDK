@@ -45,6 +45,8 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   @Override
   public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature)
   {
+    if (!(threshold > 0.0 && threshold < 1.0))
+      throw new RuntimeException("The adaptive tempering threshold should be between 0 and 1 (exclusive): " + threshold);
     UnivariateFunction objective = objective(population, temperature);
     double nextTemperature = objective.value(1.0) >= 0 ? 
       1.0 :
