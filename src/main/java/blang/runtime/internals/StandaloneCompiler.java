@@ -102,6 +102,7 @@ public class StandaloneCompiler  {
     Command gradleCmd = 
         Command.byName("gradle").withArg(gradleTaskName)
         .ranIn(folder)
+        .withArg("--no-daemon")
         .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
   }
