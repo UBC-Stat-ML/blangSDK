@@ -100,10 +100,11 @@ public class StandaloneCompiler  {
   
   private static String runGradle(String gradleTaskName, File folder) throws BinaryExecutionException  {
     Command gradleCmd = 
-        Command.byName("gradle").withArg(gradleTaskName)
-        .ranIn(folder)
-        .withArg("--no-daemon")
-        .throwOnNonZeroReturnCode();
+        Command.byName("gradle")
+          .withArg(gradleTaskName)
+          .withArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
+          .ranIn(folder)
+          .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
   }
   

@@ -56,6 +56,7 @@ xtext {
 
 mainClassName = "blang.runtime.internals.Main"
 
+/* This exact task is used by the standalone compiler - do not remove or edit lightly! */
 task printClasspath {
     doLast {
         configurations.testRuntime.each { println it }
