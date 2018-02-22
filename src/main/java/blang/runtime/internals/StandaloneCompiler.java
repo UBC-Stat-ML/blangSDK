@@ -86,7 +86,7 @@ public class StandaloneCompiler  {
   
   /**
    * 
-   * @return classpath-formatted list of jars created and depended by the compilation task
+   * @return classpath-formatted list of jars created or that the build task depends on
    */
   public static String compile(File folder, String projectName) throws BinaryExecutionException {
     runGradle("build", folder);
