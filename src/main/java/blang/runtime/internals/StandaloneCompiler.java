@@ -101,8 +101,8 @@ public class StandaloneCompiler  {
   private static String runGradle(String gradleTaskName, File folder) throws BinaryExecutionException  {
     Command gradleCmd = 
         Command.byName("gradle")
-          .withArg(gradleTaskName)
-          .withArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
+          .appendArg(gradleTaskName)
+          .appendArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
           .ranIn(folder)
           .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
@@ -161,6 +161,8 @@ public class StandaloneCompiler  {
     for (String line : gradleOutput.split("\\r?\\n"))
       if (line.matches("^.*[.]jar\\s*$"))
         items.add(line.replaceAll("\\s+", ""));
+    if (items.isEmpty())
+      throw new RuntimeException("Compilation infrastructure setup failed (could not form classpath of dependencies: \n" + gradleOutput);
     return Joiner.on(File.pathSeparator).join(items);
   }
 
