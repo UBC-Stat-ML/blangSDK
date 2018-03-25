@@ -25,6 +25,8 @@ import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.mcmc.Sampler;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.mcmc.internals.ExponentiatedFactor;
+import blang.mcmc.internals.SamplerBuilder;
+import blang.mcmc.internals.SamplerBuilderOptions;
 import blang.runtime.internals.objectgraph.AnnealingStructure;
 import blang.runtime.internals.objectgraph.DeepCloner;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
@@ -79,6 +81,16 @@ public class SampledModel
   private int currentPosition = -1;
   
   public final Map<String, Object> objectsToOutput;
+  
+  public SampledModel(Model model) 
+  {
+    this(new GraphAnalysis(model));
+  }
+  
+  public SampledModel(GraphAnalysis graphAnalysis)
+  {
+    this(graphAnalysis, SamplerBuilder.build(graphAnalysis));
+  }
   
   public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers)
   {

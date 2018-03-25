@@ -8,6 +8,7 @@ import org.apache.commons.math3.distribution.PoissonDistribution;
 import bayonet.math.NumericalUtils;
 import blang.types.DenseSimplex;
 import blang.types.internals.Delegator;
+import briefj.collections.UnorderedPair;
 import xlinear.CholeskyDecomposition;
 import xlinear.DenseMatrix;
 import xlinear.Matrix;
@@ -189,6 +190,16 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   public static int poisson(Random rand, double mean) 
   {
     return new PoissonDistribution(generator(rand), mean, PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS).sample();
+  }
+  
+  public static UnorderedPair<Integer,Integer> distinctPair(Random rand, int listSize)
+  {
+    if (listSize < 2) 
+      throw new RuntimeException("Sampling a distinct pair only defined for list of size at least two.");
+    int first = rand.nextInt(listSize);
+    int _second = rand.nextInt(listSize - 1);
+    int second = _second + (_second < first ? 0 : 1);
+    return UnorderedPair.of(first, second);
   }
   
   public static final double ZERO_PLUS_EPS = 1e-300;

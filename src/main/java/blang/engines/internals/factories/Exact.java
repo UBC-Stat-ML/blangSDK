@@ -38,7 +38,7 @@ public class Exact implements PosteriorInferenceEngine
   public void performInference() 
   {
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER));
-    double logNormalization = logNormalization();
+    double logNormalization = logNormalization(model);
     ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
     int i = 0;
     while (exhaustive.hasNext())
@@ -62,11 +62,11 @@ public class Exact implements PosteriorInferenceEngine
               + "Diverging values: " + logPrior + " vs " + logPriorRealization);
       }
       
-      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++), Pair.of("logProbability", logWeight(exhaustive) - logNormalization)); 
+      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++), Pair.of("logProbability", logWeight(model, exhaustive) - logNormalization)); 
     }
   }
   
-  private double logWeight(ExhaustiveDebugRandom exhaustive)
+  public static double logWeight(SampledModel model, ExhaustiveDebugRandom exhaustive)
   {
     double logLikelihood = model.logDensity(1.0) - model.logDensity(0.0);
     /*
@@ -77,14 +77,14 @@ public class Exact implements PosteriorInferenceEngine
     return priorRealization + logLikelihood;
   }
   
-  private double logNormalization() 
+  public static double logNormalization(SampledModel model) 
   {
     double logSum = Double.NEGATIVE_INFINITY;
     ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
     while (exhaustive.hasNext())
     {
       model.forwardSample(exhaustive, true);
-      logSum = NumericalUtils.logAdd(logSum, logWeight(exhaustive));
+      logSum = NumericalUtils.logAdd(logSum, logWeight(model, exhaustive));
     }
     return logSum;
   }

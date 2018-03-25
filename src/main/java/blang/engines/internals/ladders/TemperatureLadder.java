@@ -18,5 +18,5 @@ public interface TemperatureLadder
    * 
    * Optionally, also fill in initialStates with states at the corresponding temperature. 
    */
-  void temperingParameters(List<Double> temperingParameters, List<SampledModel> initialStates, int nThreads);
+  void temperingParameters(List<Double> temperingParameters, List<SampledModel> initialStates, int nTemperatures);
 }

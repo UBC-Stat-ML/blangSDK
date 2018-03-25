@@ -1,0 +1,135 @@
+package blang.validation;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import org.junit.Assert;
+
+import bayonet.distributions.ExhaustiveDebugRandom;
+import bayonet.math.NumericalUtils;
+import blang.engines.internals.factories.Exact;
+import blang.runtime.SampledModel;
+import briefj.Indexer;
+import briefj.collections.Counter;
+import xlinear.DenseMatrix;
+import xlinear.MatrixExtensions;
+import xlinear.MatrixOperations;
+import xlinear.SparseMatrix;
+
+public class DiscreteMCTest 
+{
+  Indexer<Object> stateIndexer = new Indexer<>();
+  DenseMatrix targetDistribution;
+  List<SparseMatrix> transitionMatrices = new ArrayList<>();
+  
+  public void checkInvariance() 
+  {
+    for (SparseMatrix transitionMatrix : transitionMatrices) 
+    {
+      DenseMatrix oneStep = targetDistribution.mul(transitionMatrix);
+      for (int i = 0; i < targetDistribution.nEntries(); i++)
+        Assert.assertEquals(targetDistribution.get(i), oneStep.get(i), NumericalUtils.THRESHOLD);
+    }
+  }
+  
+  public void checkIrreducibility()
+  {
+    // Mix the kernels and add self transitions.
+    int stateSpaceSize = targetDistribution.nEntries();
+    double mixProportion = 1.0 / (1.0 + stateSpaceSize);
+    SparseMatrix mixture = MatrixOperations.identity(stateSpaceSize).mul(mixProportion);
+    for (SparseMatrix transitionMatrix : transitionMatrices)
+      mixture.addInPlace(transitionMatrix.mul(mixProportion));
+    
+    // Start at an arbitrary state (index 0)
+    DenseMatrix currentState = MatrixOperations.dense(1, stateSpaceSize);
+    currentState.set(0, 1.0);
+    
+    // We should be able to reach all states by at most stateSpaceSize steps.
+    for (int i = 0; i < stateSpaceSize; i++) 
+    {
+      currentState = currentState.mul(mixture);
+      // Check if we cover the space yet.
+      if (currentState.nonZeroEntries().count() == stateSpaceSize)
+        return;
+    }
+    Assert.fail("Not irreducible: \n" + mixture);
+  }
+  
+  public void checkStateSpaceSize(int expectedSize)
+  {
+    Assert.assertEquals(expectedSize, targetDistribution.nEntries());
+  }
+  
+  /**
+   * @param model Model to test, should support forward generation (TODO: this could be relaxed by supplying instead an 
+   *    exhaustive list of states).
+   * @param equalityAssessor Return an object for a given model configuration, .equals and .hashcode will be used on that 
+   *    object to index rows and columns of the matrices and vectors corresponding to transition matrices and marginals.
+   */
+  public DiscreteMCTest(SampledModel model, Function<SampledModel, Object> equalityAssessor) 
+  {
+    Counter<Integer> probabilities = new Counter<>();
+    Map<Integer,SampledModel> stateCopies = new LinkedHashMap<>();
+    
+    // Since we are assuming the latent state is fully discrete, we can perform exact inference 
+    // by enumerating all possible configurations (via ExhaustiveDebugRandom), computing their unnormalized probabilities, and 
+    // normalizing by the sum of all unnormalized probabilities.
+    ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
+    double normalization = Math.exp(Exact.logNormalization(model));
+    while (exhaustive.hasNext())
+    {
+      model.forwardSample(exhaustive, true);
+      double probability = Math.exp(Exact.logWeight(model, exhaustive)) / normalization;
+      Object representative = equalityAssessor.apply(model);
+      // At the same time, we create an index of the states (bi-directional map between representatives and integers).
+      stateIndexer.addToIndex(representative);
+      int index = stateIndexer.o2i(representative);
+      probabilities.incrementCount(index, probability);
+      stateCopies.put(index, model.duplicate());
+    }
+    
+    // Covert the target distribution into a vector
+    int nStates = stateIndexer.size();
+    targetDistribution = MatrixOperations.dense(1,nStates);
+    for (int i = 0; i < nStates; i++)
+      targetDistribution.set(i, probabilities.getCount(i));  
+    
+    // Build the transition matrix for each kernel
+    for (int kernelIndex = 0; kernelIndex < model.nPosteriorSamplers(); kernelIndex++)
+    {
+      SparseMatrix matrix = MatrixOperations.sparse(nStates, nStates);
+      transitionMatrices.add(matrix);
+      for (int i = 0; i < nStates; i++) 
+      {
+        model = stateCopies.get(i);
+        // Enumerate all possible transitions allowed by the kernel from the state.
+        exhaustive = new ExhaustiveDebugRandom();
+        while (exhaustive.hasNext())
+        {
+          SampledModel nextModel = model.duplicate();
+          nextModel.posteriorSamplingStep(exhaustive, kernelIndex);
+          Object nextStateRepresentative = equalityAssessor.apply(nextModel);
+          if (!stateIndexer.containsObject(nextStateRepresentative))
+            throw new RuntimeException("Bad equalityAssessor or forward generator. \n"
+                + "This representative was not found: " + nextStateRepresentative);
+          int j = stateIndexer.o2i(nextStateRepresentative);
+          // Increment the matrix by the probability of that transition.
+          double probability = exhaustive.lastProbability();
+          MatrixExtensions.increment(matrix, i, j, probability);
+        }
+      }
+    }
+  }
+  
+  public String reportStateSpace() 
+  {
+    StringBuilder result = new StringBuilder();
+    for (int i = 0; i < stateIndexer.size(); i++)
+      result.append("" + i + "\t" + stateIndexer.i2o(i) + "\n");
+    return result.toString();
+  }
+}

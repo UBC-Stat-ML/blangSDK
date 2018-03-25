@@ -106,7 +106,7 @@ public class ParallelTempering
   {
     temperingParameters = new ArrayList<>();
     List<SampledModel> initStates = new ArrayList<>();
-    ladder.temperingParameters(temperingParameters, initStates, nThreads.numberAvailable());
+    ladder.temperingParameters(temperingParameters, initStates, nChains.orElse(nThreads.numberAvailable()));
     if (temperingParameters.get(0) != 1.0)
       throw new RuntimeException();
     System.out.println("Temperatures: " + temperingParameters);
