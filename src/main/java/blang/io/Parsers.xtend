@@ -16,7 +16,7 @@ import java.util.Optional
 import blang.types.internals.IntScalar
 import blang.core.RealVar
 import blang.types.internals.RealScalar
-import blang.inits.providers.CoreProviders
+import blang.inits.providers.CoreProviders 
 import xlinear.Matrix
 import xlinear.MatrixOperations
 import xlinear.DenseMatrix
@@ -74,13 +74,13 @@ class Parsers {
     var nCols = providedNCols.orElse(0)
     if (!providedNRows.present || !providedNCols.present) {
       for (List<String> line : BriefIO.readLines(file).splitCSV()) {
-      if (!line.isEmpty()) {
-        val int row = Integer.parseInt(line.get(0))
-        val int col = Integer.parseInt(line.get(1))
-        if (!providedNRows.present) { nRows = Math.max(nRows, row + 1) }
-        if (!providedNCols.present) { nCols = Math.max(nCols, col + 1) }
+        if (!line.isEmpty()) {
+          val int row = CoreProviders.parse_int(line.get(0))
+          val int col = CoreProviders.parse_int(line.get(1))
+          if (!providedNRows.present) { nRows = Math.max(nRows, row + 1) }
+          if (!providedNCols.present) { nCols = Math.max(nCols, col + 1) }
+        }
       }
-    }
     }
     val Matrix result = 
       if (sparse) {
@@ -94,15 +94,15 @@ class Parsers {
         if (line.size() != 3) {
           throw new RuntimeException
         }
-        val int row = Integer.parseInt(line.get(0))
-        val int col = Integer.parseInt(line.get(1))
+        val int row = CoreProviders.parse_int(line.get(0))
+        val int col = CoreProviders.parse_int(line.get(1))
         val String str = line.get(2)
         if (str.isNA) {
           foundNA = true
           // nothing to do, leave set to 0
         } else {
           initContext.markAsObserved(new MatrixConstituentNode(result, row, col))
-          result.set(row, col, Double.parseDouble(str))
+          result.set(row, col, CoreProviders.parse_double(str))
         }
       }
     }

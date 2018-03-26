@@ -19,50 +19,34 @@ import xlinear.MatrixExtensions;
 import xlinear.MatrixOperations;
 import xlinear.SparseMatrix;
 
+/**
+ * Tests for invariance and irreducibility when models are 
+ * fully discrete and fits in memory. 
+ */
 public class DiscreteMCTest 
 {
+  /**
+   * Print diagnostic messages during testing.
+   */
+  public boolean verbose = true;
+  
+  /**
+   * Bi-directional map between integers and state representatives. 
+   * Used to order rows and columns of the matrices and vectors in 
+   * the following.
+   */
   Indexer<Object> stateIndexer = new Indexer<>();
+  
+  /**
+   * The target distribution is constructed and normalized.  
+   * Possible since we can explicitly enumerate all states.
+   */
   DenseMatrix targetDistribution;
+  
+  /**
+   * The transition matrix for each MCMC kernel under study.
+   */
   List<SparseMatrix> transitionMatrices = new ArrayList<>();
-  
-  public void checkInvariance() 
-  {
-    for (SparseMatrix transitionMatrix : transitionMatrices) 
-    {
-      DenseMatrix oneStep = targetDistribution.mul(transitionMatrix);
-      for (int i = 0; i < targetDistribution.nEntries(); i++)
-        Assert.assertEquals(targetDistribution.get(i), oneStep.get(i), NumericalUtils.THRESHOLD);
-    }
-  }
-  
-  public void checkIrreducibility()
-  {
-    // Mix the kernels and add self transitions.
-    int stateSpaceSize = targetDistribution.nEntries();
-    double mixProportion = 1.0 / (1.0 + stateSpaceSize);
-    SparseMatrix mixture = MatrixOperations.identity(stateSpaceSize).mul(mixProportion);
-    for (SparseMatrix transitionMatrix : transitionMatrices)
-      mixture.addInPlace(transitionMatrix.mul(mixProportion));
-    
-    // Start at an arbitrary state (index 0)
-    DenseMatrix currentState = MatrixOperations.dense(1, stateSpaceSize);
-    currentState.set(0, 1.0);
-    
-    // We should be able to reach all states by at most stateSpaceSize steps.
-    for (int i = 0; i < stateSpaceSize; i++) 
-    {
-      currentState = currentState.mul(mixture);
-      // Check if we cover the space yet.
-      if (currentState.nonZeroEntries().count() == stateSpaceSize)
-        return;
-    }
-    Assert.fail("Not irreducible: \n" + mixture);
-  }
-  
-  public void checkStateSpaceSize(int expectedSize)
-  {
-    Assert.assertEquals(expectedSize, targetDistribution.nEntries());
-  }
   
   /**
    * @param model Model to test, should support forward generation (TODO: this could be relaxed by supplying instead an 
@@ -98,6 +82,8 @@ public class DiscreteMCTest
     for (int i = 0; i < nStates; i++)
       targetDistribution.set(i, probabilities.getCount(i));  
     
+    println("Target distribution: \n" + targetDistribution);
+    
     // Build the transition matrix for each kernel
     for (int kernelIndex = 0; kernelIndex < model.nPosteriorSamplers(); kernelIndex++)
     {
@@ -122,7 +108,59 @@ public class DiscreteMCTest
           MatrixExtensions.increment(matrix, i, j, probability);
         }
       }
+      println("Transition matrix " + kernelIndex + ":\n" + matrix);
     }
+  }
+  
+  /**
+   * Check if each individual kernel is pi invariant. 
+   * Simply matrix multiply the target and the transition and see if 
+   * the same matrix is output (up to numerical precision, 1e-6 by default). 
+   */
+  public void checkInvariance() 
+  {
+    int tIndex = 0;
+    for (SparseMatrix transitionMatrix : transitionMatrices) 
+    {
+      DenseMatrix oneStep = targetDistribution.mul(transitionMatrix);
+      for (int i = 0; i < targetDistribution.nEntries(); i++)
+        Assert.assertEquals(targetDistribution.get(i), oneStep.get(i), NumericalUtils.THRESHOLD);
+      println("Invariance of kernel " + (tIndex++) + " established successfully.");
+    }
+  }
+  
+  /**
+   * Check that the mixture of all kernels is irreducible. 
+   */
+  public void checkIrreducibility()
+  {
+    // Mix the kernels and add self transitions.
+    int stateSpaceSize = targetDistribution.nEntries();
+    double mixProportion = 1.0 / (1.0 + stateSpaceSize);
+    SparseMatrix mixture = MatrixOperations.identity(stateSpaceSize).mul(mixProportion);
+    for (SparseMatrix transitionMatrix : transitionMatrices)
+      mixture.addInPlace(transitionMatrix.mul(mixProportion));
+    
+    // Start at an arbitrary state (index 0)
+    DenseMatrix currentState = MatrixOperations.dense(1, stateSpaceSize);
+    currentState.set(0, 1.0);
+    
+    // We should be able to reach all states by at most stateSpaceSize steps.
+    for (int i = 0; i < stateSpaceSize; i++) 
+    {
+      currentState = currentState.mul(mixture);
+      // Check if we cover the space yet.
+      if (currentState.nonZeroEntries().count() == stateSpaceSize) {
+        println("Irreducibility achieved in " + (i+1) + " steps.");
+        return;
+      }
+    }
+    Assert.fail("Not irreducible: \n" + mixture);
+  }
+  
+  public void checkStateSpaceSize(int expectedSize)
+  {
+    Assert.assertEquals(expectedSize, targetDistribution.nEntries());
   }
   
   public String reportStateSpace() 
@@ -131,5 +169,11 @@ public class DiscreteMCTest
     for (int i = 0; i < stateIndexer.size(); i++)
       result.append("" + i + "\t" + stateIndexer.i2o(i) + "\n");
     return result.toString();
+  }
+  
+  private void println(Object o)
+  {
+    if (verbose)
+      System.out.println(o);
   }
 }
