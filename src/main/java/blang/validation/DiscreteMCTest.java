@@ -28,7 +28,7 @@ public class DiscreteMCTest
   /**
    * Print diagnostic messages during testing.
    */
-  public boolean verbose = true;
+  public boolean verbose = false;
   
   /**
    * Bi-directional map between integers and state representatives. 
@@ -136,7 +136,7 @@ public class DiscreteMCTest
   {
     // Mix the kernels and add self transitions.
     int stateSpaceSize = targetDistribution.nEntries();
-    double mixProportion = 1.0 / (1.0 + stateSpaceSize);
+    double mixProportion = 1.0 / (1.0 + transitionMatrices.size());
     SparseMatrix mixture = MatrixOperations.identity(stateSpaceSize).mul(mixProportion);
     for (SparseMatrix transitionMatrix : transitionMatrices)
       mixture.addInPlace(transitionMatrix.mul(mixProportion));
