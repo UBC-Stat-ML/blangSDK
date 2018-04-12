@@ -28,6 +28,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
   
+  @Arg                   @DefaultValue("false")
+  public boolean printAllTemperatures = false; 
+  
   @Override
   public void setSampledModel(SampledModel model) 
   {
@@ -42,7 +45,13 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     for (int iter = 0; iter < nScans; iter++)
     {
       moveKernel(nPassesPerScan);
-      getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
+      if (printAllTemperatures) 
+      {
+        for (int i = 0; i < temperingParameters.size(); i++)  
+          states[i].getSampleWriter(tidySerializer).write(Pair.of("sample", iter), Pair.of("temperature", temperingParameters.get(i)));
+      }
+      else
+        getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
       swapKernel();
     }
     reportAcceptanceRatios();

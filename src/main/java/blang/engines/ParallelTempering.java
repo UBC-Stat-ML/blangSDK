@@ -30,7 +30,7 @@ public class ParallelTempering
   public boolean usePriorSamples = true;
   
   // convention: state index 0 is room temperature (target of interest)
-  private SampledModel [] states;
+  protected SampledModel [] states;
   protected List<Double> temperingParameters;
   private Random [] parallelRandomStreams;
   protected SummaryStatistics [] swapAcceptPrs;
