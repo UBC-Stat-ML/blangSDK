@@ -32,6 +32,8 @@ class TestEndToEnd {
   @Test
   def void diffusion() {
     
+    SampledModel::check = true
+    
     Assert.assertEquals(
       0, 
       Runner::start(
@@ -43,6 +45,8 @@ class TestEndToEnd {
   
   @Test
   def void stripped() {
+    
+    SampledModel::check = true
     
     Assert.assertEquals(
       0, 
