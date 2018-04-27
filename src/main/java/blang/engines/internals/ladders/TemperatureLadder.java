@@ -3,7 +3,6 @@ package blang.engines.internals.ladders;
 import java.util.List;
 
 import blang.inits.Implementations;
-import blang.runtime.SampledModel;
 
 /**
  * Provides a temperature ladder for parallel tempering-type algorithms.
@@ -18,5 +17,5 @@ public interface TemperatureLadder
    * 
    * Optionally, also fill in initialStates with states at the corresponding temperature. 
    */
-  void temperingParameters(List<Double> temperingParameters, List<SampledModel> initialStates, int nTemperatures);
+  List<Double> temperingParameters(int nTemperatures);
 }

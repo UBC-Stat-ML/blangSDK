@@ -42,16 +42,23 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   public void performInference() 
   {
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
+    BlangTidySerializer densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     for (int iter = 0; iter < nScans; iter++)
     {
       moveKernel(nPassesPerScan);
       if (printAllTemperatures) 
       {
         for (int i = 0; i < temperingParameters.size(); i++)  
+        {
           states[i].getSampleWriter(tidySerializer).write(Pair.of("sample", iter), Pair.of("temperature", temperingParameters.get(i)));
+          densitySerializer.serialize(states[i].logDensity(), "logDensity", Pair.of("sample", iter), Pair.of("temperature", temperingParameters.get(i)));
+        }
       }
       else
+      {
         getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
+        densitySerializer.serialize(getTargetState(), "logDensity", Pair.of("sample", iter));
+      }
       swapKernel();
     }
     reportAcceptanceRatios();

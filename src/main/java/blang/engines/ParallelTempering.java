@@ -23,8 +23,9 @@ public class ParallelTempering
   @Arg                   @DefaultValue("EquallySpaced")
   public TemperatureLadder ladder = new EquallySpaced();
   
-  @Arg(description = "If unspecified, use the number of threads.")
-  public Optional<Integer> nChains = Optional.empty();
+  @Arg(description = "If unspecified, use the number of threads.") 
+                                  @DefaultValue("8")
+  public Optional<Integer> nChains = Optional.of(8);
   
   @Arg              @DefaultValue("true")
   public boolean usePriorSamples = true;
@@ -104,9 +105,8 @@ public class ParallelTempering
   
   public void initialize(SampledModel prototype, Random random)
   {
-    temperingParameters = new ArrayList<>();
     List<SampledModel> initStates = new ArrayList<>();
-    ladder.temperingParameters(temperingParameters, initStates, nChains.orElse(nThreads.numberAvailable()));
+    temperingParameters = ladder.temperingParameters(nChains.orElse(nThreads.numberAvailable()));
     if (temperingParameters.get(0) != 1.0)
       throw new RuntimeException();
     System.out.println("Temperatures: " + temperingParameters);

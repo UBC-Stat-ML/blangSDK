@@ -384,7 +384,7 @@ public class GraphAnalysis
           throw new RuntimeException("For forward simulation, the random variable of all sub models should all be observed or all unobserved.");
       }
     if (result == null)
-      return false;
+      return true;
     return result;
   }
 
