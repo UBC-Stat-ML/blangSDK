@@ -44,7 +44,6 @@ class TestEndToEnd {
   @Test
   def void stripped() {
     
-    // --checkIsDAG false --engine PT --engine.usePriorSamples false --skipForwardSamplerConstruction true --engine.ladder.nChains 1
     Assert.assertEquals(
       0, 
       Runner::start(
@@ -53,7 +52,7 @@ class TestEndToEnd {
         "--engine.usePriorSamples", "false",
         "--skipForwardSamplerConstruction", "true",
         "--engine", "PT",
-        "--engine.ladder.nChains", "1"
+        "--engine.nChains", "1"
       )
     )
     

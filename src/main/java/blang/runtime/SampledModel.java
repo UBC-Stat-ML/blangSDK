@@ -26,7 +26,6 @@ import blang.mcmc.Sampler;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.mcmc.internals.ExponentiatedFactor;
 import blang.mcmc.internals.SamplerBuilder;
-import blang.mcmc.internals.SamplerBuilderOptions;
 import blang.runtime.internals.objectgraph.AnnealingStructure;
 import blang.runtime.internals.objectgraph.DeepCloner;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
@@ -43,7 +42,7 @@ public class SampledModel
   private final List<Sampler> posteriorInvariantSamplers;
 
   private List<ForwardSimulator> forwardSamplers;
-  private final RealScalar annealingExponent; // can be null when called from GraphAnalysis.noAnnealer()
+  private final RealScalar _annealingExponent; // can be null when called from GraphAnalysis.noAnnealer()
   
   //// Various caches to make it quick to compute the global density
   
@@ -104,7 +103,7 @@ public class SampledModel
     this.posteriorInvariantSamplers = samplers.list;
     this.forwardSamplers = stripped ? null : graphAnalysis.createForwardSimulator();
     AnnealingStructure annealingStructure = stripped ? graphAnalysis.noAnnealer() : graphAnalysis.createLikelihoodAnnealer();
-    this.annealingExponent = annealingStructure.annealingParameter;
+    this._annealingExponent = annealingStructure.annealingParameter;
     
     otherAnnealedFactors = annealingStructure.otherAnnealedFactors;
     
@@ -145,7 +144,7 @@ public class SampledModel
   
   public double logDensity()
   {
-    final double exponentValue = annealingExponent.doubleValue();
+    final double exponentValue = getExponent(); 
     final double result = 
       sumOtherAnnealed() 
         + sumFixedDensities 
@@ -170,10 +169,10 @@ public class SampledModel
   
   public double logDensity(double temperingParameter) 
   {
-    final double previousValue = annealingExponent.doubleValue();
-    annealingExponent.set(temperingParameter);
+    final double previousValue = getExponent();
+    setExponent(temperingParameter);
     final double result = logDensity();
-    annealingExponent.set(previousValue);
+    setExponent(previousValue);
     return result;
   }
   
@@ -251,16 +250,16 @@ public class SampledModel
   
   public void setExponent(double value)
   {
-    if (value == 1.0 && annealingExponent == null)
+    if (value == 1.0 && _annealingExponent == null)
       return; // nothing to do, if null we consider identical to 1.0
-    annealingExponent.set(value);
+    _annealingExponent.set(value);
   }
   
   public double getExponent()
   {
-    if (annealingExponent == null) 
+    if (_annealingExponent == null) 
       return 1.0;
-    return annealingExponent.doubleValue(); 
+    return _annealingExponent.doubleValue(); 
   }
   
   public static class SampleWriter
