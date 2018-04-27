@@ -125,6 +125,7 @@ public class SampledModel
     
     if (initRandom != null)
       forwardSample(initRandom, true); 
+    updateAll(); // need it again in case we are not forwardSampling (TODO: refactor)
   }
   
   /**
