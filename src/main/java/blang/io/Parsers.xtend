@@ -94,14 +94,26 @@ class Parsers {
         if (line.size() != 3) {
           throw new RuntimeException
         }
+        val String str = line.get(2)
+        if (str.isNA) {
+          foundNA = true
+        } 
+      }
+    }
+    for (List<String> line : BriefIO.readLines(file).splitCSV()) {
+      if (!line.isEmpty()) {
+        if (line.size() != 3) {
+          throw new RuntimeException
+        }
         val int row = CoreProviders.parse_int(line.get(0))
         val int col = CoreProviders.parse_int(line.get(1))
         val String str = line.get(2)
         if (str.isNA) {
-          foundNA = true
           // nothing to do, leave set to 0
         } else {
-          initContext.markAsObserved(new MatrixConstituentNode(result, row, col))
+          if (foundNA) {
+            initContext.markAsObserved(new MatrixConstituentNode(result, row, col))
+          }
           result.set(row, col, CoreProviders.parse_double(str))
         }
       }
