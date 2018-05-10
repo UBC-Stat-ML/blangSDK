@@ -83,31 +83,6 @@ public class ParallelTempering
   {
     int j = i + 1;
     
-//    {
-//      System.out.println("---");
-//      
-//      // sort in place the two temperature by their respective annealed logDensities
-////      Arrays.toL(states[i], Comparator.comparingDouble(state -> state.logDensity(temperingParameters.get(i))));
-////      Arrays.sort(states[j], Comparator.comparingDouble(state -> state.logDensity(temperingParameters.get(j))));
-//      
-//      SummaryStatistics averageAcceptPr = new SummaryStatistics();
-//      // then do each accept reject
-//      for (int particleIndex = 0; particleIndex < nParticlesPerTemperature; particleIndex++)
-//      {
-//        double logRatio = 
-//            states[i][particleIndex].logDensity(temperingParameters.get(j)) + states[j][particleIndex].logDensity(temperingParameters.get(i))
-//          - states[i][particleIndex].logDensity(temperingParameters.get(i)) - states[j][particleIndex].logDensity(temperingParameters.get(j));
-//        double acceptPr = Math.min(1.0, Math.exp(logRatio));
-////        if (Double.isNaN(acceptPr))
-////          acceptPr = 0.0; // should only happen right at the beginning
-////        if (random.nextBernoulli(acceptPr))
-////          doSwap(i, particleIndex);
-//        averageAcceptPr.addValue(acceptPr);
-//      }
-//      System.out.println("avg1 " + averageAcceptPr.getMean());
-//      
-//    }
-    
     // sort in place the two temperature by their respective annealed logDensities
     Arrays.sort(states[i], Comparator.comparingDouble(state -> state.logDensity(temperingParameters.get(i))));
     Arrays.sort(states[j], Comparator.comparingDouble(state -> state.logDensity(temperingParameters.get(j))));
@@ -126,7 +101,6 @@ public class ParallelTempering
         doSwap(i, particleIndex);
       averageAcceptPr.addValue(acceptPr);
     }
-//    System.out.println("avg2 " + averageAcceptPr.getMean());
     return averageAcceptPr.getMean();
   }
   
