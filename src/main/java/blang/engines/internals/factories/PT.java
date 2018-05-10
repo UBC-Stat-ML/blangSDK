@@ -43,21 +43,26 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     BlangTidySerializer densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
+    int sampleIndex = 0;
     for (int iter = 0; iter < nScans; iter++)
     {
       moveKernel(nPassesPerScan);
-      if (printAllTemperatures) 
+      for (int pIndex = 0; pIndex < nParticlesPerTemperature; pIndex++)
       {
-        for (int i = 0; i < temperingParameters.size(); i++)  
+        if (printAllTemperatures) 
         {
-          states[i].getSampleWriter(tidySerializer).write(Pair.of("sample", iter), Pair.of("temperature", temperingParameters.get(i)));
-          densitySerializer.serialize(states[i].logDensity(), "logDensity", Pair.of("sample", iter), Pair.of("temperature", temperingParameters.get(i)));
+          for (int i = 0; i < temperingParameters.size(); i++)  
+          {
+            states[i][pIndex].getSampleWriter(tidySerializer).write(Pair.of("sample", sampleIndex), Pair.of("temperature", temperingParameters.get(i)));
+            densitySerializer.serialize(states[i][pIndex].logDensity(), "logDensity", Pair.of("sample", iter), Pair.of("temperature", temperingParameters.get(i)));
+          }
         }
-      }
-      else
-      {
-        getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
-        densitySerializer.serialize(getTargetState().logDensity(), "logDensity", Pair.of("sample", iter));
+        else
+        {
+          getTargetStates()[pIndex].getSampleWriter(tidySerializer).write(Pair.of("sample", sampleIndex));
+          densitySerializer.serialize(getTargetStates()[pIndex].logDensity(), "logDensity", Pair.of("sample", iter));
+        }
+        sampleIndex++;
       }
       swapKernel();
     }
