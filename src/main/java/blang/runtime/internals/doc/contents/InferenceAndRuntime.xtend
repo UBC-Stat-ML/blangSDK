@@ -360,11 +360,49 @@ class InferenceAndRuntime {
             such scans is set by «SYMB»--engine.nFinalRejuvenations«ENDSYMB». Set it to zero to disable rejuvenation 
             (for example if you only care about the estimate of the probability of the data).
           '''
+          it += '''
+            The options «SYMB»--engine.nThreads«ENDSYMB» controls the number of parallel threads, 
+            by default as many threads as half the number of idle cores are used («SYMB»--engine.nThreads Dynamic«ENDSYMB»). 
+            Note that the result of the computation is «EMPH»identical«ENDEMPH» no matter how many 
+            threads are used (this is achieved with the use of separate random stream indexed by particles). 
+          '''
         ]
         it += '''
           «SYMB»PT«ENDSYMB»: Parallel Tempering. This creates parallel MCMC chains, each targeting different annealing 
-          parameters. Documentation under construction (and some arguments might change a bit).
+          parameters. 
         '''
+        unorderedList[
+          it += '''
+            The number of different temperatures can be controlled with «SYMB»--engine.nChains«ENDSYMB» (in particular, 
+            setting it to 1 will reduce the algorithm to a standard MCMC algorithm.
+          '''
+          it += '''
+            If the option «SYMB»--engine.usePriorSamples«ENDSYMB» is set to true (the default), then the chain at parameter zero 
+            is obtained by sampling iid from the prior distribution. 
+          '''
+          it += '''
+            We define a scan as doing moves on all temperatures followed by attempting all either 
+            odd or even swaps, followed by statistics collection. 
+            Use «SYMB»--engine.nScans«ENDSYMB» to control the number of scans. Use 
+            «SYMB»--engine.nPassesPerScan«ENDSYMB» to control how many passes to perform in 
+            each chain on each scan, where we define a pass as applying each MCMC kernel once.
+          '''
+          it += '''
+            The option «SYMB»--engine.ladder«ENDSYMB» controls the scheme determining the 
+            sequence of annealing parameters to use. Those available by default so far 
+            are «SYMB»Geometric«ENDSYMB» and «SYMB»EquallySpaced«ENDSYMB». Use for example 
+            «SYMB»--engine.ladder Geometric --help«ENDSYMB» for more details on Geometric and 
+            similarly for other schemes. To implement a custom scheme, create a class 
+            implementing «SYMB»blang.engines.internals.ladders.TemperatureLadder«ENDSYMB» 
+            and use the fully qualified name of the form «SYMB»--engine.ladder mypackage.MyLadder«ENDSYMB».
+          '''
+          it += '''
+            The options «SYMB»--engine.nThreads«ENDSYMB» controls the number of parallel threads, 
+            by default as many threads as half the number of idle cores are used («SYMB»--engine.nThreads Dynamic«ENDSYMB»). 
+            Note that the result of the computation is «EMPH»identical«ENDEMPH» no matter how many 
+            threads are used (this is achieved with the use of separate random stream indexed by chains). 
+          '''
+        ]
         it += '''
           «SYMB»Forward«ENDSYMB»: Use the forward simulation machinery for the subset of the states that are not 
           observed.

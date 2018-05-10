@@ -59,6 +59,8 @@ public class AdaptiveJarzynski
     while (temperature < 1.0)
     {
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature); 
+      // TODO: slight optimization, probably not worth it: could know at this point if resampling is needed, 
+      // and which particles will survive, so if a particle has no offspring no need to actually sample it.
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
       if (resamplingNeeded(population, nextTemperature))
       {
