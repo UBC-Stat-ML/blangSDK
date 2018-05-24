@@ -24,8 +24,8 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   
   @Arg(description = "Annealing parameter is selected to get the (conditional) "
       + "ESS decrease specified by this parameter.")
-             @DefaultValue("0.9999")
-  public double threshold = 0.9999;
+             @DefaultValue("0.99999")
+  public double threshold = 0.99999;
   
   final Writer log;
   int iter = 0;
