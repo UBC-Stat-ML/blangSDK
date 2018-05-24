@@ -310,7 +310,7 @@ class InferenceAndRuntime {
           Parallel Tempering with a single chain (PT):
         '''
         code(Language.text, 
-          '''--checkIsDAG false --engine.usePriorSamples false --skipForwardSamplerConstruction true --engine PT --engine.ladder.nChains 1''')
+          '''--checkIsDAG false --engine.usePriorSamples false --skipForwardSamplerConstruction true --engine PT --engine.nChains 1''')
       ]
     ]
     
