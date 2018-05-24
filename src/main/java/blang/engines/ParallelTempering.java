@@ -36,6 +36,7 @@ public class ParallelTempering
   private Random [] parallelRandomStreams;
   protected SummaryStatistics [] swapAcceptPrs;
   private int iterationIndex = 0;
+  private boolean [] swapIndicators;
   
   public SampledModel getTargetState()
   {
@@ -44,8 +45,9 @@ public class ParallelTempering
     return states[0];
   }
   
-  public void swapKernel()
+  public boolean[] swapKernel()
   {
+    swapIndicators = new boolean[nChains()];
     int offset = iterationIndex++ % 2;
     BriefParallel.process((nChains() - offset) / 2, nThreads.numberAvailable(), swapIndex ->
     {
@@ -53,6 +55,7 @@ public class ParallelTempering
       double acceptPr = swapKernel(parallelRandomStreams[chainIndex], chainIndex);
       swapAcceptPrs[chainIndex].addValue(acceptPr);
     });
+    return swapIndicators;
   }
   
   public void moveKernel(int nPasses) 
@@ -84,7 +87,10 @@ public class ParallelTempering
     if (Double.isNaN(acceptPr))
       acceptPr = 0.0; // should only happen right at the beginning
     if (random.nextBernoulli(acceptPr))
+    {
+      swapIndicators[i] = true;
       doSwap(i);
+    }
     return acceptPr;
   }
   

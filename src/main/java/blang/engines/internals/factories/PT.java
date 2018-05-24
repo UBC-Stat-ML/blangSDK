@@ -43,6 +43,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     BlangTidySerializer densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
+    BlangTidySerializer swapIndicatorSerializer = new BlangTidySerializer(results.child(Runner.MONITORING_FOLDER));  
     for (int iter = 0; iter < nScans; iter++)
     {
       moveKernel(nPassesPerScan);
@@ -59,7 +60,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
         densitySerializer.serialize(getTargetState().logDensity(), "logDensity", Pair.of("sample", iter));
       }
-      swapKernel();
+      boolean[] swapIndicators = swapKernel();
+      for (int c = 0; c < nChains(); c++)
+        swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, "swapIndicators", Pair.of("sample", iter), Pair.of("chain", c));
     }
     reportAcceptanceRatios();
   }
