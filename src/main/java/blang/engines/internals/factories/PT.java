@@ -55,8 +55,6 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
           {
             states[i][pIndex].getSampleWriter(tidySerializer).write(Pair.of("sample", sampleIndex), Pair.of("temperature", temperingParameters.get(i)));
             densitySerializer.serialize(states[i][pIndex].logDensity(), "logDensity", Pair.of("sample", iter), Pair.of("temperature", temperingParameters.get(i)));
-            densitySerializer.serialize(states[i][pIndex]._unAnnealedLikelihood(), "logUnannealedLikelihood", Pair.of("sample", iter), Pair.of("temperature", temperingParameters.get(i)));
-            
           }
         }
         else
