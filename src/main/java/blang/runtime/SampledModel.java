@@ -156,6 +156,11 @@ public class SampledModel
     return result;
   }
   
+  public double _unAnnealedLikelihood()
+  {
+    return sumPreannealedFiniteDensities;
+  }
+  
   private void check(double expected) 
   {
     double sum = 0.0;
