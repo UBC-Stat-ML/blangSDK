@@ -20,6 +20,7 @@ import blang.distributions.NormalField
 import blang.distributions.Poisson
 import blang.distributions.SimplexUniform
 import blang.distributions.SymmetricDirichlet
+import blang.distributions.LogPotential
 
 class BuiltInDistributions {
   
@@ -50,6 +51,10 @@ class BuiltInDistributions {
       documentClass(Dirichlet)
       documentClass(SymmetricDirichlet)
       documentClass(SimplexUniform)
+    ]
+    
+    section("Misc") [
+      documentClass(LogPotential)
     ]
 
   ]

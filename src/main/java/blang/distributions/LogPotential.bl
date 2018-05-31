@@ -1,0 +1,15 @@
+package blang.distributions
+
+/** Not really a distribution, but rather a way to handle undirected model (AKA random fields). See Ising under the Examples page. */
+model LogPotential {
+  /** The log of the current value of this potential. */
+  param RealVar logPotential
+  
+  laws {
+    logf(logPotential) {
+      return logPotential
+    }
+  }
+  
+  generate (rand) { throw new RuntimeException }
+}

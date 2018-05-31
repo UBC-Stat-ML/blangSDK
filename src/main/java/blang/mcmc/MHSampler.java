@@ -7,8 +7,6 @@ import blang.core.LogScaleFactor;
 import blang.distributions.Generators;
 import blang.mcmc.internals.Callback;
 
-
-
 public abstract class MHSampler implements Sampler
 {
   @ConnectedFactor

@@ -14,7 +14,7 @@ import blang.mcmc.internals.Callback;
 
 
 /**
- * Warning: not a general purpose move - specialized to SmallHMM test
+ * Warning: not a general purpose move - specialized to SmallHMM test or similar simple binary cases
  */
 public class IntNaiveMHSampler extends MHSampler
 {
@@ -22,7 +22,7 @@ public class IntNaiveMHSampler extends MHSampler
   WritableIntVar variable;
   
   @ConnectedFactor
-  Constrained constrained;
+  List<Constrained> constrained;
   
   public static IntNaiveMHSampler build(WritableIntVar variable, List<LogScaleFactor> numericFactors)
   {

@@ -9,6 +9,7 @@ import blang.validation.internals.fixtures.SpikedRealVar
 import blang.validation.internals.fixtures.SpikedRealVarSampler
 import blang.validation.internals.fixtures.SpikeAndSlab
 import blang.validation.internals.fixtures.SpikedGLM
+import blang.validation.internals.fixtures.Ising
 
 class Examples {
   
@@ -49,6 +50,17 @@ class Examples {
         '''
         
         code(DynamicNormalMixture)
+        
+      ]
+      
+      section("Ising models and other Markov random fields") [
+        
+        it += '''
+          Undirected graphical models (AKA Markov random fields) are supported: here is 
+          for example how a square Ising model is implemented:
+        '''
+        
+        code(Ising) 
         
       ]
       
