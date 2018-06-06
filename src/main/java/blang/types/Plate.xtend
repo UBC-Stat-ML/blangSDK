@@ -17,6 +17,8 @@ import blang.types.internals.SimplePlate
 import blang.io.internals.GlobalDataSourceStore
 import java.util.Collection
 import com.rits.cloning.Immutable
+import blang.inits.providers.CoreProviders
+import blang.inits.Creators
 
 /** in the following, K is the type indexing the replicates, typically an Integer or String. We assume these indices are not random variables. */
 @Immutable
@@ -38,22 +40,21 @@ interface Plate<K> {
   
   /** a plate with indices 0, 1, 2, ..., size-1 */
   def static Plate<Integer> ofIntegers(ColumnName columnName, int size) {
-    return new SimplePlate(columnName, (0 ..< size).toSet)
+    return Plate::ofType([CoreProviders::parse_int(it)], columnName, size) 
   }
   
   /** a plate with indices category_0, category_1, ... */
   def static Plate<String> ofStrings(ColumnName columnName, int size) {
-    return new SimplePlate(columnName, (0 ..< size).map[index | "category_" + index].toSet)
+    return Plate::ofType([it], columnName, size)
   }
   
-  def static <T> Plate<T> ofType(TypeLiteral<T> type, ColumnName columnName, int size) {
-    if (type.rawType == Integer) {
-      return blang.types.Plate.ofIntegers(columnName, size) as Plate<T>
-    } else if (type.rawType == String) {
-      return blang.types.Plate.ofStrings(columnName, size) as Plate<T>
-    } else {
-      throw new RuntimeException("Unable to create a simple plate of type " + type)
-    }
+  def static <T> Plate<T> ofType((String) => T creatorFct, ColumnName columnName, int size) {
+    return new SimplePlate(columnName, (0 ..< size).map[index | creatorFct.apply("" + index)].toSet)
+  }
+  
+  def static <T> Plate<T> ofType(Creator creator, TypeLiteral<T> type, ColumnName columnName, int size) {
+    val parser = new SimpleParser(creator, type)
+    return Plate::ofType([parser.parse(it)], columnName, size) 
   }
   
   def static Plate<Integer> ofIntegers(String columnName, int size) {
@@ -66,7 +67,7 @@ interface Plate<K> {
   }
   
   def static <T> Plate<T> ofType(TypeLiteral<T> type, String columnName, int size) {
-    return Plate::ofType(type, new ColumnName(columnName), size)
+    return Plate::ofType(Creators.conventional, type, new ColumnName(columnName), size)
   }
   
   /*
@@ -100,7 +101,7 @@ interface Plate<K> {
       if (!maxSize.present) {
         throw new RuntimeException("Plates lacking a DataSource must specify a maxSize argument")
       }
-      return Plate::ofType(typeArgument, columnName, maxSize.get)
+      return Plate::ofType(creator, typeArgument, columnName, maxSize.get) 
     }
     return new HashPlate(columnName, scopedDataSource, new SimpleParser(creator, typeArgument), maxSize)
   }

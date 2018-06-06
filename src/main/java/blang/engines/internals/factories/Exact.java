@@ -2,6 +2,8 @@ package blang.engines.internals.factories;
 
 import org.eclipse.xtext.xbase.lib.Pair;
 
+import com.google.common.io.Files;
+
 import bayonet.distributions.ExhaustiveDebugRandom;
 import bayonet.math.NumericalUtils;
 import blang.engines.internals.PosteriorInferenceEngine;
@@ -17,7 +19,7 @@ import blang.types.ExtensionUtils;
 
 public class Exact implements PosteriorInferenceEngine
 {
-  @GlobalArg ExperimentResults results;
+  @GlobalArg public ExperimentResults results = new ExperimentResults(Files.createTempDir());
   
   @Arg(description = "Stop and warn the user if more than this number of random draws is used in a simulation.")
          @DefaultValue("15")

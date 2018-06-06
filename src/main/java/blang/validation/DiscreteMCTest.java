@@ -1,6 +1,7 @@
 package blang.validation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +50,17 @@ public class DiscreteMCTest
   List<SparseMatrix> transitionMatrices = new ArrayList<>();
   
   /**
-   * @param model Model to test, should support forward generation (TODO: this could be relaxed by supplying instead an 
+   * @param model , should support forward generation (TODO: this could be relaxed by supplying instead an 
    *    exhaustive list of states).
    * @param equalityAssessor Return an object for a given model configuration, .equals and .hashcode will be used on that 
    *    object to index rows and columns of the matrices and vectors corresponding to transition matrices and marginals.
    */
-  public DiscreteMCTest(SampledModel model, Function<SampledModel, Object> equalityAssessor) 
+  public DiscreteMCTest(SampledModel model, Function<SampledModel, Object> equalityAssessor) {
+    this(model, equalityAssessor, false);
+  }
+  public DiscreteMCTest(SampledModel model, Function<SampledModel, Object> equalityAssessor, boolean verbose) 
   {
+    this.verbose = verbose;
     Counter<Integer> probabilities = new Counter<>();
     Map<Integer,SampledModel> stateCopies = new LinkedHashMap<>();
     
@@ -63,11 +68,10 @@ public class DiscreteMCTest
     // by enumerating all possible configurations (via ExhaustiveDebugRandom), computing their unnormalized probabilities, and 
     // normalizing by the sum of all unnormalized probabilities.
     ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
-    double normalization = Math.exp(Exact.logNormalization(model));
     while (exhaustive.hasNext())
     {
       model.forwardSample(exhaustive, true);
-      double probability = Math.exp(Exact.logWeight(model, exhaustive)) / normalization;
+      double probability = Math.exp(Exact.logWeight(model, exhaustive));
       Object representative = equalityAssessor.apply(model);
       // At the same time, we create an index of the states (bi-directional map between representatives and integers).
       stateIndexer.addToIndex(representative);
@@ -76,6 +80,46 @@ public class DiscreteMCTest
       stateCopies.put(index, model.duplicate());
     }
     
+    
+    setup(equalityAssessor, probabilities, model.nPosteriorSamplers(), stateCopies);
+  }
+  
+  /**
+   * 
+   * @param models set of all possible distinct models w.r.t. equalityAssessor
+   * @param equalityAssessor see DiscreteMCTest(SampledModel model, Function<SampledModel, Object> equalityAssessor) 
+   */
+  public DiscreteMCTest(Collection<SampledModel> models, Function<SampledModel, Object> equalityAssessor) {
+    this(models, equalityAssessor, false);
+  }
+  public DiscreteMCTest(Collection<SampledModel> models, Function<SampledModel, Object> equalityAssessor, boolean verbose) 
+  {
+    this.verbose = verbose;
+    Counter<Integer> probabilities = new Counter<>();
+    Map<Integer,SampledModel> stateCopies = new LinkedHashMap<>();
+    for (SampledModel model : models) 
+    {
+      double probability = Math.exp(model.logDensity(1.0));
+      Object representative = equalityAssessor.apply(model);
+      if (stateIndexer.containsObject(representative))
+        throw new RuntimeException("Duplicate model not allowed for this constructor: \n" + representative + "\n"
+            + "Try the other one if forward sampling supported?");
+      stateIndexer.addToIndex(representative);
+      int index = stateIndexer.o2i(representative);
+      probabilities.incrementCount(index, probability);
+      stateCopies.put(index, model);
+    }
+    
+    setup(equalityAssessor, probabilities, models.iterator().next().nPosteriorSamplers(), stateCopies);
+  }
+  
+  private void setup(
+      Function<SampledModel, Object> equalityAssessor,
+      Counter<Integer> probabilities, 
+      int nPosteriorSamplers,
+      Map<Integer,SampledModel> stateCopies) 
+  {
+    probabilities.normalize();
     // Covert the target distribution into a vector
     int nStates = stateIndexer.size();
     targetDistribution = MatrixOperations.dense(1,nStates);
@@ -85,15 +129,15 @@ public class DiscreteMCTest
     println("Target distribution: \n" + targetDistribution);
     
     // Build the transition matrix for each kernel
-    for (int kernelIndex = 0; kernelIndex < model.nPosteriorSamplers(); kernelIndex++)
+    for (int kernelIndex = 0; kernelIndex < nPosteriorSamplers; kernelIndex++)
     {
       SparseMatrix matrix = MatrixOperations.sparse(nStates, nStates);
       transitionMatrices.add(matrix);
       for (int i = 0; i < nStates; i++) 
       {
-        model = stateCopies.get(i);
+        SampledModel model = stateCopies.get(i);
         // Enumerate all possible transitions allowed by the kernel from the state.
-        exhaustive = new ExhaustiveDebugRandom();
+        ExhaustiveDebugRandom exhaustive = new ExhaustiveDebugRandom();
         while (exhaustive.hasNext())
         {
           SampledModel nextModel = model.duplicate();

@@ -33,6 +33,10 @@ class SimplePlate<T> implements Plate<T> {
     throw new UnsupportedOperationException
   }
   
+  new(String name, Set<T> keys) {
+    this(new ColumnName(name), keys)
+  }
+  
   new(ColumnName name, Set<T> keys) {
     this.name = name
     this.indices = new LinkedHashSet 
