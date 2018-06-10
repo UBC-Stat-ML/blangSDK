@@ -68,6 +68,7 @@ interface Plated<T>  {
     // data source
     var DataSource scopedDataSource = DataSource::scopedDataSource(dataSource, globalDataSourceStore)
     if (scopedDataSource.present && !scopedDataSource.columnNames.contains(columnName)) {
+      println("Note: data source " + scopedDataSource.path.get + " does not contain column " + columnName.string + " --- treating as missing")
       scopedDataSource = DataSource::empty
     }
     // parser
