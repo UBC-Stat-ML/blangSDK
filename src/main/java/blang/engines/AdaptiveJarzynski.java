@@ -41,6 +41,10 @@ public class AdaptiveJarzynski
            @DefaultValue("false")       
   public boolean silent = true;
   
+  @Arg(description = "Use higher values for likelihood maximization")
+                         @DefaultValue("1.0")
+  public double maxAnnealingParameter = 1.0;
+  
   protected SampledModel prototype;
   protected Random [] parallelRandomStreams;
   
@@ -56,21 +60,22 @@ public class AdaptiveJarzynski
     
     int iter = 0;
     double temperature = 0.0;
-    while (temperature < 1.0)
+    while (temperature < maxAnnealingParameter)
     {
-      double nextTemperature = temperatureSchedule.nextTemperature(population, temperature); 
+      double nextTemperature = temperatureSchedule.nextTemperature(population, temperature, maxAnnealingParameter); 
       // TODO: slight optimization, probably not worth it: could know at this point if resampling is needed, 
       // and which particles will survive, so if a particle has no offspring no need to actually sample it.
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
+      log("Propagation [temp=" + temperature + ",ess=" + population.getRelativeESS() + "]");
       if (resamplingNeeded(population, nextTemperature))
-      {
+      { 
         population = resample(random, population);
-        log("Resampling [iter=" + iter + ", Z_{" + nextTemperature + "}= " + population.logNormEstimate() + "]");
+        log("Resampling [iter=" + iter + ", logZ_{" + nextTemperature + "}= " + population.logNormEstimate() + "]");
       }
       temperature = nextTemperature;
       iter++;
     }
-    log("Change of measure complete [iter=" + iter + ", Z=" + population.logNormEstimate() + "]");
+    log("Change of measure complete [iter=" + iter + ", logZ=" + population.logNormEstimate() + "]");
     return population;
   }
   
@@ -79,7 +84,7 @@ public class AdaptiveJarzynski
     for (int i = 0; i < population.nParticles(); i++)
       if (population.getNormalizedWeight(i) == 0.0)
         return true;
-    return population.getRelativeESS() < resamplingESSThreshold && nextTemperature < 1.0;
+    return population.getRelativeESS() < resamplingESSThreshold && nextTemperature < maxAnnealingParameter;
   }
 
   private ParticlePopulation<SampledModel> resample(Random random, ParticlePopulation<SampledModel> population)

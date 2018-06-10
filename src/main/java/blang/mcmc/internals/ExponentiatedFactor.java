@@ -75,7 +75,7 @@ public class ExponentiatedFactor implements AnnealedFactor
   
   public static double annealedMinusInfinity(double exponent) 
   {
-    if (exponent == 1.0)
+    if (exponent >= 1.0)
       return Double.NEGATIVE_INFINITY;
     return - exponent * 1E100; 
   }

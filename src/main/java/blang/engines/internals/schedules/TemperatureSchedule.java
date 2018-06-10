@@ -7,5 +7,5 @@ import blang.runtime.SampledModel;
 @Implementations({AdaptiveTemperatureSchedule.class, FixedTemperatureSchedule.class}) 
 public interface TemperatureSchedule
 {
-  double nextTemperature(ParticlePopulation<SampledModel> population, double temperature);
+  double nextTemperature(ParticlePopulation<SampledModel> population, double annealingParam, double maxAnnealParam);
 }

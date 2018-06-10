@@ -24,8 +24,8 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   
   @Arg(description = "Annealing parameter is selected to get the (conditional) "
       + "ESS decrease specified by this parameter.")
-             @DefaultValue("0.99999")
-  public double threshold = 0.99999;
+             @DefaultValue("0.9999")
+  public double threshold = 0.9999;
   
   final Writer log;
   int iter = 0;
@@ -43,14 +43,22 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   }
   
   @Override
-  public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature)
+  public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature, double maxAnnealingParameter)
   {
     if (!(threshold > 0.0 && threshold < 1.0))
       throw new RuntimeException("The adaptive tempering threshold should be between 0 and 1 (exclusive): " + threshold);
     UnivariateFunction objective = objective(population, temperature);
-    double nextTemperature = objective.value(1.0) >= 0 ? 
-      1.0 :
-      new PegasusSolver().solve(100, objective, temperature, 1.0);
+    
+    if (Double.isNaN(objective.value(1.0))) // Here we do mean 1.0 - by design this guarantees support is checked
+    {
+      // every single particle is out of support
+      System.out.println("Every particle out of support, staying at current temperature: " + temperature);
+      return temperature;
+    }
+    
+    double nextTemperature = objective.value(maxAnnealingParameter) >= 0 ? 
+      maxAnnealingParameter :
+      new PegasusSolver().solve(100, objective, temperature, maxAnnealingParameter);
     if (log != null)
       BriefIO.println(log, "" + iter++ + "," + nextTemperature);
     return nextTemperature;

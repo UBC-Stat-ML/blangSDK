@@ -11,10 +11,10 @@ public class FixedTemperatureSchedule implements TemperatureSchedule
   public int nTemperatures = 100;
 
   @Override
-  public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature)
+  public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature, double maxAnnealingParameter)
   {
     if (nTemperatures < 1)
       throw new RuntimeException("Number of temperatures should be positive: " + nTemperatures);
-    return Math.min(1.0, temperature + 1.0 / ((double) nTemperatures));
+    return Math.min(maxAnnealingParameter, temperature + maxAnnealingParameter / ((double) nTemperatures));
   }
 }

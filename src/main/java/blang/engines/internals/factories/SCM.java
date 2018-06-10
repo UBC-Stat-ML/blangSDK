@@ -45,11 +45,12 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     
     // write Z estimate
     double logNormEstimate = approximation.logNormEstimate();
-    log("Normalization constant estimate: " + logNormEstimate);
+    log("Log normalization constant estimate: " + logNormEstimate);
     BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
     
     // resample & rejuvenate the last iteration to simplify processing downstream
-    approximation = approximation.resample(random, resamplingScheme);
+    if (!isUniform(approximation)) // could happen if there were zero-weight particles in last round
+      approximation = approximation.resample(random, resamplingScheme);
     rejuvenate(parallelRandomStreams, approximation);
     
     // write samples
@@ -57,6 +58,14 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     int particleIndex = 0;
     for (SampledModel model : approximation.particles)  
       model.getSampleWriter(tidySerializer).write(Pair.of("sample", particleIndex++)); 
+  }
+  
+  private boolean isUniform(ParticlePopulation<?> pop)
+  {
+    for (int i = 0; i < pop.nParticles(); i++) 
+      if (pop.getNormalizedWeight(i) != 1.0 / ((double) pop.nParticles()))
+        return false;
+    return true;
   }
   
   private void rejuvenate(Random [] randoms, final ParticlePopulation<SampledModel> finalPopulation)
