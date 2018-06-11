@@ -54,7 +54,7 @@ class TestEndToEnd {
         "--model", NoGen.canonicalName,
         "--checkIsDAG", "false",
         "--engine.usePriorSamples", "false",
-        "--skipForwardSamplerConstruction", "true",
+        "--stripped", "true",
         "--engine", "PT",
         "--engine.nChains", "1"
       )

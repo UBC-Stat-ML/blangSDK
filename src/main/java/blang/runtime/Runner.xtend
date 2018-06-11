@@ -48,8 +48,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   @Arg         @DefaultValue("true")
   public boolean checkIsDAG = true
   
-  @Arg                             @DefaultValue("false")
-  public boolean skipForwardSamplerConstruction = false
+  @Arg(description = "Stripped means that the construction of forward simulators and annealers is skipped")  
+             @DefaultValue("false")
+  public boolean stripped = false
   
   @Arg                   @DefaultValue("1")
   public Random initRandom = new Random(1)
@@ -171,7 +172,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         throw new NotDAG(re.toString + "\nTo disable check for DAG, use the option --checkIsDAG")
       }
     }
-    val SampledModel sampledModel = if (skipForwardSamplerConstruction) SampledModel.stripped(graphAnalysis, kernels) else new SampledModel(graphAnalysis, kernels, initRandom)
+    val SampledModel sampledModel = if (stripped) SampledModel.stripped(graphAnalysis, kernels) else new SampledModel(graphAnalysis, kernels, true, true, initRandom)
     engine.sampledModel = sampledModel
     if (excludeFromOutput.present) {
       for (String exclusion : excludeFromOutput.get) {

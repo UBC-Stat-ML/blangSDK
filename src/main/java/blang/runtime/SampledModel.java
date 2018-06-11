@@ -81,6 +81,7 @@ public class SampledModel
   
   public final Map<String, Object> objectsToOutput;
   
+  
   public SampledModel(Model model) 
   {
     this(new GraphAnalysis(model));
@@ -93,16 +94,23 @@ public class SampledModel
   
   public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers)
   {
-    this(graphAnalysis, samplers, new Random(1));
+    this(graphAnalysis, samplers, true, true, new Random(1)); 
   }
   
-  public SampledModel(GraphAnalysis graphAnalysis, BuiltSamplers samplers, Random initRandom) 
+  public SampledModel(
+      GraphAnalysis graphAnalysis, 
+      BuiltSamplers samplers, 
+      boolean createLikehoodAnnealer,
+      boolean createForwardSamplers,
+      Random forwardInit) 
   {
-    boolean stripped = initRandom == null;
+    boolean initUsingForward = forwardInit != null;
+    if (!createForwardSamplers && initUsingForward)
+      throw new RuntimeException();
     this.model = graphAnalysis.model;
     this.posteriorInvariantSamplers = samplers.list;
-    this.forwardSamplers = stripped ? null : graphAnalysis.createForwardSimulator();
-    AnnealingStructure annealingStructure = stripped ? graphAnalysis.noAnnealer() : graphAnalysis.createLikelihoodAnnealer();
+    this.forwardSamplers = createForwardSamplers ? graphAnalysis.createForwardSimulator() : null;
+    AnnealingStructure annealingStructure = createLikehoodAnnealer ? graphAnalysis.createLikelihoodAnnealer() : graphAnalysis.noAnnealer();
     this._annealingExponent = annealingStructure.annealingParameter;
     
     otherAnnealedFactors = annealingStructure.otherAnnealedFactors;
@@ -123,8 +131,8 @@ public class SampledModel
       if (f.getAnnotation(Param.class) == null) // TODO: filter out fully observed stuff too
         objectsToOutput.put(f.getName(), ReflexionUtils.getFieldValue(f, model));
     
-    if (initRandom != null)
-      forwardSample(initRandom, true); 
+    if (initUsingForward)
+      forwardSample(forwardInit, true);  
     updateAll(); // need it again in case we are not forwardSampling (TODO: refactor)
   }
   
@@ -133,7 +141,7 @@ public class SampledModel
    */
   public static SampledModel stripped(GraphAnalysis graphAnalysis, BuiltSamplers samplers)
   {
-    return new SampledModel(graphAnalysis, samplers, null);
+    return new SampledModel(graphAnalysis, samplers, false, false, null); 
   }
   
   public int nPosteriorSamplers()

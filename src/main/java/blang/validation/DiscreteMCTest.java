@@ -99,7 +99,7 @@ public class DiscreteMCTest
     Map<Integer,SampledModel> stateCopies = new LinkedHashMap<>();
     for (SampledModel model : models) 
     {
-      double probability = Math.exp(model.logDensity(1.0));
+      double probability = Math.exp(model.logDensity());
       Object representative = equalityAssessor.apply(model);
       if (stateIndexer.containsObject(representative))
         throw new RuntimeException("Duplicate model not allowed for this constructor: \n" + representative + "\n"
