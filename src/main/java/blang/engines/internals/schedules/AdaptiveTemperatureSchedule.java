@@ -27,6 +27,10 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
              @DefaultValue("0.9999")
   public double threshold = 0.9999;
   
+  @Arg(description = "If all particles are out of support at first iteration, nudge the temperature a bit so that support constraints kick in.")
+                               @DefaultValue("1e-10") // TODO: fix using the Alive Particle Sampler paper? 
+  public double nudgeFromZeroIfOutOfSupport = 1e-10; // we do not want constraints at temperature zero so that normalization constant is known there
+  
   final Writer log;
   int iter = 0;
   
@@ -52,7 +56,8 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
     if (Double.isNaN(objective.value(1.0))) // Here we do mean 1.0 - by design this guarantees support is checked
     {
       // every single particle is out of support
-      System.out.println("Every particle out of support, staying at current temperature: " + temperature);
+      temperature = Math.max(temperature, nudgeFromZeroIfOutOfSupport);
+      System.out.println("Warning: Every particle out of support; this removes guarantees on logZ estimate; will next use temperature: " + temperature);
       return temperature;
     }
     
