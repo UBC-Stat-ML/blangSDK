@@ -35,6 +35,7 @@ public class StandaloneCompiler  {
   private final File projectHome;
   private final File compilationFolder;
   private final File compilationPool;
+  private final File excludedInputFolder; // in Silico, if an input node is itself in Blang, we want to avoid compiling it again
   private final Path srcFolder;
   private final List<String> dependencies = loadDependencies();
   
@@ -44,6 +45,7 @@ public class StandaloneCompiler  {
     this.projectHome = new File(".");
     this.compilationFolder = Results.getFolderInResultFolder(COMPILATION_DIR_NAME);
     this.compilationPool = compilationFolder.getParentFile().getParentFile();
+    this.excludedInputFolder = new File(projectHome, "input");
     this.srcFolder = Paths.get(compilationFolder.getPath(), "src", "main", "java");
     init();
   }
@@ -203,7 +205,8 @@ public class StandaloneCompiler  {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-      if (dir.normalize().equals(compilationPool.toPath().normalize())) {
+      if (dir.normalize().equals(compilationPool.toPath().normalize()) ||
+          dir.normalize().equals(excludedInputFolder.toPath().normalize())) {
         return FileVisitResult.SKIP_SUBTREE;
       } else {
         return FileVisitResult.CONTINUE;
