@@ -36,6 +36,7 @@ public class StandaloneCompiler  {
   private final File compilationFolder;
   private final File compilationPool;
   private final Path srcFolder;
+  private final List<String> dependencies = loadDependencies();
   
   public StandaloneCompiler() {
     
@@ -47,6 +48,15 @@ public class StandaloneCompiler  {
     init();
   }
   
+  private List<String> loadDependencies() {
+    List<String> result = new ArrayList<>();
+    File dependencies = new File("dependencies.txt");
+    if (dependencies.exists())
+      for (String line : BriefIO.readLines(dependencies))
+        result.add(line.trim());
+    return result;
+  }
+
   @Override
   public String toString() {
     return 
@@ -226,6 +236,8 @@ public class StandaloneCompiler  {
       @Override
       String process(String buildFileContents, String line, StandaloneCompiler compiler) {
         String depLine = "  compile group: 'ca.ubc.stat', name: 'blangSDK', version: '" + compiler.sdkVersion + "'";
+        for (String dep : compiler.dependencies)
+          depLine += "\n  compile '" + dep + "'";
         return buildFileContents.replace(line, depLine);
       }
     },
