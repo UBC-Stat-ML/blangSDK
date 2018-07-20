@@ -195,6 +195,12 @@ public class SampledModel
   }
   static final String INVALID_LOG_RATIO = "Invalid logDensity ratio (0/0): this could be caused by a generate(rand){..} block not faithful with its laws{..} block.";
   
+  public double preAnnealedLogLikelihood()
+  {
+    return sumPreannealedFiniteDensities;
+  }
+
+  
   private double sumOtherAnnealed()
   {
     double sum = 0.0;
