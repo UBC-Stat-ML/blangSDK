@@ -97,7 +97,7 @@ public class RealSliceSampler implements Sampler
     while (true) 
     {
       final double newState = Generators.uniform(random, leftShrankEndPoint, rightShrankEndPoint); // x1 in Neal's paper
-      if (logSliceHeight <= logDensityAt(newState) && accept(oldState, newState, logSliceHeight, leftProposalEndPoint, rightProposalEndPoint))
+      if (logSliceHeight <= logDensityAt(newState) && accept(oldState, newState, logSliceHeight, leftProposalEndPoint, rightProposalEndPoint)) // *
       {
         variable.set(newState);
         return;
@@ -142,6 +142,8 @@ public class RealSliceSampler implements Sampler
   
   public static double nextLogSliceHeight(Random random, double logDensity)
   {
+    if (logDensity == Double.NEGATIVE_INFINITY)
+      return -1e100; // work around: if initialized at zero probability, e.g Beta at zero, we want this to be greater INF so than line (*) above is rejected for invalid configs
     return logDensity - Generators.unitRateExponential(random);
   }
   
