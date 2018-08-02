@@ -22,7 +22,7 @@ import briefj.BriefParallel;
  */
 public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
 {
-  @GlobalArg ExperimentResults results = new ExperimentResults();
+  @GlobalArg public ExperimentResults results = new ExperimentResults();
   
   @Arg(description = "Number of rejuvenation passes to do after the change of measure.")     
                     @DefaultValue("5")

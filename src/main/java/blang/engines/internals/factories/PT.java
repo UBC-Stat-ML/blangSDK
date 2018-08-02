@@ -17,7 +17,7 @@ import blang.runtime.internals.objectgraph.GraphAnalysis;
 
 public class PT extends ParallelTempering implements PosteriorInferenceEngine  
 {
-  @GlobalArg ExperimentResults results;
+  @GlobalArg public ExperimentResults results = new ExperimentResults();
   
   @Arg @DefaultValue("1_000")
   public int nScans = 1_000;
