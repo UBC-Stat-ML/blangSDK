@@ -55,9 +55,14 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     
     // write samples
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
+    BlangTidySerializer densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     int particleIndex = 0;
     for (SampledModel model : approximation.particles)  
-      model.getSampleWriter(tidySerializer).write(Pair.of("sample", particleIndex++)); 
+    {
+      model.getSampleWriter(tidySerializer).write(Pair.of("sample", particleIndex)); 
+      densitySerializer.serialize(model.logDensity(), "logDensity", Pair.of("sample", particleIndex));
+      particleIndex++;
+    }
   }
   
   private boolean isUniform(ParticlePopulation<?> pop)
