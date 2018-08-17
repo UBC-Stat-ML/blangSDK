@@ -15,10 +15,12 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
   // These should stay private and without getter/setter 
   // Making them accessible is probably symptom of a bug, see e.g. commit b8c2f2f6df416c2d64527c373356965b1daec583
   private final Matrix container;
+  private final boolean mutable;
   
   public MatrixConstituentNode(Matrix matrix, int row, int col) 
   {
     super(findRoot(matrix), getRootKey(matrix, row, col));
+    this.mutable = isMutable(matrix);
     this.container = findRoot(matrix);
   }
   
@@ -28,6 +30,16 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
       return findDelegate((Matrix) ((Delegator<?>) m).getDelegate());
     else
       return m;
+  }
+  
+  public static boolean isMutable(Matrix m) 
+  {
+    if (m instanceof Slice)
+      return !((Slice) m).isReadOnly();
+    else if (m instanceof Delegator<?>) 
+      return isMutable((Matrix) ((Delegator<?>) m).getDelegate());
+    else 
+      return true;
   }
   
   private static Pair<Integer,Integer> getRootKey(Matrix matrix, int row, int col)
@@ -67,7 +79,7 @@ public class MatrixConstituentNode extends ConstituentNode<Pair<Integer,Integer>
   @Override
   public boolean isMutable()
   {
-    return true;
+    return mutable; 
   }
 
   @Override

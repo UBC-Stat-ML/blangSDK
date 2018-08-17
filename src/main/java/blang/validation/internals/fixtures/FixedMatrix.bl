@@ -1,0 +1,11 @@
+package blang.validation.internals.fixtures
+
+model FixedMatrix {
+  
+  random Matrix m ?: fixedVector(#[2.1, 4.2])
+  
+  laws {
+    m.getRealVar(0,0) ~ Normal(0, 1)
+  }
+  
+}
