@@ -4,8 +4,8 @@ import briefj.collections.UnorderedPair
 import static blang.validation.internals.fixtures.Functions.squareIsingEdgesSpatialTemporal
 
 model IsingSpatialTemporal {
-  param Integer N ?: 3
-  param Integer T ?: 2
+  param Integer N ?: 10
+  param Integer T ?: 5
   random List<IntVar> vertices ?: latentIntList(N*N*T)
   
   laws {
