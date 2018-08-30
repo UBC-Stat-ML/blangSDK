@@ -74,7 +74,16 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
+configurations.archives.with { // Put before TRIM line otherwise large file gets generated each time standalone command used.
+    artifacts.remove artifacts.find { it.archiveTask.is distZip }
+    artifacts.remove artifacts.find { it.archiveTask.is distTar }
+}
+
 /* blang-standalone-compiler-directive - do not edit : TRIM */
+
+/*
+  Things below the above line will NOT be included in the on-the-fly compilation used by the blang standalone command.
+/*
 
 /** Deployment information */
 
@@ -109,9 +118,3 @@ artifacts {
   archives sourcesJar
   archives javadocJar
 }
-
-configurations.archives.with {
-    artifacts.remove artifacts.find { it.archiveTask.is distZip }
-    artifacts.remove artifacts.find { it.archiveTask.is distTar }
-}
-
