@@ -1,6 +1,5 @@
 package blang.engines;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +36,7 @@ public class ParallelTempering
   protected SummaryStatistics [] swapAcceptPrs;
   private int iterationIndex = 0;
   private boolean [] swapIndicators;
-  
+   
   public SampledModel getTargetState()
   {
     if (states[0].getExponent() != 1.0)
@@ -111,20 +110,19 @@ public class ParallelTempering
   
   public void initialize(SampledModel prototype, Random random)
   {
-    List<SampledModel> initStates = new ArrayList<>();
     temperingParameters = ladder.temperingParameters(nChains.orElse(nThreads.numberAvailable()));
     if (temperingParameters.get(0) != 1.0)
       throw new RuntimeException();
     System.out.println("Temperatures: " + temperingParameters);
     int nChains = temperingParameters.size();
-    states = initStates.isEmpty() ? defaultInit(prototype, nChains, random) : (SampledModel[]) initStates.toArray();
+    states = initStates(prototype, nChains, random);
     swapAcceptPrs = new SummaryStatistics[nChains - 1];
     for (int i = 0; i < nChains - 1; i++)
       swapAcceptPrs[i] = new SummaryStatistics();
     parallelRandomStreams =  Random.parallelRandomStreams(random, nChains);
   }
   
-  private SampledModel [] defaultInit(SampledModel prototype, int nChains, Random random)
+  private SampledModel [] initStates(SampledModel prototype, int nChains, Random random)
   {
     SampledModel [] result = (SampledModel []) new SampledModel[nChains];
     for (int i = 0; i < nChains; i++)
