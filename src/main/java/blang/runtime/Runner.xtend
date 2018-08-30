@@ -173,7 +173,6 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
       }
     }
     val SampledModel sampledModel = if (stripped) SampledModel.stripped(graphAnalysis, kernels) else new SampledModel(graphAnalysis, kernels, true, true, initRandom)
-    engine.sampledModel = sampledModel
     if (excludeFromOutput.present) {
       for (String exclusion : excludeFromOutput.get) {
         val boolean found = sampledModel.objectsToOutput.remove(exclusion) !== null
@@ -182,6 +181,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         }
       }
     }
+    engine.setSampledModel(sampledModel)
     preprocessingTime.stop
     val Stopwatch samplingTime = Stopwatch.createStarted
     println("Sampling started")
