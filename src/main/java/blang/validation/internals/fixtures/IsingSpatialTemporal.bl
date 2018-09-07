@@ -1,0 +1,29 @@
+package blang.validation.internals.fixtures
+
+import briefj.collections.UnorderedPair
+import static blang.validation.internals.fixtures.Functions.squareIsingEdgesSpatialTemporal
+
+model IsingSpatialTemporal {
+  param Integer N ?: 10
+  param Integer T ?: 5
+  random List<IntVar> vertices ?: latentIntList(N*N*T)
+  
+  laws {
+    
+    // Pairwise potentials
+    for (UnorderedPair<Integer,Integer> pair : squareIsingEdgesSpatialTemporal(N,T)) {
+      | IntVar first  = vertices.get(pair.getFirst), 
+        IntVar second = vertices.get(pair.getSecond)
+      ~ LogPotential(
+          if ((first < 0 || first > 1 || second < 0 || second > 1))
+            return NEGATIVE_INFINITY
+          else
+            return 0.2*(2*first-1)*(2*second-1))
+    }
+    
+    // Node potentials
+    for (IntVar vertex : vertices) {
+      vertex ~ Bernoulli(0.5)
+    }
+  }
+}
