@@ -5,6 +5,7 @@ import blang.distributions.Bernoulli
 import blang.distributions.Beta
 import blang.distributions.Binomial
 import blang.distributions.Categorical
+import blang.distributions.MultinomialDist
 import blang.distributions.ContinuousUniform
 import blang.distributions.Dirichlet
 import blang.distributions.DiscreteUniform
@@ -120,6 +121,14 @@ class Examples {
       .setRealization(latentInt)
         .build, 
     intRealizationSquared
+  )
+  
+  public val multi = add(
+    new MultinomialDist.Builder()
+      .setProbabilities(fixedSimplex(0.2, 0.3, 0.5))
+      .setRealization(latentIntList(3))
+        .build, 
+    listHash
   )
   
   public val contunif = add(

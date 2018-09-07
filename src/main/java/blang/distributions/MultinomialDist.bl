@@ -1,6 +1,8 @@
 package blang.distributions
 
-model Multinomial {
+import bayonet.distributions.Multinomial
+
+model MultinomialDist {
   random List<IntVar> realization
   param Simplex probabilities
   
@@ -16,5 +18,9 @@ model Multinomial {
       return sum 
     }
     realization is Constrained
+  }
+  
+  generate(rand) {
+  	Multinomial.sampleMultinomial(rand,probabilities.vectorToArray)
   }
 }
