@@ -9,7 +9,7 @@ import blang.inits.Implementations;
  * Difference with a TemperatureSchedule is that the whole chain has to 
  * be provided at once. 
  */
-@Implementations({Geometric.class, EquallySpaced.class})
+@Implementations({Geometric.class, EquallySpaced.class, Polynomial.class})
 public interface TemperatureLadder
 {
   /**

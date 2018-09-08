@@ -9,8 +9,6 @@ public class EquallySpaced implements TemperatureLadder
   public List<Double> temperingParameters(int nChains) 
   {
     List<Double> temperingParameters = new ArrayList<>();
-    if (nChains < 1)
-      throw new RuntimeException("Number of tempering chains must be greater than zero.");
     if (nChains == 1)
       temperingParameters.add(1.0);
     else

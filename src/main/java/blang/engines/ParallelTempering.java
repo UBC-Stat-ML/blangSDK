@@ -110,6 +110,8 @@ public class ParallelTempering
   
   public void initialize(SampledModel prototype, Random random)
   {
+    if (nChains.isPresent() && nChains.get() < 1)
+      throw new RuntimeException("Number of tempering chains must be greater than zero.");
     temperingParameters = ladder.temperingParameters(nChains.orElse(nThreads.numberAvailable()));
     if (temperingParameters.get(0) != 1.0)
       throw new RuntimeException();
