@@ -27,8 +27,8 @@ class Home {
       it += '''
         All the distributions shown, e.g. «SYMB»Exponential«ENDSYMB», «SYMB»NonClockTreePrior«ENDSYMB», etc, 
         in particular, those in the SDK, are themselves written in Blang. 
-        This is important for extensibility and, crucially, for teaching. When using the Blang IDE, the student 
-        can command click on a distribution to see its definition in the language they are familiar with. 
+        This is important for extensibility and, crucially, for teaching. When using the Blang IDE, students 
+        can command-click on a distribution to jump to its definition in the language they are familiar with. 
       '''
       it += '''
         The parameters of the distributions can themselves be distributions, e.g. «SYMB»NonClockTreePrior«ENDSYMB» taking in a 
@@ -103,7 +103,14 @@ class Home {
       file = downloadLink
       redirect = GettingStarted::page 
     ]
-    // - have animated gif with Desktop IDE, Web IDE, Command line and links
+    
+    
+    it += '''
+      <br/>
+      <br/>
+      <img src="ide.jpg" class="center-block" style="max-width: 600px;" />
+    '''
+    
   ]
   
   // TODO: test case that link address ok
