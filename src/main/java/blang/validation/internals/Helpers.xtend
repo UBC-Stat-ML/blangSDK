@@ -5,6 +5,7 @@ import blang.validation.internals.fixtures.RealRealizationSquared
 import blang.validation.internals.fixtures.IntRealizationSquared
 import blang.validation.internals.fixtures.VectorHash
 import blang.validation.internals.fixtures.ListHash
+import blang.validation.internals.fixtures.IntListFirstComponentOfRealizationSquared
 import java.io.File
 import briefj.BriefIO
 
@@ -12,6 +13,7 @@ class Helpers {
   
   public val static RealRealizationSquared realRealizationSquared = new RealRealizationSquared()
   public val static IntRealizationSquared intRealizationSquared = new IntRealizationSquared()
+  public val static IntListFirstComponentOfRealizationSquared IntListFirstComponentRealizationSquared = new IntListFirstComponentOfRealizationSquared()
   public val static VectorHash vectorHash = new VectorHash()
   public val static ListHash listHash = new ListHash()
   
