@@ -20,5 +20,5 @@ class Functions {
       result.add(new UnorderedPair(j,N*(N-1)+j))
     }
     return result
-  } 
+  }
 }
