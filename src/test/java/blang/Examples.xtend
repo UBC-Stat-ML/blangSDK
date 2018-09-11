@@ -31,6 +31,7 @@ import java.util.ArrayList
 import java.util.List
 import java.util.function.Function
 import xlinear.Matrix
+
 import static blang.validation.internals.Helpers.intRealizationSquared
 import static blang.validation.internals.Helpers.listHash
 import static blang.validation.internals.Helpers.realRealizationSquared
