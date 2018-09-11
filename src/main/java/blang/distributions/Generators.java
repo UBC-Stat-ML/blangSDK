@@ -18,7 +18,6 @@ import static blang.types.ExtensionUtils.generator;
 
 import java.util.Random;
 
-
 /** Various random number generators. */
 public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
