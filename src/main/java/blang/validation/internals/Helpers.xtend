@@ -13,7 +13,7 @@ class Helpers {
   
   public val static RealRealizationSquared realRealizationSquared = new RealRealizationSquared()
   public val static IntRealizationSquared intRealizationSquared = new IntRealizationSquared()
-  public val static IntListFirstComponentOfRealizationSquared IntListFirstComponentRealizationSquared = new IntListFirstComponentOfRealizationSquared()
+  public val static IntListFirstComponentOfRealizationSquared intListFirstComponentRealizationSquared = new IntListFirstComponentOfRealizationSquared()
   public val static VectorHash vectorHash = new VectorHash()
   public val static ListHash listHash = new ListHash()
   
