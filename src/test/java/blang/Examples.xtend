@@ -31,13 +31,11 @@ import java.util.ArrayList
 import java.util.List
 import java.util.function.Function
 import xlinear.Matrix
-
 import static blang.validation.internals.Helpers.intRealizationSquared
 import static blang.validation.internals.Helpers.listHash
 import static blang.validation.internals.Helpers.realRealizationSquared
 import static blang.validation.internals.Helpers.intListFirstComponentRealizationSquared
 import static blang.validation.internals.Helpers.vectorHash
-
 import static xlinear.MatrixOperations.dense
 import static xlinear.MatrixOperations.denseCopy
 import blang.validation.internals.fixtures.Multimodal
