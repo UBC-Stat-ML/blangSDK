@@ -12,7 +12,7 @@ public class IntListFirstComponentOfRealizationSquared implements Function<Univa
   @Override
   public Double apply(UnivariateModel<? extends List<IntVar>> t) 
   {
-    return (double) t.realization().get(0).intValue();
+    return Math.pow((double) t.realization().get(0).intValue(), 2);
   }
 
 }
