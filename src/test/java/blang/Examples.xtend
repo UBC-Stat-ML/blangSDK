@@ -128,7 +128,7 @@ class Examples {
       .setProbabilities(fixedSimplex(0.2, 0.3, 0.5))
       .setRealization(latentIntList(3))
         .build, 
-    intListFirstComponentRealizationSquared
+    listHash
   )
   
   public val contunif = add(
