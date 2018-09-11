@@ -35,7 +35,9 @@ import xlinear.Matrix
 import static blang.validation.internals.Helpers.intRealizationSquared
 import static blang.validation.internals.Helpers.listHash
 import static blang.validation.internals.Helpers.realRealizationSquared
+import static blang.validation.internals.Helpers.intListFirstComponentRealizationSquared
 import static blang.validation.internals.Helpers.vectorHash
+
 import static xlinear.MatrixOperations.dense
 import static xlinear.MatrixOperations.denseCopy
 import blang.validation.internals.fixtures.Multimodal
@@ -128,7 +130,7 @@ class Examples {
       .setProbabilities(fixedSimplex(0.2, 0.3, 0.5))
       .setRealization(latentIntList(3))
         .build, 
-    listHash
+    intListFirstComponentRealizationSquared
   )
   
   public val contunif = add(
