@@ -4,6 +4,7 @@ import briefj.collections.UnorderedPair
 import static blang.validation.internals.fixtures.Functions.squareIsingEdges
 
 model Ising {
+  param Double beta ?: log(1 + sqrt(2.0)) / 2.0 // critical point
   param Integer N ?: 5
   random List<IntVar> vertices ?: latentIntList(N*N)
   
@@ -12,12 +13,13 @@ model Ising {
     // Pairwise potentials
     for (UnorderedPair<Integer, Integer> pair : squareIsingEdges(N)) {
       | IntVar first  = vertices.get(pair.getFirst), 
-        IntVar second = vertices.get(pair.getSecond)
+        IntVar second = vertices.get(pair.getSecond),
+        beta
       ~ LogPotential(
           if ((first < 0 || first > 1 || second < 0 || second > 1))
             return NEGATIVE_INFINITY
           else
-            return (2*first-1)*(2*second-1))
+            return beta*(2*first-1)*(2*second-1))
     }
     
     // Node potentials
