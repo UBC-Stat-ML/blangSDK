@@ -1,0 +1,60 @@
+package blang.validation.internals.fixtures
+
+model NBMix {
+  
+  param Plate<Integer> cells
+  param Plate<String> genes
+  param Plate<Integer> clusters
+  
+  param Plated<RealVar> relativeCNs   // gene, cluster // observed
+  
+  random Simplex gamma ?: latentSimplex(clusters.indices.size)
+  
+  random Plated<IntVar> 
+    allocations,         // cell
+    expressions          // cell, gene // observed
+  random Plated<RealVar> 
+    cellExpressivities,  // per cell
+    geneExpressivities   // per gene
+   
+  random RealVar 
+    cellShape ?: latentReal, 
+    cellRate ?: latentReal,
+    geneShape ?: latentReal, 
+    geneRate ?: latentReal,
+    overdispersion ?: latentReal
+
+  laws { 
+    
+    gamma | int nClusters = clusters.indices.size ~ SimplexUniform(nClusters) 
+    
+    cellShape ~ Exponential(0.1) 
+    cellRate ~ Exponential(0.1) 
+    geneShape ~ Exponential(0.1) 
+    geneRate ~ Exponential(0.1) 
+    overdispersion ~ Exponential(0.1) 
+    
+    for (Index<Integer> cell : cells.indices) {
+      allocations.get(cell) | gamma ~ Categorical(gamma)
+      cellExpressivities.get(cell) | cellShape, cellRate ~ Gamma(cellShape, cellRate)
+    }
+    
+    for (Index<String> gene : genes.indices) {
+      geneExpressivities.get(gene) | geneShape, geneRate ~ Gamma(geneShape, geneRate)
+    }
+    
+    for (Index<String> gene : genes.indices) {
+      for (Index<Integer> cell : cells.indices) {
+        expressions.get(gene, cell) | 
+          overdispersion,
+          IntVar allocation = allocations.get(cell),
+          RealVar geneExpressivity = geneExpressivities.get(gene),
+          RealVar cellExpressivity = cellExpressivities.get(cell),
+          List<RealVar> relCNsPerCluster = relativeCNs.slice(gene).asList(clusters)
+           ~ NegativeBinomial_MeanParam(geneExpressivity * cellExpressivity * relCNsPerCluster.get(allocation), overdispersion) 
+      }
+    }
+    
+  }
+
+}
