@@ -13,4 +13,8 @@ model SymmetricDirichlet {
   laws {
     realization | dim, concentration ~ Dirichlet(ones(dim) * (concentration.doubleValue / dim))
   }
+  
+  generate(rand) { 
+    rand.dirichletInPlace(ones(dim) * (concentration.doubleValue / dim), realization) 
+  }
 }

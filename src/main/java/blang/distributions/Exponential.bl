@@ -10,4 +10,8 @@ model Exponential {
   laws {
     realization | rate ~ Gamma(1.0, rate)
   }
+  
+  generate (rand) {
+    rand.exponential(rate)
+  }
 }

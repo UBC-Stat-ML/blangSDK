@@ -10,4 +10,8 @@ model SimplexUniform {
   laws {
     realization | dim ~ Dirichlet(ones(dim))
   }
+  
+  generate (rand) {
+    rand.dirichletInPlace(ones(dim), realization)
+  }
 }
