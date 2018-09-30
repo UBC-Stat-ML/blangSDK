@@ -1,6 +1,6 @@
 package blang.distributions
 
-model NegativeBinomial_MeanParam {
+model NegativeBinomialMeanParam {
   random IntVar k
   param RealVar mean, overdispersion
 
@@ -9,5 +9,9 @@ model NegativeBinomial_MeanParam {
       mean * mean / overdispersion, 
       1.0 - mean/(mean + overdispersion)
     )
+  }
+  
+  generate (rand) {
+    rand.negativeBinomial(mean * mean / overdispersion, 1.0 - mean/(mean + overdispersion)) 
   }
 }

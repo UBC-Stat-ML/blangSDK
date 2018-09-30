@@ -15,8 +15,9 @@ import blang.core.IntVar;
 import blang.core.RealVar;
 import blang.core.UnivariateModel;
 import blang.distributions.Beta;
+import blang.distributions.GammaMeanParam;
 import blang.distributions.NegativeBinomial;
-import blang.distributions.NegativeBinomial_MeanParam;
+import blang.distributions.NegativeBinomialMeanParam;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
@@ -36,17 +37,34 @@ public class TestMoments
   public void negBin()
   {
     test(10_000_000, (NegativeBinomial) examples.negBinomial.model);
-    test(10_000_000, (NegativeBinomial_MeanParam) examples.negBinomial_mv.model);
+    test(10_000_000, (NegativeBinomialMeanParam) examples.negBinomial_mv.model);
   }
   
-  @TestedDistribution(NegativeBinomial_MeanParam.class)
-  private static List<Double> negBinMeanVarMoments(NegativeBinomial_MeanParam negBin)
+  @Test
+  public void gamma()
+  {
+    test(10_000_000, (GammaMeanParam) examples.gammaMeanParam.model);  
+  }
+  
+  @TestedDistribution(GammaMeanParam.class)
+  private static List<Double> gammaMeanParamMoments(GammaMeanParam gamma)
   {
     List<Double> result = new ArrayList<>();
     result.add(1.0);
-    double m = negBin.getMean().doubleValue(); //, v = negBin.getVariance().doubleValue();
+    double m = gamma.getMean().doubleValue(), v = gamma.getVariance().doubleValue();
     result.add(m);
-//    result.add(v + m * m);
+    result.add(v + m * m);
+    return result;
+  }
+  
+  @TestedDistribution(NegativeBinomialMeanParam.class)
+  private static List<Double> negBinMeanVarMoments(NegativeBinomialMeanParam negBin)
+  {
+    List<Double> result = new ArrayList<>();
+    result.add(1.0);
+    double m = negBin.getMean().doubleValue(), v = m + negBin.getOverdispersion().doubleValue();
+    result.add(m);
+    result.add(v + m * m);
     return result;
   }
   

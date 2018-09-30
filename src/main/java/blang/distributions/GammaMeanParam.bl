@@ -1,0 +1,15 @@
+package blang.distributions
+
+model GammaMeanParam {
+  random RealVar realization
+  param RealVar mean
+  param RealVar variance
+  
+  laws {
+    realization | mean, variance ~ Gamma(mean * mean / variance, mean / variance)
+  }
+  
+  generate (rand) {
+    rand.gamma(mean * mean / variance, mean / variance)
+  }
+}

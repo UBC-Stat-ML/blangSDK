@@ -41,7 +41,6 @@ import blang.validation.internals.fixtures.Multimodal
 import blang.validation.internals.fixtures.RealRealizationSquared
 import blang.distributions.internals.Helpers
 import blang.distributions.NegativeBinomial
-import blang.distributions.NegativeBinomial_MeanParam
 import blang.distributions.NormalField
 import blang.types.Precision.Diagonal
 import blang.validation.internals.fixtures.PoissonNormalField
@@ -57,6 +56,8 @@ import static blang.types.StaticUtils.latentSimplex
 import static blang.types.StaticUtils.fixedSimplex
 import xlinear.DenseMatrix
 import blang.validation.internals.fixtures.DynamicNormalMixture
+import blang.distributions.NegativeBinomialMeanParam
+import blang.distributions.GammaMeanParam
 
 class Examples {
   
@@ -98,10 +99,10 @@ class Examples {
   )
   
   public val negBinomial_mv = add( 
-    new NegativeBinomial_MeanParam.Builder()
+    new NegativeBinomialMeanParam.Builder()
       .setK(latentInt)
-      .setMean(constantReal(1.1))
-      .setOverdispersion(constantReal(0.3))
+      .setMean(fixedReal(1.1))
+      .setOverdispersion(fixedReal(0.3))
         .build,
     intRealizationSquared
   )
@@ -195,6 +196,15 @@ class Examples {
     new Gamma.Builder()
       .setRate(fixedReal(2.1))
       .setShape(fixedReal(0.9))
+      .setRealization(latentReal)
+        .build, 
+    realRealizationSquared
+  )
+  
+  public val gammaMeanParam = add(
+    new GammaMeanParam.Builder()
+      .setMean(fixedReal(1.9))
+      .setVariance(fixedReal(0.2))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
