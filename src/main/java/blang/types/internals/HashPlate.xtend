@@ -63,4 +63,8 @@ class HashPlate<K> implements Plate<K> {
     this.parser = parser
     this.maxSize = optionalMaxSize.orElse(Integer.MAX_VALUE)
   }
+  
+  override String toString() {
+    return name.string
+  }
 }

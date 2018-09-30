@@ -45,4 +45,7 @@ class SimplePlate<T> implements Plate<T> {
     }
   }
   
+  override String toString() {
+    return name.string
+  }
 }
