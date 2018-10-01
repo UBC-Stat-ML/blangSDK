@@ -24,7 +24,7 @@ public class ExplorationRules
   public static List<ExplorationRule> defaultExplorationRules = Arrays.asList(
       ExplorationRules::arrayViews,
       ExplorationRules::arrays,
-      ExplorationRules::maps,
+//      ExplorationRules::maps,  Bug fix: these created problem, see Oct 1st 2018 commits in the nowellpack project
       ExplorationRules::matrices,
       ExplorationRules::knownImmutableObjects,
       ExplorationRules::standardObjects);
@@ -40,18 +40,6 @@ public class ExplorationRules
       result.add(new ArrayConstituentNode(object, i));
     return result;
   }
-  
-  public static List<MapConstituentNode> maps(Object object)
-  {
-    if (!(object instanceof Map))
-      return null;
-    ArrayList<MapConstituentNode> result = new ArrayList<>();
-    @SuppressWarnings("rawtypes")
-    Map m = (Map) object;
-    for (Object key : m.keySet())
-      result.add(new MapConstituentNode(object, key));
-    return result;
-  } 
   
   public static List<ArrayConstituentNode> arrayViews(Object object)
   {
