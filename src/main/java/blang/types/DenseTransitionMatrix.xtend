@@ -10,7 +10,7 @@ import xlinear.internals.MatrixVisitorEditInPlace
 import static extension xlinear.MatrixExtensions.*
 import bayonet.math.NumericalUtils
 
-/** Matrix where each row is a DenseSimple. */
+/** Matrix where each row is a DenseSimplex. */
 @Data 
 class DenseTransitionMatrix implements TransitionMatrix, DenseMatrix, Delegator<DenseMatrix> {
   @Accessors(PUBLIC_GETTER)

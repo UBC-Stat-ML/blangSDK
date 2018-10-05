@@ -1,0 +1,19 @@
+package blang.validation.internals.fixtures
+
+model PlatedMatrixTests {
+  
+  param Plate<Integer> dims
+  param Plate<String> replicates
+  
+  random PlatedMatrix xs
+  
+  
+  
+  laws {
+    for (Index<String> n : replicates.indices) {
+      
+      xs.getDenseVector(dims, n) ~ MultivariateNormal(ones(3), identity(3).cholesky)
+      
+    }
+  }
+}

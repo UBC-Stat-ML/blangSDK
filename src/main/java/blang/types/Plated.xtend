@@ -61,7 +61,7 @@ interface Plated<T>  {
     @ConstructorArg("dataSource") DataSource dataSource,
     @GlobalArg GlobalDataSourceStore globalDataSourceStore,
     @InitService QualifiedName qualifiedName,
-    @InitService TypeLiteral<T> typeLiteral,
+    @InitService TypeLiteral<Plated<T>> typeLiteral,
     @InitService Creator creator 
   ) {
     val ColumnName columnName = name.orElse(new ColumnName(qualifiedName.simpleName()))
