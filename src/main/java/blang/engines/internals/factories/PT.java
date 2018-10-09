@@ -28,9 +28,6 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
   
-  @Arg                   @DefaultValue("false")
-  public boolean printAllTemperatures = false; 
-  
   @Override
   public void setSampledModel(SampledModel model) 
   {
@@ -47,20 +44,13 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     for (int iter = 0; iter < nScans; iter++)
     {
       moveKernel(nPassesPerScan);
-      if (printAllTemperatures) 
+      for (int i = 0; i < temperingParameters.size(); i++)  
       {
-        for (int i = 0; i < temperingParameters.size(); i++)  
-        {
-          states[i].getSampleWriter(tidySerializer).write(Pair.of("sample", iter), Pair.of("annealingParameter", temperingParameters.get(i)));
-          densitySerializer.serialize(states[i].logDensity(), "logDensity", Pair.of("sample", iter), Pair.of("annealingParameter", temperingParameters.get(i)));
-          densitySerializer.serialize(-states[i].preAnnealedLogLikelihood(), "energy", Pair.of("sample", iter), Pair.of("annealingParameter", temperingParameters.get(i)));
-        }
+        densitySerializer.serialize(states[i].logDensity(), "allLogDensities", Pair.of("sample", iter), Pair.of("annealingParameter", temperingParameters.get(i)));
+        densitySerializer.serialize(-states[i].preAnnealedLogLikelihood(), "energy", Pair.of("sample", iter), Pair.of("annealingParameter", temperingParameters.get(i)));
       }
-      else
-      {
-        getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
-        densitySerializer.serialize(getTargetState().logDensity(), "logDensity", Pair.of("sample", iter));
-      }
+      densitySerializer.serialize(getTargetState().logDensity(), "logDensity", Pair.of("sample", iter));
+      getTargetState().getSampleWriter(tidySerializer).write(Pair.of("sample", iter));
       boolean[] swapIndicators = swapKernel();
       for (int c = 0; c < nChains(); c++)
         swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, "swapIndicators", Pair.of("sample", iter), Pair.of("chain", c));
