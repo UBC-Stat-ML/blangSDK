@@ -9,11 +9,11 @@ import blang.inits.Implementations;
  * Difference with a TemperatureSchedule is that the whole chain has to 
  * be provided at once. 
  */
-@Implementations({Geometric.class, EquallySpaced.class, Polynomial.class})
+@Implementations({Geometric.class, EquallySpaced.class, Polynomial.class, UserSpecified.class})
 public interface TemperatureLadder
 {
   /**
-   * Fill the provided temperingParameters with annealing parameters (first one should be 1 ~ room temperature)
+   * Fill the provided temperingParameters with annealing parameters (index 0, i.e. first one, should be 1 - i.e. room temperature)
    * 
    * Optionally, also fill in initialStates with states at the corresponding temperature. 
    */
