@@ -21,6 +21,9 @@ import blang.distributions.Poisson
 import blang.distributions.SimplexUniform
 import blang.distributions.SymmetricDirichlet
 import blang.distributions.LogPotential
+import blang.distributions.StudentT
+import blang.distributions.HalfStudentT
+import blang.distributions.ChiSquared
 
 class BuiltInDistributions {
   
@@ -43,6 +46,9 @@ class BuiltInDistributions {
       documentClass(Normal)
       documentClass(Beta)
       documentClass(Gamma)
+      documentClass(StudentT)
+      documentClass(HalfStudentT)
+      documentClass(ChiSquared)
     ]
     
     section("Multivariate") [

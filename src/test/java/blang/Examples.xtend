@@ -13,6 +13,9 @@ import blang.distributions.Gamma
 import blang.distributions.MultivariateNormal
 import blang.distributions.Normal
 import blang.distributions.Poisson
+import blang.distributions.StudentT
+import blang.distributions.HalfStudentT
+import blang.distributions.ChiSquared
 import blang.examples.MixtureModel
 import blang.validation.internals.fixtures.SimpleHierarchicalModel
 import blang.io.GlobalDataSource
@@ -80,6 +83,32 @@ class Examples {
         .build, 
     realRealizationSquared
   )
+  
+    public val studentt = add(
+      new StudentT.Builder()
+        .setNu(fixedReal(2.0))
+        .setRealization(latentReal)
+            .build,
+      realRealizationSquared
+  )
+
+  public val halfstudentt = add(
+      new HalfStudentT.Builder()
+        .setNu(fixedReal(2.1))
+        .setSigma(fixedReal(1.7))
+        .setRealization(latentReal)
+            .build,
+      realRealizationSquared
+  )
+
+  public val chisquared = add(
+      new ChiSquared.Builder()
+        .setNu(fixedInt(3))
+        .setRealization(latentReal)
+            .build,
+      realRealizationSquared
+  )
+  
       
   public val bern = add(
     new Bernoulli.Builder()

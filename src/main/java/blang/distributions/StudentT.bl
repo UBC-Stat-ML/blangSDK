@@ -1,0 +1,21 @@
+package blang.distributions
+
+model StudentT {
+    random RealVar realization
+    
+    /** The degrees of freedom \(\nu\). \( \nu > 0 \) */
+    param RealVar nu
+    
+    laws{
+        logf(nu){
+            return lnGamma((nu + 1.0) / 2.0) - 0.5 * log(nu * PI) - lnGamma(nu / 2.0)
+        }
+        logf(nu, realization){
+            return - ((nu + 1) / 2.0) * log(1 + pow(realization, 2) / nu)            
+        }
+    }
+    
+    generate(rand){
+        rand.studentt(nu)
+    }
+}
