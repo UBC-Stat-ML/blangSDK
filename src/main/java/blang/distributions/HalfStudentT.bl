@@ -1,0 +1,31 @@
+package blang.distributions
+
+/** HalfStudentT random variable. Values in \((0, \infty)\).
+ *  Reference:
+ *  https://docs.pymc.io/api/distributions/continuous.html#pymc3.distributions.continuous.HalfStudentT
+ */
+model HalfStudentT{
+    random RealVar realization
+
+    param RealVar nu
+    param RealVar sigma
+
+    laws{
+        logf(nu){
+            if (nu <= 0.0) return NEGATIVE_INFINITY
+            return log(2.0) + lnGamma((nu + 1)/ 2.0) - lnGamma(nu / 2.0) - 0.5 * log(nu * PI) 
+        }
+        logf(sigma){
+            if (sigma <= 0.0) return NEGATIVE_INFINITY
+            return - log(sigma)
+        }
+        logf(nu, sigma, realization){
+            if (sigma <= 0.0) return NEGATIVE_INFINITY
+            if (nu <= 0.0) return NEGATIVE_INFINITY
+            return -((nu + 1.0) / 2.0) * log(1.0 + 1.0 / nu * pow(realization / sigma, 2))
+        }
+    }
+    generate(rand){
+        rand.halfstudentt(nu, sigma)
+    }
+}

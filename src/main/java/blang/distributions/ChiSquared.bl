@@ -1,0 +1,29 @@
+package blang.distributions
+
+/** Chi Squared random variable. Values in \((0, \infty)\). */
+model ChiSquared {
+  random RealVar realization
+  
+  /** The degrees of freedom \(\nu\). \( \nu > 0 \) */
+  param  IntVar nu
+  
+  laws {
+      logf(nu){
+          if (nu <= 0) return NEGATIVE_INFINITY
+          return - (nu / 2.0) * log(2) - lnGamma(nu / 2.0)
+      }
+      logf(realization, nu){
+          if (nu <= 0) return NEGATIVE_INFINITY
+          if (realization <= 0) return NEGATIVE_INFINITY
+          return (nu / 2.0 - 1) * log(realization)
+      }
+      logf(realization){
+          if (realization <= 0) return NEGATIVE_INFINITY
+          return - realization / 2.0
+      }
+  }
+  
+  generate(rand) {
+    rand.chisquared(nu)
+  }
+}
