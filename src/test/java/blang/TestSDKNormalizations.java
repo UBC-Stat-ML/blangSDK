@@ -2,7 +2,10 @@ package blang;
 
 import org.junit.Test;
 
+import blang.core.IntDistribution;
 import blang.distributions.Generators;
+import blang.distributions.YuleSimon;
+import blang.types.StaticUtils;
 import blang.validation.NormalizationTest;
 
 public class TestSDKNormalizations extends NormalizationTest
@@ -35,4 +38,15 @@ public class TestSDKNormalizations extends NormalizationTest
   {
     checkNormalization(examples.gamma.model, 0.0, 15.0); 
   }
+  
+  @Test
+  public void testYuleSimon()
+  {
+    IntDistribution distribution = YuleSimon.distribution(StaticUtils.fixedReal(3.5));
+    double sum = 0.0;
+    for (int i = 0; i < 100; i++)
+      sum += Math.exp(distribution.logDensity(i));
+    System.out.println(sum);
+  }
+  
 }

@@ -18,6 +18,7 @@ import blang.distributions.Beta;
 import blang.distributions.GammaMeanParam;
 import blang.distributions.NegativeBinomial;
 import blang.distributions.NegativeBinomialMeanParam;
+import blang.distributions.YuleSimon;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
@@ -44,6 +45,24 @@ public class TestMoments
   public void gamma()
   {
     test(10_000_000, (GammaMeanParam) examples.gammaMeanParam.model);  
+  }
+  
+  @Test
+  public void yule()
+  {
+    test(10_000_000, (YuleSimon) examples.yuleSimon.model);  
+  }
+  
+  @TestedDistribution(YuleSimon.class)
+  private static List<Double> yuleMoments(YuleSimon yule)
+  {
+    List<Double> result = new ArrayList<>();
+    result.add(1.0);
+    double rho = yule.getRho().doubleValue();
+    if (rho <= 1) throw new RuntimeException("Mean only defined for rho > 1");
+    double m = 1.0 / (rho - 1);
+    result.add(m);
+    return result;
   }
   
   @TestedDistribution(GammaMeanParam.class)

@@ -58,10 +58,19 @@ import xlinear.DenseMatrix
 import blang.validation.internals.fixtures.DynamicNormalMixture
 import blang.distributions.NegativeBinomialMeanParam
 import blang.distributions.GammaMeanParam
+import blang.distributions.YuleSimon
 
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
+  
+  public val yuleSimon = add( 
+    new YuleSimon.Builder()
+      .setRho(fixedReal(3.5))
+      .setRealization(latentInt)
+        .build,
+    [getRealization().intValue as double]   
+  )
   
   public val normal = add(
     new Normal.Builder()

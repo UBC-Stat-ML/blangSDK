@@ -1,0 +1,23 @@
+package blang.distributions
+
+import static org.apache.commons.math3.special.Beta.logBeta
+
+model YuleSimon {
+  random IntVar realization
+  
+  /** The rate of the mixing exponential distribution. */
+  param RealVar rho
+  
+  laws {
+    logf(rho, realization) {
+      if (rho <= 0) return NEGATIVE_INFINITY
+      if (realization < 0) return NEGATIVE_INFINITY
+      return log(rho) + logBeta(1.0 + realization, rho + 1)
+    }
+  }
+  
+  generate(rand) {
+    val w = rand.exponential(rho)
+    return rand.negativeBinomial(1.0, 1.0 - exp(-w)) // This is the correct formula. Sometimes reported in the literature as "-exp(w)" (e.g. wikipedia, which I have edited now to fix, due to confusion b/w success pr/failure pr. of geometric)
+  }
+}
