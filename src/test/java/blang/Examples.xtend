@@ -84,9 +84,25 @@ class Examples {
     realRealizationSquared
   )
   
-    public val studentt = add(
+  public val studentt = add(
       new StudentT.Builder()
         .setNu(fixedReal(2.0))
+        .setRealization(latentReal)
+            .build,
+      [Math.cos(getRealization().doubleValue)]  // use bdd function to make sure it's integrable
+  )
+  
+  public val cauchy = add(
+      new StudentT.Builder()
+        .setNu(fixedReal(1.0))
+        .setRealization(latentReal)
+            .build,
+      [Math.cos(getRealization().doubleValue)] // use bdd function to make sure it's integrable
+  )
+  
+  public val thint = add(
+      new StudentT.Builder()
+        .setNu(fixedReal(3.0))
         .setRealization(latentReal)
             .build,
       realRealizationSquared

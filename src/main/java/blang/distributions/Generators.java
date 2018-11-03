@@ -6,7 +6,6 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
-import org.apache.commons.math3.random.RandomGenerator;
 
 import bayonet.math.NumericalUtils;
 import blang.types.DenseSimplex;
@@ -24,12 +23,10 @@ import java.util.Random;
 /** Various random number generators. */
 public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
-
   /** */
   public static double halfstudentt(Random random, double nu, double sigma) {
-	  double t = new TDistribution((RandomGenerator) random, nu).sample();
-	  double result = Math.abs(t) * sigma;
-	  return result;
+	  double t = studentt(random, nu);
+	  return Math.abs(t) * sigma;
   }
   /** */
   public static double chisquared(Random random, int nu)
@@ -43,12 +40,8 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   /** */
   public static double studentt(Random random, double nu)
   {
-	  double result = new TDistribution((RandomGenerator) random, nu).sample();
-	  return result;
+	  return new TDistribution(generator(random), nu).sample();
   }
-
-	
-
 	
   /** */
   public static double gamma(Random random, double shape, double rate)
