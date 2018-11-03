@@ -4,7 +4,7 @@ import bayonet.distributions.Multinomial;
 import bayonet.smc.ParticlePopulation;
 import blang.runtime.SampledModel;
 
-public class SMCStaticUtils
+public class EngineStaticUtils
 {
   public static double relativeESS(ParticlePopulation<SampledModel> population, double temperature, double nextTemperature, boolean conditional)
   {
@@ -30,4 +30,22 @@ public class SMCStaticUtils
     Multinomial.expNormalize(result);
     return result;
   }
+  
+  /**
+   * Computes (1/N^2) \sum_i \sum_j | v_i - v_j | 
+   * in O(N) by using the assumption that the v's are sorted in increasing order.
+   */
+  public static double averageDifference(double [] sortedVs) 
+  {
+    double sum = 0.0;
+    int N = sortedVs.length;
+    for (int j = 0; j < N - 1; j++)
+    {
+      double delta = sortedVs[j+1] - sortedVs[j];
+      if (delta < 0.0) throw new RuntimeException("Assuming the Vs are sorted.");
+      sum += delta * (j + 1) * (N - j - 1);
+    }
+    return 2.0 * sum / N / N;
+  }
+  
 }

@@ -6,7 +6,7 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.PegasusSolver;
 
 import bayonet.smc.ParticlePopulation;
-import blang.engines.internals.SMCStaticUtils;
+import blang.engines.internals.EngineStaticUtils;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.DesignatedConstructor;
@@ -73,7 +73,7 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   {
     double previousRelativeESS = useConditional ? Double.NaN : population.getRelativeESS();
     return useConditional ? 
-        (double proposedNextTemperature) -> SMCStaticUtils.relativeESS(population, temperature, proposedNextTemperature, true)  - threshold:
-        (double proposedNextTemperature) -> SMCStaticUtils.relativeESS(population, temperature, proposedNextTemperature, false) - threshold * previousRelativeESS;
+        (double proposedNextTemperature) -> EngineStaticUtils.relativeESS(population, temperature, proposedNextTemperature, true)  - threshold:
+        (double proposedNextTemperature) -> EngineStaticUtils.relativeESS(population, temperature, proposedNextTemperature, false) - threshold * previousRelativeESS;
   }
 }
