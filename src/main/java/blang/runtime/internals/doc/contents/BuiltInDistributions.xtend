@@ -25,6 +25,8 @@ import blang.distributions.StudentT
 import blang.distributions.HalfStudentT
 import blang.distributions.ChiSquared
 import blang.distributions.YuleSimon
+import blang.distributions.Geometric
+
 
 class BuiltInDistributions {
   
@@ -40,6 +42,7 @@ class BuiltInDistributions {
       documentClass(Poisson)
       documentClass(NegativeBinomial)
       documentClass(YuleSimon)
+      documentClass(Geometric)
     ]
     
     section("Continuous") [

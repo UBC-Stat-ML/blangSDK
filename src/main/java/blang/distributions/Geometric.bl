@@ -1,0 +1,20 @@
+package blang.distributions 
+
+/**Geometric Random Variable
+ * Support: \(\{0, 1, 2, \dots\}\)
+ */
+model Geometric{
+	/* number of trails until success*/
+	random IntVar realization
+	
+	/* probability of success for each trial */
+	param RealVar p
+	
+	laws {
+		logf(p, realization) {
+			if (p < 0) return NEGATIVE_INFINITY
+			return (realization - 1)*log(1-p) + log(p)			
+		}
+	}
+	generate(rand){rand.geometric(p)}
+}
