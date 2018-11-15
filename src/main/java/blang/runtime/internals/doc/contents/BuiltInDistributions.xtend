@@ -13,6 +13,7 @@ import blang.distributions.Dirichlet
 import blang.distributions.DiscreteUniform
 import blang.distributions.Exponential
 import blang.distributions.Gamma
+import blang.distributions.Geometric
 import blang.distributions.MultivariateNormal
 import blang.distributions.NegativeBinomial
 import blang.distributions.Normal
@@ -40,6 +41,7 @@ class BuiltInDistributions {
       documentClass(Poisson)
       documentClass(NegativeBinomial)
       documentClass(YuleSimon)
+      documentClass(Geometric)
     ]
     
     section("Continuous") [
