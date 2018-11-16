@@ -5,6 +5,7 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.GeometricDistribution;
+import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
@@ -28,6 +29,15 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   public static double halfstudentt(Random random, double nu, double sigma) {
 	  double t = studentt(random, nu);
 	  return Math.abs(t) * sigma;
+  }
+
+  /** */
+  public static double laplace(Random random, double location, double scale)
+  {
+    double result = new LaplaceDistribution(generator(random), location, scale).sample();
+	if (result == 0.0) // avoid crash-inducing zero probability corner cases
+		result = ZERO_PLUS_EPS;
+    return result;
   }
   
   /** */

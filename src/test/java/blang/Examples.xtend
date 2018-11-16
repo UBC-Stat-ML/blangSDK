@@ -63,6 +63,7 @@ import blang.validation.internals.fixtures.DynamicNormalMixture
 import blang.distributions.NegativeBinomialMeanParam
 import blang.distributions.GammaMeanParam
 import blang.distributions.YuleSimon
+import blang.distributions.Laplace
 
 class Examples {
   
@@ -74,6 +75,15 @@ class Examples {
       .setRealization(latentInt)
         .build, 
     intRealizationSquared
+  )
+  
+  public val laplace = add(
+    new Laplace.Builder()
+      .setLocation(fixedReal(0.5))
+      .setScale(fixedReal(0.1))
+      .setRealization(latentReal)
+        .build,
+    realRealizationSquared
   )
   
   public val yuleSimon = add( 

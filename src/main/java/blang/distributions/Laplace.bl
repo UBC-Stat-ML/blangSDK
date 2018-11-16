@@ -1,0 +1,20 @@
+package blang.distributions
+/*
+ * Laplace Distribution
+ * Support: \(\mathbb{R}\)
+ */
+model Laplace { 
+	random RealVar realization 
+	param RealVar location
+	param RealVar scale  // must be > 0 
+	
+		
+	laws {
+		logf(realization, location, scale) {
+			if (scale <= 0) return NEGATIVE_INFINITY 
+			return log(1 / 2 * scale) + abs(location - scale) / scale
+		}
+	}
+	
+	generate(rand) {rand.laplace(location, scale)}
+}

@@ -1,6 +1,5 @@
 package blang.distributions 
-
-/**Geometric Random Variable
+ /**Geometric Random Variable
  * Support: \(\{0, 1, 2, \dots\}\)
  */
 model Geometric{
@@ -18,4 +17,4 @@ model Geometric{
 		}
 	}
 	generate(rand){rand.geometric(p)}
-}
+} 
