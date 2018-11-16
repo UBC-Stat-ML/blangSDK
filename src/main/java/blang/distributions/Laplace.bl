@@ -12,7 +12,7 @@ model Laplace {
 	laws {
 		logf(realization, location, scale) {
 			if (scale <= 0) return NEGATIVE_INFINITY 
-			return log(1 / 2 * scale) + abs(location - scale) / scale
+			return log(1 / (2 * scale)) - abs(realization - location) / scale
 		}
 	}
 	
