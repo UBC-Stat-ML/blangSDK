@@ -84,6 +84,7 @@ class Examples {
     [getRealization().intValue as double]   
   )
   
+  
   public val normal = add(
     new Normal.Builder()
       .setMean(fixedReal(0.2))
@@ -134,7 +135,7 @@ class Examples {
       realRealizationSquared
   )
   
-      
+     
   public val bern = add(
     new Bernoulli.Builder()
       .setProbability(fixedReal(0.2))
@@ -331,7 +332,7 @@ class Examples {
     [coefficients.get(0).realPart.doubleValue],
     [coefficients.get(0).isZero.intValue as double]
   )
-  
+ 
   public val mix = add(
     new MixtureModel.Builder()
       .setObservations(latentRealList(2))
@@ -345,7 +346,7 @@ class Examples {
       .build,
     new RealRealizationSquared()
   )
-  
+
   val col = new ColumnName("plate")
   val plate = Plate::ofIntegers(col, 2)
   public val normalField = add(

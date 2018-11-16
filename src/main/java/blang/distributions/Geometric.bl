@@ -12,8 +12,9 @@ model Geometric{
 	
 	laws {
 		logf(p, realization) {
-			if (p < 0 || p > 1) return NEGATIVE_INFINITY
-			return (realization - 1)*log(1-p) + log(p)			
+			if (p <= 0 || p >= 1) return NEGATIVE_INFINITY
+			if (realization < 0) return NEGATIVE_INFINITY
+			return realization*log(1-p) + log(p)			
 		}
 	}
 	generate(rand){rand.geometric(p)}

@@ -34,8 +34,6 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   public static int geometric(Random random, double prob)
   {
     int result = new GeometricDistribution(generator(random), prob).sample();
-    if (result == 0.0) // avoid crash-inducing zero probability corner cases
-       result = (int) ZERO_PLUS_EPS;
     return result;
   }
   
