@@ -2,10 +2,8 @@ package blang.distributions;
 
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.BinomialDistribution;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
-import org.apache.commons.math3.distribution.TDistribution;
 
 import bayonet.math.NumericalUtils;
 import blang.types.DenseSimplex;
@@ -23,26 +21,6 @@ import java.util.Random;
 /** Various random number generators. */
 public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
-  /** */
-  public static double halfstudentt(Random random, double nu, double sigma) {
-	  double t = studentt(random, nu);
-	  return Math.abs(t) * sigma;
-  }
-  /** */
-  public static double chisquared(Random random, int nu)
-  {
-	double result = new ChiSquaredDistribution(generator(random), (double) nu).sample();
-	if (result == 0.0) // avoid crash-inducing zero probability corner cases
-	  result = ZERO_PLUS_EPS;
-	return result;
-  }
-  
-  /** */
-  public static double studentt(Random random, double nu)
-  {
-	  return new TDistribution(generator(random), nu).sample();
-  }
-	
   /** */
   public static double gamma(Random random, double shape, double rate)
   {
@@ -72,6 +50,28 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     return bayonet.distributions.Random.nextBernoulli(random, p);
   }
   
+  
+  
+  
+  public static int rademacher(Random random)
+  {
+//	  if (random instanceof bayonet.distributions.Random)
+//		  {return -1;
+//		  }
+//	  return 1;
+	  if (random instanceof bayonet.distributions.Random)
+		  if (((bayonet.distributions.Random) random).nextBernoulli(0.5)) {
+		    	return 1;
+		    };
+		  return -1;
+  }
+  
+  public static int BetaBinomial(Random random, double alpha, double beta, int numberOfTrials)
+  {  
+		  double x = beta(random, alpha, beta);
+		  int y = binomial(random,numberOfTrials,x);
+		  return y;
+  }
   /** */
   public static int categorical(Random random, double [] probabilities)
   {
