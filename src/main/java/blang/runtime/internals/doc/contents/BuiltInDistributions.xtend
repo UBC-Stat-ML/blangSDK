@@ -6,6 +6,7 @@ import blang.distributions.Bernoulli
 
 import static extension blang.runtime.internals.doc.DocElementExtensions.documentClass
 import blang.distributions.Beta
+import blang.distributions.BetaBinomial
 import blang.distributions.Binomial
 import blang.distributions.Categorical
 import blang.distributions.ContinuousUniform
@@ -20,11 +21,7 @@ import blang.distributions.NormalField
 import blang.distributions.Poisson
 import blang.distributions.SimplexUniform
 import blang.distributions.SymmetricDirichlet
-import blang.distributions.LogPotential
-import blang.distributions.StudentT
-import blang.distributions.HalfStudentT
-import blang.distributions.ChiSquared
-import blang.distributions.YuleSimon
+import blang.distributions.Rademacher
 
 class BuiltInDistributions {
   
@@ -34,12 +31,13 @@ class BuiltInDistributions {
     
     section("Discrete") [
       documentClass(Bernoulli)
+      documentClass(BetaBinomial)
       documentClass(Binomial)
       documentClass(Categorical)
       documentClass(DiscreteUniform)
       documentClass(Poisson)
       documentClass(NegativeBinomial)
-      documentClass(YuleSimon)
+      documentClass(Rademacher)
     ]
     
     section("Continuous") [
@@ -48,9 +46,6 @@ class BuiltInDistributions {
       documentClass(Normal)
       documentClass(Beta)
       documentClass(Gamma)
-      documentClass(StudentT)
-      documentClass(HalfStudentT)
-      documentClass(ChiSquared)
     ]
     
     section("Multivariate") [
@@ -59,10 +54,6 @@ class BuiltInDistributions {
       documentClass(Dirichlet)
       documentClass(SymmetricDirichlet)
       documentClass(SimplexUniform)
-    ]
-    
-    section("Misc") [
-      documentClass(LogPotential)
     ]
 
   ]
