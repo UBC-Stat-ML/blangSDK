@@ -4,6 +4,8 @@ import blang.core.Model
 import blang.distributions.Bernoulli
 import blang.distributions.Beta
 import blang.distributions.Binomial
+import blang.distributions.BetaBinomial
+import blang.distributions.Rademacher
 import blang.distributions.Categorical
 import blang.distributions.ContinuousUniform
 import blang.distributions.Dirichlet
@@ -13,9 +15,6 @@ import blang.distributions.Gamma
 import blang.distributions.MultivariateNormal
 import blang.distributions.Normal
 import blang.distributions.Poisson
-import blang.distributions.StudentT
-import blang.distributions.HalfStudentT
-import blang.distributions.ChiSquared
 import blang.examples.MixtureModel
 import blang.validation.internals.fixtures.SimpleHierarchicalModel
 import blang.io.GlobalDataSource
@@ -59,21 +58,10 @@ import static blang.types.StaticUtils.latentSimplex
 import static blang.types.StaticUtils.fixedSimplex
 import xlinear.DenseMatrix
 import blang.validation.internals.fixtures.DynamicNormalMixture
-import blang.distributions.NegativeBinomialMeanParam
-import blang.distributions.GammaMeanParam
-import blang.distributions.YuleSimon
 
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
-  
-  public val yuleSimon = add( 
-    new YuleSimon.Builder()
-      .setRho(fixedReal(3.5))
-      .setRealization(latentInt)
-        .build,
-    [getRealization().intValue as double]   
-  )
   
   public val normal = add(
     new Normal.Builder()
@@ -83,48 +71,6 @@ class Examples {
         .build, 
     realRealizationSquared
   )
-  
-  public val studentt = add(
-      new StudentT.Builder()
-        .setNu(fixedReal(2.0))
-        .setRealization(latentReal)
-            .build,
-      [Math.cos(getRealization().doubleValue)]  // use bdd function to make sure it's integrable
-  )
-  
-  public val cauchy = add(
-      new StudentT.Builder()
-        .setNu(fixedReal(1.0))
-        .setRealization(latentReal)
-            .build,
-      [Math.cos(getRealization().doubleValue)] // use bdd function to make sure it's integrable
-  )
-  
-  public val thint = add(
-      new StudentT.Builder()
-        .setNu(fixedReal(3.0))
-        .setRealization(latentReal)
-            .build,
-      realRealizationSquared
-  )
-
-  public val halfstudentt = add(
-      new HalfStudentT.Builder()
-        .setNu(fixedReal(2.1))
-        .setSigma(fixedReal(1.7))
-        .setRealization(latentReal)
-            .build,
-      realRealizationSquared
-  )
-
-  public val chisquared = add(
-      new ChiSquared.Builder()
-        .setNu(fixedInt(3))
-        .setRealization(latentReal)
-            .build,
-      realRealizationSquared
-  )
-  
       
   public val bern = add(
     new Bernoulli.Builder()
@@ -132,6 +78,13 @@ class Examples {
       .setRealization(latentInt)
         .build, 
     intRealizationSquared
+  )
+  
+  public val rade = add(
+  	new Rademacher.Builder()
+  	.setRealization(latentInt)
+  	.build,
+  	intRealizationSquared
   )
       
   public val beta = add(
@@ -143,20 +96,21 @@ class Examples {
     realRealizationSquared
   )
   
+  public val betaBinomial = add(
+  	new BetaBinomial.Builder()
+  	.setAlpha(fixedReal(1.0))
+  	.setBeta(fixedReal(3.0))
+  	.setNumberOfTrials(fixedInt(3))
+  	.setRealization(latentInt)
+  	.build,
+  	intRealizationSquared
+  )
+  
   public val negBinomial = add( 
     new NegativeBinomial.Builder()
       .setK(latentInt)
       .setP(fixedReal(0.1))
       .setR(fixedReal(2.1))
-        .build,
-    intRealizationSquared
-  )
-  
-  public val negBinomial_mv = add( 
-    new NegativeBinomialMeanParam.Builder()
-      .setK(latentInt)
-      .setMean(fixedReal(1.1))
-      .setOverdispersion(fixedReal(0.3))
         .build,
     intRealizationSquared
   )
@@ -250,15 +204,6 @@ class Examples {
     new Gamma.Builder()
       .setRate(fixedReal(2.1))
       .setShape(fixedReal(0.9))
-      .setRealization(latentReal)
-        .build, 
-    realRealizationSquared
-  )
-  
-  public val gammaMeanParam = add(
-    new GammaMeanParam.Builder()
-      .setMean(fixedReal(1.9))
-      .setVariance(fixedReal(0.2))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
