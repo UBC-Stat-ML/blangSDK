@@ -1,0 +1,11 @@
+package blang.distributions
+/** Return 1 with probability 0.5 and -1 with probability 0.5*/
+model Rademacher{
+	random IntVar realization
+	
+	laws{
+		realization ~ Categorical({
+			return fixedSimplex(0.5,0.5)
+		})
+	}
+}
