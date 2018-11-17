@@ -21,6 +21,11 @@ import blang.distributions.NormalField
 import blang.distributions.Poisson
 import blang.distributions.SimplexUniform
 import blang.distributions.SymmetricDirichlet
+import blang.distributions.LogPotential
+import blang.distributions.StudentT
+import blang.distributions.HalfStudentT
+import blang.distributions.ChiSquared
+import blang.distributions.YuleSimon
 import blang.distributions.Rademacher
 
 class BuiltInDistributions {
@@ -37,6 +42,7 @@ class BuiltInDistributions {
       documentClass(DiscreteUniform)
       documentClass(Poisson)
       documentClass(NegativeBinomial)
+      documentClass(YuleSimon)
       documentClass(Rademacher)
     ]
     
@@ -46,6 +52,9 @@ class BuiltInDistributions {
       documentClass(Normal)
       documentClass(Beta)
       documentClass(Gamma)
+      documentClass(StudentT)
+      documentClass(HalfStudentT)
+      documentClass(ChiSquared)
     ]
     
     section("Multivariate") [
@@ -55,7 +64,10 @@ class BuiltInDistributions {
       documentClass(SymmetricDirichlet)
       documentClass(SimplexUniform)
     ]
-
+    
+section("Misc") [
+      documentClass(LogPotential)
+    ]
   ]
   
 }
