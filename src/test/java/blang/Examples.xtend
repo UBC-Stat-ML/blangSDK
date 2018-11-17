@@ -15,6 +15,9 @@ import blang.distributions.Gamma
 import blang.distributions.MultivariateNormal
 import blang.distributions.Normal
 import blang.distributions.Poisson
+import blang.distributions.StudentT
+import blang.distributions.HalfStudentT
+import blang.distributions.ChiSquared
 import blang.examples.MixtureModel
 import blang.validation.internals.fixtures.SimpleHierarchicalModel
 import blang.io.GlobalDataSource
@@ -58,10 +61,21 @@ import static blang.types.StaticUtils.latentSimplex
 import static blang.types.StaticUtils.fixedSimplex
 import xlinear.DenseMatrix
 import blang.validation.internals.fixtures.DynamicNormalMixture
+import blang.distributions.NegativeBinomialMeanParam
+import blang.distributions.GammaMeanParam
+import blang.distributions.YuleSimon
 
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
+  
+  public val yuleSimon = add( 
+    new YuleSimon.Builder()
+      .setRho(fixedReal(3.5))
+      .setRealization(latentInt)
+        .build,
+    [getRealization().intValue as double]   
+  )
   
   public val normal = add(
     new Normal.Builder()
@@ -71,7 +85,46 @@ class Examples {
         .build, 
     realRealizationSquared
   )
-      
+  
+   public val studentt = add(
+      new StudentT.Builder()
+        .setNu(fixedReal(2.0))
+        .setRealization(latentReal)
+            .build,
+      [Math.cos(getRealization().doubleValue)]  // use bdd function to make sure it's integrable
+  )
+  
+  public val cauchy = add(
+      new StudentT.Builder()
+        .setNu(fixedReal(1.0))
+        .setRealization(latentReal)
+            .build,
+      [Math.cos(getRealization().doubleValue)] // use bdd function to make sure it's integrable
+  )
+  
+  public val thint = add(
+      new StudentT.Builder()
+        .setNu(fixedReal(3.0))
+        .setRealization(latentReal)
+            .build,
+      realRealizationSquared
+  )
+   public val halfstudentt = add(
+      new HalfStudentT.Builder()
+        .setNu(fixedReal(2.1))
+        .setSigma(fixedReal(1.7))
+        .setRealization(latentReal)
+            .build,
+      realRealizationSquared
+  )
+   public val chisquared = add(
+      new ChiSquared.Builder()
+        .setNu(fixedInt(3))
+        .setRealization(latentReal)
+            .build,
+      realRealizationSquared
+  )  
+   
   public val bern = add(
     new Bernoulli.Builder()
       .setProbability(fixedReal(0.2))
@@ -115,6 +168,15 @@ class Examples {
     intRealizationSquared
   )
   
+  public val negBinomial_mv = add( 
+    new NegativeBinomialMeanParam.Builder()
+      .setK(latentInt)
+      .setMean(fixedReal(1.1))
+      .setOverdispersion(fixedReal(0.3))
+        .build,
+    intRealizationSquared
+  )
+  
   public val sparseBeta = add(
     new Beta.Builder()
       .setAlpha(fixedReal(Helpers::concentrationWarningThreshold))
@@ -123,7 +185,7 @@ class Examples {
         .build, 
     realRealizationSquared
   )
-      
+     
   public val binom = add(
     new Binomial.Builder()
       .setProbabilityOfSuccess(fixedReal(0.3))
@@ -204,6 +266,15 @@ class Examples {
     new Gamma.Builder()
       .setRate(fixedReal(2.1))
       .setShape(fixedReal(0.9))
+      .setRealization(latentReal)
+        .build, 
+    realRealizationSquared
+  )
+  
+   public val gammaMeanParam = add(
+    new GammaMeanParam.Builder()
+      .setMean(fixedReal(1.9))
+      .setVariance(fixedReal(0.2))
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
