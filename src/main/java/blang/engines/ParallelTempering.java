@@ -1,5 +1,7 @@
 package blang.engines;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +31,9 @@ public class ParallelTempering
   @Arg              @DefaultValue("true")
   public boolean usePriorSamples = true;
   
+  @Arg         @DefaultValue("false")
+  public boolean reversible = false;
+  
   // convention: state index 0 is room temperature (target of interest)
   protected SampledModel [] states;
   protected List<Double> temperingParameters;
@@ -44,7 +49,26 @@ public class ParallelTempering
     return states[0];
   }
   
-  public boolean[] swapKernel()
+  public boolean[] swapKernel() 
+  {
+    return reversible ? reversibleSwapKernel() : nonReversibleSwapKernel();
+  }
+  
+  public boolean[] reversibleSwapKernel()
+  {
+    List<Integer> indices = new ArrayList<Integer>();
+    for (int i = 0; i < nChains() - 1; i++) indices.add(i);
+    Collections.shuffle(indices, parallelRandomStreams[0]);
+    swapIndicators = new boolean[nChains()];
+    for (int i : indices) 
+    {
+      double acceptPr = swapKernel(parallelRandomStreams[0], i);
+      swapAcceptPrs[i].addValue(acceptPr);
+    }
+    return swapIndicators;
+  }
+  
+  public boolean[] nonReversibleSwapKernel()
   {
     swapIndicators = new boolean[nChains()];
     int offset = iterationIndex++ % 2;
@@ -57,7 +81,7 @@ public class ParallelTempering
     return swapIndicators;
   }
   
-  public void moveKernel(int nPasses) 
+  public void moveKernel(double nPasses) 
   {
     BriefParallel.process(nChains(), nThreads.numberAvailable(), chainIndex -> 
     {
@@ -66,8 +90,7 @@ public class ParallelTempering
       if (temperingParameters.get(chainIndex) == 0 && usePriorSamples)
         current.forwardSample(random, false);
       else
-        for (int i = 0; i < nPasses; i++)
-          current.posteriorSamplingScan(random); 
+        current.posteriorSamplingScan(random, nPasses); 
     });
   }
   

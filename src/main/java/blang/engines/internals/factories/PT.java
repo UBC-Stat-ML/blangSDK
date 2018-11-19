@@ -32,7 +32,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   public int nScans = 1_000;
   
   @Arg         @DefaultValue("3")
-  public int nPassesPerScan = 3;
+  public double nPassesPerScan = 3;
   
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
@@ -54,7 +54,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     sampleColumn = "sample",
     chainColumn = "chain",
     acceptPrColumn = "acceptPr",
-    mcLambdaColumn = "mcLambda",
+    lambdaMCacceptPr = "lambdaMCacceptPr",
     annealingParameterColumn = "annealingParameter";
   
   @SuppressWarnings("unchecked")
@@ -117,8 +117,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       tabularWriter.write(
           Pair.of(chainColumn, i), 
           Pair.of(annealingParameterColumn, temperingParameters.get(i)), 
-          Pair.of(mcLambdaColumn, mcEstimates.get(temperingParameters.get(i))),
-          Pair.of("pr", swapAcceptPrs[i].getMean()));
+          Pair.of(lambdaMCacceptPr, 1.0 - (temperingParameters.get(i) - temperingParameters.get(i + 1)) * mcEstimates.get(temperingParameters.get(i))),
+          Pair.of(acceptPrColumn, swapAcceptPrs[i].getMean()));
   }
 
   @Override

@@ -226,6 +226,18 @@ public class SampledModel
       posteriorSamplingStep(random);
   }
   
+  /**
+   * @param random
+   * @param multiplyer Can be used for performing the fraction of a scan, or many scans. 
+   *  I.e. the number of steps will be floor(multiplyer * number of posterior invar moves)
+   */
+  public void posteriorSamplingScan(Random random, double multiplyer)
+  {
+    int nSteps = (int) Math.floor(multiplyer * posteriorInvariantSamplers.size());
+    for (int i = 0; i < nSteps; i++)
+      posteriorSamplingStep(random); 
+  }
+  
   public void posteriorSamplingStep(Random random)
   {
     if (posteriorInvariantSamplers.isEmpty()) 
