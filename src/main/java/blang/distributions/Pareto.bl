@@ -1,0 +1,23 @@
+package blang.distributions
+// Pareto distribution
+// support: (scale, \infty)
+
+model Pareto {
+  random RealVar realization
+  
+  param  RealVar scale, shape
+  
+  laws {
+  	  logf(realization, scale, shape) {
+  	  	if (scale <= 0) return NEGATIVE_INFINITY
+  	  	if (shape <= 0) return NEGATIVE_INFINITY
+  	  	if (realization < scale) return NEGATIVE_INFINITY
+  	  	return log(shape) + shape * log(scale) - (shape + 1) * log(realization)	
+  	  }
+  }
+  
+  generate(rand) {
+    rand.pareto(scale, shape)
+  }
+  
+}

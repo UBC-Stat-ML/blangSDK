@@ -25,6 +25,7 @@ import blang.distributions.StudentT
 import blang.distributions.HalfStudentT
 import blang.distributions.ChiSquared
 import blang.distributions.YuleSimon
+import blang.distributions.Pareto
 
 class BuiltInDistributions {
   
@@ -51,6 +52,7 @@ class BuiltInDistributions {
       documentClass(StudentT)
       documentClass(HalfStudentT)
       documentClass(ChiSquared)
+      documentClass(Pareto)
     ]
     
     section("Multivariate") [

@@ -6,6 +6,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.distribution.ParetoDistribution;
 
 import bayonet.math.NumericalUtils;
 import blang.types.DenseSimplex;
@@ -28,6 +29,14 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
 	  double t = studentt(random, nu);
 	  return Math.abs(t) * sigma;
   }
+  
+  /** */
+  public static double pareto(Random random, double scale, double shape)
+  {
+    double result = new ParetoDistribution(generator(random), scale, shape).sample();
+    return result;
+  }
+  
   /** */
   public static double chisquared(Random random, int nu)
   {

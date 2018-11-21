@@ -62,6 +62,7 @@ import blang.validation.internals.fixtures.DynamicNormalMixture
 import blang.distributions.NegativeBinomialMeanParam
 import blang.distributions.GammaMeanParam
 import blang.distributions.YuleSimon
+import blang.distributions.Pareto
 
 class Examples {
   
@@ -123,6 +124,15 @@ class Examples {
         .setRealization(latentReal)
             .build,
       realRealizationSquared
+  )
+  
+  public val pareto = add(
+    new Pareto.Builder()
+      .setScale(fixedReal(2.1))
+      .setShape(fixedReal(1.5))
+      .setRealization(latentReal)
+        .build, 
+    realRealizationSquared
   )
   
       
