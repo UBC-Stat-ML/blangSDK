@@ -12,6 +12,7 @@ import blang.distributions.Dirichlet
 import blang.distributions.DiscreteUniform
 import blang.distributions.Exponential
 import blang.distributions.Gamma
+import blang.distributions.Geometric
 import blang.distributions.MultivariateNormal
 import blang.distributions.Normal
 import blang.distributions.Poisson
@@ -64,11 +65,28 @@ import blang.validation.internals.fixtures.DynamicNormalMixture
 import blang.distributions.NegativeBinomialMeanParam
 import blang.distributions.GammaMeanParam
 import blang.distributions.YuleSimon
+import blang.distributions.Laplace
 
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
   
+  public val geometric = add(
+    new Geometric.Builder()
+      .setP(fixedReal(0.5))
+      .setRealization(latentInt)
+        .build, 
+    intRealizationSquared
+  )
+  
+  public val laplace = add(
+    new Laplace.Builder()
+      .setLocation(fixedReal(0.5))
+      .setScale(fixedReal(0.1))
+      .setRealization(latentReal)
+        .build,
+    realRealizationSquared
+  )
   public val yuleSimon = add( 
     new YuleSimon.Builder()
       .setRho(fixedReal(3.5))
