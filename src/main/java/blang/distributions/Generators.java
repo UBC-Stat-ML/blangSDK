@@ -71,22 +71,6 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     return bayonet.distributions.Random.nextBernoulli(random, p);
   }
   
-  
-  
-  
-  public static int rademacher(Random random)
-  {
-//	  if (random instanceof bayonet.distributions.Random)
-//		  {return -1;
-//		  }
-//	  return 1;
-	  if (random instanceof bayonet.distributions.Random)
-		  if (((bayonet.distributions.Random) random).nextBernoulli(0.5)) {
-		    	return 1;
-		    };
-		  return -1;
-  }
-  
   public static int BetaBinomial(Random random, double alpha, double beta, int numberOfTrials)
   {  
 		  double x = beta(random, alpha, beta);
