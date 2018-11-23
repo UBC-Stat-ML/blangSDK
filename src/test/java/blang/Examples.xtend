@@ -87,6 +87,7 @@ class Examples {
         .build,
     realRealizationSquared
   )
+  
   public val yuleSimon = add( 
     new YuleSimon.Builder()
       .setRho(fixedReal(3.5))
