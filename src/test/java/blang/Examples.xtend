@@ -133,12 +133,6 @@ class Examples {
     intRealizationSquared
   )
   
-  public val rade = add(
-  	new Rademacher.Builder()
-  	.setRealization(latentInt)
-  	.build,
-  	intRealizationSquared
-  )
       
   public val beta = add(
     new Beta.Builder()
