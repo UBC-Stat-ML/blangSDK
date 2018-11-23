@@ -26,38 +26,7 @@ import java.util.Random;
 public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
     /** */
-    public static double halfstudentt(Random random, double nu, double sigma) {
-        double t = studentt(random, nu);
-        return Math.abs(t) * sigma;
-    }
-    /** */
-    public static double laplace(Random random, double location, double scale)
-    {
-        double result = new LaplaceDistribution(generator(random), location, scale).sample();
-        return result;
-    }
-    
-    /** */
-    public static int geometric(Random random, double prob)
-    {
-        int result = new GeometricDistribution(generator(random), prob).sample();
-        return result;
-    }
-    
-    /** */
-    public static double chisquared(Random random, int nu)
-    {
-        double result = new ChiSquaredDistribution(generator(random), (double) nu).sample();
-        if (result == 0.0) // avoid crash-inducing zero probability corner cases
-            result = ZERO_PLUS_EPS;
-        return result;
-    }
-    
-    /** */
-    public static double studentt(Random random, double nu)
-    {
-        return new TDistribution(generator(random), nu).sample();
-    }
+   
   /** */
   public static double gamma(Random random, double shape, double rate)
   {
