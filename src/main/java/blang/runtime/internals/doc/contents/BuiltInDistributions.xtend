@@ -14,7 +14,6 @@ import blang.distributions.Dirichlet
 import blang.distributions.DiscreteUniform
 import blang.distributions.Exponential
 import blang.distributions.Gamma
-import blang.distributions.Laplace
 import blang.distributions.Geometric
 import blang.distributions.MultivariateNormal
 import blang.distributions.NegativeBinomial
