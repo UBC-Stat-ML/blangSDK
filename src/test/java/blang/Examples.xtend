@@ -4,6 +4,7 @@ import blang.core.Model
 import blang.distributions.Bernoulli
 import blang.distributions.Beta
 import blang.distributions.Binomial
+import blang.distributions.BetaBinomial
 import blang.distributions.Categorical
 import blang.distributions.ContinuousUniform
 import blang.distributions.Dirichlet
@@ -11,6 +12,7 @@ import blang.distributions.DiscreteUniform
 import blang.distributions.Exponential
 import blang.distributions.Gamma
 import blang.distributions.Geometric
+import blang.distributions.HyperGeometric
 import blang.distributions.MultivariateNormal
 import blang.distributions.Normal
 import blang.distributions.Poisson
