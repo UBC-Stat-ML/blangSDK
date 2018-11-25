@@ -5,6 +5,7 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.GeometricDistribution;
+import org.apache.commons.math3.distribution.HypergeometricDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
@@ -80,7 +81,19 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
       result = ONE_MINUS_EPS;
     return result;
   }
-  
+    public static int BetaBinomial(Random random, double alpha, double beta, int numberOfTrials)
+    {
+        double x = beta(random, alpha, beta);
+        int y = binomial(random,numberOfTrials,x);
+        return y;
+    }
+    public static int hyperGeometric(Random random, int numberOfDraws, int population, int populationGood) {
+        int result = new HypergeometricDistribution(generator(random), population, populationGood, numberOfDraws).sample();
+        if(result==0.0) {
+            result = (int) ZERO_PLUS_EPS;
+        }
+        return result;
+    }
   /** */
   public static boolean bernoulli(Random random, double p) 
   {
