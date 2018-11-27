@@ -1,0 +1,36 @@
+package blang.distributions
+
+/** Probability distribution of a random variables whose logarithm is normally distributed. Values in \(0,+\infty \) */
+model LogNormal {
+  random RealVar realization
+	
+  /** Mean \(\mu\). \(\mu \in \mathbb{R}\) */
+  param RealVar mean
+	
+  /** Variance \(\sigma^2\). \(\sigma^2 > 0\) */
+  param RealVar variance
+  	
+  laws{
+		
+	logf() {
+	  - log(2*PI) / 2.0
+    	}
+    	logf(realization) {
+    	  if (realization < 0.0) return NEGATIVE_INFINITY
+    	  return - log(realization)
+    	}
+    	logf(variance) {
+    	  if (sqrt(variance) <= 0.0) return NEGATIVE_INFINITY
+      return - log(sqrt(variance))
+    	}
+    	logf(mean, variance, realization)  {
+      if (sqrt(variance) <= 0.0) return NEGATIVE_INFINITY
+      if (realization < 0.0) return NEGATIVE_INFINITY
+      return - 0.5 * pow(log(realization) - mean, 2) / variance
+    	}
+  }
+	
+  generate(rand) {
+	rand.logNormal(mean, variance)
+  }
+}

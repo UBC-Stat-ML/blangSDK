@@ -64,11 +64,49 @@ import blang.distributions.NegativeBinomialMeanParam
 import blang.distributions.GammaMeanParam
 import blang.distributions.YuleSimon
 import blang.distributions.Laplace
+import blang.distributions.Logistic
+import blang.distributions.LogLogistic
+import blang.distributions.LogNormal
+import blang.distributions.F
 
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
   
+  public val fDist = add(
+  	new F.Builder()
+  	  .setD1(fixedReal(2))
+  	  .setD2(fixedReal(1))
+  	  .setRealization(latentReal)
+  		.build,
+  	realRealizationSquared
+  )
+  
+  public val logNormal = add(
+  	new LogNormal.Builder()
+  	  .setMean(fixedReal(0.2))
+  	  .setVariance(fixedReal(0.1))
+  	  .setRealization(latentReal)
+  		.build,
+  	realRealizationSquared
+  )
+    
+  public val logLogistic = add(
+    new LogLogistic.Builder()
+  	  .setScale(fixedReal(2.0))
+  	  .setShape(fixedReal(1.0))
+  	  .setRealization(latentReal)
+  		.build,
+	realRealizationSquared
+  )
+  public val logisticDist = add(
+  	new Logistic.Builder()
+  	  .setLocation(fixedReal(2.0))
+  	  .setScale(fixedReal(1.0))
+  	  .setRealization(latentReal)
+  	  	.build,
+  	  realRealizationSquared
+  )
   public val geometric = add(
     new Geometric.Builder()
       .setP(fixedReal(0.5))

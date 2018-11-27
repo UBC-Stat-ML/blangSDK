@@ -27,6 +27,10 @@ import blang.distributions.HalfStudentT
 import blang.distributions.ChiSquared
 import blang.distributions.YuleSimon
 import blang.distributions.Laplace
+import blang.distributions.Logistic
+import blang.distributions.LogLogistic
+import blang.distributions.LogNormal
+import blang.distributions.F
 
 class BuiltInDistributions {
   
@@ -55,6 +59,10 @@ class BuiltInDistributions {
       documentClass(HalfStudentT)
       documentClass(ChiSquared)
       documentClass(Laplace)
+      documentClass(Logistic)
+      documentClass(LogLogistic)
+      documentClass(LogNormal)
+      documentClass(F)
     ]
     
     section("Multivariate") [

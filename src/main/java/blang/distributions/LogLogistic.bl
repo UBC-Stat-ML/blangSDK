@@ -1,0 +1,41 @@
+package blang.distributions
+
+/** A log-logistic distribution is the probability distribution of a random variable
+ * whose logarithm has a logistic distribution. */
+model LogLogistic {
+  random RealVar realization
+	
+  /** The scale parameter \(\alpha\) and also the median. \(\alpha > 0 \) */
+  param RealVar scale
+	
+  /** The shape parameter \(\beta\). \(\beta > 0 \) */
+  param RealVar shape
+	
+  laws {
+		
+	logf(scale, shape) {
+		if (scale <= 0.0) return NEGATIVE_INFINITY
+		if (shape <= 0.0) return NEGATIVE_INFINITY
+		return log(shape) - log(scale)
+	}
+		
+	logf(scale, shape, realization) {
+		if (realization < 0.0) return NEGATIVE_INFINITY
+		if (scale <= 0.0) return NEGATIVE_INFINITY
+		if (shape <= 0.0) return NEGATIVE_INFINITY
+		return (shape - 1.0) * (log(realization) - log(scale))
+	}
+		
+	logf(scale, shape, realization) {
+		if (realization < 0.0) return NEGATIVE_INFINITY
+		if (scale <= 0.0) return NEGATIVE_INFINITY
+		if (shape <= 0.0) return NEGATIVE_INFINITY
+		return -2 * log( 1.0 + pow((realization / scale), shape))
+		}
+		
+  }
+	
+  generate(rand){
+	rand.logLogistic(scale, shape)
+  }
+}

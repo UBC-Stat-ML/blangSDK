@@ -1,0 +1,29 @@
+package blang.distributions
+
+/** A random variable with a logistic probability distribution function, its CDF is the logistic function */
+model Logistic {
+	random RealVar realization
+	
+	/** The center of the PDF. Also the mean, mode and median. \(\mu \in \mathbb{R}\) */
+	param RealVar location
+	
+	/** The scale parameter. \(\s > 0 \) */
+	param RealVar scale
+	
+	laws {
+		
+		logf(scale) {
+			if (scale <= 0.0) return NEGATIVE_INFINITY
+			return - log(4* scale)
+		}
+		
+		logf(scale, location, realization) {
+			if (scale <= 0.0) return NEGATIVE_INFINITY
+			return pow(log(1 - tanh( (realization - location) / (2 * scale) )), 2)
+		}
+	}
+	
+	generate(rand) {
+		rand.logisticDist(location, scale)
+	}
+}
