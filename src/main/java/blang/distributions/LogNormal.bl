@@ -26,7 +26,7 @@ model LogNormal {
     	logf(mean, variance, realization)  {
       if (sqrt(variance) <= 0.0) return NEGATIVE_INFINITY
       if (realization < 0.0) return NEGATIVE_INFINITY
-      return - 0.5 * pow(log(realization) - mean, 2) / variance
+      return (- pow(mean - log(realization), 2)) / (2*variance)
     	}
   }
 	

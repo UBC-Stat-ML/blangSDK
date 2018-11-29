@@ -16,21 +16,21 @@ model LogLogistic {
 	logf(scale, shape) {
 		if (scale <= 0.0) return NEGATIVE_INFINITY
 		if (shape <= 0.0) return NEGATIVE_INFINITY
-		return log(shape) - log(scale)
+		return log(shape) - (shape*log(scale))
 	}
 		
 	logf(scale, shape, realization) {
 		if (realization < 0.0) return NEGATIVE_INFINITY
 		if (scale <= 0.0) return NEGATIVE_INFINITY
 		if (shape <= 0.0) return NEGATIVE_INFINITY
-		return (shape - 1.0) * (log(realization) - log(scale))
+		return shape*log(realization) - log(realization)//(shape - 1.0) * (log(realization) - log(scale))
 	}
 		
 	logf(scale, shape, realization) {
 		if (realization < 0.0) return NEGATIVE_INFINITY
 		if (scale <= 0.0) return NEGATIVE_INFINITY
 		if (shape <= 0.0) return NEGATIVE_INFINITY
-		return -2 * log( 1.0 + pow((realization / scale), shape))
+		return -2 * log(1 + pow((realization / scale), shape))
 		}
 		
   }

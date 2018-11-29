@@ -84,8 +84,8 @@ class Examples {
   
   public val logNormal = add(
   	new LogNormal.Builder()
-  	  .setMean(fixedReal(0.2))
-  	  .setVariance(fixedReal(0.1))
+  	  .setMean(fixedReal(0.7))
+  	  .setVariance(fixedReal(0.15))
   	  .setRealization(latentReal)
   		.build,
   	realRealizationSquared
@@ -101,8 +101,8 @@ class Examples {
   )
   public val logisticDist = add(
   	new Logistic.Builder()
-  	  .setLocation(fixedReal(2.0))
-  	  .setScale(fixedReal(1.0))
+  	  .setLocation(fixedReal(4.0))
+  	  .setScale(fixedReal(1.5))
   	  .setRealization(latentReal)
   	  	.build,
   	  realRealizationSquared
