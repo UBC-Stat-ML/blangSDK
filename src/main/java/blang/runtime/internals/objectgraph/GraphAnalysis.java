@@ -56,7 +56,7 @@ public class GraphAnalysis
   private final LinkedHashSet<ObjectNode<Factor>> factorNodes = new LinkedHashSet<>(); // all of them, not just LogScale
   
   private final Map<ObjectNode<ModelComponent>,String> factorDescriptions = new LinkedHashMap<>();
-  private final RealScalar annealingParameter = new RealScalar(1.0);
+  public final RealScalar annealingParameter = new RealScalar(1.0);
   
   public LinkedHashSet<Node> getLatentVariables() 
   {

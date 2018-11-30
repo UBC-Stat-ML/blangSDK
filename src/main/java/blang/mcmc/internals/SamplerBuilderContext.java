@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import blang.core.Factor;
+import blang.core.RealVar;
 import blang.inits.experiments.ExperimentResults;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.runtime.internals.objectgraph.Node;
@@ -55,6 +56,11 @@ public class SamplerBuilderContext
   public boolean isLatent(Object object) 
   {
     return contain(graphAnalysis.getLatentVariables(), object);
+  }
+  
+  public RealVar getAnnealingParameter() 
+  {
+    return graphAnalysis.annealingParameter;
   }
   
   public static boolean contain(Set<Node> nodes, Object object)
