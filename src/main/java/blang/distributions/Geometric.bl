@@ -1,12 +1,10 @@
 package blang.distributions 
 
- /** The geometric distribution on \(\{0, 1, 2, \dots\}\) */
+ /** The number of unsuccessful Bernoulli trials until a success. Values in \(\{0, 1, 2, \dots\}\) */
 model Geometric{
-  
-	/* The number of trials until success. */
 	random IntVar realization
 	
-	/* The probability of success for each trial. */
+	/** The probability of success for each Bernoulli trial. */
 	param RealVar p
 	
 	laws {

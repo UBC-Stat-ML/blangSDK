@@ -1,5 +1,6 @@
 package blang.distributions
 
+/** Student T random variable. Values in \(\mathbb{R}\) */
 model StudentT {
   random RealVar realization
   

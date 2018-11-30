@@ -1,13 +1,13 @@
 package blang.distributions
 
-/** HalfStudentT random variable. Values in \((0, \infty)\).
- *  Reference:
- *  https://docs.pymc.io/api/distributions/continuous.html#pymc3.distributions.continuous.HalfStudentT
- */
+/** HalfStudentT random variable. Values in \((0, \infty)\) */
 model HalfStudentT{
     random RealVar realization
 
+    /** A degree of freedom parameter \(\nu\). \( \nu > 0 \)  */
     param RealVar nu
+    
+    /** A scale parameter \(\sigma\). \( \sigma > 0 \).  */
     param RealVar sigma
 
     laws{
