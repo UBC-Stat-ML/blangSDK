@@ -17,6 +17,7 @@ class DocElementExtensions {
     element += parse(type.simpleName, code.contents)
   }
   
+  public var static boolean checkCommentsComplete = false
   def static MiniDoc parse(String name, String code) {
     var MiniDoc parent = null
     var String currentComment = null
@@ -34,6 +35,8 @@ class DocElementExtensions {
         currentComment = null
       }
     }
+    if (checkCommentsComplete && parent.children.empty || parent.doc === null)
+      throw new RuntimeException("Incomplete documentation for: " + name)
     return parent
   }
   
@@ -93,5 +96,4 @@ class DocElementExtensions {
   }
  
   private new() {}
-
 }
