@@ -1,0 +1,21 @@
+package blang.distributions
+
+/** The Laplace Distribution over \(\mathbb{R}\) */
+model Laplace { 
+	random RealVar realization 
+	
+	/** The mean parameter. */
+	param RealVar location
+	
+	/** The scale parameter \( b \), equal to the square root of half of the variance. \( b > 0 \)  */
+	param RealVar scale  
+		
+	laws {
+		logf(realization, location, scale) {
+			if (scale <= 0) return NEGATIVE_INFINITY 
+			return -log(2 * scale) - abs(realization - location) / scale
+		}
+	}
+	
+	generate(rand) { rand.laplace(location, scale) }
+}

@@ -4,6 +4,8 @@ import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.distribution.GeometricDistribution;
+import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
@@ -28,6 +30,19 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
 	  double t = studentt(random, nu);
 	  return Math.abs(t) * sigma;
   }
+
+  /** */
+  public static double laplace(Random random, double location, double scale)
+  {
+    return new LaplaceDistribution(generator(random), location, scale).sample();
+  }
+  
+  /** */
+  public static int geometric(Random random, double prob)
+  {
+    return new GeometricDistribution(generator(random), prob).sample();
+  }
+  
   /** */
   public static double chisquared(Random random, int nu)
   {
