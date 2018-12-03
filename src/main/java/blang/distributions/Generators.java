@@ -78,7 +78,22 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
       result = ONE_MINUS_EPS;
     return result;
   }
-  
+    
+  /** */
+    public static int betaBinomial(Random random, double alpha, double beta, int numberOfTrials)
+    {
+        double x = beta(random, alpha, beta);
+        int y = binomial(random,numberOfTrials,x);
+        return y;
+    }
+    
+  /** */
+    public static int hyperGeometric(Random random, int numberOfDraws, int population, int populationGood)
+    {
+        int result = new HypergeometricDistribution(generator(random), population, populationGood, numberOfDraws).sample();
+        return result;
+    }
+    
   /** */
   public static boolean bernoulli(Random random, double p) 
   {
