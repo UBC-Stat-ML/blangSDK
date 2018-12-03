@@ -88,9 +88,9 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
     }
     
   /** */
-    public static int hyperGeometric(Random random, int numberOfDraws, int population, int populationGood)
+    public static int hyperGeometric(Random random, int numberOfDraws, int population, int populationConditioned)
     {
-        int result = new HypergeometricDistribution(generator(random), population, populationGood, numberOfDraws).sample();
+        int result = new HypergeometricDistribution(generator(random), population, populationConditioned, numberOfDraws).sample();
         return result;
     }
     
