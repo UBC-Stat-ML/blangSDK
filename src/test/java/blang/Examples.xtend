@@ -3,6 +3,7 @@ package blang
 import blang.core.Model
 import blang.distributions.Bernoulli
 import blang.distributions.Beta
+import blang.distributions.betaBinomial
 import blang.distributions.Binomial
 import blang.distributions.Categorical
 import blang.distributions.ContinuousUniform
@@ -11,6 +12,7 @@ import blang.distributions.DiscreteUniform
 import blang.distributions.Exponential
 import blang.distributions.Gamma
 import blang.distributions.Geometric
+import blang.distributions.hyperGeometric
 import blang.distributions.MultivariateNormal
 import blang.distributions.Normal
 import blang.distributions.Poisson
@@ -161,6 +163,26 @@ class Examples {
       .setRealization(latentReal)
         .build, 
     realRealizationSquared
+  )
+  
+  public val betaBinomial = add(
+  	new betaBinomial.Builder()
+  	.setAlpha(fixedReal(1.0))
+  	.setBeta(fixedReal(3.0))
+  	.setNumberOfTrials(fixedInt(3))
+  	.setRealization(latentInt)
+  	.build,
+  	intRealizationSquared
+  )
+  
+  public val hyperGeometric = add(
+  	new hyperGeometric.Builder()
+  	.setNumberOfDraws(fixedInt(3))
+  	.setPopulation(fixedInt(9))
+  	.setPopulationConditioned(fixedInt(6))
+  	.setNumberOfSuccess(latentInt)
+  	.build,
+  	intRealizationSquared
   )
   
   public val negBinomial = add( 
