@@ -1,0 +1,25 @@
+package blang.distributions
+
+model betaBinomial{
+	random IntVar realization
+	param IntVar numberOfTrials
+	param RealVar alpha
+	param RealVar beta
+	
+	laws{
+		logf(realization,numberOfTrials,alpha,beta) {
+			if(realization<0) return NEGATIVE_INFINITY
+			if(numberOfTrials<=0 || realization> numberOfTrials) return NEGATIVE_INFINITY
+		return lnGamma(numberOfTrials+1)
+		+lnGamma(realization+alpha)
+		+lnGamma(numberOfTrials-realization+beta)
+		+lnGamma(alpha+beta)
+		-lnGamma(realization+1)
+		-lnGamma(numberOfTrials-realization+1)
+		-lnGamma(numberOfTrials+alpha+beta)
+		-lnGamma(alpha)
+		-lnGamma(beta)			
+		}
+	}
+	generate (rand){ rand.betaBinomial(alpha,beta,numberOfTrials)}
+}
