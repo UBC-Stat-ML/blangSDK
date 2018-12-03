@@ -5,6 +5,7 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.GeometricDistribution;
+import org.apache.commons.math3.distribution.HypergeometricDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
@@ -86,7 +87,22 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
       return ((bayonet.distributions.Random) random).nextBernoulli(p);
     return bayonet.distributions.Random.nextBernoulli(random, p);
   }
-  
+    
+  /** */
+  public static int betaBinomial(Random random, double alpha, double beta, int numberOfTrials)
+    {
+        double x = beta(random, alpha, beta);
+        int y = binomial(random,numberOfTrials,x);
+        return y;
+    }
+    
+  /** */
+  public static int hyperGeometric(Random random, int numberOfDraws, int population, int populationConditioned)
+    {
+        int result = new HypergeometricDistribution(generator(random), population, populationConditioned, numberOfDraws).sample();
+        return result;
+    }
+    
   /** */
   public static int categorical(Random random, double [] probabilities)
   {
