@@ -1,0 +1,31 @@
+package blang.distributions
+
+model hyperGeometric{
+	/** pupulationGood is for the number of samples that fit the criteria in the population */
+	random IntVar numberOfSuccess
+	param IntVar numberOfDraws
+	param IntVar population
+	param IntVar populationConditioned
+	
+	laws{
+		logf(populationConditioned, numberOfSuccess){
+			if(numberOfSuccess<0) return NEGATIVE_INFINITY
+			if(populationConditioned<=0 || numberOfSuccess > populationConditioned) return NEGATIVE_INFINITY
+			return logBinomial(populationConditioned,numberOfSuccess)
+		}
+		logf(population, numberOfDraws){
+			if(numberOfDraws<0) return NEGATIVE_INFINITY
+			if(population<=0 || numberOfDraws > population) return NEGATIVE_INFINITY
+			return -logBinomial(population, numberOfDraws)
+		}
+		logf(populationConditioned,numberOfSuccess,population,numberOfDraws){
+			if(numberOfDraws-numberOfSuccess<0) return NEGATIVE_INFINITY
+			if(population-populationConditioned<=0 || numberOfDraws-numberOfSuccess > population-populationConditioned)
+		     return NEGATIVE_INFINITY
+		     return logBinomial(population-populationConditioned,numberOfDraws-numberOfSuccess)
+		}
+	}
+	generate (rand){
+		rand.hyperGeometric(numberOfDraws,population,populationConditioned)
+	}
+}
