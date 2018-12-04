@@ -1,0 +1,30 @@
+package blang.distributions
+
+/** The Gompertz distribution. Values in \([0, \infty) \). */
+model Gompertz {
+  random RealVar realization
+  
+  /** The shape parameter \(\nu \). \(\nu > 0 \) */
+  param RealVar shape
+  
+  /** The scale parameter \(b\). \(b > 0 \) */
+  param RealVar scale
+  
+  laws {
+    logf(shape, scale) {
+  	  if (shape <= 0.0) return NEGATIVE_INFINITY
+  	  if (scale <= 0.0) return NEGATIVE_INFINITY
+  	  return log(shape / scale) 
+  	}
+  	logf(realization, scale, shape) {
+  	  if (realization < 0.0) return NEGATIVE_INFINITY
+  	  if (scale <= 0.0) return NEGATIVE_INFINITY
+  	  if (shape <= 0.0) return NEGATIVE_INFINITY
+  	  return (realization / scale) - (shape * (exp(realization / scale) - 1))
+  	}
+  }
+  
+  generate(rand) {
+    rand.gompertz(shape, scale)
+  }
+}

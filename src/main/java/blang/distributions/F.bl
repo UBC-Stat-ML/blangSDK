@@ -1,0 +1,36 @@
+package blang.distributions
+
+/** The F-distribution. Also known as Fisher-Snedecor distribution. Values in \((0, +\infty) \)*/
+model F {
+  random RealVar realization
+	
+  /** The degrees of freedom \(\d_1 \) and \(\d_2 \) . \( \d_1, \d_2 > 0 \) */
+  param RealVar d1, d2
+  
+  laws {
+    logf(d1, d2) {
+	  if (d1 <= 0.0) return NEGATIVE_INFINITY
+	  if (d2 <= 0.0) return NEGATIVE_INFINITY
+	  return 0.5 * (d1*log(d1) + d2*log(d2)) + lnGamma(d1/2) + lnGamma(d2/2) - lnGamma((d1 + d2)/2)
+	}
+		
+	logf(d1, realization) {
+	  if (d1 <= 0.0) return NEGATIVE_INFINITY
+	  if ((d1 == 1) && (realization <= 0.0)) return NEGATIVE_INFINITY
+	  if (realization < 0.0) return NEGATIVE_INFINITY
+	  return ( (d1 / 2) - 1.0) * log(realization)
+	}
+		
+	logf(d1, d2, realization) {
+	  if (d1 <= 0.0) return NEGATIVE_INFINITY
+	  if (d2 <= 0.0) return NEGATIVE_INFINITY
+	  if ((d1 == 1) && (realization <= 0.0)) return NEGATIVE_INFINITY
+	  if (realization < 0.0) return NEGATIVE_INFINITY
+	  return - 0.5 * (d1 + d2) * log( (d1 * realization) + d2) 
+	}
+  }
+	
+  generate(rand) {
+    rand.fDist(d1, d2)
+  }
+}

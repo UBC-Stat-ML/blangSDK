@@ -64,11 +64,71 @@ import blang.distributions.NegativeBinomialMeanParam
 import blang.distributions.GammaMeanParam
 import blang.distributions.YuleSimon
 import blang.distributions.Laplace
+import blang.distributions.Logistic
+import blang.distributions.LogLogistic
+import blang.distributions.F
+import blang.distributions.Weibull
+import blang.distributions.Gumbel
+import blang.distributions.Gompertz
 
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
   
+  public val gompertz = add(
+  	new Gompertz.Builder()
+  	  .setShape(fixedReal(0.2))
+  	  .setScale(fixedReal(1.35))
+  	  .setRealization(latentReal)
+  	    .build,
+  	[getRealization().doubleValue]
+  )
+  
+  public val gumbel = add(
+    new Gumbel.Builder()
+      .setLocation(fixedReal(2.3))
+      .setScale(fixedReal(1.7))
+      .setRealization(latentReal)
+        .build,
+	[(getRealization().doubleValue)]
+  )
+  
+  public val weibull = add(
+    new Weibull.Builder()
+  	  .setScale(fixedReal(1.6))
+  	  .setShape(fixedReal(1.2))
+  	  .setRealization(latentReal)
+  	    .build,
+    [getRealization().doubleValue]
+  )
+  
+  public val fDist = add(
+  	new F.Builder()
+  	  .setD1(fixedReal(2))
+  	  .setD2(fixedReal(1))
+  	  .setRealization(latentReal)
+  		.build,
+  	realRealizationSquared
+  )
+    
+  public val logLogistic = add(
+    new LogLogistic.Builder()
+  	  .setScale(fixedReal(2.0))
+  	  .setShape(fixedReal(1.0))
+  	  .setRealization(latentReal)
+  		.build,
+	realRealizationSquared
+  )
+  
+  public val logisticDist = add(
+  	new Logistic.Builder()
+  	  .setLocation(fixedReal(3.0))
+  	  .setScale(fixedReal(1.5))
+  	  .setRealization(latentReal)
+  	  	.build,
+  	[getRealization().doubleValue]
+  )
+ 
   public val geometric = add(
     new Geometric.Builder()
       .setP(fixedReal(0.5))
