@@ -33,6 +33,8 @@ import blang.distributions.F
 import blang.distributions.Weibull
 import blang.distributions.Gumbel
 import blang.distributions.Gompertz
+import blang.distributions.betaBinomial
+import blang.distributions.hyperGeometric
 
 class BuiltInDistributions {
   
@@ -49,6 +51,8 @@ class BuiltInDistributions {
       documentClass(NegativeBinomial)
       documentClass(YuleSimon)
       documentClass(Geometric)
+      documentClass(betaBinomial)
+      documentClass(hyperGeometric)
     ]
     
     section("Continuous") [

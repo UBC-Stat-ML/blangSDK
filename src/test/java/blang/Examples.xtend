@@ -17,6 +17,8 @@ import blang.distributions.Poisson
 import blang.distributions.StudentT
 import blang.distributions.HalfStudentT
 import blang.distributions.ChiSquared
+import blang.distributions.betaBinomial
+import blang.distributions.hyperGeometric
 import blang.examples.MixtureModel
 import blang.validation.internals.fixtures.SimpleHierarchicalModel
 import blang.io.GlobalDataSource
@@ -74,6 +76,26 @@ import blang.distributions.Gompertz
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
+  
+  public val betaBinomial = add(
+  	new betaBinomial.Builder()
+  	.setAlpha(fixedReal(1.0))
+  	.setBeta(fixedReal(3.0))
+  	.setNumberOfTrials(fixedInt(3))
+  	.setRealization(latentInt)
+  	.build,
+  	intRealizationSquared
+  )
+  
+  public val hyperGeometric = add(
+  	new hyperGeometric.Builder()
+  	.setNumberOfDraws(fixedInt(3))
+  	.setPopulation(fixedInt(9))
+  	.setPopulationConditioned(fixedInt(6))
+  	.setNumberOfSuccess(latentInt)
+  	.build,
+  	intRealizationSquared
+  )
   
   public val gompertz = add(
   	new Gompertz.Builder()
