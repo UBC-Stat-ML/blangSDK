@@ -1,7 +1,6 @@
 package blang.distributions
 
-/** The Gompertz distribution. Values in \([0, \infty) \).
- */
+/** The Gompertz distribution. Values in \([0, \infty) \). */
 model Gompertz {
   random RealVar realization
   
