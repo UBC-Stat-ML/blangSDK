@@ -15,12 +15,10 @@ model Logistic {
 	  if (scale <= 0.0) return NEGATIVE_INFINITY
 	  return - log(scale)
 	}
-	
 	logf(scale, location, realization) {
 	  if (scale <= 0.0) return NEGATIVE_INFINITY
 	  return (location - realization) / scale
-	}
-		
+	}	
 	logf(scale, location, realization) {
 	  if (scale <= 0.0) return NEGATIVE_INFINITY
 	  return - 2 * log(1 + exp( (location - realization) / scale))

@@ -32,7 +32,6 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   public static double gompertz(Random rand, double shape, double scale)
   {
     double percentile = rand.nextDouble();
-    //double result = - (Math.log(shape) - Math.log(shape - Math.log(1 - percentile)*Math.log(scale))) / Math.log(scale);
     double result = scale * Math.log(1 - (1 / shape)*Math.log(1-percentile));
     if (result == 0.0)
     		result = ZERO_PLUS_EPS;
@@ -70,20 +69,15 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   /** */
   public static double logisticDist(Random rand, double location, double scale) 
   {
-	double result = new LogisticDistribution(generator(rand), location, scale).sample();
-	if (result == 0.0)
-		result = ZERO_PLUS_EPS;
-	return result;
+	return new LogisticDistribution(generator(rand), location, scale).sample();
   }
   
   /** */
   public static double logLogistic(Random rand, double scale, double shape)
   {
 	double percentile = rand.nextDouble();
-	double result =  scale * Math.pow((percentile / (1 - percentile)), (1/shape));
-	if (result == 0.0)
-		result = ZERO_PLUS_EPS;
-	return result;
+	return scale * Math.pow((percentile / (1 - percentile)), (1/shape));
+	
   }
   
   /** */

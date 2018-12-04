@@ -16,14 +16,12 @@ model Weibull {
 	  if (shape <= 0.0) return NEGATIVE_INFINITY
 	  return log(shape) - (shape*log(scale))
 	}
-	
 	logf(scale, shape, realization) {
 	  if (scale <= 0.0) return NEGATIVE_INFINITY
 	  if (shape <= 0.0) return NEGATIVE_INFINITY
 	  if (realization <= 0.0) return NEGATIVE_INFINITY
 	  return (shape - 1) * log(realization)
 	}
-	
 	logf(scale, shape, realization) {
 	  if (scale <= 0.0) return NEGATIVE_INFINITY
 	  if (shape <= 0.0) return NEGATIVE_INFINITY

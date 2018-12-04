@@ -11,20 +11,13 @@ model Gumbel {
   param RealVar scale
   
   laws {
-    
     logf(location, scale) {
-    	if (scale <= 0.0) return NEGATIVE_INFINITY
-    	return - log(scale) 
+      if (scale <= 0.0) return NEGATIVE_INFINITY
+    	  return - log(scale) 
     }
-    
     logf(location, scale, realization) {
-    	if (scale <= 0.0) return NEGATIVE_INFINITY
-    	return - exp((location - realization) / scale)
-    }
-  	
-  	logf(location, scale, realization) {
-    	if (scale <= 0.0) return NEGATIVE_INFINITY
-    	return (location - realization) / scale
+      if (scale <= 0.0) return NEGATIVE_INFINITY
+    	  return - exp((location - realization) / scale) + ((location - realization) / scale)
     }
   }
   
