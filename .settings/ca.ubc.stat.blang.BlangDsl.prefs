@@ -1,15 +1,16 @@
-//outlet.DEFAULT_OUTPUT.sourceFolder.src/main/java.directory=build/blang/main
-//outlet.DEFAULT_OUTPUT.sourceFolder.src/main/resources.directory=build/blang/main
-//outlet.DEFAULT_OUTPUT.sourceFolder.src/test/java.directory=build/blang/test
+#Thu Nov 29 11:03:07 PST 2018
 //outlet.DEFAULT_OUTPUT.sourceFolder.src/test/resources.directory=build/blang/test
-BuilderConfiguration.is_project_specific=true
-ValidatorConfiguration.is_project_specific=true
-eclipse.preferences.version=1
-generateGeneratedAnnotation=false
 generateSuppressWarnings=true
-includeDateInGenerated=false
-outlet.DEFAULT_OUTPUT.hideLocalSyntheticVariables=true
+//outlet.DEFAULT_OUTPUT.sourceFolder.src/test/java.directory=build/blang/test
+BuilderConfiguration.is_project_specific=true
+targetJavaVersion=Java8
+//outlet.DEFAULT_OUTPUT.sourceFolder.src/main/resources.directory=build/blang/main
+useJavaCompilerCompliance=false
 outlet.DEFAULT_OUTPUT.installDslAsPrimarySource=false
 outlet.DEFAULT_OUTPUT.userOutputPerSourceFolder=true
-targetJavaVersion=Java8
-useJavaCompilerCompliance=true
+outlet.DEFAULT_OUTPUT.hideLocalSyntheticVariables=true
+eclipse.preferences.version=1
+generateGeneratedAnnotation=false
+includeDateInGenerated=false
+//outlet.DEFAULT_OUTPUT.sourceFolder.src/main/java.directory=build/blang/main
+ValidatorConfiguration.is_project_specific=true

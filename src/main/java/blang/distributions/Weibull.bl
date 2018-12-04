@@ -1,0 +1,38 @@
+package blang.distributions
+
+/** The Weibull Distribution. Values \in \((0, \infty)\).*/
+model Weibull {
+  random RealVar realization
+  
+  /** The scale parameter \(\lambda\). \( \lambda \in (0, +\infty) \) */
+  param RealVar scale
+  
+  /** The shape parameter \(k\). \( k \in (0, +\infty) \) */
+  param RealVar shape
+  
+  laws {	
+	logf(scale, shape) {
+	  if (scale <= 0.0) return NEGATIVE_INFINITY
+	  if (shape <= 0.0) return NEGATIVE_INFINITY
+	  return log(shape) - (shape*log(scale))
+	}
+	
+	logf(scale, shape, realization) {
+	  if (scale <= 0.0) return NEGATIVE_INFINITY
+	  if (shape <= 0.0) return NEGATIVE_INFINITY
+	  if (realization <= 0.0) return NEGATIVE_INFINITY
+	  return (shape - 1) * log(realization)
+	}
+	
+	logf(scale, shape, realization) {
+	  if (scale <= 0.0) return NEGATIVE_INFINITY
+	  if (shape <= 0.0) return NEGATIVE_INFINITY
+	  if (realization <= 0.0) return NEGATIVE_INFINITY
+	  return - pow((realization / scale), shape)
+	}
+  }
+  
+  generate(rand) {
+  	rand.weibull(scale, shape)
+  }
+}

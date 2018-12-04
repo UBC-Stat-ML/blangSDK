@@ -8,24 +8,6 @@ model F {
   param RealVar d1, d2
   
   laws {
-  	/* 
-  	logf(d1) {
-		if (d1 <= 0.0) return NEGATIVE_INFINITY
-		return - lnGamma(d1)
-	}
-	
-	logf(d2) {
-		if (d2 <= 0.0) return NEGATIVE_INFINITY
-		return - lnGamma(d2)
-	}
-	logf(d1, d2) {
-		if (d1 <= 0.0) return NEGATIVE_INFINITY
-		if (d2 <= 0.0) return NEGATIVE_INFINITY
-		return lnGamma(d1 + d2)
-	}
-		
-		* 
-		*/
 	logf(d1, d2) {
 		if (d1 <= 0.0) return NEGATIVE_INFINITY
 		if (d2 <= 0.0) return NEGATIVE_INFINITY

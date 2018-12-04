@@ -1,7 +1,7 @@
 package blang.distributions
 
 /** A log-logistic distribution is the probability distribution of a random variable
- * whose logarithm has a logistic distribution. */
+ * whose logarithm has a logistic distribution. Values in \([0, +\infty) \)*/
 model LogLogistic {
   random RealVar realization
 	
@@ -23,7 +23,7 @@ model LogLogistic {
 		if (realization < 0.0) return NEGATIVE_INFINITY
 		if (scale <= 0.0) return NEGATIVE_INFINITY
 		if (shape <= 0.0) return NEGATIVE_INFINITY
-		return shape*log(realization) - log(realization)//(shape - 1.0) * (log(realization) - log(scale))
+		return shape*log(realization) - log(realization)
 	}
 		
 	logf(scale, shape, realization) {

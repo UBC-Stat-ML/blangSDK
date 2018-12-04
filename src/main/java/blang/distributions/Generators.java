@@ -6,8 +6,8 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.GeometricDistribution;
+import org.apache.commons.math3.distribution.GumbelDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
-import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.distribution.LogisticDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
@@ -29,6 +29,36 @@ import java.util.Random;
 public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
   /** */
+  public static double gompertz(Random rand, double shape, double scale)
+  {
+    double percentile = rand.nextDouble();
+    //double result = - (Math.log(shape) - Math.log(shape - Math.log(1 - percentile)*Math.log(scale))) / Math.log(scale);
+    double result = scale * Math.log(1 - (1 / shape)*Math.log(1-percentile));
+    if (result == 0.0)
+    		result = ZERO_PLUS_EPS;
+    return result;
+  }
+  
+  /** */
+  public static double gumbel(Random rand, double location, double scale)
+  {
+    double result = new GumbelDistribution(generator(rand), location, scale).sample();
+    if (result == 0.0) 
+    		result = ZERO_PLUS_EPS;
+    return result;
+  }
+  
+  /** */
+  public static double weibull(Random rand, double scale, double shape)
+  {
+    double percentile = rand.nextDouble();
+    double result = scale*Math.pow(-Math.log(1 - percentile), (1/shape));
+    if (result == 0.0)
+    		result = ZERO_PLUS_EPS;
+    return result;
+  }
+  
+  /** */
   public static double fDist(Random rand, double d1, double d2) 
   {
 	double result = new FDistribution(generator(rand), d1, d2).sample();
@@ -36,6 +66,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
 		result = ZERO_PLUS_EPS;
 	return result;
   }
+  
   /** */
   public static double logisticDist(Random rand, double location, double scale) 
   {
@@ -44,6 +75,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
 		result = ZERO_PLUS_EPS;
 	return result;
   }
+  
   /** */
   public static double logLogistic(Random rand, double scale, double shape)
   {
@@ -53,15 +85,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
 		result = ZERO_PLUS_EPS;
 	return result;
   }
-  /** */
-  public static double logNormal(Random rand, double mean, double variance)
-  {
-	double result = new LogNormalDistribution(generator(rand), mean, variance).sample();
-	if (result == 0.0)
-		result = ZERO_PLUS_EPS;
-	return result;
-  }
-
+  
   /** */
   public static double halfstudentt(Random random, double nu, double sigma) {
 	  double t = studentt(random, nu);

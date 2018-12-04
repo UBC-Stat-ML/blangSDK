@@ -29,8 +29,10 @@ import blang.distributions.YuleSimon
 import blang.distributions.Laplace
 import blang.distributions.Logistic
 import blang.distributions.LogLogistic
-import blang.distributions.LogNormal
 import blang.distributions.F
+import blang.distributions.Weibull
+import blang.distributions.Gumbel
+import blang.distributions.Gompertz
 
 class BuiltInDistributions {
   
@@ -61,8 +63,10 @@ class BuiltInDistributions {
       documentClass(Laplace)
       documentClass(Logistic)
       documentClass(LogLogistic)
-      documentClass(LogNormal)
       documentClass(F)
+      documentClass(Weibull)
+      documentClass(Gumbel)
+      documentClass(Gompertz)
     ]
     
     section("Multivariate") [
