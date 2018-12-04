@@ -17,8 +17,8 @@ import blang.distributions.Poisson
 import blang.distributions.StudentT
 import blang.distributions.HalfStudentT
 import blang.distributions.ChiSquared
-import blang.distributions.betaBinomial
-import blang.distributions.hyperGeometric
+import blang.distributions.BetaBinomial
+import blang.distributions.HyperGeometric
 import blang.examples.MixtureModel
 import blang.validation.internals.fixtures.SimpleHierarchicalModel
 import blang.io.GlobalDataSource
@@ -78,7 +78,7 @@ class Examples {
   public val List<Instance<? extends Model>> all = new ArrayList
   
   public val betaBinomial = add(
-  	new betaBinomial.Builder()
+  	new BetaBinomial.Builder()
   	.setAlpha(fixedReal(1.0))
   	.setBeta(fixedReal(3.0))
   	.setNumberOfTrials(fixedInt(3))
@@ -88,7 +88,7 @@ class Examples {
   )
   
   public val hyperGeometric = add(
-  	new hyperGeometric.Builder()
+  	new HyperGeometric.Builder()
   	.setNumberOfDraws(fixedInt(3))
   	.setPopulation(fixedInt(9))
   	.setPopulationConditioned(fixedInt(6))

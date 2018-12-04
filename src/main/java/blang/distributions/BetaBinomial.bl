@@ -1,6 +1,6 @@
 package blang.distributions
 
-model betaBinomial{
+model BetaBinomial{
 	random IntVar realization
 	param IntVar numberOfTrials
 	param RealVar alpha

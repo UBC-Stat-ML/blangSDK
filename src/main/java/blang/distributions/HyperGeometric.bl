@@ -1,6 +1,6 @@
 package blang.distributions
 
-model hyperGeometric{
+model HyperGeometric{
 	/** pupulationGood is for the number of samples that fit the criteria in the population */
 	random IntVar numberOfSuccess
 	param IntVar numberOfDraws
