@@ -1,0 +1,39 @@
+package blang.distributions
+
+/** Hyper-geometric distribution with population N and population satisfying certain condition K and drawing n samples
+ *  with k satisfying condition*/
+model HyperGeometric{
+	
+	random IntVar numberOfSuccess
+	
+	/** number of samples (n)*/
+	param IntVar numberOfDraws
+	
+	/** number of population (N)*/
+	param IntVar population
+	
+	/** number of population satisfying condition (K) */
+	param IntVar populationConditioned
+	
+	laws{
+		logf(populationConditioned, numberOfSuccess){
+			if(numberOfSuccess<0) return NEGATIVE_INFINITY
+			if(populationConditioned<=0 || numberOfSuccess > populationConditioned) return NEGATIVE_INFINITY
+			return logBinomial(populationConditioned,numberOfSuccess)
+		}
+		logf(population, numberOfDraws){
+			if(numberOfDraws<0) return NEGATIVE_INFINITY
+			if(population<=0 || numberOfDraws > population) return NEGATIVE_INFINITY
+			return -logBinomial(population, numberOfDraws)
+		}
+		logf(populationConditioned,numberOfSuccess,population,numberOfDraws){
+			if(numberOfDraws-numberOfSuccess<0) return NEGATIVE_INFINITY
+			if(population-populationConditioned<=0 || numberOfDraws-numberOfSuccess > population-populationConditioned)
+		     return NEGATIVE_INFINITY
+		     return logBinomial(population-populationConditioned,numberOfDraws-numberOfSuccess)
+		}
+	}
+	generate (rand){
+		rand.hyperGeometric(numberOfDraws,population,populationConditioned)
+	}
+}

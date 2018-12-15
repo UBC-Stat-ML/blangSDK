@@ -70,10 +70,32 @@ import blang.distributions.F
 import blang.distributions.Weibull
 import blang.distributions.Gumbel
 import blang.distributions.Gompertz
+import blang.distributions.HyperGeometric
+import blang.distributions.BetaBinomial
 
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
+  
+  public val betaBinomial = add(
+  	new BetaBinomial.Builder()
+  	.setAlpha(fixedReal(1.0))
+  	.setBeta(fixedReal(3.0))
+  	.setNumberOfTrials(fixedInt(3))
+  	.setRealization(latentInt)
+  	.build,
+  	intRealizationSquared
+  )
+  
+  public val hyperGeometric = add(
+  	new HyperGeometric.Builder()
+  	.setNumberOfDraws(fixedInt(3))
+  	.setPopulation(fixedInt(9))
+  	.setPopulationConditioned(fixedInt(6))
+  	.setNumberOfSuccess(latentInt)
+  	.build,
+  	intRealizationSquared
+  )
   
   public val gompertz = add(
   	new Gompertz.Builder()

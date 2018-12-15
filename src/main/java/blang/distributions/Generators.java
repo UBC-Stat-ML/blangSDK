@@ -7,6 +7,7 @@ import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.GeometricDistribution;
 import org.apache.commons.math3.distribution.GumbelDistribution;
+import org.apache.commons.math3.distribution.HypergeometricDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.LogisticDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
@@ -28,7 +29,22 @@ import java.util.Random;
 /** Various random number generators. */
 public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
-  /** */
+    /** */
+    public static int betaBinomial(Random random, double alpha, double beta, int numberOfTrials)
+    {
+        double x = beta(random, alpha, beta);
+        int y = binomial(random,numberOfTrials,x);
+        return y;
+    }
+    
+    /** */
+    public static int hyperGeometric(Random random, int numberOfDraws, int population, int populationConditioned)
+    {
+        int result = new HypergeometricDistribution(generator(random), population, populationConditioned, numberOfDraws).sample();
+        return result;
+    }
+    
+    /** */
   public static double gompertz(Random rand, double shape, double scale)
   {
     double percentile = rand.nextDouble();

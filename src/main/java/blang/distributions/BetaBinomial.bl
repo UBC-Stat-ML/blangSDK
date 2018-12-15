@@ -1,0 +1,32 @@
+package blang.distributions
+
+/** Generalized Binomial Distribution with Beta priors */
+model BetaBinomial{
+	random IntVar realization
+	
+	/** The number \(n\) of Bernoulli variables being summed. \(n > 0\) */
+	param IntVar numberOfTrials
+	
+	/** Higher values brings mean closer to one. \(\alpha > 0 \) */
+	param RealVar alpha
+	
+	/** Higher values brings mean closer to zero. \(\beta > 0 \) */
+	param RealVar beta
+	
+	laws{
+		logf(realization,numberOfTrials,alpha,beta) {
+			if(realization<0) return NEGATIVE_INFINITY
+			if(numberOfTrials<=0 || realization> numberOfTrials) return NEGATIVE_INFINITY
+		return lnGamma(numberOfTrials+1)
+		+lnGamma(realization+alpha)
+		+lnGamma(numberOfTrials-realization+beta)
+		+lnGamma(alpha+beta)
+		-lnGamma(realization+1)
+		-lnGamma(numberOfTrials-realization+1)
+		-lnGamma(numberOfTrials+alpha+beta)
+		-lnGamma(alpha)
+		-lnGamma(beta)			
+		}
+	}
+	generate (rand){ rand.betaBinomial(alpha,beta,numberOfTrials)}
+}
