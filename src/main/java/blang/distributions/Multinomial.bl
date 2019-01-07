@@ -1,0 +1,42 @@
+package blang.distributions
+
+import static bayonet.distributions.Multinomial.sampleMultinomial
+
+/** A generalization of a Binomial Distribution. Value \in \mathbb{R}^n\). */
+model Multinomial {
+	/** Number of successes for each of the \(n\) categories. */
+	random List<IntVar> numberofSuccesses
+	
+	/** Vector of probabilities \((p_0, p_1, \dots, p_{n-1})\) for each of the \(n\) categories. */
+	param Simplex probabilities
+	
+	 /** The number of independent trials. Value in \(k > 0\) */
+	param IntVar numberofTrials
+	
+	laws{
+		
+		logf(numberofTrials) { return logFactorial(numberofTrials) }
+		
+		logf(numberofSuccesses, probabilities, numberofTrials) {
+			var sum0 = 0.0
+			for (int i: 0..< numberofSuccesses.size()) {
+				if (probabilities.get(i) < 0.0 || probabilities.get(i) > 1.0) return NEGATIVE_INFINITY
+				if (numberofSuccesses.get(i) < 0.0) return NEGATIVE_INFINITY
+				if (numberofTrials <= 0 || numberofSuccesses.get(i) < numberofTrials) return NEGATIVE_INFINITY
+				sum0 += (numberofSuccesses.get(i) * log(probabilities.get(i)))
+			return sum0
+			}
+		}
+		
+		logf(numberofSuccesses, probabilities, numberofTrials) {
+			var sum1 = 0.0
+			for (int i: 0..< numberofSuccesses.size()) {
+				if (numberofSuccesses.get(i) < 0) return NEGATIVE_INFINITY
+				if (numberofTrials <= 0 || numberofSuccesses.get(i) < numberofTrials) return NEGATIVE_INFINITY
+				sum1 += logFactorial(numberofSuccesses.get(i))
+				return sum1
+			}
+		}
+	}
+	generate(rand) {sampleMultinomial(rand, probabilities.vectorToArray)}
+}
