@@ -11,6 +11,7 @@ import blang.distributions.DiscreteUniform
 import blang.distributions.Exponential
 import blang.distributions.Gamma
 import blang.distributions.Geometric
+import blang.distributions.Multinomial
 import blang.distributions.MultivariateNormal
 import blang.distributions.Normal
 import blang.distributions.Poisson
@@ -77,6 +78,18 @@ class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
   
+<<<<<<< HEAD
+    public val multinomial = add(
+  	new Multinomial.Builder()
+  	  .setProbabilities(fixedSimplex(0.2,0.3,0.5))
+  	  .setNumberofTrials(fixedInt(3))
+  	  .setNumberofSuccesses(latentIntList(3))
+  	    .build,
+  	listHash
+  )
+  
+
+=======
   public val betaBinomial = add(
   	new BetaBinomial.Builder()
   	.setAlpha(fixedReal(1.0))
@@ -151,6 +164,7 @@ class Examples {
   	[getRealization().doubleValue]
   )
  
+>>>>>>> ae08a0f7e151d9aed07eb9b0f126d335a9fb3b9f
   public val geometric = add(
     new Geometric.Builder()
       .setP(fixedReal(0.5))
