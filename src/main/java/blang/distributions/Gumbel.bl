@@ -1,0 +1,27 @@
+package blang.distributions
+
+/** The Gumbel Distribution. Values in \( \mathbb{R} \)*/
+model Gumbel {
+  random RealVar realization
+  
+  /** The location parameter \(\mu \). \( \mu \in \mathbb{R} \) */
+  param RealVar location
+  
+  /** The scale parameter \(\beta \). \( \beta > 0 \)*/
+  param RealVar scale
+  
+  laws {
+    logf(location, scale) {
+      if (scale <= 0.0) return NEGATIVE_INFINITY
+    	  return - log(scale) 
+    }
+    logf(location, scale, realization) {
+      if (scale <= 0.0) return NEGATIVE_INFINITY
+    	  return - exp((location - realization) / scale) + ((location - realization) / scale)
+    }
+  }
+  
+  generate(rand) {
+  	rand.gumbel(location, scale)
+  }
+}

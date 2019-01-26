@@ -1,0 +1,31 @@
+package blang.distributions
+
+/** A random variable with a logistic probability distribution function. Values in \( \mathbb{R} \) */
+model Logistic {
+  random RealVar realization
+	
+  /** The center of the PDF. Also the mean, mode and median. \(\mu \in \mathbb{R}\) */
+  param RealVar location
+	
+  /** The scale parameter. \(\s > 0 \(real\) \) */
+  param RealVar scale
+	
+  laws {
+    logf(scale) {
+	  if (scale <= 0.0) return NEGATIVE_INFINITY
+	  return - log(scale)
+	}
+	logf(scale, location, realization) {
+	  if (scale <= 0.0) return NEGATIVE_INFINITY
+	  return (location - realization) / scale
+	}	
+	logf(scale, location, realization) {
+	  if (scale <= 0.0) return NEGATIVE_INFINITY
+	  return - 2 * log(1 + exp( (location - realization) / scale))
+	}
+  }
+	
+  generate(rand) {
+	rand.logisticDist(location, scale)
+  }
+}

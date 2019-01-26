@@ -3,9 +3,13 @@ package blang.distributions;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.GeometricDistribution;
+import org.apache.commons.math3.distribution.GumbelDistribution;
+import org.apache.commons.math3.distribution.HypergeometricDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
+import org.apache.commons.math3.distribution.LogisticDistribution;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
@@ -25,6 +29,73 @@ import java.util.Random;
 /** Various random number generators. */
 public class Generators // Warning: blang.distributions.Generators hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures 
 {
+    /** */
+    public static int betaBinomial(Random random, double alpha, double beta, int numberOfTrials)
+    {
+        double x = beta(random, alpha, beta);
+        int y = binomial(random,numberOfTrials,x);
+        return y;
+    }
+    
+    /** */
+    public static int hyperGeometric(Random random, int numberOfDraws, int population, int populationConditioned)
+    {
+        int result = new HypergeometricDistribution(generator(random), population, populationConditioned, numberOfDraws).sample();
+        return result;
+    }
+    
+    /** */
+  public static double gompertz(Random rand, double shape, double scale)
+  {
+    double percentile = rand.nextDouble();
+    double result = scale * Math.log(1 - (1 / shape)*Math.log(1-percentile));
+    if (result == 0.0)
+    		result = ZERO_PLUS_EPS;
+    return result;
+  }
+  
+  /** */
+  public static double gumbel(Random rand, double location, double scale)
+  {
+    double result = new GumbelDistribution(generator(rand), location, scale).sample();
+    if (result == 0.0) 
+    		result = ZERO_PLUS_EPS;
+    return result;
+  }
+  
+  /** */
+  public static double weibull(Random rand, double scale, double shape)
+  {
+    double percentile = rand.nextDouble();
+    double result = scale*Math.pow(-Math.log(1 - percentile), (1/shape));
+    if (result == 0.0)
+    		result = ZERO_PLUS_EPS;
+    return result;
+  }
+  
+  /** */
+  public static double fDist(Random rand, double d1, double d2) 
+  {
+	double result = new FDistribution(generator(rand), d1, d2).sample();
+	if (result == 0.0)
+		result = ZERO_PLUS_EPS;
+	return result;
+  }
+  
+  /** */
+  public static double logisticDist(Random rand, double location, double scale) 
+  {
+	return new LogisticDistribution(generator(rand), location, scale).sample();
+  }
+  
+  /** */
+  public static double logLogistic(Random rand, double scale, double shape)
+  {
+	double percentile = rand.nextDouble();
+	return scale * Math.pow((percentile / (1 - percentile)), (1/shape));
+	
+  }
+  
   /** */
   public static double halfstudentt(Random random, double nu, double sigma) {
 	  double t = studentt(random, nu);

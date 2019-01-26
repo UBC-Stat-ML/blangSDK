@@ -27,6 +27,14 @@ import blang.distributions.HalfStudentT
 import blang.distributions.ChiSquared
 import blang.distributions.YuleSimon
 import blang.distributions.Laplace
+import blang.distributions.Logistic
+import blang.distributions.LogLogistic
+import blang.distributions.F
+import blang.distributions.Weibull
+import blang.distributions.Gumbel
+import blang.distributions.Gompertz
+import blang.distributions.HyperGeometric
+import blang.distributions.BetaBinomial
 
 class BuiltInDistributions {
   
@@ -43,6 +51,8 @@ class BuiltInDistributions {
       documentClass(NegativeBinomial)
       documentClass(YuleSimon)
       documentClass(Geometric)
+      documentClass(HyperGeometric)
+      documentClass(BetaBinomial)
     ]
     
     section("Continuous") [
@@ -55,6 +65,12 @@ class BuiltInDistributions {
       documentClass(HalfStudentT)
       documentClass(ChiSquared)
       documentClass(Laplace)
+      documentClass(Logistic)
+      documentClass(LogLogistic)
+      documentClass(F)
+      documentClass(Weibull)
+      documentClass(Gumbel)
+      documentClass(Gompertz)
     ]
     
     section("Multivariate") [
