@@ -21,11 +21,11 @@ model Logistic {
 	}	
 	logf(scale, location, realization) {
 	  if (scale <= 0.0) return NEGATIVE_INFINITY
-	  return - 2 * log(1 + exp( (location - realization) / scale))
+	  return - 2 * log(1.0 + exp( (location - realization) / scale))
 	}
   }
 	
   generate(rand) {
-	rand.logisticDist(location, scale)
+    rand.logisticDist(location, scale)
   }
 }

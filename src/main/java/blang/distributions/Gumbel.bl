@@ -22,6 +22,6 @@ model Gumbel {
   }
   
   generate(rand) {
-  	rand.gumbel(location, scale)
+    	rand.gumbel(location, scale)
   }
 }
