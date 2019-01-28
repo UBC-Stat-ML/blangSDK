@@ -98,8 +98,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   
   /** */
   public static double halfstudentt(Random random, double nu, double sigma) {
-	  double t = studentt(random, nu);
-	  return Math.abs(t) * sigma;
+	  return Math.abs(new TDistribution(generator(random), nu).sample())*sigma;
   }
 
   /** */
@@ -124,9 +123,11 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   }
   
   /** */
-  public static double studentt(Random random, double nu)
+  public static double studentt(Random random, double nu, double mu, double sigma)
   {
-	  return new TDistribution(generator(random), nu).sample();
+	  TDistribution tDist = new TDistribution(generator(random), nu);
+	  double standardT = tDist.sample();
+	  return standardT * sigma + mu;
   }
 	
   /** */
