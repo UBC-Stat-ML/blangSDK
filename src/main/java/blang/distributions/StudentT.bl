@@ -7,18 +7,37 @@ model StudentT {
   /** The degrees of freedom \(\nu\). \( \nu > 0 \) */
   param RealVar nu
   
+  /**
+   * For non-standardized Student's t-distribution \(X\)
+   *  \( X = \mu + \sigma T \); where \( T is a standard student T random variable \)
+   * For standardized Student's t-distrubition, use \(\sigma = 1 \) and \(\mu = 0 \)
+   */
+  param RealVar mu
+  param RealVar sigma
+  
   laws{
+    logf(){
+        return - 0.5 * log(PI)
+    }
+
+    logf(sigma){
+      if (sigma <= 0.0) return NEGATIVE_INFINITY
+      return -log(sigma)
+    }
+    
     logf(nu){
-      if (nu < 0.0) return NEGATIVE_INFINITY
-      return lnGamma((nu + 1.0) / 2.0) - 0.5 * log(nu * PI) - lnGamma(nu / 2.0)
+      if (nu <= 0.0) return NEGATIVE_INFINITY
+      return lnGamma((nu + 1.0) / 2.0) - 0.5 * log(nu) - lnGamma(nu / 2.0) 
     }
-    logf(nu, realization){
-      if (nu < 0.0) return NEGATIVE_INFINITY
-      return - ((nu + 1) / 2.0) * log(1 + pow(realization, 2) / nu)      
+    
+    logf(mu, nu, sigma, realization){
+      if (nu <= 0.0 || sigma <= 0.0) return NEGATIVE_INFINITY
+      return - ((nu + 1.0) / 2.0) * log(1.0 + (1.0 / nu) * ( 1.0 / (pow(sigma, 2)) ) * pow((realization - mu), 2))
     }
+     
   }
   
   generate(rand){
-    rand.studentt(nu)
+    rand.studentt(nu, mu, sigma)
   }
 }
