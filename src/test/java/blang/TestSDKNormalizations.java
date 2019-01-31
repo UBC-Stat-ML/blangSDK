@@ -1,5 +1,6 @@
 package blang;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import blang.core.IntDistribution;
@@ -7,6 +8,7 @@ import blang.distributions.Generators;
 import blang.distributions.YuleSimon;
 import blang.types.StaticUtils;
 import blang.validation.NormalizationTest;
+import humi.BetaNegativeBinomial;
 
 public class TestSDKNormalizations extends NormalizationTest
 {
@@ -46,7 +48,17 @@ public class TestSDKNormalizations extends NormalizationTest
     double sum = 0.0;
     for (int i = 0; i < 100; i++)
       sum += Math.exp(distribution.logDensity(i));
-    System.out.println(sum);
+    Assert.assertEquals(1.0, sum, 0.01);
+  }
+  
+  @Test
+  public void testBNB()
+  {
+    IntDistribution distribution = BetaNegativeBinomial.distribution(StaticUtils.fixedReal(3.5), StaticUtils.fixedReal(1.2), StaticUtils.fixedReal(3.0));
+    double sum = 0.0;
+    for (int i = 0; i < 1000; i++)
+      sum += Math.exp(distribution.logDensity(i));
+    Assert.assertEquals(1.0, sum, 0.01);
   }
   
 }

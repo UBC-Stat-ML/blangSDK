@@ -1,0 +1,48 @@
+package humi
+
+/** Negative Binomial Distribution with a marginalized Beta prior. Values in \(\{0, 1, 2, \dots\}\). */
+model BetaNegativeBinomial {
+  random IntVar k
+  
+  /** Number of failures until experiment is stopped (generalized to the reals). \(r > 0\) */
+  param RealVar r
+  
+  /** Higher values brings mean accept probability closer to one. \(\alpha > 0 \) */
+  param  RealVar alpha
+  
+  /** Higher values brings mean accept probabilitycloser to zero. \(\beta > 0 \) */
+  param  RealVar beta
+  
+  laws {
+    logf(r, k) {
+      if (k < 0) NEGATIVE_INFINITY
+      else if (r <= 0.0) NEGATIVE_INFINITY
+      else logGamma(r + k)
+    }
+    logf(alpha, beta, r, k) {
+      if (alpha <= 0.0) NEGATIVE_INFINITY
+      else if (beta <= 0.0) NEGATIVE_INFINITY
+      else if (k < 0) NEGATIVE_INFINITY
+      else if (r <= 0.0) NEGATIVE_INFINITY
+      else logBeta(alpha + k, beta + r) // Fixes an error in wikipedia
+    }
+    logf(k) {
+      if (k < 0) NEGATIVE_INFINITY
+      else -logFactorial(k)
+    }
+    logf(r) {
+      if (r <= 0.0) NEGATIVE_INFINITY
+      else -logGamma(r)
+    }
+    logf(alpha, beta) {
+      if (alpha <= 0.0) NEGATIVE_INFINITY
+      else if (beta <= 0.0) NEGATIVE_INFINITY
+      else -logBeta(alpha, beta)
+    }
+  }
+  
+  generate (rand) {
+    val p = rand.beta(alpha, beta)
+    return rand.negativeBinomial(r, p)
+  }
+}

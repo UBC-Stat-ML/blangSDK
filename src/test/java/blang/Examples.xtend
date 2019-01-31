@@ -72,6 +72,7 @@ import blang.distributions.Gumbel
 import blang.distributions.Gompertz
 import blang.distributions.HyperGeometric
 import blang.distributions.BetaBinomial
+import humi.BetaNegativeBinomial
 
 class Examples {
   
@@ -257,6 +258,16 @@ class Examples {
       .setP(fixedReal(0.1))
       .setR(fixedReal(2.1))
         .build,
+    intRealizationSquared
+  )
+  
+  public val betaNegBinomial = add(
+    new BetaNegativeBinomial.Builder()
+    .setAlpha(fixedReal(1.2))
+    .setBeta(fixedReal(3.0))
+    .setR(fixedReal(3.5))
+    .setK(latentInt) 
+    .build,
     intRealizationSquared
   )
   

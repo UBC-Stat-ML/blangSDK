@@ -146,6 +146,14 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return logFactorial(n) - logFactorial(k) - logFactorial(n-k);
   }
   
+  def static double logGamma(double x) {
+    return SpecialFunctions::lnGamma(x)
+  }
+  
+  def static double logBeta(double x, double y) {
+    return logGamma(x) + logGamma(y) - logGamma(x + y)
+  }
+  
   def static <K> Diagonal<K> diagonalPrecision(RealVar diagonalPrecisionValue, Plate<K> plate) {
     return new Diagonal<K>(diagonalPrecisionValue, plate)
   }

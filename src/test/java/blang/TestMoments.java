@@ -22,35 +22,56 @@ import blang.distributions.YuleSimon;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
+import humi.BetaNegativeBinomial;
 
 public class TestMoments 
 {
   static Random random = new Random(1);
   static Examples examples = new Examples();
   
-  @Test
-  public void beta() 
-  {
-    test(10_000_000, (Beta) examples.sparseBeta.model);
-  }
+//  @Test
+//  public void beta() 
+//  {
+//    test(10_000_000, (Beta) examples.sparseBeta.model);
+//  }
+//  
+//  @Test
+//  public void negBin()
+//  {
+//    test(10_000_000, (NegativeBinomial) examples.negBinomial.model);
+//    test(10_000_000, (NegativeBinomialMeanParam) examples.negBinomial_mv.model);
+//  }
+//  
+//  @Test
+//  public void gamma()
+//  {
+//    test(10_000_000, (GammaMeanParam) examples.gammaMeanParam.model);  
+//  }
+//  
+//  @Test
+//  public void yule()
+//  {
+//    test(10_000_000, (YuleSimon) examples.yuleSimon.model);  
+//  }
   
   @Test
-  public void negBin()
+  public void bnb()
   {
-    test(10_000_000, (NegativeBinomial) examples.negBinomial.model);
-    test(10_000_000, (NegativeBinomialMeanParam) examples.negBinomial_mv.model);
+    test(10_000_000, (BetaNegativeBinomial) examples.betaNegBinomial.model);  
   }
   
-  @Test
-  public void gamma()
+  @TestedDistribution(BetaNegativeBinomial.class)
+  private static List<Double> bnbMoments(BetaNegativeBinomial yule)
   {
-    test(10_000_000, (GammaMeanParam) examples.gammaMeanParam.model);  
-  }
-  
-  @Test
-  public void yule()
-  {
-    test(10_000_000, (YuleSimon) examples.yuleSimon.model);  
+    List<Double> result = new ArrayList<>();
+    result.add(1.0);
+    double alpha = yule.getAlpha().doubleValue();
+    double beta = yule.getBeta().doubleValue();
+    double r = yule.getR().doubleValue();
+    if (alpha <= 1) throw new RuntimeException("Mean only defined for alpha > 1");
+    double m = r * alpha / (beta - 1.0);
+    result.add(m);
+    return result;
   }
   
   @TestedDistribution(YuleSimon.class)

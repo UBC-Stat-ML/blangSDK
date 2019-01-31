@@ -1,6 +1,6 @@
 package blang.distributions
 
-/** Generalized Binomial Distribution with Beta priors */
+/**  A sum of \(n\) iid Bernoulli variables, with a marginalized Beta prior on the success probability. Values in \(\{0, 1, 2, \dots, n\}\).  */
 model BetaBinomial{
 	random IntVar realization
 	
