@@ -51,27 +51,13 @@ public class ParallelTempering
   
   public boolean[] swapKernel() 
   {
-    return reversible ? reversibleSwapKernel() : nonReversibleSwapKernel();
+    return swapKernel(reversible);
   }
   
-  public boolean[] reversibleSwapKernel()
-  {
-    List<Integer> indices = new ArrayList<Integer>();
-    for (int i = 0; i < nChains() - 1; i++) indices.add(i);
-    Collections.shuffle(indices, parallelRandomStreams[0]);
-    swapIndicators = new boolean[nChains()];
-    for (int i : indices) 
-    {
-      double acceptPr = swapKernel(parallelRandomStreams[0], i);
-      swapAcceptPrs[i].addValue(acceptPr);
-    }
-    return swapIndicators;
-  }
-  
-  public boolean[] nonReversibleSwapKernel()
+  public boolean[] swapKernel(boolean reversible)
   {
     swapIndicators = new boolean[nChains()];
-    int offset = iterationIndex++ % 2;
+    int offset = reversible ? parallelRandomStreams[0].nextInt(2) : iterationIndex++ % 2; 
     BriefParallel.process((nChains() - offset) / 2, nThreads.numberAvailable(), swapIndex ->
     {
       int chainIndex = offset + 2 * swapIndex;
