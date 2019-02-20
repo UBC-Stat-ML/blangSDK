@@ -1,4 +1,4 @@
-package humi
+package blang.distributions
 
 /** Negative Binomial Distribution with a marginalized Beta prior. Values in \(\{0, 1, 2, \dots\}\). */
 model BetaNegativeBinomial {
