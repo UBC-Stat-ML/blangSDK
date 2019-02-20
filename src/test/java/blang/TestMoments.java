@@ -22,7 +22,7 @@ import blang.distributions.YuleSimon;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
-import humi.BetaNegativeBinomial;
+import blang.distributions.BetaNegativeBinomial;
 
 public class TestMoments 
 {

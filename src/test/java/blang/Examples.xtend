@@ -72,7 +72,7 @@ import blang.distributions.Gumbel
 import blang.distributions.Gompertz
 import blang.distributions.HyperGeometric
 import blang.distributions.BetaBinomial
-import humi.BetaNegativeBinomial
+import blang.distributions.BetaNegativeBinomial
 
 class Examples {
   

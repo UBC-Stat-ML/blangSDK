@@ -8,7 +8,7 @@ import blang.distributions.Generators;
 import blang.distributions.YuleSimon;
 import blang.types.StaticUtils;
 import blang.validation.NormalizationTest;
-import humi.BetaNegativeBinomial;
+import blang.distributions.BetaNegativeBinomial;
 
 public class TestSDKNormalizations extends NormalizationTest
 {
