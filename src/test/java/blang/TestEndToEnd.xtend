@@ -7,6 +7,7 @@ import blang.validation.internals.fixtures.Doomsday
 import blang.runtime.SampledModel
 import blang.validation.internals.fixtures.NoGen
 import blang.validation.internals.fixtures.Diffusion
+import blang.validation.internals.fixtures.SometimesNaN
 
 class TestEndToEnd {
   
@@ -59,7 +60,28 @@ class TestEndToEnd {
         "--engine.nChains", "1"
       )
     )
-    
   }
   
+  @Test
+  def void nanNotOK() {
+    SampledModel::check = true
+    Assert.assertNotEquals(
+      0, 
+      Runner::start(
+        "--model", SometimesNaN.canonicalName
+      )
+    )
+  }
+  
+  @Test
+  def void nanOK() {
+    SampledModel::check = true
+    Assert.assertEquals(
+      0, 
+      Runner::start(
+        "--model", SometimesNaN.canonicalName,
+        "--treatNaNAsNegativeInfinity", "true"
+      )
+    )
+  }
 }

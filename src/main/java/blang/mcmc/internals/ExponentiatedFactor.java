@@ -10,6 +10,7 @@ import blang.types.internals.InvalidParameter;
 public class ExponentiatedFactor implements AnnealedFactor
 {
   private final LogScaleFactor enclosed;
+  public final boolean treatNaNAsNegativeInfinity; 
   
   /**
    * Compute the density of the enclosed density.
@@ -21,8 +22,10 @@ public class ExponentiatedFactor implements AnnealedFactor
   {
     try { 
       double result = enclosed.logDensity();
-      if (Double.isNaN(result))
-        throw new RuntimeException("Factors should not return NaN. Use NEGATIVE_INFINITY to forbid configurations. Caused by: " + enclosed.getClass().getCanonicalName());
+      if (Double.isNaN(result)) {
+        if (treatNaNAsNegativeInfinity) return Double.NEGATIVE_INFINITY;
+        throw new RuntimeException("Factors should not return NaN. Use NEGATIVE_INFINITY to forbid configurations. If you are sure this NaN is OK, you can use the option 'treatNaNAsNegativeInfinity'. Caused by: " + enclosed.getClass().getCanonicalName() + "; code: " + enclosed);
+      }
       return result; 
     } 
     catch (InvalidParameter ip) { return Double.NEGATIVE_INFINITY; }
@@ -54,8 +57,9 @@ public class ExponentiatedFactor implements AnnealedFactor
    *     cost of computing SampledModel.logDensityRatio .. 
    */
   
-  public ExponentiatedFactor(LogScaleFactor enclosed)
+  public ExponentiatedFactor(LogScaleFactor enclosed, boolean treatNaNAsNegativeInfinity)
   {
+    this.treatNaNAsNegativeInfinity = treatNaNAsNegativeInfinity;
     if (enclosed instanceof AnnealedFactor) 
       throw new RuntimeException("Trying to anneal a factor which is already annealed.");
     this.enclosed = enclosed;

@@ -115,7 +115,7 @@ public class SampledModel
     
     otherAnnealedFactors = annealingStructure.otherAnnealedFactors;
     
-    sparseUpdateFactors = initSparseUpdateFactors(annealingStructure);
+    sparseUpdateFactors = initSparseUpdateFactors(annealingStructure, graphAnalysis.treatNaNAsNegativeInfinity);
     caches = new double[sparseUpdateFactors.size()];
     
     sampler2sparseUpdateAnnealed = new int[samplers.list.size()][];
@@ -410,14 +410,14 @@ public class SampledModel
   /**
    * Ignore factors that are not LogScaleFactor's (e.g. constraints), make sure everything else are AnnealedFactors.
    */
-  private static List<ExponentiatedFactor> initSparseUpdateFactors(AnnealingStructure structure) 
+  private static List<ExponentiatedFactor> initSparseUpdateFactors(AnnealingStructure structure, boolean treatNaNAsNegativeInfinity) 
   {
     ArrayList<ExponentiatedFactor> result = new ArrayList<>();
     result.addAll(structure.exponentiatedFactors);
     for (LogScaleFactor f : structure.fixedLogScaleFactors)
     {
       if (!(f instanceof ExponentiatedFactor))
-        f = new ExponentiatedFactor(f);
+        f = new ExponentiatedFactor(f, treatNaNAsNegativeInfinity);
       result.add((ExponentiatedFactor) f);
     }
     return result;

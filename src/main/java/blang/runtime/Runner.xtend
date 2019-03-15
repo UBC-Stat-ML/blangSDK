@@ -65,6 +65,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   public Optional<String> version // Only used when called from Main 
   public static final String VERSION_FIELD_NAME = "version" 
   
+  @Arg                         @DefaultValue("false")
+  public boolean treatNaNAsNegativeInfinity = false;
+  
   @GlobalArg
   public Observations observations = new Observations
   
@@ -157,7 +160,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     println("Preprocessing started")
     val Stopwatch preprocessingTime = Stopwatch.createStarted
     samplers.monitoringStatistics = results.child(MONITORING_FOLDER) 
-    val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations)
+    val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations, treatNaNAsNegativeInfinity)
     engine.check(graphAnalysis)
     if (printAccessibilityGraph) {
       graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
