@@ -8,6 +8,7 @@ import blang.runtime.SampledModel
 import blang.validation.internals.fixtures.NoGen
 import blang.validation.internals.fixtures.Diffusion
 import blang.validation.internals.fixtures.SometimesNaN
+import blang.validation.internals.fixtures.BadPlate
 
 class TestEndToEnd {
   
@@ -81,6 +82,17 @@ class TestEndToEnd {
       Runner::start(
         "--model", SometimesNaN.canonicalName,
         "--treatNaNAsNegativeInfinity", "true"
+      )
+    )
+  }
+  
+  @Test
+  def void badPlate() {
+    SampledModel::check = true
+    Assert.assertNotEquals(
+      0, 
+      Runner::start(
+        "--model", BadPlate.canonicalName
       )
     )
   }
