@@ -1,7 +1,6 @@
 package blang.engines.internals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.solvers.PegasusSolver;
@@ -73,13 +72,8 @@ public class EngineStaticUtils
       double y = Lambda * i / (nGrids - 1.0);
       double point = solver.solve(10_000, (double x) -> spline.interpolate(x) - y, previous, 1.0);
       result.add(point);
+      previous = point;
     }
     return result;
   }
-  
-  public static void main(String [] args) 
-  {
-    System.out.println(optimalPartition(Arrays.asList(0.0, 0.5, 1.0), Arrays.asList(0.1, 0.9), 5));
-  }
-
 }

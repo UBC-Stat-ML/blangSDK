@@ -201,9 +201,4 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       return "Round [nScans=" + nScans + ", roundIndex=" + roundIndex + ", isAdapt=" + isAdapt + "]";
     }
   }
-  
-  public static void main(String [] args) 
-  {
-    System.out.println(rounds(10_000, 0.5));
-  }
 }
