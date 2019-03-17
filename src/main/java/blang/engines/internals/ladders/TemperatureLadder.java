@@ -14,8 +14,6 @@ public interface TemperatureLadder
 {
   /**
    * Fill the provided temperingParameters with annealing parameters (index 0, i.e. first one, should be 1 - i.e. room temperature)
-   * 
-   * Optionally, also fill in initialStates with states at the corresponding temperature. 
    */
   List<Double> temperingParameters(int nTemperatures);
 }

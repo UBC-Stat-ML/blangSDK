@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.PegasusSolver;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 
 import bayonet.distributions.Multinomial;
-import bayonet.math.NumericalUtils;
 import bayonet.smc.ParticlePopulation;
 import blang.runtime.SampledModel;
 
@@ -43,23 +41,6 @@ public class EngineStaticUtils
   }
   
   /**
-   * Computes (1/N^2) \sum_i \sum_j | v_i - v_j | 
-   * in O(N) by using the assumption that the v's are sorted in increasing order.
-   */
-  public static double averageDifference(double [] sortedVs) 
-  {
-    double sum = 0.0;
-    int N = sortedVs.length;
-    for (int j = 0; j < N - 1; j++)
-    {
-      double delta = sortedVs[j+1] - sortedVs[j];
-      if (delta < 0.0) throw new RuntimeException("Assuming the Vs are sorted.");
-      sum += delta * (j + 1) * (N - j - 1);
-    }
-    return 2.0 * sum / N / N;
-  }
-  
-  /**
    * 
    * @param annealingParameters length N + 1
    * @param acceptanceProbabilities length N, entry i is accept b/w chain i-1 and i
@@ -73,6 +54,8 @@ public class EngineStaticUtils
     for (double pr : acceptanceProbabilities)
       if (!(pr >= 0.0 && pr <= 1.0))
          throw new RuntimeException();
+    if (!Ordering.natural().isOrdered(annealingParameters))
+       throw new RuntimeException();
     
     double [] xs = Doubles.toArray(annealingParameters);
     double [] ys = new double[xs.length];
@@ -83,8 +66,8 @@ public class EngineStaticUtils
     Spline spline = Spline.createMonotoneCubicSpline(xs, ys);
     
     List<Double> result = new ArrayList<>();
-    double previous = 0.0;
     PegasusSolver solver = new PegasusSolver();
+    double previous = 0.0;
     for (int i = 0; i < nGrids; i++) 
     {
       double y = Lambda * i / (nGrids - 1.0);

@@ -1,13 +1,14 @@
 package blang.engines.internals.factories;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.xtext.xbase.lib.Pair;
 
-import com.google.common.primitives.Doubles;
+import com.google.common.base.Stopwatch;
 
 import bayonet.distributions.Random;
 import blang.engines.ParallelTempering;
@@ -22,7 +23,6 @@ import blang.io.BlangTidySerializer;
 import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
-import briefj.BriefMaps;
 
 public class PT extends ParallelTempering implements PosteriorInferenceEngine  
 {
@@ -30,6 +30,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   @Arg @DefaultValue("1_000")
   public int nScans = 1_000;
+  
+  @Arg           @DefaultValue("0.5")
+  public double adaptFraction = 0.5;
   
   @Arg         @DefaultValue("3")
   public double nPassesPerScan = 3;
@@ -43,18 +46,18 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     initialize(model, random);
   }
   
-  public Map<Double,Double> lambdaMCEstimates = null;
-
   public static final String
+  
     energyFileName = "energy",
     logDensityFileName = "logDensity",
     allLogDensitiesFileName = "allLogDensities",
     swapIndicatorsFileName = "swapIndicators",
     swapStatisticsFileName = "swapStatistics",
+    adaptSwapStatisticsFileName = "adaptSwapStatistics",
+    
     sampleColumn = "sample",
     chainColumn = "chain",
     acceptPrColumn = "acceptPr",
-    lambdaMCacceptPr = "lambdaMCacceptPr",
     annealingParameterColumn = "annealingParameter";
   
   @SuppressWarnings("unchecked")
@@ -64,60 +67,95 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     BlangTidySerializer densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     BlangTidySerializer swapIndicatorSerializer = new BlangTidySerializer(results.child(Runner.MONITORING_FOLDER));  
-    Map<Double,List<Double>> energies = new LinkedHashMap<>();
-    for (int iter = 0; iter < nScans; iter++)
+    int iter = 0;
+    List<Round> rounds = rounds(nScans, adaptFraction);
+    for (Round round : rounds)
     {
-      moveKernel(nPassesPerScan);
-      for (int i = 0; i < temperingParameters.size(); i++)  
+      System.out.println("Starting round " + (round.roundIndex+1) + "/" + rounds.size() + " [" + round.nScans + " scans]");
+      Stopwatch watch = Stopwatch.createStarted();
+      for (int iterInRound = 0; iterInRound < round.nScans; iterInRound++)
       {
-        final Double temperingParam =  temperingParameters.get(i);
-        densitySerializer.serialize(states[i].logDensity(), allLogDensitiesFileName, 
-            Pair.of(sampleColumn, iter), 
-            Pair.of(chainColumn, i),
-            Pair.of(annealingParameterColumn, temperingParam));
-        final double energy = -states[i].preAnnealedLogLikelihood();
-        densitySerializer.serialize(energy, energyFileName, 
-            Pair.of(sampleColumn, iter), 
-            Pair.of(chainColumn, i),
-            Pair.of(annealingParameterColumn, temperingParam));
-        BriefMaps.getOrPutList(energies, temperingParam).add(energy);
+        moveKernel(nPassesPerScan);
+        
+        reportEnergyStatistics(densitySerializer, iter);
+        
+        // state statistics
+        getTargetState().getSampleWriter(tidySerializer).write(
+            Pair.of(sampleColumn, iter));
+        
+        // perform the swaps
+        boolean[] swapIndicators = swapKernel();
+        
+        // record info on the swap
+        for (int c = 0; c < nChains(); c++)
+          swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, swapIndicatorsFileName, 
+              Pair.of(sampleColumn, iter), 
+              Pair.of(chainColumn, c),
+              Pair.of(annealingParameterColumn, temperingParameters.get(c)));
+        
+        iter++;
       }
-      densitySerializer.serialize(getTargetState().logDensity(), logDensityFileName, 
-          Pair.of(sampleColumn, iter));
-      getTargetState().getSampleWriter(tidySerializer).write(
-          Pair.of(sampleColumn, iter));
-      boolean[] swapIndicators = swapKernel();
-      for (int c = 0; c < nChains(); c++)
-        swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, swapIndicatorsFileName, 
-            Pair.of(sampleColumn, iter), 
-            Pair.of(chainColumn, c),
-            Pair.of(annealingParameterColumn, temperingParameters.get(c)));
+      System.out.println("\tLowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
+      System.out.println("\tRound completed in " + watch);
+      
+      if (!round.isAdapt) // report final swap stats
+        reportAcceptanceRatios();
+      
+      reportAcceptanceRatios(round); // report also more thorough swap stat
+      
+      if (round.isAdapt) 
+        adapt();
+        
     }
-    lambdaMCEstimates = computeLambdaMCEstimate(energies);
-    reportAcceptanceRatios(lambdaMCEstimates);
   }
   
-  public static Map<Double,Double> computeLambdaMCEstimate(Map<Double,List<Double>> energies)
+  @SuppressWarnings("unchecked")
+  private void reportEnergyStatistics(BlangTidySerializer densitySerializer, int iter)  
   {
-    Map<Double,Double> result = new LinkedHashMap<Double, Double>();
-    for (double annealingParam : energies.keySet()) 
+    for (int i = 0; i < temperingParameters.size(); i++)  
     {
-      double [] sortedCopy = Doubles.toArray(energies.get(annealingParam));
-      Arrays.sort(sortedCopy);
-      double lambda = 0.5 * EngineStaticUtils.averageDifference(sortedCopy);
-      result.put(annealingParam, lambda);
+      final Double temperingParam =  temperingParameters.get(i);
+      densitySerializer.serialize(states[i].logDensity(), allLogDensitiesFileName, 
+          Pair.of(sampleColumn, iter), 
+          Pair.of(chainColumn, i),
+          Pair.of(annealingParameterColumn, temperingParam));
+      final double energy = -states[i].preAnnealedLogLikelihood();
+      densitySerializer.serialize(energy, energyFileName, 
+          Pair.of(sampleColumn, iter), 
+          Pair.of(chainColumn, i),
+          Pair.of(annealingParameterColumn, temperingParam));
     }
-    return result;
+    densitySerializer.serialize(getTargetState().logDensity(), logDensityFileName, 
+        Pair.of(sampleColumn, iter));
+  }
+  
+  private void adapt()
+  {
+    List<Double> annealingParameters = new ArrayList<>(temperingParameters);
+    Collections.reverse(annealingParameters);
+    List<Double> acceptanceProbabilities = Arrays.stream(swapAcceptPrs).map(stat -> stat.getMean()).collect(Collectors.toList());
+    Collections.reverse(acceptanceProbabilities);
+    setAnnealingParameters(EngineStaticUtils.optimalPartition(annealingParameters, acceptanceProbabilities, annealingParameters.size()));
   }
 
-  private void reportAcceptanceRatios(Map<Double,Double> mcEstimates) 
+  private void reportAcceptanceRatios()
   {
-    TabularWriter tabularWriter = results.child(Runner.MONITORING_FOLDER).getTabularWriter(swapStatisticsFileName);
+    reportAcceptanceRatios(null);
+  }
+  
+  private void reportAcceptanceRatios(Round round) 
+  {
+    TabularWriter tabularWriter = results.child(Runner.MONITORING_FOLDER).getTabularWriter(round == null ? swapStatisticsFileName : adaptSwapStatisticsFileName);
+    if (round != null) 
+    {
+      tabularWriter = tabularWriter
+          .child("isAdapt", round.isAdapt)
+          .child("round", round.roundIndex);
+    }
     for (int i = 0; i < nChains() - 1; i++)
       tabularWriter.write(
           Pair.of(chainColumn, i), 
           Pair.of(annealingParameterColumn, temperingParameters.get(i)), 
-          Pair.of(lambdaMCacceptPr, 1.0 - (temperingParameters.get(i) - temperingParameters.get(i + 1)) * mcEstimates.get(temperingParameters.get(i))),
           Pair.of(acceptPrColumn, swapAcceptPrs[i].getMean()));
   }
 
@@ -126,5 +164,46 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     // TODO: may want to check forward simulators ok
     return;
+  }
+  
+  private static List<Round> rounds(int nScans, double adaptFraction) 
+  {
+    if (adaptFraction < 0.0 || adaptFraction >= 1.0)
+      throw new RuntimeException();
+    List<Round> result = new ArrayList<>();
+    // first split
+    int remainingAdaptIters = (int) (adaptFraction * nScans);
+    int nonAdapt = nScans - remainingAdaptIters;
+    result.add(new Round(nonAdapt, false));
+    while (remainingAdaptIters > 0)
+    {
+      int nextRemain = (int) (adaptFraction * remainingAdaptIters) - 1;
+      result.add(new Round(remainingAdaptIters - nextRemain, true));
+      remainingAdaptIters = nextRemain;
+    }
+    Collections.reverse(result);
+    for (int r = 0; r < result.size(); r++) 
+      result.get(r).roundIndex = r;
+    return result;
+  }
+  
+  private static class Round
+  {
+    int nScans;
+    int roundIndex = -1;
+    boolean isAdapt;
+    public Round(int nScans, boolean isAdapt) {
+      this.nScans = nScans;
+      this.isAdapt = isAdapt;
+    }
+    @Override
+    public String toString() {
+      return "Round [nScans=" + nScans + ", roundIndex=" + roundIndex + ", isAdapt=" + isAdapt + "]";
+    }
+  }
+  
+  public static void main(String [] args) 
+  {
+    System.out.println(rounds(10_000, 0.5));
   }
 }

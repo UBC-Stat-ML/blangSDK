@@ -1,5 +1,8 @@
 package blang.engines;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -120,25 +123,36 @@ public class ParallelTempering
     if (nChains.isPresent() && nChains.get() < 1)
       throw new RuntimeException("Number of tempering chains must be greater than zero.");
     temperingParameters = ladder.temperingParameters(nChains.orElse(nThreads.numberAvailable()));
-    if (temperingParameters.get(0) != 1.0)
-      throw new RuntimeException();
-    System.out.println("Temperatures: " + temperingParameters);
     int nChains = temperingParameters.size();
-    states = initStates(prototype, nChains, random);
-    swapAcceptPrs = new SummaryStatistics[nChains - 1];
-    for (int i = 0; i < nChains - 1; i++)
-      swapAcceptPrs[i] = new SummaryStatistics();
+    states = initStates(prototype, nChains);
+    setAnnealingParameters(temperingParameters);
     parallelRandomStreams =  Random.parallelRandomStreams(random, nChains);
   }
   
-  private SampledModel [] initStates(SampledModel prototype, int nChains, Random random)
+  public void setAnnealingParameters(List<Double> parameters) 
+  {
+    int nChains = parameters.size();
+    if (nChains != states.length)
+      throw new RuntimeException();
+    
+    temperingParameters = new ArrayList<Double>(parameters);
+    Collections.sort(temperingParameters, Comparator.reverseOrder());
+    if (temperingParameters.get(0) != 1.0)
+      throw new RuntimeException();
+    
+    for (int i = 0; i < nChains; i++)
+      states[i].setExponent(temperingParameters.get(i)); 
+    
+    swapAcceptPrs = new SummaryStatistics[nChains - 1];
+    for (int i = 0; i < nChains - 1; i++)
+      swapAcceptPrs[i] = new SummaryStatistics();
+  }
+  
+  private SampledModel [] initStates(SampledModel prototype, int nChains)
   {
     SampledModel [] result = (SampledModel []) new SampledModel[nChains];
     for (int i = 0; i < nChains; i++)
-    {
       result[i] = prototype.duplicate();
-      result[i].setExponent(temperingParameters.get(i)); 
-    }
     return result;
   }
 }
