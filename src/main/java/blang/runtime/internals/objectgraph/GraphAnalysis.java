@@ -394,6 +394,14 @@ public class GraphAnalysis
       return true;
     return result;
   }
+  
+  public boolean hasAccessibleLatentVariables(Object object)
+  {
+    return accessibilityGraph
+      .getAccessibleNodes(object)
+      .filter(current -> latentVariables.contains(current))
+      .findAny().isPresent();
+  }
 
   public void exportAccessibilityGraphVisualization(File file)
   {

@@ -128,7 +128,7 @@ public class SampledModel
     
     this.objectsToOutput = new LinkedHashMap<String, Object>();
     for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
-      if (f.getAnnotation(Param.class) == null) // TODO: filter out fully observed stuff too
+      if (f.getAnnotation(Param.class) == null) // Note: Runner will then exclude things fully observed (done there to allow also explicit exclusions first)
         objectsToOutput.put(f.getName(), ReflexionUtils.getFieldValue(f, model));
     
     if (initUsingForward)

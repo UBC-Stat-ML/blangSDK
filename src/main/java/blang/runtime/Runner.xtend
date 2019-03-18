@@ -34,6 +34,7 @@ import com.google.common.base.Stopwatch
 import briefj.BriefIO
 import java.util.concurrent.TimeUnit
 import java.util.List
+import java.util.ArrayList
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
@@ -183,6 +184,12 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
           throw new RuntimeException("In argument excludeFromOutput, did not find a match for " + exclusion)
         }
       }
+    }
+    // remove also fully observed (done after to avoid triggering !found error above)
+    for (key : new ArrayList(sampledModel.objectsToOutput.keySet)) {
+      val object = sampledModel.objectsToOutput.get(key)
+      if (!graphAnalysis.hasAccessibleLatentVariables(object))
+        sampledModel.objectsToOutput.remove(key) 
     }
     engine.setSampledModel(sampledModel)
     preprocessingTime.stop
