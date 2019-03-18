@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.xbase.lib.Pair;
@@ -40,6 +41,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
   
+  @Arg
+  public Optional<Double> targetAccept = Optional.empty();
+  
   @Override
   public void setSampledModel(SampledModel model) 
   {
@@ -71,7 +75,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     List<Round> rounds = rounds(nScans, adaptFraction);
     for (Round round : rounds)
     {
-      System.out.println("Starting round " + (round.roundIndex+1) + "/" + rounds.size() + " [" + round.nScans + " scans]");
+      System.out.println("Starting round " + (round.roundIndex+1) + "/" + rounds.size() + " [" + round.nScans + " scans x " + states.length +  " chains x " + (int) (1 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */) + " moves/scan]");
       Stopwatch watch = Stopwatch.createStarted();
       for (int iterInRound = 0; iterInRound < round.nScans; iterInRound++)
       {
@@ -104,7 +108,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       reportAcceptanceRatios(round); // report also more thorough swap stat
       
       if (round.isAdapt) 
-        adapt();
+        adapt(round.roundIndex == rounds.size() - 2);
         
     }
   }
@@ -129,13 +133,22 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         Pair.of(sampleColumn, iter));
   }
   
-  private void adapt()
+  private void adapt(boolean finalAdapt)
   {
     List<Double> annealingParameters = new ArrayList<>(temperingParameters);
     Collections.reverse(annealingParameters);
     List<Double> acceptanceProbabilities = Arrays.stream(swapAcceptPrs).map(stat -> stat.getMean()).collect(Collectors.toList());
     Collections.reverse(acceptanceProbabilities);
-    setAnnealingParameters(EngineStaticUtils.optimalPartition(annealingParameters, acceptanceProbabilities, annealingParameters.size()));
+    if (targetAccept.isPresent() && finalAdapt)
+    {
+      List<Double> newPartition = EngineStaticUtils.targetAcceptancePartition(annealingParameters, acceptanceProbabilities, targetAccept.get());
+      // here we need to take care of fact grid size may change
+      nChains = Optional.of(newPartition.size());
+      initialize(states[0], random);
+      setAnnealingParameters(newPartition);
+    }
+    else
+      setAnnealingParameters(EngineStaticUtils.fixedSizeOptimalPartition(annealingParameters, acceptanceProbabilities, annealingParameters.size()));
   }
 
   private void reportAcceptanceRatios()
