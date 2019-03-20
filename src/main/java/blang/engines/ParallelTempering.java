@@ -38,10 +38,10 @@ public class ParallelTempering
   // convention: state index 0 is room temperature (target of interest)
   protected SampledModel [] states;
   protected List<Double> temperingParameters;
-  private Random [] parallelRandomStreams;
+  protected Random [] parallelRandomStreams;
   protected SummaryStatistics [] swapAcceptPrs;
   private int iterationIndex = 0;
-  private boolean [] swapIndicators;
+  protected boolean [] swapIndicators;
    
   public SampledModel getTargetState()
   {
