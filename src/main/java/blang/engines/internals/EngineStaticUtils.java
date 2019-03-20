@@ -42,18 +42,24 @@ public class EngineStaticUtils
     return result;
   }
   
-  public static List<Double> fixedSizeOptimalPartition(List<Double> annealingParameters, List<Double> acceptanceProbabilities, int nGrids) 
-  {
-    return optimalPartition(annealingParameters, acceptanceProbabilities, nGrids);
-  }
-  
   public static List<Double> targetAcceptancePartition(List<Double> annealingParameters, List<Double> acceptanceProbabilities, double targetAccept) 
   {
-    if (!(targetAccept > 0.0 && targetAccept < 1.0))
+    if (!(targetAccept >= 0.0 && targetAccept <= 1.0))
       throw new RuntimeException();
-    return optimalPartition(annealingParameters, acceptanceProbabilities, 1.0 - targetAccept);
+    double [] ys = lambdaCumulative(acceptanceProbabilities);
+    double Lambda = ys[ys.length - 1];
+    int nGrids = Math.max(1, (int) (Lambda / (1.0 - targetAccept)));
+    return fixedSizeOptimalPartition(annealingParameters, acceptanceProbabilities, nGrids);
   }
   
+  private static double[] lambdaCumulative(List<Double> acceptanceProbabilities) 
+  {
+    double [] result = new double[acceptanceProbabilities.size() + 1];
+    for (int i = 1; i < result.length; i++)
+      result[i] = result[i-1] + (1.0 - acceptanceProbabilities.get(i-1));
+    return result;
+  }
+
   /**
    * 
    * @param annealingParameters length N + 1
@@ -61,7 +67,7 @@ public class EngineStaticUtils
    * @param nGrids number of grids in output partition (including both end points)
    * @return list of size nGrids with optimized partition, sorted in increasing order
    */
-  private static List<Double> optimalPartition(List<Double> annealingParameters, List<Double> acceptanceProbabilities, Object objective) 
+  public static List<Double> fixedSizeOptimalPartition(List<Double> annealingParameters, List<Double> acceptanceProbabilities, int nGrids) 
   {
     if (annealingParameters.size() != acceptanceProbabilities.size() + 1)
       throw new RuntimeException();
@@ -70,43 +76,29 @@ public class EngineStaticUtils
          throw new RuntimeException();
     if (!Ordering.natural().isOrdered(annealingParameters))
       throw new RuntimeException();
-    if (!(objective instanceof Integer || objective instanceof Double))
-      throw new RuntimeException();
-    
-    boolean useRejectionTarget = objective instanceof Double;
-    Double rejectionTarget = useRejectionTarget ? (double) objective : null;
-    Integer nGrids = useRejectionTarget ? null : (int) objective;
-    
+        
     double [] xs = Doubles.toArray(annealingParameters);
-    double [] ys = new double[xs.length];
-    for (int i = 1; i < ys.length; i++)
-      ys[i] = ys[i-1] + (1.0 - acceptanceProbabilities.get(i-1));
+    double [] ys = lambdaCumulative(acceptanceProbabilities);
     double Lambda = ys[ys.length - 1];
     
     List<Double> result = new ArrayList<>();
     
-    if (Lambda < 0.1) {
-      // need special treatment as really easy problem will create numerical instability
-      result = new EquallySpaced().temperingParameters(nGrids);
-    } else {
-      Spline spline = Spline.createMonotoneCubicSpline(xs, ys);
-      PegasusSolver solver = new PegasusSolver();
-      double leftBound = 0.0;
-      for (int i = 0; leftBound < 1.0; i++) 
-      {
-        double y = useRejectionTarget ? Math.min(Lambda, i * rejectionTarget) : Lambda * i / (nGrids - 1.0); 
-           
-        // Ideally, would like to use leftBound, but since that bound is based on an approximate solutions, 
-        // we need to relax it to avoid bracketing errors
-        double numericallyRobustLeftBound = Math.max(0, leftBound - 1e-4); 
-        
-        double point = solver.solve(10_000, (double x) -> spline.interpolate(x) - y, numericallyRobustLeftBound, 1.0);
-        if (NumericalUtils.isClose(1.0, point, 0.01))
-          point = 1.0;
-        result.add(point);
-        leftBound = point;
-      }
+    Spline spline = Spline.createMonotoneCubicSpline(xs, ys);
+    PegasusSolver solver = new PegasusSolver();
+    double leftBound = 0.0;
+    for (int i = 0; i < nGrids - 1; i++) 
+    {
+      double y = Lambda * i / (nGrids - 1.0); 
+         
+      // Ideally, would like to use leftBound, but since that bound is based on an approximate solutions, 
+      // we need to relax it to avoid bracketing errors
+      double numericallyRobustLeftBound = Math.max(0, leftBound - 0.1); 
+      
+      double point = solver.solve(10_000, (double x) -> spline.interpolate(x) - y, numericallyRobustLeftBound, 1.0);
+      result.add(point);
+      leftBound = point;
     }
+    result.add(1.0);
     
     Collections.sort(result); // Might need a few swaps because of the required bracket relaxation described above
     return result;

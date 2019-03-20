@@ -48,15 +48,35 @@ public class AdaptiveJarzynski
   protected SampledModel prototype;
   protected Random [] parallelRandomStreams;
   
+  private boolean dropForwardSimulator; // only need different when initializing PT
+  
   /**
    * @return The particle population at the last step
    */
   public ParticlePopulation<SampledModel> getApproximation(SampledModel model)
   {
-    prototype = model;
-    parallelRandomStreams = Random.parallelRandomStreams(random, nParticles);
+    Random [] parallelRandomStreams = Random.parallelRandomStreams(random, nParticles);
+    return getApproximation(initialize(model, parallelRandomStreams), maxAnnealingParameter, model, parallelRandomStreams, true);
+  }
+  
+  /**
+   * Lower-level version used for initialization of other methods
+   */
+  public ParticlePopulation<SampledModel> getApproximation(
+      ParticlePopulation<SampledModel> initial, 
+      double maxAnnealingParameter,
+      SampledModel prototype,
+      Random [] parallelRandomStreams,
+      boolean dropForwardSimulator
+      )
+  {
+    this.dropForwardSimulator = dropForwardSimulator;
+    if (initial.nParticles() != nParticles)
+      throw new RuntimeException();
+    this.prototype = prototype;
+    this.parallelRandomStreams = parallelRandomStreams;
     
-    ParticlePopulation<SampledModel> population = initialize(parallelRandomStreams);
+    ParticlePopulation<SampledModel> population = initial;
     
     int iter = 0;
     double temperature = 0.0;
@@ -139,7 +159,8 @@ public class AdaptiveJarzynski
     SampledModel copy = prototype.duplicate();
     copy.setExponent(0.0);
     copy.forwardSample(random, false);
-    copy.dropForwardSimulator();
+    if (dropForwardSimulator)
+      copy.dropForwardSimulator();
     return copy;
   }
   
@@ -150,8 +171,9 @@ public class AdaptiveJarzynski
     return current;
   }
   
-  private ParticlePopulation<SampledModel> initialize(Random [] randoms)
+  public ParticlePopulation<SampledModel> initialize(SampledModel prototype, Random [] randoms)
   {
+    this.prototype = prototype;
     return propose(randoms, null, Double.NaN, Double.NaN);
   }
   

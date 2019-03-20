@@ -12,9 +12,11 @@ import org.eclipse.xtext.xbase.lib.Pair;
 import com.google.common.base.Stopwatch;
 
 import bayonet.distributions.Random;
+import bayonet.smc.ParticlePopulation;
 import blang.engines.ParallelTempering;
 import blang.engines.internals.EngineStaticUtils;
 import blang.engines.internals.PosteriorInferenceEngine;
+import blang.engines.internals.schedules.AdaptiveTemperatureSchedule;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.GlobalArg;
@@ -44,10 +46,57 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg
   public Optional<Double> targetAccept = Optional.empty();
   
+  @Arg  @DefaultValue({"--nParticles", "100", "--temperatureSchedule.threshold", "0.9"}) // need to edit below if modified!
+  public SCM scmInit = scmDefault();
+  private SCM scmDefault() {
+    SCM result = new SCM();
+    result.nParticles = 100;
+    AdaptiveTemperatureSchedule schedule = new AdaptiveTemperatureSchedule();
+    schedule.threshold = 0.9;
+    result.temperatureSchedule = schedule;
+    return result;
+  }
+  
+  @Arg                       @DefaultValue("SCM")
+  public InitType initialization = InitType.SCM;
+  
+  public static enum InitType { COPIES, FORWARD, SCM }
+  
   @Override
   public void setSampledModel(SampledModel model) 
   {
+    // low level-init always needed
     initialize(model, random);
+    if (nChains() > 1) // o.w. stripped versions will crash
+      switch (initialization) 
+      {
+        case COPIES : 
+          // nothing to do
+          break;
+        case FORWARD :
+          for (SampledModel m : states)
+          {
+            double cParam = m.getExponent();
+            m.setExponent(0.0);
+            m.forwardSample(random, false);
+            m.setExponent(cParam);
+          }
+          break;
+        case SCM :
+          Random [] randoms = Random.parallelRandomStreams(random, scmInit.nParticles);
+          ParticlePopulation<SampledModel> population = scmInit.initialize(model, randoms);
+          List<Double> reorderedParameters = new ArrayList<>(temperingParameters);
+          Collections.sort(reorderedParameters);
+          for (int i = 1; i < reorderedParameters.size(); i++) 
+          {
+            double nextParameter = reorderedParameters.get(i);
+            population = scmInit.getApproximation(population, nextParameter, model, randoms, false);
+            SampledModel init = population.sample(random).duplicate();
+            states[states.length - 1 - i] = init;
+          }
+          break;
+        default : throw new RuntimeException();
+      }
   }
   
   public static final String
