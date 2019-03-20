@@ -144,8 +144,12 @@ public class ParallelTempering
       states[i].setExponent(temperingParameters.get(i)); 
     
     swapAcceptPrs = new SummaryStatistics[nChains - 1];
-    for (int i = 0; i < nChains - 1; i++)
-      swapAcceptPrs[i] = new SummaryStatistics();
+    for (int i = 0; i < nChains - 1; i++) 
+    {
+      SummaryStatistics currentSwapStat = new SummaryStatistics();
+      currentSwapStat.addValue(0.0); // in some corner case may get NaN o.w. (e.g. when reversible and/or small number of rounds in early adapt
+      swapAcceptPrs[i] = currentSwapStat;
+    }
   }
   
   private SampledModel [] initStates(SampledModel prototype, int nChains)

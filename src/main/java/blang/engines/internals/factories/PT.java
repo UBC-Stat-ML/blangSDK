@@ -99,7 +99,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         
         iter++;
       }
-      System.out.println("\tLowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
+      if (nChains() > 1)
+        System.out.println("\tLowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
       System.out.println("\tRound completed in " + watch);
       
       if (!round.isAdapt) // report final swap stats
@@ -179,8 +180,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     return;
   }
   
-  private static List<Round> rounds(int nScans, double adaptFraction) 
+  private List<Round> rounds(int nScans, double _adaptFraction) 
   {
+    double adaptFraction = nChains() == 1 ? 0.0 : _adaptFraction;
     if (adaptFraction < 0.0 || adaptFraction >= 1.0)
       throw new RuntimeException();
     List<Round> result = new ArrayList<>();

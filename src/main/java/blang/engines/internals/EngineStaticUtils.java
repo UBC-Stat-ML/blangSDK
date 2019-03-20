@@ -10,7 +10,9 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 
 import bayonet.distributions.Multinomial;
+import bayonet.math.NumericalUtils;
 import bayonet.smc.ParticlePopulation;
+import blang.engines.internals.ladders.EquallySpaced;
 import blang.runtime.SampledModel;
 
 public class EngineStaticUtils
@@ -81,23 +83,31 @@ public class EngineStaticUtils
       ys[i] = ys[i-1] + (1.0 - acceptanceProbabilities.get(i-1));
     double Lambda = ys[ys.length - 1];
     
-    Spline spline = Spline.createMonotoneCubicSpline(xs, ys);
-    
     List<Double> result = new ArrayList<>();
-    PegasusSolver solver = new PegasusSolver();
-    double leftBound = 0.0;
-    for (int i = 0; leftBound < 1.0; i++) 
-    {
-      double y = useRejectionTarget ? Math.min(Lambda, i * rejectionTarget) : Lambda * i / (nGrids - 1.0); 
-   
-      // Ideally, would like to use leftBound, but since that bound is based on an approximate solutions, 
-      // we need to relax it to avoid bracketing errors
-      double numericallyRobustLeftBound = Math.max(0, leftBound - 1e-4); 
-      
-      double point = solver.solve(10_000, (double x) -> spline.interpolate(x) - y, numericallyRobustLeftBound, 1.0);
-      result.add(point);
-      leftBound = point;
+    
+    if (Lambda < 0.1) {
+      // need special treatment as really easy problem will create numerical instability
+      result = new EquallySpaced().temperingParameters(nGrids);
+    } else {
+      Spline spline = Spline.createMonotoneCubicSpline(xs, ys);
+      PegasusSolver solver = new PegasusSolver();
+      double leftBound = 0.0;
+      for (int i = 0; leftBound < 1.0; i++) 
+      {
+        double y = useRejectionTarget ? Math.min(Lambda, i * rejectionTarget) : Lambda * i / (nGrids - 1.0); 
+           
+        // Ideally, would like to use leftBound, but since that bound is based on an approximate solutions, 
+        // we need to relax it to avoid bracketing errors
+        double numericallyRobustLeftBound = Math.max(0, leftBound - 1e-4); 
+        
+        double point = solver.solve(10_000, (double x) -> spline.interpolate(x) - y, numericallyRobustLeftBound, 1.0);
+        if (NumericalUtils.isClose(1.0, point, 0.01))
+          point = 1.0;
+        result.add(point);
+        leftBound = point;
+      }
     }
+    
     Collections.sort(result); // Might need a few swaps because of the required bracket relaxation described above
     return result;
   }
