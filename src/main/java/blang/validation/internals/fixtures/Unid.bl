@@ -1,0 +1,13 @@
+package blang.validation.internals.fixtures
+
+model Unid {
+  random RealVar p1 ?: latentReal
+  random RealVar p2 ?: latentReal
+  param IntVar nTrials ?: 100000
+  random IntVar nFails ?: nTrials/2
+  laws {
+    p1 ~ ContinuousUniform(0, 1)
+    p2 ~ ContinuousUniform(0, 1)
+    nFails | nTrials, p1, p2 ~ Binomial(nTrials, p1 * p2)
+  }
+}

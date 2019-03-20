@@ -15,6 +15,7 @@ import blang.engines.internals.ladders.Polynomial
 import blang.engines.internals.ladders.Geometric
 import blang.engines.internals.ladders.EquallySpaced
 import blang.engines.internals.factories.PT.InitType
+import blang.validation.internals.fixtures.Unid
 
 class TestEndToEnd {
   
@@ -108,7 +109,8 @@ class TestEndToEnd {
     val models = #[
       Diffusion, 
       FixedMatrix, 
-      Ising
+      Ising,
+      Unid
     ]
     val nThreads = #[1,2]
     val ladders = #[Geometric, EquallySpaced, Polynomial]
