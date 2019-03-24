@@ -25,6 +25,7 @@ import blang.io.BlangTidySerializer;
 import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
+import briefj.BriefIO;
 
 import static blang.runtime.Runner.sampleColumn;
 
@@ -163,8 +164,13 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       }
       
       if (nChains() > 1)
+      {
         System.out.println("Lowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
-      
+        double logNormEstimate = thermodynamicEstimator();
+        System.out.println("Log normalization constant estimate: " + logNormEstimate);
+        BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
+      }
+        
       reportAcceptanceRatios(round); 
       
       if (round.isAdapt) 

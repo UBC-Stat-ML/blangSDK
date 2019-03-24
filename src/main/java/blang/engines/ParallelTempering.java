@@ -39,7 +39,7 @@ public class ParallelTempering
   protected SampledModel [] states;
   protected List<Double> temperingParameters;
   protected Random [] parallelRandomStreams;
-  protected SummaryStatistics [] swapAcceptPrs;
+  protected SummaryStatistics [] energies, swapAcceptPrs;
   private int iterationIndex = 0;
   protected boolean [] swapIndicators;
    
@@ -78,6 +78,7 @@ public class ParallelTempering
         current.forwardSample(random, false);
       else
         current.posteriorSamplingScan(random, nPasses); 
+      energies[chainIndex].addValue(-current.preAnnealedLogLikelihood());
     });
   }
   
@@ -101,6 +102,14 @@ public class ParallelTempering
       doSwap(i);
     }
     return acceptPr;
+  }
+  
+  public double thermodynamicEstimator() 
+  {
+    double sum = 0.0;
+    for (int c = 0; c < nChains() - 1; c++)
+      sum += (temperingParameters.get(c) - temperingParameters.get(c+1)) * (energies[c].getMean() + energies[c+1].getMean())/ 2.0;
+    return -sum;
   }
   
   private void doSwap(int i) 
@@ -143,13 +152,8 @@ public class ParallelTempering
     for (int i = 0; i < nChains; i++)
       states[i].setExponent(temperingParameters.get(i)); 
     
-    swapAcceptPrs = new SummaryStatistics[nChains - 1];
-    for (int i = 0; i < nChains - 1; i++) 
-    {
-      SummaryStatistics currentSwapStat = new SummaryStatistics();
-      currentSwapStat.addValue(0.0); // in some corner case may get NaN o.w. (e.g. when reversible and/or small number of rounds in early adapt
-      swapAcceptPrs[i] = currentSwapStat;
-    }
+    swapAcceptPrs = initStats(nChains - 1);
+    energies = initStats(nChains);
   }
   
   private SampledModel [] initStates(SampledModel prototype, int nChains)
@@ -157,6 +161,22 @@ public class ParallelTempering
     SampledModel [] result = (SampledModel []) new SampledModel[nChains];
     for (int i = 0; i < nChains; i++)
       result[i] = prototype.duplicate();
+    return result;
+  }
+  
+  
+  private static SummaryStatistics[] initStats(int size)
+  {
+    SummaryStatistics[] result = new SummaryStatistics[size];
+    for (int i = 0; i < size; i++)
+      result[i] = summaryStatistics(0.0);
+    return result;
+  }
+  
+  public static SummaryStatistics summaryStatistics(double ... values) 
+  {
+    SummaryStatistics result = new SummaryStatistics();
+    for (double v : values) result.addValue(v);
     return result;
   }
 }

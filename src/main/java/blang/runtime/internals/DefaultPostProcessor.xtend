@@ -37,18 +37,16 @@ class DefaultPostProcessor extends PostProcessor {
   public static final String TRACES_POST_BURN_IN_FOLDER = "traces-post-burnin"
   public static final String TRACES_FULL_FOLDER = "traces-full"
   public static final String POSTERIORS_FOLDER = "posteriors"
+  public static final String SUMMARIES_FOLDER = "summaries"
   
   override run() {
-    
     for (posteriorSamples : BriefFiles.ls(new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER), "csv")) {
       println("Post-processing " + variableName(posteriorSamples))
       val types = TidySerializer::types(posteriorSamples)
       if (types.containsKey(TidySerializer::VALUE)) {
         val type = types.get(TidySerializer::VALUE)
-      
         // statistics that could make sense for both reals and integers
         if (isIntValued(type) || isRealValued(type)) {
-          
           computeEss(posteriorSamples, results.getFileInResultFolder(ESS_FOLDER))
           createPlot(
             new TracePlot(posteriorSamples, types, this, false),
@@ -58,31 +56,28 @@ class DefaultPostProcessor extends PostProcessor {
             new TracePlot(posteriorSamples, types, this, true),
             results.getFileInResultFolder(TRACES_POST_BURN_IN_FOLDER)
           )
-          
+          summary(posteriorSamples, types)
         } 
-        
         // statistics for ints only
         if (isIntValued(type)) {
-          
           createPlot(
             new PMFPlot(posteriorSamples, types, this),
             results.getFileInResultFolder(blang.runtime.internals.DefaultPostProcessor.POSTERIORS_FOLDER) 
           )
-          
         }
-        
         // statistics for reals only
         if (isRealValued(type)) {
-          
           createPlot(
             new DensityPlot(posteriorSamples, types, this),
             results.getFileInResultFolder(blang.runtime.internals.DefaultPostProcessor.POSTERIORS_FOLDER) 
           )
-          
         }
-      
       }
     }
+    // normalization visualization
+    
+    
+    // some MC diagnostics
     
   }
   
@@ -216,21 +211,46 @@ class DefaultPostProcessor extends PostProcessor {
     }
     
     def facetVariables() {
-      types.keySet.filter[it != TidySerializer::VALUE && it != Runner::sampleColumn].toList
+      indices(types)
     }
     
     def String ggCommand() 
   }
   
+  def static indices(Map<String,Class<?>> types) {
+    types.keySet.filter[it != TidySerializer::VALUE && it != Runner::sampleColumn].toList
+  }
+  
   def void createPlot(GgPlot plot, File directory) {
-    val scriptFile = new File(directory, "." + variableName(plot.posteriorSamples) + ".r")
-    val imageFile = new File(directory, variableName(plot.posteriorSamples) + "." + imageFormat)
+    val scriptFile = new File(directory, "." + plot.variableName + ".r")
+    val imageFile = new File(directory, plot.variableName + "." + imageFormat)
     
     callR(scriptFile, '''
       require("ggplot2")
       data <- read.csv("«plot.posteriorSamples.absolutePath»")
       «plot.ggCommand»
       ggsave("«imageFile.absolutePath»", limitsize = F)
+    ''')
+  }
+  
+  def summary(File posteriorSamples, Map<String, Class<?>> types) {
+    val directory = results.getFileInResultFolder(SUMMARIES_FOLDER)
+    val variableName = variableName(posteriorSamples)
+    val scriptFile = new File(directory, "." + variableName + ".r")
+    val groups = indices(types)
+    val outputFile = new File(directory, variableName + "-summary.csv")
+    callR(scriptFile, '''
+      require("dplyr")
+      data <- read.csv("«posteriorSamples.absolutePath»")
+      summary <- data %>% «IF !groups.empty» group_by(«groups.join(", ")») %>% «ENDIF» 
+        summarise( 
+          mean = mean(«TidySerializer::VALUE»),
+          sd = sd(«TidySerializer::VALUE»),
+          min = min(«TidySerializer::VALUE»),
+          median = median(«TidySerializer::VALUE»),
+          max = max(«TidySerializer::VALUE»)
+        )
+      write.csv(summary, "«outputFile.absolutePath»")
     ''')
   }
   
