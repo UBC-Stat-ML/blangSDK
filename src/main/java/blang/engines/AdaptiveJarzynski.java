@@ -2,6 +2,8 @@ package blang.engines;
 
 import java.util.Arrays;
 
+import org.eclipse.xtext.xbase.lib.Pair;
+
 import bayonet.distributions.Random;
 import bayonet.smc.ParticlePopulation;
 import bayonet.smc.ResamplingScheme;
@@ -12,6 +14,8 @@ import blang.inits.DefaultValue;
 import blang.inits.experiments.Cores;
 import blang.runtime.SampledModel;
 import briefj.BriefParallel;
+
+import blang.System;
 
 public class AdaptiveJarzynski
 {
@@ -37,10 +41,6 @@ public class AdaptiveJarzynski
   @Arg           @DefaultValue("Dynamic")
   public Cores nThreads = Cores.dynamic();
   
-  @Arg(description = "Silence the progress report printed in standard out.")
-           @DefaultValue("false")       
-  public boolean silent = true;
-  
   @Arg(description = "Use higher values for likelihood maximization")
                          @DefaultValue("1.0")
   public double maxAnnealingParameter = 1.0;
@@ -48,7 +48,7 @@ public class AdaptiveJarzynski
   protected SampledModel prototype;
   protected Random [] parallelRandomStreams;
   
-  private boolean dropForwardSimulator; // only need different when initializing PT
+  private boolean dropForwardSimulator; // e.g. do not want to drop them when initializing PT
   
   /**
    * @return The particle population at the last step
@@ -79,23 +79,23 @@ public class AdaptiveJarzynski
     ParticlePopulation<SampledModel> population = initial;
     
     int iter = 0;
-    double temperature = 0.0;
+    double temperature = population.particles.get(0).getExponent();
     while (temperature < maxAnnealingParameter)
     {
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature, maxAnnealingParameter); 
       // TODO: slight optimization, probably not worth it: could know at this point if resampling is needed, 
       // and which particles will survive, so if a particle has no offspring no need to actually sample it.
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
-      log("Propagation [temp=" + temperature + ",ess=" + population.getRelativeESS() + "]");
+      recordPropagationStatistics(iter, temperature, population.getRelativeESS());
       if (resamplingNeeded(population, nextTemperature))
       { 
         population = resample(random, population);
-        log("Resampling [iter=" + iter + ", logZ_{" + nextTemperature + "}= " + population.logNormEstimate() + "]");
+        recordResamplingStatistics(iter, nextTemperature, population.logNormEstimate());
+        
       }
       temperature = nextTemperature;
       iter++;
     }
-    log("Change of measure complete [iter=" + iter + ", logZ=" + population.logNormEstimate() + "]");
     return population;
   }
   
@@ -177,9 +177,22 @@ public class AdaptiveJarzynski
     return propose(randoms, null, Double.NaN, Double.NaN);
   }
   
-  protected void log(String message) 
+  protected void recordPropagationStatistics(int iteration, double temperature, double ess) 
   {
-    if (!silent)
-      System.out.println(message);
+    System.out.formatln("Propagation", 
+      "[", 
+        Pair.of("annealParam", temperature), 
+        Pair.of("ess", ess), 
+      "]");
+  }
+  
+  protected void recordResamplingStatistics(int iter, double nextTemperature, double logNormalization)
+  {
+    System.out.formatln("Resampling", 
+      "[", 
+        Pair.of("iter", iter), 
+        Pair.of("annealParam", nextTemperature), 
+        Pair.of("logNormalization", logNormalization), 
+      "]");
   }
 }

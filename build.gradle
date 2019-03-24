@@ -33,8 +33,8 @@ dependencies {
   compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.12.0'
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.5.0'
-  compile group: 'ca.ubc.stat', name: 'inits', version: '2.13.0'
-  compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.1.0'
+  compile group: 'ca.ubc.stat', name: 'inits', version: '2.16.0'
+  compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.1.2'
   compile group: 'ca.ubc.stat', name: 'rejectfree', version: '2.7.4'
   compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.4'
   compile group: 'ca.ubc.stat', name: 'xlinear', version: '2.0.2'
@@ -55,6 +55,37 @@ xtext {
 }
 
 mainClassName = "blang.runtime.internals.Main"
+
+// Creates scripts for entry points
+// Subproject must apply application plugin to be able to call this method.
+def createScript(project, mainClass, name) {
+  project.tasks.create(name: name, type: CreateStartScripts) {
+    outputDir       = new File(project.buildDir, 'scripts')
+    mainClassName   = mainClass
+    applicationName = name
+    classpath       = project.tasks[JavaPlugin.JAR_TASK_NAME].outputs.files + project.configurations.runtime
+  }
+  project.tasks[name].dependsOn(project.jar)
+
+  project.applicationDistribution.with {
+    into("bin") {
+      from(project.tasks[name])
+      fileMode = 0755
+    }
+  }
+}
+
+// The next two lines disable the tasks for the primary main which by default
+// generates a script with a name matching the project name. 
+// You can leave them enabled but if so you'll need to define mainClassName
+// And you'll be creating your application scripts two different ways which 
+// could lead to confusion
+startScripts.enabled = true
+run.enabled = true
+
+// Call this for each Main class you want to expose with an app script
+createScript(project, 'blang.runtime.internals.DefaultPostProcessor', 'postprocess')
+
 
 /* This exact task is used by the standalone compiler - do not remove or edit lightly! */
 task printClasspath {

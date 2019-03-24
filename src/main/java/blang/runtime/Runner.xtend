@@ -25,7 +25,7 @@ import java.util.Collections
 import java.util.Optional
 import bayonet.distributions.Random
 import blang.engines.internals.PosteriorInferenceEngine
-import blang.engines.internals.factories.SCM
+import blang.engines.internals.factories.SCM  
 import blang.io.internals.GlobalDataSourceStore
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.runtime.internals.objectgraph.GraphAnalysis
@@ -35,6 +35,8 @@ import briefj.BriefIO
 import java.util.concurrent.TimeUnit
 import java.util.List
 import java.util.ArrayList
+import blang.runtime.PostProcessor.NoPostProcessor
+import blang.System
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
@@ -68,6 +70,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   @Arg                         @DefaultValue("false")
   public boolean treatNaNAsNegativeInfinity = false;
+  
+  @Arg                      @DefaultValue("NoPostProcessor")
+  public PostProcessor postProcessor = new NoPostProcessor
   
   @GlobalArg
   public Observations observations = new Observations
@@ -107,13 +112,12 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   val public static final String CONFIG_FILE_NAME = "configuration.txt"
   
-  
   def private static boolean useSimplifiedArguments(String ... args) {
     return args.size == 1
   }
   
   def static void main(String ... args) {
-    System::exit(start(args))
+    java.lang.System::exit(start(args))
   }
   
   def static int start(String ... args) {
@@ -157,9 +161,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   public static class NotDAG extends RuntimeException { new(String s) { super(s) }}
   
-  override void run() {
-    println("Preprocessing started")
-    val Stopwatch preprocessingTime = Stopwatch.createStarted
+  def preprocess() {
     samplers.monitoringStatistics = results.child(MONITORING_FOLDER) 
     val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations, treatNaNAsNegativeInfinity)
     engine.check(graphAnalysis)
@@ -168,7 +170,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
       graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
     }
     val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis, samplers)
-    println(kernels)
+    System.out.println(kernels)
     if (checkIsDAG) {
       try {
         graphAnalysis.checkDAG
@@ -192,25 +194,53 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         sampledModel.objectsToOutput.remove(key) 
     }
     engine.setSampledModel(sampledModel)
-    preprocessingTime.stop
-    val Stopwatch samplingTime = Stopwatch.createStarted
-    println("Sampling started")
-    engine.performInference
-    samplingTime.stop
-    reportTiming(preprocessingTime, samplingTime)
   }
   
+  override void run() {
+    
+    val preprocessTiming = System.out.indentWithTiming("Preprocess") [
+      preprocess()
+    ].watch
+    
+    val inferenceTiming = System.out.indentWithTiming("Inference") [ 
+      engine.performInference
+    ].watch
+    
+    reportTiming(preprocessTiming, inferenceTiming)
+    relaxMemory
+    results.flushAll 
+    
+    System.out.indentWithTiming("Postprocess") [
+      postProcess
+    ]
+  }
+  
+  def private void relaxMemory() {
+    this.engine = null
+    this.observations = null
+    this.samplers = null
+  }
+  
+  def private void postProcess() {
+    val _results = results
+    postProcessor => [
+      results = _results
+      blangExecutionDirectory = Optional.of(_results.resultsFolder)
+    ]
+    postProcessor.run
+  }
+    
   def void reportTiming(Stopwatch preprocessingTime, Stopwatch samplingTime) {
     BriefIO.write(results.child(MONITORING_FOLDER).getFileInResultFolder(RUNNING_TIME_SUMMARY), 
       "preprocessingTime_ms\t" + preprocessingTime.elapsed(TimeUnit.MILLISECONDS) + "\n" +
       "samplingTime_ms\t" + samplingTime.elapsed(TimeUnit.MILLISECONDS) + "\n"
     )
-    println("Preprocessing time: " + preprocessingTime.toString)
-    println("Sampling time: " + samplingTime.toString)
   }
   
   public val static String RUNNING_TIME_SUMMARY = "runningTimeSummary.tsv"
   public val static String LOG_NORM_ESTIMATE = "logNormEstimate.txt"
   public val static String MONITORING_FOLDER = "monitoring"
   public val static String SAMPLES_FOLDER = "samples"
+  
+  public val static String sampleColumn = "sample"
 }

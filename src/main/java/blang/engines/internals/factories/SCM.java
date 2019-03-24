@@ -17,6 +17,8 @@ import blang.runtime.internals.objectgraph.GraphAnalysis;
 import briefj.BriefIO;
 import briefj.BriefParallel;
 
+import blang.System;
+
 /**
  * Sequential Change of Measure implementation.
  */
@@ -45,7 +47,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     
     // write Z estimate
     double logNormEstimate = approximation.logNormEstimate();
-    log("Log normalization constant estimate: " + logNormEstimate);
+    System.out.println("Log normalization constant estimate: " + logNormEstimate);
     BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
     
     // resample & rejuvenate the last iteration to simplify processing downstream
@@ -59,8 +61,8 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     int particleIndex = 0;
     for (SampledModel model : approximation.particles)  
     {
-      model.getSampleWriter(tidySerializer).write(Pair.of("sample", particleIndex)); 
-      densitySerializer.serialize(model.logDensity(), "logDensity", Pair.of("sample", particleIndex));
+      model.getSampleWriter(tidySerializer).write(Pair.of(Runner.sampleColumn, particleIndex)); 
+      densitySerializer.serialize(model.logDensity(), "logDensity", Pair.of(Runner.sampleColumn, particleIndex));
       particleIndex++;
     }
   }
@@ -77,7 +79,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   {
     if (nFinalRejuvenations == 0) 
       return;
-    log("Final rejuvenation started");
+    System.out.println("Final rejuvenation started");
     deepCopyParticles(finalPopulation);
     BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
     {
@@ -92,5 +94,35 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   {
     // TODO: may want to check forward simulators ok
     return;
+  }
+  
+  public static final String
+  
+    propagationFileName = "propagation",
+    resamplingFileName = "resampling",
+    
+    essColumn = "ess",
+    logNormalizationColumn = "logNormalization",
+    iterationColumn = "iteration",
+    annealingParameterColumn = "annealingParameter";
+
+  @Override
+  protected void recordPropagationStatistics(int iteration, double temperature, double ess) {
+    results.child(Runner.MONITORING_FOLDER).getTabularWriter(propagationFileName).write(
+        Pair.of(iterationColumn, iteration),
+        Pair.of(annealingParameterColumn, temperature),
+        Pair.of(essColumn, ess)
+    );
+    super.recordPropagationStatistics(iteration, temperature, ess);
+  }
+
+  @Override
+  protected void recordResamplingStatistics(int iteration, double temperature, double logNormalization) {
+    results.child(Runner.MONITORING_FOLDER).getTabularWriter(resamplingFileName).write(
+        Pair.of(iterationColumn, iteration),
+        Pair.of(annealingParameterColumn, temperature),
+        Pair.of(logNormalizationColumn, logNormalization)
+    );
+    super.recordResamplingStatistics(iteration, temperature, logNormalization);
   }
 }

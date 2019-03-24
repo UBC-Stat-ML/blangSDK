@@ -65,6 +65,7 @@ class TestEndToEnd {
         "--engine.usePriorSamples", "false",
         "--stripped", "true",
         "--engine", "PT",
+        "--engine.initialization", "COPIES",
         "--engine.nChains", "1"
       )
     )

@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.xtext.xbase.lib.Pair;
 
-import com.google.common.base.Stopwatch;
-
 import bayonet.distributions.Random;
 import bayonet.smc.ParticlePopulation;
 import blang.engines.ParallelTempering;
@@ -21,11 +19,14 @@ import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
+import blang.System;
 import blang.inits.experiments.tabwriters.TabularWriter;
 import blang.io.BlangTidySerializer;
 import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
+
+import static blang.runtime.Runner.sampleColumn;
 
 public class PT extends ParallelTempering implements PosteriorInferenceEngine  
 {
@@ -49,12 +50,12 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg  @DefaultValue({"--nParticles", "100", "--temperatureSchedule.threshold", "0.9"}) // need to edit below if modified!
   public SCM scmInit = scmDefault();
   private SCM scmDefault() {
-    SCM result = new SCM();
-    result.nParticles = 100;
+    SCM scmDefault = new SCM();
+    scmDefault.nParticles = 100;
     AdaptiveTemperatureSchedule schedule = new AdaptiveTemperatureSchedule();
     schedule.threshold = 0.9;
-    result.temperatureSchedule = schedule;
-    return result;
+    scmDefault.temperatureSchedule = schedule;
+    return scmDefault;
   }
   
   @Arg                       @DefaultValue("SCM")
@@ -66,37 +67,46 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   public void setSampledModel(SampledModel model) 
   {
     // low level-init always needed
-    initialize(model, random);
-    if (nChains() > 1) // o.w. stripped versions will crash
-      switch (initialization) 
-      {
-        case COPIES : 
-          // nothing to do
-          break;
-        case FORWARD :
-          for (SampledModel m : states)
-          {
-            double cParam = m.getExponent();
-            m.setExponent(0.0);
-            m.forwardSample(random, false);
-            m.setExponent(cParam);
-          }
-          break;
-        case SCM :
-          Random [] randoms = Random.parallelRandomStreams(random, scmInit.nParticles);
-          ParticlePopulation<SampledModel> population = scmInit.initialize(model, randoms);
-          List<Double> reorderedParameters = new ArrayList<>(temperingParameters);
-          Collections.sort(reorderedParameters);
-          for (int i = 1; i < reorderedParameters.size(); i++) 
-          {
-            double nextParameter = reorderedParameters.get(i);
-            population = scmInit.getApproximation(population, nextParameter, model, randoms, false);
-            SampledModel init = population.sample(random).duplicate();
-            states[states.length - 1 - i] = init;
-          }
-          break;
-        default : throw new RuntimeException();
-      }
+    System.out.indentWithTiming("Initialization");  
+    {
+      initialize(model, random);
+      informedInitialization(model);
+    }
+    System.out.popIndent();
+  }
+  
+  private void informedInitialization(SampledModel model) 
+  {
+    switch (initialization) 
+    {
+      case COPIES : 
+        // nothing to do
+        break;
+      case FORWARD :
+        for (SampledModel m : states)
+        {
+          double cParam = m.getExponent();
+          m.setExponent(0.0);
+          m.forwardSample(random, false);
+          m.setExponent(cParam);
+        }
+        break;
+      case SCM :
+        scmInit.results = results.child("init");
+        Random [] randoms = Random.parallelRandomStreams(random, scmInit.nParticles);
+        ParticlePopulation<SampledModel> population = scmInit.initialize(model, randoms);
+        List<Double> reorderedParameters = new ArrayList<>(temperingParameters);
+        Collections.sort(reorderedParameters);
+        for (int i = 1; i < reorderedParameters.size(); i++) 
+        {
+          double nextParameter = reorderedParameters.get(i);
+          population = scmInit.getApproximation(population, nextParameter, model, randoms, false);
+          SampledModel init = population.sample(random).duplicate();
+          states[states.length - 1 - i] = init;
+        }
+        break;
+      default : throw new RuntimeException();
+    }
   }
   
   public static final String
@@ -106,9 +116,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     allLogDensitiesFileName = "allLogDensities",
     swapIndicatorsFileName = "swapIndicators",
     swapStatisticsFileName = "swapStatistics",
-    adaptSwapStatisticsFileName = "adaptSwapStatistics",
     
-    sampleColumn = "sample",
     chainColumn = "chain",
     acceptPrColumn = "acceptPr",
     annealingParameterColumn = "annealingParameter";
@@ -124,8 +132,14 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     List<Round> rounds = rounds(nScans, adaptFraction);
     for (Round round : rounds)
     {
-      System.out.println("Starting round " + (round.roundIndex+1) + "/" + rounds.size() + " [" + round.nScans + " scans x " + states.length +  " chains x " + (int) (1 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */) + " moves/scan]");
-      Stopwatch watch = Stopwatch.createStarted();
+      System.out.indentWithTiming("Round(" + (round.roundIndex+1) + "/" + rounds.size() + ")"); 
+      int movesPerScan = (int) (1 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
+      System.out.formatln("Performing", round.nScans * states.length * movesPerScan, "moves...", 
+        "[", 
+          Pair.of("nScans", round.nScans), 
+          Pair.of("nChains", states.length), 
+          Pair.of("movesPerScan", movesPerScan),
+        "]");
       for (int iterInRound = 0; iterInRound < round.nScans; iterInRound++)
       {
         moveKernel(nPassesPerScan);
@@ -143,23 +157,21 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         for (int c = 0; c < nChains(); c++)
           swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, swapIndicatorsFileName, 
               Pair.of(sampleColumn, iter), 
-              Pair.of(chainColumn, c),
-              Pair.of(annealingParameterColumn, temperingParameters.get(c)));
+              Pair.of(chainColumn, c));
         
         iter++;
       }
+      
       if (nChains() > 1)
-        System.out.println("\tLowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
-      System.out.println("\tRound completed in " + watch);
+        System.out.println("Lowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
       
-      if (!round.isAdapt) // report final swap stats
-        reportAcceptanceRatios();
-      
-      reportAcceptanceRatios(round); // report also more thorough swap stat
+      reportAcceptanceRatios(round); 
       
       if (round.isAdapt) 
         adapt(round.roundIndex == rounds.size() - 2);
-        
+      
+      results.flushAll();
+      System.out.popIndent();
     }
   }
   
@@ -168,16 +180,13 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     for (int i = 0; i < temperingParameters.size(); i++)  
     {
-      final Double temperingParam =  temperingParameters.get(i);
       densitySerializer.serialize(states[i].logDensity(), allLogDensitiesFileName, 
           Pair.of(sampleColumn, iter), 
-          Pair.of(chainColumn, i),
-          Pair.of(annealingParameterColumn, temperingParam));
+          Pair.of(chainColumn, i));
       final double energy = -states[i].preAnnealedLogLikelihood();
       densitySerializer.serialize(energy, energyFileName, 
           Pair.of(sampleColumn, iter), 
-          Pair.of(chainColumn, i),
-          Pair.of(annealingParameterColumn, temperingParam));
+          Pair.of(chainColumn, i));
     }
     densitySerializer.serialize(getTargetState().logDensity(), logDensityFileName, 
         Pair.of(sampleColumn, iter));
@@ -200,15 +209,10 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     else
       setAnnealingParameters(EngineStaticUtils.fixedSizeOptimalPartition(annealingParameters, acceptanceProbabilities, annealingParameters.size()));
   }
-
-  private void reportAcceptanceRatios()
-  {
-    reportAcceptanceRatios(null);
-  }
   
   private void reportAcceptanceRatios(Round round) 
   {
-    TabularWriter tabularWriter = results.child(Runner.MONITORING_FOLDER).getTabularWriter(round == null ? swapStatisticsFileName : adaptSwapStatisticsFileName);
+    TabularWriter tabularWriter = results.child(Runner.MONITORING_FOLDER).getTabularWriter(swapStatisticsFileName);
     if (round != null) 
     {
       tabularWriter = tabularWriter

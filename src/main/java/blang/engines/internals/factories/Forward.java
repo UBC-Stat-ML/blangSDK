@@ -39,7 +39,7 @@ public class Forward implements PosteriorInferenceEngine
     for (int i = 0; i < nSamples; i++) 
     {
       model.forwardSample(random, false);
-      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i)); 
+      model.getSampleWriter(tidySerializer).write(Pair.of(Runner.sampleColumn, i)); 
     }
   }
 

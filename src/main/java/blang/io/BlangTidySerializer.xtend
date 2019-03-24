@@ -13,7 +13,7 @@ import blang.types.internals.Query
 import blang.types.Index
 import blang.types.PlatedMatrix
 
-class BlangTidySerializer extends TidySerializer {
+class BlangTidySerializer extends TidySerializer { 
   
   @DesignatedConstructor
   new(@GlobalArg ExperimentResults result) {
@@ -23,11 +23,11 @@ class BlangTidySerializer extends TidySerializer {
   def dispatch protected void serializeImplementation(Matrix m, TabularWriter writer) {
     if (m.isVector) {
       for (var int i = 0; i < m.nEntries; i++) {
-        writer.write("entry" -> i, "value" -> m.get(i))
+        writer.write("entry" -> i, TidySerializer::VALUE -> m.get(i))
       }
     } else {
       StaticUtils::visitSkippingSomeZeros(m) [ int row, int col, double value |
-        writer.write("row" -> row, "col" -> col, "value" -> value)
+        writer.write("row" -> row, "col" -> col, TidySerializer::VALUE -> value)
       ]
     }
   }
