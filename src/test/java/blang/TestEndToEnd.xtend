@@ -29,6 +29,7 @@ class TestEndToEnd {
         0, 
         Runner::start(
           "--model", Doomsday.canonicalName,
+          "--experimentConfigs.maxIndentationToPrint", "-1",
           "--model.rate", "1.0",
           "--model.z", "NA",
           "--model.y", "1.2",
@@ -46,7 +47,8 @@ class TestEndToEnd {
     Assert.assertEquals(
       0, 
       Runner::start(
-        "--model", Diffusion.canonicalName
+        "--model", Diffusion.canonicalName,
+        "--experimentConfigs.maxIndentationToPrint", "-1"
       )
     )
     
@@ -61,6 +63,7 @@ class TestEndToEnd {
       0, 
       Runner::start(
         "--model", NoGen.canonicalName,
+        "--experimentConfigs.maxIndentationToPrint", "-1",
         "--checkIsDAG", "false",
         "--engine.usePriorSamples", "false",
         "--stripped", "true",
@@ -77,7 +80,8 @@ class TestEndToEnd {
     Assert.assertNotEquals(
       0, 
       Runner::start(
-        "--model", SometimesNaN.canonicalName
+        "--model", SometimesNaN.canonicalName,
+        "--experimentConfigs.maxIndentationToPrint", "-1"
       )
     )
   }
@@ -89,6 +93,7 @@ class TestEndToEnd {
       0, 
       Runner::start(
         "--model", SometimesNaN.canonicalName,
+        "--experimentConfigs.maxIndentationToPrint", "-1",
         "--treatNaNAsNegativeInfinity", "true"
       )
     )
@@ -100,7 +105,8 @@ class TestEndToEnd {
     Assert.assertNotEquals(
       0, 
       Runner::start(
-        "--model", BadPlate.canonicalName
+        "--model", BadPlate.canonicalName,
+        "--experimentConfigs.maxIndentationToPrint", "-1"
       )
     )
   }
@@ -131,6 +137,7 @@ class TestEndToEnd {
         0, 
         Runner::start(
           "--model", model.canonicalName,
+          "--experimentConfigs.maxIndentationToPrint", "-1",
           "--engine.initialization", init,
           "--engine.nChains", nc,
           "--engine.reversible", rv,
