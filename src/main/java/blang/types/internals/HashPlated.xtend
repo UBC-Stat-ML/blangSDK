@@ -1,7 +1,6 @@
 package blang.types.internals
 
 import blang.types.Plated
-import blang.types.Index
 import blang.io.DataSource
 import java.util.Map
 import blang.io.NA
@@ -21,8 +20,7 @@ class HashPlated<T> implements Plated<T> {
   
   val Parser<T> parser
   
-  override T get(Index<?>... indices) {
-    val Query query = Query::build(indices)
+  override T get(Query query) {
     if (variables.containsKey(query)) {
       return variables.get(query)
     }

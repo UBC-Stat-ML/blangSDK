@@ -21,6 +21,7 @@ import blang.inits.providers.CoreProviders
 import blang.inits.Creators
 import blang.core.IntVar
 import blang.core.RealVar
+import blang.types.internals.Query
 
 /** in the following, K is the type indexing the replicates, typically an Integer or String. We assume these indices are not random variables. */
 @Immutable
@@ -30,7 +31,11 @@ interface Plate<K> {
   def ColumnName getName() 
   
   /** Get the indices available given the indices of the parent (enclosing) plates. The parents can be provided in any order. */
-  def Collection<Index<K>> indices(Index<?> ... parentIndices)
+  def Collection<Index<K>> indices(Query parentIndices)
+  
+  def Collection<Index<K>> indices(Index<?> ... parentIndices) {
+    return indices(Query::build(parentIndices))
+  }
   
   def K parse(String string)
   

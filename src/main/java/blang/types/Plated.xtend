@@ -25,8 +25,12 @@ import java.util.Collection
 interface Plated<T>  {
   
   /** get the random variable or parameter indexed by the provided indices. The indices can be given in any order. */
-  def T get(Index<?> ... indices) 
+  def T get(Index<?> ... indices) {
+    get(Query::build(indices))
+  }
   // "Getting" may involve creating a new latent variable, a new observed variable, or just returning a previously created variable.
+  
+  def T get(Query query)
   
   /** list all variables obtained through get(..) so far. Each returned entry contains the variable as well as the associated indices (Query). */
   def Collection<Entry<Query, T>> entries()

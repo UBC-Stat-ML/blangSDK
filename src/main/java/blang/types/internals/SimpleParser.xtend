@@ -11,6 +11,10 @@ public class SimpleParser<T> implements Parser<T> {
   val Creator creator
   val TypeLiteral<T> typeArgument 
   override parse(String string) {
-    return creator.init(typeArgument, blang.inits.parsing.SimpleParser.parse(string))
+    try {
+      return creator.init(typeArgument, blang.inits.parsing.SimpleParser.parse(string))
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to parse " + string + " as " + typeArgument + ", details:\n" + creator.errorReport)
+    }
   }
 }

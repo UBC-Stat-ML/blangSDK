@@ -18,6 +18,7 @@ import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.runtime.Runner;
 import briefj.BriefIO;
 import briefj.BriefMaps;
+import briefj.CSV;
 
 public class ComputeESS extends Experiment 
 {
@@ -75,7 +76,7 @@ public class ComputeESS extends Experiment
     {
       List<String> header = new ArrayList<>(samples.keySet().iterator().next().keySet());
       header.add("ess");
-      writer.append(Joiner.on(",").join(header) + "\n");
+      writer.append(CSV.toCSV(header) + "\n");
     }
     for (Map<String,String> key : samples.keySet()) {
       List<Double> curSamples = samples.get(key);
@@ -85,7 +86,7 @@ public class ComputeESS extends Experiment
             .collect(Collectors.toList())); 
       List<String> entries = new ArrayList<>(key.values());
       entries.add("" +  ess);
-      writer.append(Joiner.on(",").join(entries) + "\n");
+      writer.append(CSV.toCSV(entries) + "\n");
     }
   }
 

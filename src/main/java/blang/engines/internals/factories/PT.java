@@ -98,12 +98,22 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         ParticlePopulation<SampledModel> population = scmInit.initialize(model, randoms);
         List<Double> reorderedParameters = new ArrayList<>(temperingParameters);
         Collections.sort(reorderedParameters);
-        for (int i = 1; i < reorderedParameters.size(); i++) 
+        
+        for (int i = 0; i < reorderedParameters.size(); i++) 
         {
           double nextParameter = reorderedParameters.get(i);
-          population = scmInit.getApproximation(population, nextParameter, model, randoms, false);
-          SampledModel init = population.sample(random).duplicate();
-          states[states.length - 1 - i] = init;
+          int chainIndex = states.length - 1 - i;
+          if (nextParameter == 0.0) 
+          {
+            SampledModel current = states[chainIndex];
+            current.forwardSample(random, false); 
+          }
+          else
+          {
+            population = scmInit.getApproximation(population, nextParameter, model, randoms, false);
+            SampledModel init = population.sample(random).duplicate();
+            states[chainIndex] = init;
+          }
         }
         break;
       default : throw new RuntimeException();

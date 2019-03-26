@@ -9,6 +9,8 @@ import blang.core.IntVar
 import java.util.ArrayList
 import bayonet.math.NumericalUtils
 import java.util.Map
+import java.util.Collection
+import java.util.LinkedHashMap
 
 /** Automatically imported as extension methods, meaning functions f(a, b, ..) can be called as a.f(b, ...). */
 class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
@@ -53,13 +55,36 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
   }
   
   def static <T> List<T> asList(Plated<T> plated, Plate<Integer> plate) {
+    return asList(plated, plate.indices)
+  }
+  def static <T> List<T> asList(Plated<T> plated, Collection<Index<Integer>> indices) {
     val List<T> result = new ArrayList()
     var int check = 0
-    for (Index<Integer> index : plate.indices) {
+    for (Index<Integer> index : indices) {
       if (index.key != check++) {
         throw new RuntimeException("Assumes the plate is of the form 0, 1, 2, ..")
       }
       result.add(plated.get(index))
+    }
+    return result
+  }
+  def static <T,K> Collection<T> asCollection(Plated<T> plated, Plate<K> plate) {
+    return asCollection(plated, plate.indices) 
+  }
+  def static <T,K> Collection<T> asCollection(Plated<T> plated, Collection<Index<K>> indices) {
+    val List<T> result = new ArrayList()
+    for (Index<K> index : indices) {
+      result.add(plated.get(index))
+    }
+    return result
+  }
+  def static <T,K> Map<K,T> asMap(Plated<T> plated, Plate<K> plate) {
+    return asMap(plated, plate.indices) 
+  }
+  def static <T,K> Map<K,T> asMap(Plated<T> plated, Collection<Index<K>> indices) {
+    val LinkedHashMap<K,T> result = new LinkedHashMap()
+    for (Index<K> index : indices) {
+      result.put(index.key, plated.get(index))
     }
     return result
   }

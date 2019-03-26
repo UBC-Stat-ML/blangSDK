@@ -32,8 +32,7 @@ class HashPlate<K> implements Plate<K> {
   
   val Parser<K> parser
   
-  override Collection<Index<K>> indices(Index<?>... parentIndices) {
-    val Query query = Query::build(parentIndices)
+  override Collection<Index<K>> indices(Query query) {
     if (indices.containsKey(query)) {
       return indices.get(query)
     }
