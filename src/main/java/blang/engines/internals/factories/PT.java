@@ -48,151 +48,40 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg
   public Optional<Double> targetAccept = Optional.empty();
   
-  @Arg  @DefaultValue({"--nParticles", "100", "--temperatureSchedule.threshold", "0.9"}) // need to edit below if modified!
+  @Arg  @DefaultValue({"--nParticles", "100", "--temperatureSchedule.threshold", "0.9"}) // should edit scmDefaults if defaults changed
   public SCM scmInit = scmDefault();
-  private SCM scmDefault() {
-    SCM scmDefault = new SCM();
-    scmDefault.nParticles = 100;
-    AdaptiveTemperatureSchedule schedule = new AdaptiveTemperatureSchedule();
-    schedule.threshold = 0.9;
-    scmDefault.temperatureSchedule = schedule;
-    return scmDefault;
-  }
   
   @Arg                       @DefaultValue("SCM")
   public InitType initialization = InitType.SCM;
   
-  public static enum InitType { COPIES, FORWARD, SCM }
-  
-  @Override
-  public void setSampledModel(SampledModel model) 
-  {
-    // low level-init always needed
-    System.out.indentWithTiming("Initialization");  
-    {
-      initialize(model, random);
-      informedInitialization(model);
-    }
-    System.out.popIndent();
-  }
-  
-  private void informedInitialization(SampledModel model) 
-  {
-    switch (initialization) 
-    {
-      case COPIES : 
-        // nothing to do
-        break;
-      case FORWARD :
-        for (SampledModel m : states)
-        {
-          double cParam = m.getExponent();
-          m.setExponent(0.0);
-          m.forwardSample(random, false);
-          m.setExponent(cParam);
-        }
-        break;
-      case SCM :
-        scmInit.results = results.child("init");
-        Random [] randoms = Random.parallelRandomStreams(random, scmInit.nParticles);
-        ParticlePopulation<SampledModel> population = scmInit.initialize(model, randoms);
-        List<Double> reorderedParameters = new ArrayList<>(temperingParameters);
-        Collections.sort(reorderedParameters);
-        
-        for (int i = 0; i < reorderedParameters.size(); i++) 
-        {
-          double nextParameter = reorderedParameters.get(i);
-          int chainIndex = states.length - 1 - i;
-          if (nextParameter == 0.0) 
-          {
-            SampledModel current = states[chainIndex];
-            current.forwardSample(random, false); 
-          }
-          else
-          {
-            population = scmInit.getApproximation(population, nextParameter, model, randoms, false);
-            SampledModel init = population.sample(random).duplicate();
-            states[chainIndex] = init;
-          }
-        }
-        break;
-      default : throw new RuntimeException();
-    }
-  }
-  
-  public static final String
-  
-    energyFileName = "energy",
-    logDensityFileName = "logDensity",
-    allLogDensitiesFileName = "allLogDensities",
-    swapIndicatorsFileName = "swapIndicators",
-    swapStatisticsFileName = "swapStatistics",
-    
-    chainColumn = "chain",
-    acceptPrColumn = "acceptPr",
-    annealingParameterColumn = "annealingParameter";
-  
-  @SuppressWarnings("unchecked")
   @Override
   public void performInference() 
   {
-    BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
-    BlangTidySerializer densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
-    BlangTidySerializer swapIndicatorSerializer = new BlangTidySerializer(results.child(Runner.MONITORING_FOLDER));  
-    int iter = 0;
+
     List<Round> rounds = rounds(nScans, adaptFraction);
     for (Round round : rounds)
     {
       System.out.indentWithTiming("Round(" + (round.roundIndex+1) + "/" + rounds.size() + ")"); 
-      int movesPerScan = (int) (1 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
-      System.out.formatln("Performing", round.nScans * states.length * movesPerScan, "moves...", 
-        "[", 
-          Pair.of("nScans", round.nScans), 
-          Pair.of("nChains", states.length), 
-          Pair.of("movesPerScan", movesPerScan),
-        "]");
+      reportRoundStatistics(round);
       for (int iterInRound = 0; iterInRound < round.nScans; iterInRound++)
       {
         moveKernel(nPassesPerScan);
-        
-        reportEnergyStatistics(densitySerializer, iter);
-        
-        // state statistics
-        getTargetState().getSampleWriter(tidySerializer).write(
-            Pair.of(sampleColumn, iter));
-        
-        // perform the swaps
-        boolean[] swapIndicators = swapKernel();
-        
-        // record info on the swap
-        for (int c = 0; c < nChains(); c++)
-          swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, swapIndicatorsFileName, 
-              Pair.of(sampleColumn, iter), 
-              Pair.of(chainColumn, c));
-        
-        iter++;
+        recordEnergyStatistics(densitySerializer, iter);
+        recordSamples();
+        swapAndRecordStatistics();
       }
-      
       if (nChains() > 1)
-      {
-        System.out.println("Lowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
-        double logNormEstimate = thermodynamicEstimator();
-        System.out.println("Log normalization constant estimate: " + logNormEstimate);
-        BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
-      }
-        
+        reportParallelTemperingDiagnostics();
       reportAcceptanceRatios(round); 
-      
       if (round.isAdapt) 
         adapt(round.roundIndex == rounds.size() - 2);
-      
       results.flushAll();
       System.out.popIndent();
     }
   }
   
   @SuppressWarnings("unchecked")
-  private void reportEnergyStatistics(BlangTidySerializer densitySerializer, int iter)  
+  private void recordEnergyStatistics(BlangTidySerializer densitySerializer, int iter)  
   {
     for (int i = 0; i < temperingParameters.size(); i++)  
     {
@@ -270,6 +159,138 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       result.get(r).roundIndex = r;
     return result;
   }
+  
+  public static enum InitType { COPIES, FORWARD, SCM }
+  
+  @Override
+  public void setSampledModel(SampledModel model) 
+  {
+    // low level-init always needed
+    System.out.indentWithTiming("Initialization");  
+    {
+      initialize(model, random);
+      informedInitialization(model);
+      initSerializers();
+      iter = 0;
+    }
+    System.out.popIndent();
+  }
+  
+  private void informedInitialization(SampledModel model) 
+  {
+    switch (initialization) 
+    {
+      case COPIES : 
+        // nothing to do
+        break;
+      case FORWARD :
+        for (SampledModel m : states)
+        {
+          double cParam = m.getExponent();
+          m.setExponent(0.0);
+          m.forwardSample(random, false);
+          m.setExponent(cParam);
+        }
+        break;
+      case SCM :
+        scmInit.results = results.child("init");
+        Random [] randoms = Random.parallelRandomStreams(random, scmInit.nParticles);
+        ParticlePopulation<SampledModel> population = scmInit.initialize(model, randoms);
+        List<Double> reorderedParameters = new ArrayList<>(temperingParameters);
+        Collections.sort(reorderedParameters);
+        
+        for (int i = 0; i < reorderedParameters.size(); i++) 
+        {
+          double nextParameter = reorderedParameters.get(i);
+          int chainIndex = states.length - 1 - i;
+          if (nextParameter == 0.0) 
+          {
+            SampledModel current = states[chainIndex];
+            current.forwardSample(random, false); 
+          }
+          else
+          {
+            population = scmInit.getApproximation(population, nextParameter, model, randoms, false);
+            SampledModel init = population.sample(random).duplicate();
+            states[chainIndex] = init;
+          }
+        }
+        break;
+      default : throw new RuntimeException();
+    }
+  }
+  
+  private BlangTidySerializer tidySerializer;
+  private BlangTidySerializer densitySerializer;
+  private BlangTidySerializer swapIndicatorSerializer; 
+  private void initSerializers()
+  {
+    tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
+    densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
+    swapIndicatorSerializer = new BlangTidySerializer(results.child(Runner.MONITORING_FOLDER));  
+  }
+  
+  private void reportRoundStatistics(Round round)
+  {
+    int movesPerScan = (int) (1 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
+    System.out.formatln("Performing", round.nScans * states.length * movesPerScan, "moves...", 
+      "[", 
+        Pair.of("nScans", round.nScans), 
+        Pair.of("nChains", states.length), 
+        Pair.of("movesPerScan", movesPerScan),
+      "]");
+  }
+  
+  private int iter = 0;
+  @SuppressWarnings("unchecked")
+  private void recordSamples() 
+  {
+    getTargetState().getSampleWriter(tidySerializer).write(
+        Pair.of(sampleColumn, iter++));
+  }
+  
+  @SuppressWarnings("unchecked")
+  private void swapAndRecordStatistics() 
+  {
+    // perform the swaps
+    boolean[] swapIndicators = swapKernel();
+    
+    // record info on the swap
+    for (int c = 0; c < nChains(); c++)
+      swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, swapIndicatorsFileName, 
+          Pair.of(sampleColumn, iter), 
+          Pair.of(chainColumn, c));
+  }
+  
+  private void reportParallelTemperingDiagnostics()
+  {
+    System.out.println("Lowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
+    double logNormEstimate = thermodynamicEstimator();
+    System.out.println("Log normalization constant estimate: " + logNormEstimate);
+    
+    BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
+  }
+  
+  private SCM scmDefault() {
+    SCM scmDefault = new SCM();
+    scmDefault.nParticles = 100;
+    AdaptiveTemperatureSchedule schedule = new AdaptiveTemperatureSchedule();
+    schedule.threshold = 0.9;
+    scmDefault.temperatureSchedule = schedule;
+    return scmDefault;
+  }
+  
+  public static final String
+  
+    energyFileName = "energy",
+    logDensityFileName = "logDensity",
+    allLogDensitiesFileName = "allLogDensities",
+    swapIndicatorsFileName = "swapIndicators",
+    swapStatisticsFileName = "swapStatistics",
+    
+    chainColumn = "chain",
+    acceptPrColumn = "acceptPr",
+    annealingParameterColumn = "annealingParameter";
   
   private static class Round
   {
