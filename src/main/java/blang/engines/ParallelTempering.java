@@ -15,6 +15,7 @@ import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.experiments.Cores;
 import blang.runtime.SampledModel;
+import blang.types.StaticUtils;
 import briefj.BriefParallel;
 
 public class ParallelTempering
@@ -40,7 +41,7 @@ public class ParallelTempering
   protected List<Double> temperingParameters;
   protected Random [] parallelRandomStreams;
   protected SummaryStatistics [] energies, swapAcceptPrs;
-  private int iterationIndex = 0;
+  private int swapIndex = 0;
   protected boolean [] swapIndicators;
    
   public SampledModel getTargetState()
@@ -58,7 +59,7 @@ public class ParallelTempering
   public boolean[] swapKernel(boolean reversible)
   {
     swapIndicators = new boolean[nChains()];
-    int offset = reversible ? parallelRandomStreams[0].nextInt(2) : iterationIndex++ % 2; 
+    int offset = reversible ? parallelRandomStreams[0].nextInt(2) : swapIndex++ % 2; 
     BriefParallel.process((nChains() - offset) / 2, nThreads.numberAvailable(), swapIndex ->
     {
       int chainIndex = offset + 2 * swapIndex;
@@ -169,14 +170,7 @@ public class ParallelTempering
   {
     SummaryStatistics[] result = new SummaryStatistics[size];
     for (int i = 0; i < size; i++)
-      result[i] = summaryStatistics(0.0);
-    return result;
-  }
-  
-  public static SummaryStatistics summaryStatistics(double ... values) 
-  {
-    SummaryStatistics result = new SummaryStatistics();
-    for (double v : values) result.addValue(v);
+      result[i] = StaticUtils.summaryStatistics(0.0);
     return result;
   }
 }

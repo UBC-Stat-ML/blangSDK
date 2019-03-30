@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import com.google.common.base.Joiner;
+import java.util.stream.Collectors;
 
 import blang.mcmc.Sampler;
 import blang.runtime.internals.objectgraph.Node;
@@ -19,6 +18,7 @@ public class BuiltSamplers
   @Override
   public String toString() 
   {
-    return "" + list.size() + " samplers constructed with following prototypes:\n" + Joiner.on("\n").join(matchingReport);
+    return "" + list.size() + " samplers constructed with following prototypes:\n" + 
+      matchingReport.stream().map(line -> blang.System.out.indentString + line).collect(Collectors.joining("\n"));
   }
 }

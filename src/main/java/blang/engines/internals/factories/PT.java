@@ -1,5 +1,6 @@
 package blang.engines.internals.factories;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.Random;
@@ -14,6 +16,7 @@ import bayonet.smc.ParticlePopulation;
 import blang.engines.ParallelTempering;
 import blang.engines.internals.EngineStaticUtils;
 import blang.engines.internals.PosteriorInferenceEngine;
+import blang.engines.internals.ptanalysis.Paths;
 import blang.engines.internals.schedules.AdaptiveTemperatureSchedule;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
@@ -21,11 +24,15 @@ import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
 import blang.System;
 import blang.inits.experiments.tabwriters.TabularWriter;
+import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.io.BlangTidySerializer;
 import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
+import blang.types.StaticUtils;
 import briefj.BriefIO;
+
+import static blang.engines.internals.factories.PT.MonitoringOutput.*;
 
 import static blang.runtime.Runner.sampleColumn;
 
@@ -59,19 +66,21 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
 
     List<Round> rounds = rounds(nScans, adaptFraction);
+    int scanIndex = 0;
     for (Round round : rounds)
     {
       System.out.indentWithTiming("Round(" + (round.roundIndex+1) + "/" + rounds.size() + ")"); 
       reportRoundStatistics(round);
-      for (int iterInRound = 0; iterInRound < round.nScans; iterInRound++)
+      for (int scanInRound = 0; scanInRound < round.nScans; scanInRound++)
       {
         moveKernel(nPassesPerScan);
-        recordEnergyStatistics(densitySerializer, iter);
-        recordSamples();
-        swapAndRecordStatistics();
+        recordEnergyStatistics(densitySerializer, scanIndex);
+        recordSamples(scanIndex);
+        swapAndRecordStatistics(scanIndex);
+        scanIndex++;
       }
       if (nChains() > 1)
-        reportParallelTemperingDiagnostics();
+        reportParallelTemperingDiagnostics(round);
       reportAcceptanceRatios(round); 
       if (round.isAdapt) 
         adapt(round.roundIndex == rounds.size() - 2);
@@ -85,15 +94,15 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     for (int i = 0; i < temperingParameters.size(); i++)  
     {
-      densitySerializer.serialize(states[i].logDensity(), allLogDensitiesFileName, 
+      densitySerializer.serialize(states[i].logDensity(), SampleOutput.allLogDensities.toString(), 
           Pair.of(sampleColumn, iter), 
-          Pair.of(chainColumn, i));
+          Pair.of(Column.chain, i));
       final double energy = -states[i].preAnnealedLogLikelihood();
-      densitySerializer.serialize(energy, energyFileName, 
+      densitySerializer.serialize(energy, SampleOutput.energy.toString(), 
           Pair.of(sampleColumn, iter), 
-          Pair.of(chainColumn, i));
+          Pair.of(Column.chain, i));
     }
-    densitySerializer.serialize(getTargetState().logDensity(), logDensityFileName, 
+    densitySerializer.serialize(getTargetState().logDensity(), SampleOutput.logDensity.toString(), 
         Pair.of(sampleColumn, iter));
   }
   
@@ -117,18 +126,21 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   private void reportAcceptanceRatios(Round round) 
   {
-    TabularWriter tabularWriter = results.child(Runner.MONITORING_FOLDER).getTabularWriter(swapStatisticsFileName);
-    if (round != null) 
-    {
-      tabularWriter = tabularWriter
-          .child("isAdapt", round.isAdapt)
-          .child("round", round.roundIndex);
+    TabularWriter 
+      swapTabularWriter = writer(MonitoringOutput.swapStatistics),
+      annealingParamTabularWriter = writer(MonitoringOutput.annealingParameters);
+    
+    Pair<?,?> 
+      isAdapt = Pair.of(Column.isAdapt, round.isAdapt),
+      r = Pair.of(Column.round, round.roundIndex);
+    
+    for (int i = 0; i < nChains() - 1; i++) {
+      Pair<?,?> c = Pair.of(Column.chain, i);
+      swapTabularWriter.write(isAdapt, r, c, 
+        Pair.of(TidySerializer.VALUE, swapAcceptPrs[i].getMean()));
+      annealingParamTabularWriter.write(isAdapt, r, c,
+        Pair.of(TidySerializer.VALUE, temperingParameters.get(i)));
     }
-    for (int i = 0; i < nChains() - 1; i++)
-      tabularWriter.write(
-          Pair.of(chainColumn, i), 
-          Pair.of(annealingParameterColumn, temperingParameters.get(i)), 
-          Pair.of(acceptPrColumn, swapAcceptPrs[i].getMean()));
   }
 
   @Override
@@ -155,8 +167,15 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       remainingAdaptIters = nextRemain;
     }
     Collections.reverse(result);
+    int scan = 0;
     for (int r = 0; r < result.size(); r++) 
-      result.get(r).roundIndex = r;
+    {
+      Round cur = result.get(r);
+      cur.roundIndex = r;
+      cur.firstScanInclusive = scan;
+      cur.lastScanExclusive = scan + cur.nScans;
+      scan += cur.nScans;
+    }
     return result;
   }
   
@@ -171,7 +190,6 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       initialize(model, random);
       informedInitialization(model);
       initSerializers();
-      iter = 0;
     }
     System.out.popIndent();
   }
@@ -232,7 +250,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   private void reportRoundStatistics(Round round)
   {
-    int movesPerScan = (int) (1 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
+    int movesPerScan = (int) (nChains() /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
     System.out.formatln("Performing", round.nScans * states.length * movesPerScan, "moves...", 
       "[", 
         Pair.of("nScans", round.nScans), 
@@ -241,34 +259,78 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       "]");
   }
   
-  private int iter = 0;
   @SuppressWarnings("unchecked")
-  private void recordSamples() 
+  private void recordSamples(int scanIndex) 
   {
     getTargetState().getSampleWriter(tidySerializer).write(
-        Pair.of(sampleColumn, iter++));
+      Pair.of(sampleColumn, scanIndex));
   }
   
   @SuppressWarnings("unchecked")
-  private void swapAndRecordStatistics() 
+  private void swapAndRecordStatistics(int scanIndex) 
   {
     // perform the swaps
     boolean[] swapIndicators = swapKernel();
     
     // record info on the swap
     for (int c = 0; c < nChains(); c++)
-      swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, swapIndicatorsFileName, 
-          Pair.of(sampleColumn, iter), 
-          Pair.of(chainColumn, c));
+      swapIndicatorSerializer.serialize(swapIndicators[c] ? 1 : 0, MonitoringOutput.swapIndicators.toString(), 
+        Pair.of(sampleColumn, scanIndex), 
+        Pair.of(Column.chain, c));
   }
   
-  private void reportParallelTemperingDiagnostics()
+  private void reportParallelTemperingDiagnostics(Round round)
   {
-    System.out.println("Lowest swap pr: " + Arrays.stream(swapAcceptPrs).mapToDouble(stat -> stat.getMean()).min().getAsDouble());
-    double logNormEstimate = thermodynamicEstimator();
-    System.out.println("Log normalization constant estimate: " + logNormEstimate);
+    Pair<?,?> roundReport = Pair.of(Column.round, round.roundIndex);
     
-    BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
+    // swap statistics
+    SummaryStatistics swapStats = StaticUtils.summaryStatistics( Arrays.stream(swapAcceptPrs).map(stat -> stat.getMean()).collect(Collectors.toList()));
+    writer(MonitoringOutput.swapSummaries).printAndWrite(
+      roundReport,
+      Pair.of(Column.lowest, swapStats.getMin()), 
+      Pair.of(Column.average, swapStats.getMean())
+    );
+    
+    double logNorm = thermodynamicEstimator();
+    writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
+      roundReport,
+      Pair.of(TidySerializer.VALUE, logNorm)
+    );
+    
+    // round trip information
+    results.flushAll(); // make sure first the indicators are written
+    String swapIndicPath = new File(results.getFileInResultFolder(Runner.MONITORING_FOLDER), MonitoringOutput.swapIndicators + ".csv").getAbsolutePath();
+    Paths paths = new Paths(swapIndicPath, round.firstScanInclusive, round.lastScanExclusive);
+    
+    double Lambda = Arrays.stream(swapAcceptPrs).map(stat -> 1.0 - stat.getMean()).mapToDouble(Double::doubleValue).sum();
+    writer(MonitoringOutput.estimatedLambda).printAndWrite(
+      roundReport,
+      Pair.of(TidySerializer.VALUE, Lambda)
+    );
+    
+    int n = paths.nRejuvenations();
+    double tau = ((double) n / round.nScans);
+    writer(MonitoringOutput.actualTemperedRestarts).printAndWrite(
+      roundReport,
+      Pair.of(Column.count, n), 
+      Pair.of(Column.rate, tau)
+    );
+    
+    if (reversible)
+      System.err.println("Using provably suboptimal reversible PT. Do this only for PT benchmarking. Asymptotic rate is zero in this regime.");
+    else
+    {
+      double tauBar = 1.0 / (2.0 + 2.0 * Lambda);
+      double nBar = tauBar * round.nScans;
+      writer(asymptoticRoundTripBound).printAndWrite(
+        roundReport,
+        Pair.of(Column.count, nBar), 
+        Pair.of(Column.rate, tauBar)
+      );
+    }
+    
+    // log normalization, again (this gets overwritten, so this will be the final estimate in the same format as SCM)
+    BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNorm);
   }
   
   private SCM scmDefault() {
@@ -280,22 +342,33 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     return scmDefault;
   }
   
-  public static final String
+  private TabularWriter writer(MonitoringOutput output)
+  {
+    return results.child(Runner.MONITORING_FOLDER).getTabularWriter(output.toString());
+  }
   
-    energyFileName = "energy",
-    logDensityFileName = "logDensity",
-    allLogDensitiesFileName = "allLogDensities",
-    swapIndicatorsFileName = "swapIndicators",
-    swapStatisticsFileName = "swapStatistics",
-    
-    chainColumn = "chain",
-    acceptPrColumn = "acceptPr",
-    annealingParameterColumn = "annealingParameter";
+  public static enum MonitoringOutput
+  {
+    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, 
+    estimatedLambda, actualTemperedRestarts, asymptoticRoundTripBound
+  }
+  
+  public static enum SampleOutput
+  {
+    energy, logDensity, allLogDensities;
+  }
+  
+  public static enum Column
+  {
+    chain, round, isAdapt, count, rate, lowest, average
+  }
   
   private static class Round
   {
     int nScans;
     int roundIndex = -1;
+    int firstScanInclusive;
+    int lastScanExclusive;
     boolean isAdapt;
     public Round(int nScans, boolean isAdapt) {
       this.nScans = nScans;

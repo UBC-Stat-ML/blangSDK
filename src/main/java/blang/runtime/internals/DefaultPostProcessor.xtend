@@ -17,7 +17,13 @@ import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.ComputeESS.EssEstimator
 import blang.runtime.PostProcessor
 import blang.runtime.Runner
-import blang.engines.internals.factories.PT
+import blang.engines.internals.factories.PT.Column
+import blang.engines.internals.factories.PT.MonitoringOutput
+import blang.engines.internals.factories.PT.SampleOutput
+import blang.engines.internals.ptanalysis.Paths
+import blang.engines.internals.ptanalysis.PathViz
+import viz.core.Viz
+import java.util.Optional
 
 class DefaultPostProcessor extends PostProcessor {
   
@@ -34,12 +40,22 @@ class DefaultPostProcessor extends PostProcessor {
   public EssEstimator essEstimator = EssEstimator.BATCH;
   
   public static final String ESS_FOLDER = "ess"
-  public static final String TRACES_POST_BURN_IN_FOLDER = "traces-post-burnin"
-  public static final String TRACES_FULL_FOLDER = "traces-full"
-  public static final String POSTERIORS_FOLDER = "posteriors"
+  public static final String TRACES_POST_BURN_IN_FOLDER = "trace-plots"
+  public static final String TRACES_FULL_FOLDER = "trace-plots-full"
+  public static final String POSTERIORS_FOLDER = "posterior-plots"
   public static final String SUMMARIES_FOLDER = "summaries"
+  public static final String MONITORING_PLOTS_FOLDER = "monitoring-plots"
+  public static final String PATHS_FILE = "paths"
+  
+  public static final String ESS_SUFFIX = "-ess.csv"
   
   override run() {
+    
+    try { pxviz } 
+    catch (Exception e) {
+      System.err.println("pxviz needs some setup to be ran 'headless' see error message below")
+    }
+    
     for (posteriorSamples : BriefFiles.ls(new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER), "csv")) {
       println("Post-processing " + variableName(posteriorSamples))
       val types = TidySerializer::types(posteriorSamples)
@@ -74,11 +90,83 @@ class DefaultPostProcessor extends PostProcessor {
         }
       }
     }
-    // normalization visualization
     
+    println("MC diagnostics")
     
-    // some MC diagnostics
+    val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
     
+    for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound])
+      simplePlot(new File(monitoringFolder, rateName + ".csv"), Column::round, Column::rate)
+      
+    simplePlot(new File(monitoringFolder, MonitoringOutput::swapSummaries + ".csv"), Column::round, Column::average)
+    
+    for (estimateName : #[MonitoringOutput::estimatedLambda, MonitoringOutput::logNormalizationContantProgress])
+      simplePlot(new File(monitoringFolder, estimateName + ".csv"), Column::round, TidySerializer::VALUE)
+      
+    simplePlot(new File(results.getFileInResultFolder(ESS_FOLDER), SampleOutput::energy + ESS_SUFFIX), Column::chain, "ess")
+    
+    for (stat : #[MonitoringOutput::swapStatistics, MonitoringOutput::annealingParameters]) {
+      val scale = if (stat == MonitoringOutput::annealingParameters) "scale_y_log10() + " else ""
+      plot(new File(monitoringFolder, stat + ".csv"), '''
+        data <- data[data$isAdapt=="false",]
+        p <- ggplot(data, aes(x = «Column::chain», y = «TidySerializer::VALUE»)) +
+          geom_line() +
+          ylab("«stat»") + «scale»
+          theme_bw()
+      ''')
+      plot(new File(monitoringFolder, stat + ".csv"), '''
+        p <- ggplot(data, aes(x = «Column::round», y = «TidySerializer::VALUE», colour = factor(«Column::chain»))) +
+          geom_line() +
+          ylab("«stat»") + «scale»
+          theme_bw()
+      ''', "-progress")
+    }
+  }
+  
+  protected def void pxviz() {
+    paths()
+  }
+  
+  def void paths() {
+    val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
+    val pathsFile = new File(monitoringFolder, MonitoringOutput::swapIndicators.toString + ".csv")
+    if (pathsFile.exists) {
+      val paths = new Paths(pathsFile.absolutePath, 0, Integer.MAX_VALUE)
+      val plotsFolder = results.getFileInResultFolder(MONITORING_PLOTS_FOLDER)
+      val pViz = new PathViz(paths, Viz::fixHeight(300))
+      pViz.boldTrajectory = Optional.of(1)
+      pViz.output(new File(plotsFolder, PATHS_FILE + ".pdf"))
+    }
+  }
+    
+  def void plot(File data, String code) {
+    plot(data, code, "")
+  }
+  
+  def void plot(File data, String code, String suffix) {
+    if (!data.exists) {
+      return
+    }
+    val monitoringPlotsFolder = results.getFileInResultFolder(MONITORING_PLOTS_FOLDER)
+    val name = variableName(data)
+    val rScript = new File(monitoringPlotsFolder, "." + name + ".r")
+    val output = new File(monitoringPlotsFolder, name + suffix + "." + imageFormat)
+    callR(rScript, '''
+      require("ggplot2")
+      data <- read.csv("«data.absolutePath»")
+      «code»
+      ggsave("«output.absolutePath»", limitsize = F)
+    ''')
+  }
+  
+  def void simplePlot(File data, Object x, Object y) {
+    val name = variableName(data)
+    plot(data, '''
+      p <- ggplot(data, aes(x = «x», y = «y»)) +
+        geom_line() +
+        ylab("«name + " " + y»") + 
+        theme_bw()
+    ''')
   }
   
   def static boolean isRealValued(Class<?> type) {
@@ -97,7 +185,7 @@ class DefaultPostProcessor extends PostProcessor {
       results = essResults
       burnInFraction = _burnIn
       estimator = essEstimator
-      output = variableName(posteriorSamples) + "-ess.csv"
+      output = variableName(posteriorSamples) + ESS_SUFFIX
     ]).run
     essResults.closeAll
   }
@@ -132,7 +220,7 @@ class DefaultPostProcessor extends PostProcessor {
     }
     override ggCommand() {
       val energyHack = // energy across temperature is very dynamic so truncate the extremes
-        if (variableName != PT::energyFileName) 
+        if (variableName != SampleOutput::energy) 
           "" else '''
         data <- data[data$value < quantile(data$«TidySerializer::VALUE», 0.95), ]
         data <- data[data$value > quantile(data$«TidySerializer::VALUE», 0.05), ]

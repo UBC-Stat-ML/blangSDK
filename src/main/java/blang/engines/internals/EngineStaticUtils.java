@@ -10,9 +10,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 
 import bayonet.distributions.Multinomial;
-import bayonet.math.NumericalUtils;
 import bayonet.smc.ParticlePopulation;
-import blang.engines.internals.ladders.EquallySpaced;
 import blang.runtime.SampledModel;
 
 public class EngineStaticUtils
@@ -100,7 +98,7 @@ public class EngineStaticUtils
     }
     result.add(1.0);
     
-    Collections.sort(result); // Might need a few swaps because of the required bracket relaxation described above
+    Collections.sort(result); // Might need a few minor changes in ordering to get it sorted because of the required bracket relaxation described above
     return result;
   }
 }

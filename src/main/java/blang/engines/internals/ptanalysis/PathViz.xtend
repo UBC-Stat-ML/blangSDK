@@ -13,12 +13,12 @@ import java.util.Optional
 class PathViz extends Viz {
   val Paths paths
   
-  @Arg Optional<Integer> boldTrajectory
+  @Arg public Optional<Integer> boldTrajectory = Optional.empty
   
                          @DefaultValue("true")
-  @Arg boolean useAcceptRejectColours = true
+  @Arg public boolean useAcceptRejectColours = true
   
-  float ratio = 0.5f
+  public float ratio = 0.5f
   
   @DesignatedConstructor
   new(
