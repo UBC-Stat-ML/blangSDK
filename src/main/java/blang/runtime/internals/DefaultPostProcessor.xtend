@@ -25,6 +25,8 @@ import blang.engines.internals.ptanalysis.PathViz
 import viz.core.Viz
 import java.util.Optional
 
+import blang.runtime.internals.DefaultPostProcessor.Output
+
 class DefaultPostProcessor extends PostProcessor {
   
   @Arg   @DefaultValue("Rscript")
@@ -39,13 +41,9 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg                             @DefaultValue("BATCH")
   public EssEstimator essEstimator = EssEstimator.BATCH;
   
-  public static final String ESS_FOLDER = "ess"
-  public static final String TRACES_POST_BURN_IN_FOLDER = "trace-plots"
-  public static final String TRACES_FULL_FOLDER = "trace-plots-full"
-  public static final String POSTERIORS_FOLDER = "posterior-plots"
-  public static final String SUMMARIES_FOLDER = "summaries"
-  public static final String MONITORING_PLOTS_FOLDER = "monitoring-plots"
-  public static final String PATHS_FILE = "paths"
+  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths }
+  
+  def File outputFolder(Output out) { return results.getFileInResultFolder(out.toString) }
   
   public static final String ESS_SUFFIX = "-ess.csv"
   
@@ -63,14 +61,14 @@ class DefaultPostProcessor extends PostProcessor {
         val type = types.get(TidySerializer::VALUE)
         // statistics that could make sense for both reals and integers
         if (isIntValued(type) || isRealValued(type)) {
-          computeEss(posteriorSamples, results.getFileInResultFolder(ESS_FOLDER))
+          computeEss(posteriorSamples, outputFolder(Output::ess))
           createPlot(
             new TracePlot(posteriorSamples, types, this, false),
-            results.getFileInResultFolder(TRACES_FULL_FOLDER)
+            outputFolder(Output::tracePlotsFull)
           )
           createPlot(
             new TracePlot(posteriorSamples, types, this, true),
-            results.getFileInResultFolder(TRACES_POST_BURN_IN_FOLDER)
+            outputFolder(Output::tracePlots)
           )
           summary(posteriorSamples, types)
         } 
@@ -78,14 +76,14 @@ class DefaultPostProcessor extends PostProcessor {
         if (isIntValued(type)) {
           createPlot(
             new PMFPlot(posteriorSamples, types, this),
-            results.getFileInResultFolder(blang.runtime.internals.DefaultPostProcessor.POSTERIORS_FOLDER) 
+            outputFolder(Output::posteriorPlots)
           )
         }
         // statistics for reals only
         if (isRealValued(type)) {
           createPlot(
             new DensityPlot(posteriorSamples, types, this),
-            results.getFileInResultFolder(blang.runtime.internals.DefaultPostProcessor.POSTERIORS_FOLDER) 
+            outputFolder(Output::posteriorPlots)
           )
         }
       }
@@ -103,7 +101,7 @@ class DefaultPostProcessor extends PostProcessor {
     for (estimateName : #[MonitoringOutput::estimatedLambda, MonitoringOutput::logNormalizationContantProgress])
       simplePlot(new File(monitoringFolder, estimateName + ".csv"), Column::round, TidySerializer::VALUE)
       
-    simplePlot(new File(results.getFileInResultFolder(ESS_FOLDER), SampleOutput::energy + ESS_SUFFIX), Column::chain, "ess")
+    simplePlot(new File(outputFolder(Output::ess), SampleOutput::energy + ESS_SUFFIX), Column::chain, "ess")
     
     for (stat : #[MonitoringOutput::swapStatistics, MonitoringOutput::annealingParameters]) {
       val scale = if (stat == MonitoringOutput::annealingParameters) "scale_y_log10() + " else ""
@@ -132,10 +130,10 @@ class DefaultPostProcessor extends PostProcessor {
     val pathsFile = new File(monitoringFolder, MonitoringOutput::swapIndicators.toString + ".csv")
     if (pathsFile.exists) {
       val paths = new Paths(pathsFile.absolutePath, 0, Integer.MAX_VALUE)
-      val plotsFolder = results.getFileInResultFolder(MONITORING_PLOTS_FOLDER)
+      val plotsFolder = outputFolder(Output::monitoringPlots)
       val pViz = new PathViz(paths, Viz::fixHeight(300))
       pViz.boldTrajectory = Optional.of(1)
-      pViz.output(new File(plotsFolder, PATHS_FILE + ".pdf"))
+      pViz.output(new File(plotsFolder, Output::paths + ".pdf"))
     }
   }
     
@@ -147,7 +145,7 @@ class DefaultPostProcessor extends PostProcessor {
     if (!data.exists) {
       return
     }
-    val monitoringPlotsFolder = results.getFileInResultFolder(MONITORING_PLOTS_FOLDER)
+    val monitoringPlotsFolder = outputFolder(Output::monitoringPlots)
     val name = variableName(data)
     val rScript = new File(monitoringPlotsFolder, "." + name + ".r")
     val output = new File(monitoringPlotsFolder, name + suffix + "." + imageFormat)
@@ -246,7 +244,6 @@ class DefaultPostProcessor extends PostProcessor {
       val groupBy = facetVariables => [add(TidySerializer::VALUE)]
       return '''
       «removeBurnIn»
-      require("dplyr")
       data <- data %>%
         group_by(«groupBy.join(",")») %>%
         summarise(
@@ -315,14 +312,24 @@ class DefaultPostProcessor extends PostProcessor {
     
     callR(scriptFile, '''
       require("ggplot2")
+      require("dplyr")
+      
       data <- read.csv("«plot.posteriorSamples.absolutePath»")
+      
+      # ggplot has bad default sizes for large facetting
+      verticalSize <- 1 * «IF plot.facetVariables.empty» 1 «ELSE» length(unique(data$«plot.facetVariables.get(0)»)) «ENDIF»
+      horizontalSize <- 4
+      «FOR i : 1 ..< plot.facetVariables.size»
+      horizontalSize <- horizontalSize * length(unique(data$«plot.facetVariables.get(i)»))
+      «ENDFOR»
+      
       «plot.ggCommand»
-      ggsave("«imageFile.absolutePath»", limitsize = F)
+      ggsave("«imageFile.absolutePath»", limitsize = F, height = verticalSize, width = horizontalSize)
     ''')
   }
   
   def summary(File posteriorSamples, Map<String, Class<?>> types) {
-    val directory = results.getFileInResultFolder(SUMMARIES_FOLDER)
+    val directory = outputFolder(Output::summaries)
     val variableName = variableName(posteriorSamples)
     val scriptFile = new File(directory, "." + variableName + ".r")
     val groups = indices(types)
