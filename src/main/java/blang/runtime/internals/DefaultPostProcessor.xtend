@@ -38,6 +38,14 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg            @DefaultValue("0.5")
   public double burnInFraction = 0.5;
   
+  @Arg(description = "In inches")         
+               @DefaultValue("2.0")
+  public double facetHeight = 2.0;
+  
+  @Arg(description = "In inches")         
+              @DefaultValue("4.0")
+  public double facetWidth = 4.0;
+  
   @Arg                             @DefaultValue("BATCH")
   public EssEstimator essEstimator = EssEstimator.BATCH;
   
@@ -317,8 +325,8 @@ class DefaultPostProcessor extends PostProcessor {
       data <- read.csv("«plot.posteriorSamples.absolutePath»")
       
       # ggplot has bad default sizes for large facetting
-      verticalSize <- 1 * «IF plot.facetVariables.empty» 1 «ELSE» length(unique(data$«plot.facetVariables.get(0)»)) «ENDIF»
-      horizontalSize <- 4
+      verticalSize <- «facetHeight» * «IF plot.facetVariables.empty» 1 «ELSE» length(unique(data$«plot.facetVariables.get(0)»)) «ENDIF»
+      horizontalSize <- «facetWidth»
       «FOR i : 1 ..< plot.facetVariables.size»
       horizontalSize <- horizontalSize * length(unique(data$«plot.facetVariables.get(i)»))
       «ENDFOR»
