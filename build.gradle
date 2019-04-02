@@ -109,7 +109,7 @@ if (JavaVersion.current().isJava8Compatible()) {
 // Put before TRIM line otherwise large file gets generated 
 configurations.archives.with {
   artifacts.remove artifacts.find { it.file =~ 'tar' }
-  artifacts.remove artifacts.find { it.file =~ 'jar' }
+  artifacts.remove artifacts.find { it.file =~ 'zip' }
 }
 
 /* blang-standalone-compiler-directive - do not edit : TRIM */
@@ -125,7 +125,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "1.29.1" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "1.29.2" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "ca.ubc.stat"
     }
