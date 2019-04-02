@@ -1,6 +1,6 @@
 plugins {
-  id 'org.xtext.xtend' version '1.0.19'
-  id 'org.xtext.builder' version '1.0.19'
+  id 'org.xtext.xtend' version '2.0.4'
+  id 'org.xtext.builder' version '2.0.4'
   id 'java'
   id 'eclipse'
   id 'maven'
@@ -26,12 +26,12 @@ xtend {
   }
 }
 
-def blangVersion = '3.25.2'
+def blangVersion = '3.25.3'
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
-  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.12.0'
+  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.16.0'
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.5.0'
   compile group: 'ca.ubc.stat', name: 'inits', version: '2.17.0'
   compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.1.3'
@@ -106,9 +106,10 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
-configurations.archives.with { // Put before TRIM line otherwise large file gets generated each time standalone command used.
-    artifacts.remove artifacts.find { it.archiveTask.is distZip }
-    artifacts.remove artifacts.find { it.archiveTask.is distTar }
+// Put before TRIM line otherwise large file gets generated 
+configurations.archives.with {
+  artifacts.remove artifacts.find { it.file =~ 'tar' }
+  artifacts.remove artifacts.find { it.file =~ 'jar' }
 }
 
 /* blang-standalone-compiler-directive - do not edit : TRIM */
