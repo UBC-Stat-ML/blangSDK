@@ -1,6 +1,7 @@
 package blang.distributions
 
 /** Uniform random variable over the contiguous set of integers \(\{m, m+1, \dots, M-1\}\). */
+@Samplers(UniformSampler)
 model DiscreteUniform {
   random IntVar realization
   
@@ -24,5 +25,4 @@ model DiscreteUniform {
   generate(rand) {
     rand.discreteUniform(minInclusive, maxExclusive)
   }
-  
 }
