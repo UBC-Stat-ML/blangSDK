@@ -6,7 +6,6 @@ import bayonet.distributions.Random;
 import blang.core.LogScaleFactor;
 import blang.core.WritableIntVar;
 import blang.distributions.Generators;
-import blang.mcmc.internals.SamplerBuilderContext;
 
 
 public class IntSliceSampler implements Sampler
@@ -24,6 +23,7 @@ public class IntSliceSampler implements Sampler
     return fixedWindowLeft != null;
   }
   
+  private static final int initialWindowSize = 10;
   private static final int maxNDoublingRounds = 10;
   
   private IntSliceSampler(Integer fixedWindowLeft, Integer fixedWindowRight) 
@@ -66,8 +66,8 @@ public class IntSliceSampler implements Sampler
     else
     {
       // doubling procedure
-      leftProposalEndPoint = oldState; // L in Neal's paper
-      rightProposalEndPoint = leftProposalEndPoint + 1;          // R in Neal's paper
+      leftProposalEndPoint = oldState - random.nextInt(initialWindowSize); // L in Neal's paper
+      rightProposalEndPoint = leftProposalEndPoint + initialWindowSize;    // R in Neal's paper
       
       // convention: left is inclusive, right is exclusive
       
