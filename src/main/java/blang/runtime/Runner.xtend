@@ -25,7 +25,6 @@ import java.util.Collections
 import java.util.Optional
 import bayonet.distributions.Random
 import blang.engines.internals.PosteriorInferenceEngine
-import blang.engines.internals.factories.SCM  
 import blang.io.internals.GlobalDataSourceStore
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.runtime.internals.objectgraph.GraphAnalysis
@@ -37,13 +36,14 @@ import java.util.List
 import java.util.ArrayList
 import blang.runtime.PostProcessor.NoPostProcessor
 import blang.System
+import blang.engines.internals.factories.PT
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
   val Model model
   
-  @Arg                          @DefaultValue("SCM")
-  public PosteriorInferenceEngine engine = new SCM
+  @Arg                          @DefaultValue("PT")
+  public PosteriorInferenceEngine engine = new PT
   
   @Arg                      @DefaultValue("false")
   public boolean printAccessibilityGraph = false

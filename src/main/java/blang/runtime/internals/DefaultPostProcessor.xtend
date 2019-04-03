@@ -32,8 +32,8 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg   @DefaultValue("Rscript")
   public String rCmd = "Rscript"
   
-  @Arg          @DefaultValue("png")
-  public String imageFormat = "png"
+  @Arg          @DefaultValue("pdf")
+  public String imageFormat = "pdf"
   
   @Arg            @DefaultValue("0.5")
   public double burnInFraction = 0.5;
@@ -56,6 +56,11 @@ class DefaultPostProcessor extends PostProcessor {
   public static final String ESS_SUFFIX = "-ess.csv"
   
   override run() {
+    
+    if (!blangExecutionDirectory.present) {
+      System.err.println("Set the option --blangExecutionDirectory to a blang exec directory.")
+      return
+    }
     
     try { pxviz } 
     catch (Exception e) {
