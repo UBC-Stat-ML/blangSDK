@@ -55,7 +55,9 @@ class DefaultPostProcessor extends PostProcessor {
   
   public static final String ESS_SUFFIX = "-ess.csv"
   
+  var Command Rscript
   override run() {
+    Rscript = Command.cmd(rCmd)
     
     if (!blangExecutionDirectory.present) {
       System.err.println("Set the option --blangExecutionDirectory to a blang exec directory.")
@@ -367,8 +369,6 @@ class DefaultPostProcessor extends PostProcessor {
     BriefIO.write(scriptFile, commands);
     Command.call(Rscript.appendArg(scriptFile.getAbsolutePath()))
   }
-  
-  public Command Rscript = Command.cmd(rCmd)
   
   def Document marginalPage() {
     return null
