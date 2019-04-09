@@ -49,7 +49,7 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg                             @DefaultValue("BATCH")
   public EssEstimator essEstimator = EssEstimator.BATCH;
   
-  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths }
+  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss }
   
   def File outputFolder(Output out) { return results.getFileInResultFolder(out.toString) }
   
@@ -116,7 +116,7 @@ class DefaultPostProcessor extends PostProcessor {
     for (estimateName : #[MonitoringOutput::estimatedLambda, MonitoringOutput::logNormalizationContantProgress])
       simplePlot(new File(monitoringFolder, estimateName + ".csv"), Column::round, TidySerializer::VALUE)
       
-    simplePlot(new File(outputFolder(Output::ess), SampleOutput::energy + ESS_SUFFIX), Column::chain, "ess")
+    simplePlot(new File(outputFolder(Output::ess), SampleOutput::energy + ESS_SUFFIX), Column::chain, TidySerializer::VALUE)
     
     for (stat : #[MonitoringOutput::swapStatistics, MonitoringOutput::annealingParameters]) {
       val scale = if (stat == MonitoringOutput::annealingParameters) "scale_y_log10() + " else ""
@@ -193,14 +193,22 @@ class DefaultPostProcessor extends PostProcessor {
   def void computeEss(File posteriorSamples, File essDirectory) {
     val _burnIn = burnInFraction
     val essResults = new ExperimentResults(essDirectory)
-    (new ComputeESS => [
+    val essComputer = new ComputeESS => [
       inputFile = posteriorSamples
       results = essResults
       burnInFraction = _burnIn
       estimator = essEstimator
       output = variableName(posteriorSamples) + ESS_SUFFIX
-    ]).run
+    ]
+    essComputer.run
     essResults.closeAll
+    // consolidate all ESS results in one
+    val outputFile = new File(outputFolder(Output::ess), essComputer.output)
+    for (line : BriefIO.readLines(outputFile).indexCSV)
+      results.child(Output::ess.name).getTabularWriter(Output::allEss.name).write(
+        "variable" -> variableName(posteriorSamples),
+        TidySerializer::VALUE -> line.get(TidySerializer::VALUE)
+      )
   }
   
   def static String variableName(File csvFile) {

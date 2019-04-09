@@ -30,7 +30,6 @@ import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.runtime.internals.objectgraph.GraphAnalysis
 import blang.mcmc.internals.SamplerBuilderOptions
 import com.google.common.base.Stopwatch
-import briefj.BriefIO
 import java.util.concurrent.TimeUnit
 import java.util.List
 import java.util.ArrayList
@@ -89,7 +88,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
    * - simplified: just one args, the model, rest is read from config file
    * - standard
    */
-  def public static Arguments parseArguments(String ... args) {
+  def static Arguments parseArguments(String ... args) {
     if (useSimplifiedArguments(args)) {
       // try to read in (else empty)
       val File configFile = new File(CONFIG_FILE_NAME)
@@ -110,7 +109,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
       return Posix.parse(args)
     }
   }
-  val public static final String CONFIG_FILE_NAME = "configuration.txt"
+  val public static String CONFIG_FILE_NAME = "configuration.txt"
   
   def private static boolean useSimplifiedArguments(String ... args) {
     return args.size == 1
@@ -159,7 +158,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     }
   }
   
-  public static class NotDAG extends RuntimeException { new(String s) { super(s) }}
+  static class NotDAG extends RuntimeException { new(String s) { super(s) }}
   
   def preprocess() {
     samplers.monitoringStatistics = results.child(MONITORING_FOLDER) 
@@ -231,10 +230,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
     
   def void reportTiming(Stopwatch preprocessingTime, Stopwatch samplingTime) {
-    BriefIO.write(results.child(MONITORING_FOLDER).getFileInResultFolder(RUNNING_TIME_SUMMARY), 
-      "preprocessingTime_ms\t" + preprocessingTime.elapsed(TimeUnit.MILLISECONDS) + "\n" +
-      "samplingTime_ms\t" + samplingTime.elapsed(TimeUnit.MILLISECONDS) + "\n"
-    )
+    val writer = results.child(MONITORING_FOLDER).getAutoClosedBufferedWriter(RUNNING_TIME_SUMMARY)
+    writer.append("preprocessingTime_ms\t" + preprocessingTime.elapsed(TimeUnit.MILLISECONDS) + "\n")
+    writer.append("samplingTime_ms\t" + samplingTime.elapsed(TimeUnit.MILLISECONDS) + "\n")
   }
   
   public val static String RUNNING_TIME_SUMMARY = "runningTimeSummary.tsv"

@@ -73,7 +73,7 @@ public class ComputeESS extends Experiment
     BufferedWriter writer = results.getAutoClosedBufferedWriter(output);
     {
       List<String> header = new ArrayList<>(samples.keySet().iterator().next().keySet());
-      header.add("ess");
+      header.add(TidySerializer.VALUE);
       writer.append(CSV.toCSV(header) + "\n");
     }
     for (Map<String,String> key : samples.keySet()) {

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -85,7 +86,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       if (round.isAdapt) 
         adapt(round.roundIndex == rounds.size() - 2);
       results.flushAll();
-      System.out.popIndent();
+      long roundTime = System.out.popIndent().watch.elapsed(TimeUnit.MILLISECONDS);
+      reportRoundTiming(round, roundTime);
     }
   }
   
@@ -95,15 +97,15 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     for (int i = 0; i < temperingParameters.size(); i++)  
     {
       densitySerializer.serialize(states[i].logDensity(), SampleOutput.allLogDensities.toString(), 
-          Pair.of(sampleColumn, iter), 
-          Pair.of(Column.chain, i));
+        Pair.of(sampleColumn, iter), 
+        Pair.of(Column.chain, i));
       final double energy = -states[i].preAnnealedLogLikelihood();
       densitySerializer.serialize(energy, SampleOutput.energy.toString(), 
-          Pair.of(sampleColumn, iter), 
-          Pair.of(Column.chain, i));
+        Pair.of(sampleColumn, iter), 
+        Pair.of(Column.chain, i));
     }
     densitySerializer.serialize(getTargetState().logDensity(), SampleOutput.logDensity.toString(), 
-        Pair.of(sampleColumn, iter));
+      Pair.of(sampleColumn, iter));
   }
   
   private void adapt(boolean finalAdapt)
@@ -141,6 +143,15 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       annealingParamTabularWriter.write(isAdapt, r, c,
         Pair.of(TidySerializer.VALUE, temperingParameters.get(i)));
     }
+  }
+  
+  private void reportRoundTiming(Round round, long time) 
+  {
+    writer(MonitoringOutput.roundTimings).write(
+      Pair.of(Column.round, round.roundIndex),
+      Pair.of(Column.isAdapt, round.isAdapt),
+      Pair.of(TidySerializer.VALUE, time)
+    );
   }
 
   @Override
@@ -241,7 +252,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   private BlangTidySerializer tidySerializer;
   private BlangTidySerializer densitySerializer;
   private BlangTidySerializer swapIndicatorSerializer; 
-  private void initSerializers()
+  protected void initSerializers()
   {
     tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
@@ -350,7 +361,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   public static enum MonitoringOutput
   {
     swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, 
-    estimatedLambda, actualTemperedRestarts, asymptoticRoundTripBound
+    estimatedLambda, actualTemperedRestarts, asymptoticRoundTripBound, roundTimings
   }
   
   public static enum SampleOutput
