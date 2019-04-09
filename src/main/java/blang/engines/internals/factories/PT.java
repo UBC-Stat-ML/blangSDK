@@ -65,7 +65,6 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Override
   public void performInference() 
   {
-
     List<Round> rounds = rounds(nScans, adaptFraction);
     int scanIndex = 0;
     for (Round round : rounds)
@@ -152,6 +151,12 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       Pair.of(Column.isAdapt, round.isAdapt),
       Pair.of(TidySerializer.VALUE, time)
     );
+    if (!round.isAdapt) {
+      try {
+        results.child(Runner.MONITORING_FOLDER).getAutoClosedBufferedWriter(Runner.RUNNING_TIME_SUMMARY)
+          .append("postAdaptTime_ms\t" + time + "\n");
+      } catch (Exception e) {}
+    }
   }
 
   @Override
