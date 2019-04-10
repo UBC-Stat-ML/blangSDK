@@ -36,15 +36,18 @@ class DefaultPostProcessor extends PostProcessor {
   public String imageFormat = "pdf"
   
   @Arg            @DefaultValue("0.5")
-  public double burnInFraction = 0.5;
+  public double burnInFraction = 0.5
   
   @Arg(description = "In inches")         
                @DefaultValue("2.0")
-  public double facetHeight = 2.0;
+  public double facetHeight = 2.0
   
   @Arg(description = "In inches")         
               @DefaultValue("4.0")
-  public double facetWidth = 4.0;
+  public double facetWidth = 4.0
+  
+  @Arg       @DefaultValue("true")
+  public boolean runPxviz = true
   
   @Arg                             @DefaultValue("BATCH")
   public EssEstimator essEstimator = EssEstimator.BATCH;
@@ -64,10 +67,10 @@ class DefaultPostProcessor extends PostProcessor {
       return
     }
     
-    try { pxviz } 
-    catch (Exception e) {
-      System.err.println("pxviz needs some setup to be ran 'headless' see error message below")
-    }
+    // Note even catching would not work, using System.exit,
+    // TODO: fix in pxviz via https://stackoverflow.com/questions/5401281/preventing-system-exit-from-api
+    // note comment that the workaround above breaks access to file so need something better clearly
+    if (runPxviz) pxviz   
     
     for (posteriorSamples : BriefFiles.ls(new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER), "csv")) {
       println("Post-processing " + variableName(posteriorSamples))
