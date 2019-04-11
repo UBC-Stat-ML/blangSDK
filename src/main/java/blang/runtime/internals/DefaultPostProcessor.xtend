@@ -116,7 +116,7 @@ class DefaultPostProcessor extends PostProcessor {
       
     simplePlot(new File(monitoringFolder, MonitoringOutput::swapSummaries + ".csv"), Column::round, Column::average)
     
-    for (estimateName : #[MonitoringOutput::estimatedLambda, MonitoringOutput::logNormalizationContantProgress])
+    for (estimateName : #[MonitoringOutput::globalLambda, MonitoringOutput::logNormalizationContantProgress])
       simplePlot(new File(monitoringFolder, estimateName + ".csv"), Column::round, TidySerializer::VALUE)
       
     simplePlot(new File(outputFolder(Output::ess), SampleOutput::energy + ESS_SUFFIX), Column::chain, TidySerializer::VALUE)
@@ -134,6 +134,22 @@ class DefaultPostProcessor extends PostProcessor {
         p <- ggplot(data, aes(x = «Column::round», y = «TidySerializer::VALUE», colour = factor(«Column::chain»))) +
           geom_line() +
           ylab("«stat»") + «scale»
+          theme_bw()
+      ''', "-progress")
+    }
+    
+    for (stat : #[MonitoringOutput::cumulativeLambda, MonitoringOutput::lambdaInstantaneous]) {
+      plot(new File(monitoringFolder, stat + ".csv"), '''
+        data <- data[data$isAdapt=="false",]
+        p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE»)) +
+          geom_line() +
+          ylab("«stat»") + 
+          theme_bw()
+      ''')
+      plot(new File(monitoringFolder, stat + ".csv"), '''
+        p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE», colour = factor(«Column::round»))) +
+          geom_line() +
+          ylab("«stat»") + 
           theme_bw()
       ''', "-progress")
     }

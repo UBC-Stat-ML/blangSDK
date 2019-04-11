@@ -1,5 +1,7 @@
 package blang.engines.internals;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+
 /**
 *
 * Copyright (C) 2012 The Android Open Source Project
@@ -21,7 +23,13 @@ package blang.engines.internals;
 * Performs spline interpolation given a set of control points.
 * @hide
 */
-public abstract class Spline {
+public abstract class Spline implements UnivariateFunction {
+  
+   @Override
+   public double value(double x) {
+     return interpolate(x);
+   }
+  
    /**
     * Interpolates the value of Y = f(X) for given X.
     * Clamps X to the domain of the spline.
@@ -115,9 +123,9 @@ public abstract class Spline {
        return true;
    }
    public static class MonotoneCubicSpline extends Spline {
-       private double[] mX;
-       private double[] mY;
-       private double[] mM;
+       public double[] mX;
+       public double[] mY;
+       public double[] mM;
        public MonotoneCubicSpline(double[] x, double[] y) {
            if (x == null || y == null || x.length != y.length || x.length < 2) {
                throw new IllegalArgumentException("There must be at least two control "
