@@ -78,13 +78,13 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         moveKernel(nPassesPerScan);
         recordEnergyStatistics(densitySerializer, scanIndex);
         recordSamples(scanIndex);
-        swapAndRecordStatistics(scanIndex);
+        if (nChains() > 1)
+          swapAndRecordStatistics(scanIndex);
         scanIndex++;
       }
-      if (nChains() > 1)
+      if (nChains() > 1) { // Note: in last round, this is done only for instrumentation purpose
+        reportAcceptanceRatios(round); 
         reportParallelTemperingDiagnostics(round);
-      reportAcceptanceRatios(round); 
-      { // Note: in last round, this is done only for instrumentation purpose
         MonotoneCubicSpline cumulativeLambdaEstimate = adapt(round.roundIndex == rounds.size() - 2);
         reportLambdaFunctions(round, cumulativeLambdaEstimate);
       }
