@@ -400,6 +400,15 @@ class Examples {
     intRealizationSquared
   )
   
+  public static val largeLambda = 200
+  public val largePoi = add(
+    new Poisson.Builder()
+      .setMean(fixedReal(largeLambda))
+      .setRealization(latentInt)
+        .build, 
+    intRealizationSquared
+  )
+  
   // Test several distributions simultaneously in the context of 
   // prototypical complex models.
   

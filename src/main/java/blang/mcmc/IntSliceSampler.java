@@ -24,7 +24,7 @@ public class IntSliceSampler implements Sampler
   }
   
   private static final int initialWindowSize = 10;
-  private static final int maxNDoublingRounds = 10;
+  private static final int maxNDoublingRounds = 20;
   
   private IntSliceSampler(Integer fixedWindowLeft, Integer fixedWindowRight) 
   {
@@ -91,6 +91,7 @@ public class IntSliceSampler implements Sampler
             throw new RuntimeException(RealSliceSampler.INFINITE_SLICE_MESSAGE);
         }
     }
+    
     
     // shrinkage procedure
     int 

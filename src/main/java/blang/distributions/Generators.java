@@ -298,8 +298,16 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   /** */
   public static int poisson(Random rand, double mean) 
   {
+    if (mean > _poissonSwitchToNormalThreshold) { // this gets slow, mean=524288.0 takes 00:00:00.017; mean = 1.073741824E9 takes00:00:35.639, mean=2.147483648E9 never terminates
+      // use normal approximation
+      double sample = normal(rand, mean, mean);
+      if (sample < 0.0) return 0;
+      if (sample > Integer.MAX_VALUE) throw new RuntimeException("Overflow in Poisson generation");
+      return (int) sample;
+    }
     return new PoissonDistribution(generator(rand), mean, PoissonDistribution.DEFAULT_EPSILON, PoissonDistribution.DEFAULT_MAX_ITERATIONS).sample();
   }
+  public static int _poissonSwitchToNormalThreshold = 500_000;
   
   public static UnorderedPair<Integer,Integer> distinctPair(Random rand, int listSize)
   {
