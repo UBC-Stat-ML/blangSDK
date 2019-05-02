@@ -58,11 +58,12 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg
   public Optional<Double> targetAccept = Optional.empty();
   
+  // TODO: refactor InitType into interface so that this option below can be passed in this way
   @Arg  @DefaultValue({"--nParticles", "100", "--temperatureSchedule.threshold", "0.9"}) // should edit scmDefaults if defaults changed
   public SCM scmInit = scmDefault();
   
   @Arg                       @DefaultValue("SCM")
-  public InitType initialization = InitType.SCM;
+  public InitType initialization = InitType.SCM; 
   
   @Override
   public void performInference() 

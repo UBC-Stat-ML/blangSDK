@@ -26,6 +26,7 @@ import viz.core.Viz
 import java.util.Optional
 
 import blang.runtime.internals.DefaultPostProcessor.Output
+import blang.runtime.internals.ComputeESS.Batch
 
 class DefaultPostProcessor extends PostProcessor {
   
@@ -49,8 +50,8 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg       @DefaultValue("true")
   public boolean runPxviz = true
   
-  @Arg                             @DefaultValue("BATCH")
-  public EssEstimator essEstimator = EssEstimator.BATCH;
+  @Arg                    @DefaultValue("Batch")
+  public EssEstimator essEstimator = new Batch
   
   static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss }
   
