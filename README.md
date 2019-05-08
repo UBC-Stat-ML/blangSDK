@@ -5,7 +5,7 @@ Summary [![Build Status](https://travis-ci.org/UBC-Stat-ML/blangSDK.png?branch=m
 Blang's SDK (Software Development Kit), containing:
 
 - Basic datatypes suitable for sampling such as ``Real``, ``Int``, ``Simplex``, etc.
-- Inference algorithms for such datatypes, such as Sequential Change of Measure and Parallel Tempering.
+- Inference algorithms for such datatypes, such as Sequential Change of Measure and Adaptive Non-Reversible Parallel Tempering.
 - Standard probability distributions.
 - Examples.
 
