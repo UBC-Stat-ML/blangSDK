@@ -8,7 +8,7 @@ mkdir build
 mkdir build/blang
 mkdir build/blang/test
 mkdir build/blang/main
-mkdir build/xtend/main
-mkdir build/xtend/test
+mkdir -p build/xtend/main
+mkdir -p build/xtend/test
 
 echo Done
