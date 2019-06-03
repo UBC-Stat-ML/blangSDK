@@ -56,7 +56,7 @@ public class ComputeESS extends Experiment
   public static class Batch implements EssEstimator 
   {
     @Arg(description = "csv file containing reference values for the mean and sd")
-    public Optional<File> referenceFile;
+    public Optional<File> referenceFile = Optional.empty();
     
     @Arg(description = "Look for this column name for reference mean.") 
                           @DefaultValue("mean")
@@ -83,9 +83,13 @@ public class ComputeESS extends Experiment
       Pair<Double, Double> found = null;
       for (Map<String,String> entry : BriefIO.readLines(referenceFile.get()).indexCSV()) {
         // try to match
+        String meanStr = entry.get(referenceMeanColumn);
+        String sdStr = entry.get(referenceSDColumn);
+        if (meanStr == null || sdStr == null) 
+          throw new RuntimeException("Reference file does not contain expected columns " + referenceMeanColumn + " and " + referenceSDColumn);
         Pair<Double,Double> candidate = Pair.of(
-            Double.parseDouble(entry.get(referenceMeanColumn)), 
-            Double.parseDouble(entry.get(referenceSDColumn)));
+            Double.parseDouble(meanStr), 
+            Double.parseDouble(sdStr));
         entry.keySet().retainAll(keys.keySet());
         if (entry.equals(keys))
         {
@@ -102,6 +106,7 @@ public class ComputeESS extends Experiment
   
   public static class ACT implements EssEstimator 
   { 
+    @SuppressWarnings("deprecation")
     @Override
     public double ess(Map<String,String> key, List<Double> samples) 
     { 
@@ -111,6 +116,7 @@ public class ComputeESS extends Experiment
   
   public static class AR implements EssEstimator 
   { 
+    @SuppressWarnings("deprecation")
     @Override
     public double ess(Map<String,String> key, List<Double> samples) 
     { 
