@@ -54,7 +54,7 @@ class DefaultPostProcessor extends PostProcessor {
   public EssEstimator essEstimator = new Batch
   
   @Arg(description = "A directory containing means and variance estimates from a long run, used to improve ESS estimates; usually of the form /path/to/[longRunId].exec/summaries")
-  public Optional<File> referenceSamples = Optional.empty // we make it optional to cover case when called by Runner
+  public Optional<File> referenceSamples = Optional.empty 
   
   static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss }
   
