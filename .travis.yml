@@ -2,5 +2,5 @@ language: java
 script:
    - ./gradlew check -i --stacktrace
 jdk:
-  - oraclejdk8
+  - oraclejdk9
 install: travis_wait 30 ./gradlew assemble -i --stacktrace
