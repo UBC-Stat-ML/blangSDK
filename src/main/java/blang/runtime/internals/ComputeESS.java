@@ -7,10 +7,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.eclipse.xtext.xbase.lib.Pair;
 
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
+import blang.inits.Implementations;
 import blang.inits.experiments.Experiment;
 import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.runtime.Runner;
@@ -40,22 +44,86 @@ public class ComputeESS extends Experiment
   @Arg     @DefaultValue("ess.csv")
   public String output = "ess.csv";
   
-  @Arg                          @DefaultValue("BATCH")
-  public EssEstimator estimator = EssEstimator.BATCH;
+  @Arg                 @DefaultValue("Batch")
+  public EssEstimator estimator = new Batch();
   
-  public static enum EssEstimator { 
-    BATCH { 
-      public double ess(List<Double> samples) { return bayonet.math.EffectiveSampleSize.ess(samples);}
-    }, 
-    ACT { @SuppressWarnings("deprecation")
-      public double ess(List<Double> samples) { return bayonet.math.AutoCorrTime.ess(samples);}
-    },
-    AR { @SuppressWarnings("deprecation")
-      public double ess(List<Double> samples) { return bayonet.coda.EffectiveSize.effectiveSize(samples);}
-    };
-    public abstract double ess(List<Double> samples);
+  @Implementations({Batch.class, ACT.class, AR.class})
+  public static interface EssEstimator 
+  {
+    public double ess(Map<String,String> key, List<Double> samples);
   }
+  
+  public static class Batch implements EssEstimator 
+  {
+    @Arg(description = "csv file containing reference values for the mean and sd")
+    public Optional<File> referenceFile = Optional.empty();
+    
+    @Arg(description = "Look for this column name for reference mean.") 
+                          @DefaultValue("mean")
+    public String referenceMeanColumn = "mean";
 
+    @Arg(description = "Look for this column name for reference sd.") 
+                        @DefaultValue("sd")
+    public String referenceSDColumn = "sd";
+    
+    @Override
+    public double ess(Map<String,String> key, List<Double> samples) 
+    {
+      if (referenceFile.isPresent()) {
+        Pair<Double,Double> meanAndSD = findMeanSD(key);
+        return bayonet.math.EffectiveSampleSize.ess(samples, meanAndSD.getKey(), meanAndSD.getValue());
+      } 
+      else
+        return bayonet.math.EffectiveSampleSize.ess(samples);
+    }
+
+    // Note: do not cache this, since it is used with different files in DefaultPostProcessor
+    private Pair<Double, Double> findMeanSD(Map<String, String> keys) 
+    {
+      Pair<Double, Double> found = null;
+      for (Map<String,String> entry : BriefIO.readLines(referenceFile.get()).indexCSV()) {
+        // try to match
+        String meanStr = entry.get(referenceMeanColumn);
+        String sdStr = entry.get(referenceSDColumn);
+        if (meanStr == null || sdStr == null) 
+          throw new RuntimeException("Reference file does not contain expected columns " + referenceMeanColumn + " and " + referenceSDColumn);
+        Pair<Double,Double> candidate = Pair.of(
+            Double.parseDouble(meanStr), 
+            Double.parseDouble(sdStr));
+        entry.keySet().retainAll(keys.keySet());
+        if (entry.equals(keys))
+        {
+          if (found != null)
+            throw new RuntimeException("Duplicate reference for " + keys);
+          found = candidate;
+        }
+      }
+      if (found == null) 
+        throw new RuntimeException("Key not found in reference file: " + keys);
+      return found;
+    }
+  }
+  
+  public static class ACT implements EssEstimator 
+  { 
+    @SuppressWarnings("deprecation")
+    @Override
+    public double ess(Map<String,String> key, List<Double> samples) 
+    { 
+      return bayonet.math.AutoCorrTime.ess(samples);
+    }
+  }
+  
+  public static class AR implements EssEstimator 
+  { 
+    @SuppressWarnings("deprecation")
+    @Override
+    public double ess(Map<String,String> key, List<Double> samples) 
+    { 
+      return bayonet.coda.EffectiveSize.effectiveSize(samples);
+    }
+  }
+  
   @Override
   public void run() { try { computeEss(); } catch (Exception e) { throw new RuntimeException(e); } }
     
@@ -66,6 +134,8 @@ public class ComputeESS extends Experiment
     Map<Map<String,String>,List<Double>> samples = new LinkedHashMap<>();
     for (Map<String,String> line : BriefIO.readLines(inputFile).indexCSV()) {
       double value = Double.parseDouble(line.get(samplesColumn).trim());
+      if (!line.containsKey(samplesColumn) || !line.containsKey(iterationIndexColumn))
+        throw new RuntimeException("File " + inputFile.getAbsolutePath() + " should contain columns named " + samplesColumn + " and " + iterationIndexColumn);
       line.remove(samplesColumn);
       line.remove(iterationIndexColumn);
       BriefMaps.getOrPutList(samples, line).add(value);
@@ -78,7 +148,7 @@ public class ComputeESS extends Experiment
     }
     for (Map<String,String> key : samples.keySet()) {
       List<Double> curSamples = samples.get(key);
-      double ess = estimator.ess(
+      double ess = estimator.ess(key, 
           curSamples.subList((int) (burnInFraction * curSamples.size()), curSamples.size())
             .stream().map(x -> Math.pow(x, moment))
             .collect(Collectors.toList())); 

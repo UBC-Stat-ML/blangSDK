@@ -26,6 +26,7 @@ import viz.core.Viz
 import java.util.Optional
 
 import blang.runtime.internals.DefaultPostProcessor.Output
+import blang.runtime.internals.ComputeESS.Batch
 
 class DefaultPostProcessor extends PostProcessor {
   
@@ -49,8 +50,11 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg       @DefaultValue("true")
   public boolean runPxviz = true
   
-  @Arg                             @DefaultValue("BATCH")
-  public EssEstimator essEstimator = EssEstimator.BATCH;
+  @Arg                    @DefaultValue("Batch")
+  public EssEstimator essEstimator = new Batch
+  
+  @Arg(description = "A directory containing means and variance estimates from a long run, used to improve ESS estimates; usually of the form /path/to/[longRunId].exec/summaries")
+  public Optional<File> referenceSamples = Optional.empty 
   
   static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss }
   
@@ -212,6 +216,8 @@ class DefaultPostProcessor extends PostProcessor {
   def void computeEss(File posteriorSamples, File essDirectory) {
     val _burnIn = burnInFraction
     val essResults = new ExperimentResults(essDirectory)
+    if (essEstimator instanceof Batch && referenceSamples.isPresent) 
+      (essEstimator as Batch).referenceFile = Optional.of(new File(referenceSamples.get, variableName(posteriorSamples) + SUMMARY_SUFFIX))
     val essComputer = new ComputeESS => [
       inputFile = posteriorSamples
       results = essResults
@@ -369,6 +375,8 @@ class DefaultPostProcessor extends PostProcessor {
       ggsave("«imageFile.absolutePath»", limitsize = F, height = verticalSize, width = horizontalSize)
     ''')
   }
+  
+  val static SUMMARY_SUFFIX = "-summary.csv"
   
   def summary(File posteriorSamples, Map<String, Class<?>> types) {
     val directory = outputFolder(Output::summaries)
