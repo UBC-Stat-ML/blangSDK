@@ -29,30 +29,30 @@ public class TestMoments
   static Random random = new Random(1);
   static Examples examples = new Examples();
   
-//  @Test
-//  public void beta() 
-//  {
-//    test(10_000_000, (Beta) examples.sparseBeta.model);
-//  }
-//  
-//  @Test
-//  public void negBin()
-//  {
-//    test(10_000_000, (NegativeBinomial) examples.negBinomial.model);
-//    test(10_000_000, (NegativeBinomialMeanParam) examples.negBinomial_mv.model);
-//  }
-//  
-//  @Test
-//  public void gamma()
-//  {
-//    test(10_000_000, (GammaMeanParam) examples.gammaMeanParam.model);  
-//  }
-//  
-//  @Test
-//  public void yule()
-//  {
-//    test(10_000_000, (YuleSimon) examples.yuleSimon.model);  
-//  }
+  @Test
+  public void beta() 
+  {
+    test(10_000_000, (Beta) examples.sparseBeta.model);
+  }
+  
+  @Test
+  public void negBin()
+  {
+    test(10_000_000, (NegativeBinomial) examples.negBinomial.model);
+    test(10_000_000, (NegativeBinomialMeanParam) examples.negBinomial_mv.model);
+  }
+  
+  @Test
+  public void gamma()
+  {
+    test(10_000_000, (GammaMeanParam) examples.gammaMeanParam.model);  
+  }
+  
+  @Test
+  public void yule()
+  {
+    test(10_000_000, (YuleSimon) examples.yuleSimon.model);  
+  }
   
   @Test
   public void bnb()
