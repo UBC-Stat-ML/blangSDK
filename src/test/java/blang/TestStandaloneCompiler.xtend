@@ -18,27 +18,36 @@ class TestStandaloneCompiler {
   
   @Test
   def void test() {
-    val root = folder.newFolder
+    val root = new File("temp") => [mkdir]
+      //folder.newFolder
     
     val blangFile = new File(root, "MyModel.bl")
     BriefIO::write(blangFile, '''
       package pack
       import pack.child.Util
+      import conifer.*
+      import static conifer.Utils.*
       import subdir.JavaFile
       model MyModel {
+        param Integer i ?: {
+          val UnrootedTree tree = null
+          0
+        }
         laws {}
       }
     ''')
-    val xtendFile = new File(root, "Util.xtend")
-    BriefIO::write(xtendFile, '''
+    
+    BriefIO::write(new File(root, "dependencies.txt"), '''
+    ca.ubc.stat:conifer:2.0.4
+    ''')
+    
+    BriefIO::write(new File(root, "Util.xtend"), '''
       package pack.child
       class Util {
         
       }
     ''')
-    val subdir = new File(root, "subdir")
-    val javaFile = new File(subdir, "JavaFile.java")
-    BriefIO::write(javaFile, '''
+    BriefIO::write(new File(new File(root, "subdir"), "JavaFile.java"), '''
       package subdir;
       public class JavaFile {
         
