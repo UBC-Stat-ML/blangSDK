@@ -29,6 +29,20 @@ import briefj.BriefStrings;
 import briefj.repo.RepositoryUtils;
 import briefj.run.Results;
 
+/**
+ * See Main.xtend for documentation.
+ * 
+ * Under the hood, this works as follows:
+ * 
+ * - Create, if it does not exists, an invisible compilation folder
+ * - Populate this a minimum set of gradle files adapted from the blangSDK repo hosting this code
+ * - Look for a folder called 'dependencies' 
+ * - Sync the bl, java, and xtend files from the root of where the command is called, excluding 
+ *   those in folder "results", "input", and the compilation folder. This also creates directories in 
+ *   the compilation folder as needed.
+ * - Call gradlew in the compilation folder
+ * - Start a new java process for Runner with the newly compiled model.
+ */
 public class StandaloneCompiler  {
   
   private final File blangHome;
@@ -95,7 +109,7 @@ public class StandaloneCompiler  {
    * @return classpath-formatted list of jars created or that the build task depends on
    */
   public static String compile(File folder, String projectName) throws BinaryExecutionException {
-    runGradle("build", folder);
+    runGradle("assemble", folder);
     Path justCompiled = Paths.get(folder.getPath(), "build", "libs", PROJECT_NAME + ".jar");
     if (!Files.exists(justCompiled)) throw new RuntimeException("Not found: " + justCompiled);
     return "" +
@@ -110,7 +124,7 @@ public class StandaloneCompiler  {
     Command gradleCmd = 
         Command.byPath(new File(folder, "gradlew"))
           .appendArg(gradleTaskName)
-          .appendArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
+          //.appendArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
           .ranIn(folder)
           .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
