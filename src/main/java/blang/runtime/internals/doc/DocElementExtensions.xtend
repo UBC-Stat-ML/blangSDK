@@ -85,7 +85,7 @@ class DocElementExtensions {
     return if (file.exists) file else null
   }
   
-  def private static File findRepositoryRoot(Class<?> code) {
+  def static File findRepositoryRoot(Class<?> code) {
     return new File(RepositoryUtils::findRepository(findSourceDir(code)).localAddress)
   }
   

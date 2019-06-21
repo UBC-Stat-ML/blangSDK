@@ -63,10 +63,6 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   @Arg
   public SamplerBuilderOptions samplers = new SamplerBuilderOptions
   
-  @Arg(description = "Version of the blang SDK to use (see https://github.com/UBC-Stat-ML/blangSDK/releases), of the form of a git tag x.y.z where x >= 2. If omitted, use the local SDK's 'master' version.")
-  public Optional<String> version // Only used when called from Main 
-  public static final String VERSION_FIELD_NAME = "version" 
-  
   @Arg                         @DefaultValue("false")
   public boolean treatNaNAsNegativeInfinity = false;
   
@@ -100,7 +96,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         }
       }
       // add the one argument (after fixing it)
-      val String modelString = fixModelBuilderArgument(args.get(0))
+      val String modelString = fixModelBuilderArgument(args.get(0).replace(".bl", ""))
       fromFile.setOrCreateChild("model", Collections.singletonList(modelString))
       fromFile.getOrCreateDesc(Collections.singletonList("experimentConfigs")).setOrCreateChild("recordGitInfo", Collections.singletonList("false"));
       return fromFile
