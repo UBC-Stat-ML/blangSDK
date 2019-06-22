@@ -15,8 +15,9 @@ model ContinuousUniform {
       if (max - min <= 0.0) return NEGATIVE_INFINITY
       return - log(max - min)
     }
-    indicator(realization, min, max) {
-      min <= realization && realization <= max
+    logf(realization, min, max) {
+      if (min <= realization && realization <= max) return 0.0
+      else return NEGATIVE_INFINITY
     }
   }
   

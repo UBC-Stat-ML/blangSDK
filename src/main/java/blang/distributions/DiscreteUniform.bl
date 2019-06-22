@@ -16,9 +16,10 @@ model DiscreteUniform {
       if (maxExclusive - minInclusive <= 0.0) return NEGATIVE_INFINITY
       return -log(maxExclusive - minInclusive)
     }
-    indicator(realization, minInclusive, maxExclusive) {
-      minInclusive <= realization &&
-      realization < maxExclusive
+    logf(realization, minInclusive, maxExclusive) {
+      if (minInclusive <= realization &&
+      realization < maxExclusive) return 0.0
+      else return NEGATIVE_INFINITY
     }
   }
   

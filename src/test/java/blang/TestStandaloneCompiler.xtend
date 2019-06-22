@@ -18,8 +18,7 @@ class TestStandaloneCompiler {
   
   @Test
   def void test() {
-    val root = new File("temp") => [mkdir]
-      //folder.newFolder
+    val root = folder.newFolder
     
     val blangFile = new File(root, "MyModel.bl")
     BriefIO::write(blangFile, '''
@@ -58,11 +57,11 @@ class TestStandaloneCompiler {
     
     // try introducing an error
     BriefIO::write(blangFile, '''
-      Chtulu
+      Cthulhu
     ''')
     
     val errored = compiler(root, "pack.MyModel").call
-    Assert::assertTrue(errored.contains("Chtulu"))
+    Assert::assertTrue(errored.contains("Cthulhu"))
     Assert::assertTrue(errored.contains("ERROR"))
   }
   
