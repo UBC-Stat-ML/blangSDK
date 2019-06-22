@@ -66,8 +66,10 @@ public class StandaloneCompiler  {
     List<String> result = new ArrayList<>();
     File dependencies = new File("dependencies.txt");
     if (dependencies.exists())
-      for (String line : BriefIO.readLines(dependencies))
-        result.add(line.trim());
+      for (String line : BriefIO.readLines(dependencies)) {
+    	if (line != null && !line.isEmpty())
+			result.add(line.trim());
+      }
     return result;
   }
 
