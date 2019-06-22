@@ -20,6 +20,9 @@ repositories {
   maven {
     url "https://www.stat.ubc.ca/~bouchard/maven/"
   }
+  maven {
+    url "https://jitpack.io"
+  }
   jcenter()
 }
 
@@ -80,9 +83,9 @@ def createScript(project, mainClass, name) {
 }
 
 // The next two lines disable the tasks for the primary main which by default
-// generates a script with a name matching the project name. 
+// generates a script with a name matching the project name.
 // You can leave them enabled but if so you'll need to define mainClassName
-// And you'll be creating your application scripts two different ways which 
+// And you'll be creating your application scripts two different ways which
 // could lead to confusion
 startScripts.enabled = true
 run.enabled = true
@@ -109,7 +112,7 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
-// Put before TRIM line otherwise large file gets generated 
+// Put before TRIM line otherwise large file gets generated
 configurations.archives.with {
   artifacts.remove artifacts.find { it.file =~ 'tar' }
   artifacts.remove artifacts.find { it.file =~ 'zip' }
