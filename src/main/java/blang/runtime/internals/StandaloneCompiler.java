@@ -68,17 +68,17 @@ public class StandaloneCompiler  {
     List<String> result = new ArrayList<>();
     File dependencies = new File("dependencies.txt");
     Pattern depFormat = Pattern.compile("^[^:]+[:][^:]+[:][^:]+$");
-	if (dependencies.exists())
+    if (dependencies.exists())
       for (String line : BriefIO.readLines(dependencies)) {
-    	if (line == null || line.isEmpty())
-    	  continue;
-    	line.trim();
-    	Matcher m = depFormat.matcher(line);
-    	if (m.find()) {
-    	  result.add(line);
-    	} else {
-    	  throw new RuntimeException("Invalid depedencies.txt format: " + line);
-    	}
+    	  line.trim();
+    	  if (line == null || line.isEmpty())
+    	    continue;
+    	  Matcher m = depFormat.matcher(line);
+    	  if (m.find()) {
+    	    result.add(line);
+    	  } else {
+    	    throw new RuntimeException("Invalid depedencies.txt format: " + line);
+    	  }
       }
     return result;
   }
