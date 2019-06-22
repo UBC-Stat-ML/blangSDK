@@ -14,6 +14,8 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -31,29 +33,29 @@ import briefj.run.Results;
 
 /**
  * See Main.xtend for documentation.
- * 
+ *
  * Under the hood, this works as follows:
- * 
+ *
  * - Create, if it does not exists, an invisible compilation folder
  * - Populate this a minimum set of gradle files adapted from the blangSDK repo hosting this code
- * - Look for a folder called 'dependencies' 
- * - Sync the bl, java, and xtend files from the root of where the command is called, excluding 
- *   those in folder "results", "input", and the compilation folder. This also creates directories in 
+ * - Look for a folder called 'dependencies'
+ * - Sync the bl, java, and xtend files from the root of where the command is called, excluding
+ *   those in folder "results", "input", and the compilation folder. This also creates directories in
  *   the compilation folder as needed.
  * - Call gradlew in the compilation folder
  * - Start a new java process for Runner with the newly compiled model.
  */
 public class StandaloneCompiler  {
-  
+
   private final File blangHome;
   private final File projectHome;
   private final File compilationFolder;
   private final File excludedInputFolder; // in Silico, if an input node is itself in Blang, we want to avoid compiling it again
   private final Path srcFolder;
   private final List<String> dependencies = loadDependencies();
-  
+
   public StandaloneCompiler() {
-    
+
     this.blangHome = findBlangHome();
     this.projectHome = new File(".");
     this.compilationFolder = new File(COMPILATION_DIR_NAME);
@@ -61,19 +63,29 @@ public class StandaloneCompiler  {
     this.srcFolder = Paths.get(compilationFolder.getPath(), "src", "main", "java");
     init();
   }
-  
+
   private List<String> loadDependencies() {
-    List<String> result = new ArrayList<>();
-    File dependencies = new File("dependencies.txt");
-    if (dependencies.exists())
-      for (String line : BriefIO.readLines(dependencies))
-        result.add(line.trim());
-    return result;
-  }
+     List<String> result = new ArrayList<>();
+     File dependencies = new File("dependencies.txt");
+     Pattern depFormat = Pattern.compile("^[^:]+[:][^:]+[:][^:]+$");
+     if (dependencies.exists())
+       for (String line : BriefIO.readLines(dependencies)) {
+           line = line.trim();
+           if (line == null || line.isEmpty())
+             continue;
+           Matcher m = depFormat.matcher(line);
+           if (m.find()) {
+             result.add(line);
+           } else {
+             throw new RuntimeException("Invalid depedencies.txt format: " + line);
+           }
+       }
+     return result;
+   }
 
   @Override
   public String toString() {
-    return 
+    return
       "Blang home folder: " + blangHome.getAbsolutePath() + "\n" +
       "Project folder: " + compilationFolder.getAbsolutePath();
   }
@@ -89,7 +101,7 @@ public class StandaloneCompiler  {
       throw new RuntimeException("Blang home cannot be located.");
     }
   }
-  
+
   public Repository getBlangSDKRepository() {
     try {
       return new FileRepository(new File(blangHome, ".git"));
@@ -97,15 +109,15 @@ public class StandaloneCompiler  {
       throw new RuntimeException(e);
     }
   }
-  
+
   final static String BUILD_FILE = "build.gradle";
-  
+
   public String compileProject() {
     return compile(compilationFolder, COMPILATION_DIR_NAME);
   }
-  
+
   /**
-   * 
+   *
    * @return classpath-formatted list of jars created or that the build task depends on
    */
   public static String compile(File folder, String projectName) throws BinaryExecutionException {
@@ -114,14 +126,14 @@ public class StandaloneCompiler  {
     if (!Files.exists(justCompiled)) throw new RuntimeException("Not found: " + justCompiled);
     return "" +
         parseClasspath(runGradle("printClasspath", folder)) + // dependencies
-        File.pathSeparator +                             
+        File.pathSeparator +
                                                       // plus newly compiled file:
         justCompiled.toAbsolutePath();
   }
-  
-  
+
+
   private static String runGradle(String gradleTaskName, File folder) throws BinaryExecutionException  {
-    Command gradleCmd = 
+    Command gradleCmd =
         Command.byPath(new File(folder, "gradlew"))
           .appendArg(gradleTaskName)
           //.appendArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
@@ -129,7 +141,7 @@ public class StandaloneCompiler  {
           .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
   }
-  
+
   public void runCompiledModel(String classpath, String [] args) {
     Command runnerCmd = javaCommand()
         .withStandardOutMirroring()
@@ -141,19 +153,19 @@ public class StandaloneCompiler  {
     }
     Command.call(runnerCmd);
   }
-  
+
   public static Command javaCommand()
   {
     Command javaCmd = Command.byPath(Paths.get(System.getProperty("java.home"), "bin", "java").toFile());
-    
+
     // get Xmx options such as -Xmx1g, etc
     for (String jvmArgument : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
       javaCmd = javaCmd.appendArg(jvmArgument);
     }
-    
+
     return javaCmd;
   }
-  
+
   private static String parseClasspath(String gradleOutput) {
     List<String> items = new ArrayList<>();
     for (String line : gradleOutput.split("\\r?\\n"))
@@ -165,20 +177,20 @@ public class StandaloneCompiler  {
   }
 
   private void init() {
-    
-    try { 
+
+    try {
       setupBuildFiles();
       Files.createDirectories(srcFolder);
       // update
-      Files.walkFileTree(projectHome.toPath(), new FileTransferProcessor(projectHome.toPath(), srcFolder));  
+      Files.walkFileTree(projectHome.toPath(), new FileTransferProcessor(projectHome.toPath(), srcFolder));
       // remove deleted
       Files.walkFileTree(srcFolder, new FileRemoveProcessor(projectHome.toPath(), srcFolder));
     }
     catch (Exception e) { throw new RuntimeException(e); }
   }
-  
+
   private static final PathMatcher BLANG_MATCHER = FileSystems.getDefault().getPathMatcher("glob:**.{java,bl,xtend}");
-  
+
   class FileTransferProcessor extends SimpleFileVisitor<Path> {
     final Path fromRoot, toRoot;
     public FileTransferProcessor(Path fromRoot, Path toRoot) {
@@ -197,7 +209,7 @@ public class StandaloneCompiler  {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-      if (dir.endsWith(COMPILATION_DIR_NAME) || 
+      if (dir.endsWith(COMPILATION_DIR_NAME) ||
           dir.normalize().equals(fromRoot.resolve(Results.DEFAULT_POOL_NAME).normalize()) ||
           dir.normalize().equals(excludedInputFolder.toPath().normalize())) {
         return FileVisitResult.SKIP_SUBTREE;
@@ -208,13 +220,13 @@ public class StandaloneCompiler  {
         return FileVisitResult.CONTINUE;
       }
     }
-    
+
     private Path targetPath(Path file) {
       Path suffix = fromRoot.relativize(file);
       return toRoot.resolve(suffix);
     }
   }
-  
+
   class FileRemoveProcessor extends SimpleFileVisitor<Path> {
     final Path fromRoot, toRoot;
     public FileRemoveProcessor(Path fromRoot, Path toRoot) {
@@ -230,7 +242,7 @@ public class StandaloneCompiler  {
       }
       return FileVisitResult.CONTINUE;
     }
-    
+
     private Path originalPath(Path file) {
       Path suffix = toRoot.relativize(file);
       return fromRoot.resolve(suffix);
@@ -266,9 +278,9 @@ public class StandaloneCompiler  {
     if (!settings.exists())
       BriefIO.write(settings, "rootProject.name = \"" + PROJECT_NAME + "\"");
   }
-  
+
   public static final String PROJECT_NAME = "temporary";
-  
+
   private static enum Directive {
     EXTRACT_VERSION {
       @Override
