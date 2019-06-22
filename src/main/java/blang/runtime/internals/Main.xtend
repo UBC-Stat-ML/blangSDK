@@ -1,69 +1,85 @@
 package blang.runtime.internals
 
 import binc.Command.BinaryExecutionException
-import java.util.Optional
-import blang.inits.parsing.Arguments
-import blang.runtime.Runner 
-import blang.inits.Creators
-import com.google.inject.TypeLiteral
-import blang.runtime.internals.Versions.BadVersion
 import java.io.File
 
 class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
 
+  val static infoMessage = '''
+  
+                         BLANG COMMAND LINE INTERFACE
+  
+  DESCRIPTION
+  
+    Blang is a language and software development kit for doing Bayesian analysis.
+    See https://www.stat.ubc.ca/~bouchard/blang/ for documentation, including 
+    alternative ways to use blang (graphical interface and gradle integration).
+    
+  BASIC USAGE
+  
+    To approximate the posterior distribution of a Bayesian model, follow these steps:
+  
+    - Create an empty project directory.
+    - Create a file with a .bl extension in the project directory, say "Doomsday.bl".
+    - Write a model in the Blang language in this file, for example:
+        model Doomsday {
+          random RealVar z
+          random RealVar y
+          param RealVar rate
+          laws {
+            z | rate ~ Exponential(rate)
+            y | z ~ ContinuousUniform(0.0, z)
+          }
+        }
+    - Call "blang --model Doomsday --model.rate 1.0 --model.y 1.2 --model.z NA" from 
+      the root of the project directory.
+    - The results can be found in "results/latest"
+    
+  OPTIONS
+  
+    A wide range of command line options are available, for example to select a different
+    inference engine, tune inference, configure data input, select output format,  
+    post-process the samples, etc. 
+    
+    To obtain a list of options, append "--help" to the command line call.
+    
+  DEPENDENCIES
+  
+    To import external packages and their transitive closures:
+    
+    - Create a file called "dependencies.txt" at the root of the project directory.
+    - Each line in this file should specify a dependency in the format 
+      "[group]:[artefact]:[version]"
+    
+  SUPPORTING FUNCTIONS, TYPES, SUBMODELS
+  
+    - All the files with extension .bl/.java/.xtend under the work directory are 
+      compiled (incrementally).
+    - For java files the file should be placed in a directory structure mirroring 
+      the package. For example, a Java in package "my.pack" should be in 
+      [project directory]/my/pack/File.java
+      The same is not mandatory for xtend and bl files but we recommend to follow 
+      this convention nonetheless. 
+  '''
+
   def static void main(String[] args) {
+    
+    if (args.length === 0) {
+      System.out.println(infoMessage)
+      System.exit(1);
+    }
     
     if (new File("build.gradle").exists) {
       System.err.println("It appears the folder already contains gradle build architecture. Use those instead of the blang command.")
       System.exit(1);
     }
     
-    // read args to find version, if specified
-    val Optional<String> requestedVersion = requestedVersion(args)
-    
-    // check that the tag is not too ancient (to avoid absorbing states)
-    // TODO
-    
-    // TODO: test case to check integrity of git tag and build file
-    
-    // TODO Versions::updateIfNeeded should be aware of the version bounds? otherwise will print invalid tags!
-    
-    /*
-     * TODO: change so that the repo is not actually changed, create a compilation pool instead
-     * 
-     * TODO: Versions::updateIfNeeded is inefficient in the sense that any run which is not calling the 
-     * version produced by the call of installDist initially made by the user will result in starting a 
-     * child process.. maybe that's ok?
-     * 
-     * TODO: Perhaps move to deamonized architecture?
-     * 
-     * TODO: can for sure do some caching: after compilation, keep the produced jar + list of paths for the 
-     * gradle-cached dependencies
-     */
-     
-    /*
-     * TODO: use https://docs.gradle.org/current/userguide/embedding.html
-     */
-    
-    // call Versions::updateIfNeeded(..)
     val StandaloneCompiler compiler = new StandaloneCompiler
-    
-    try {
-      Versions::updateIfNeeded(requestedVersion, compiler.blangSDKRepository, compiler.getBlangRestarter(args))
-    } catch (BinaryExecutionException bee) {
-      // don't print: mirroring showed it already
-      exitWithError
-    } catch (BadVersion bv) {
-      System.err.println(bv.message)
-      exitWithError
-    }
-    
-    println("Blang SDK version " + Versions::resolveVersion(requestedVersion, compiler.blangSDKRepository))
-    
+
     val String classpath = try {
       compiler.compileProject()
     } catch (BinaryExecutionException bee) {
-      System.err.println("Compilation error:")
+      System.err.println("Compilation error(s):")
       System.err.println(clean(bee.output.toString()))
       exitWithError
       throw new RuntimeException
@@ -92,21 +108,13 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     System.exit(1)
   }
   
-  def static Optional<String> requestedVersion(String[] strings) {
-    val Arguments parsed = Runner::parseArguments(strings)
-    val Arguments subArg = parsed.child(Runner::VERSION_FIELD_NAME)
-    val TypeLiteral<Optional<String>> optionalStringTypeLit
-     = new TypeLiteral<Optional<String>>() {};
-    return Creators::conventional.init(optionalStringTypeLit, subArg) 
-  }
-  
   def static String clean(String string) {
     val StringBuilder result = new StringBuilder
     for (String line : string.split("\n")) {
-      if (line.contains("FAILED")) {
-        return result.toString
-      }
-      result.append(line.replace(":generateXtextERROR:", "") + "\n")
+      if (line.startsWith("* What went wrong:"))
+        return result.toString();
+      if (!line.startsWith("WARNING:") && !line.startsWith("> Task"))
+        result.append(line.replaceAll("[/].*[/]src[/]main[/]java[/]", "") + "\n") 
     }
     return result.toString()
   }

@@ -1,7 +1,6 @@
 package blang.types.internals
 
 import blang.types.Plated
-import blang.types.Index
 import blang.runtime.internals.objectgraph.SkipDependency
 import java.util.Map
 import java.util.LinkedHashMap
@@ -23,8 +22,7 @@ class PlatedSlice<T> implements Plated<T> {
   @SkipDependency(isMutable = false)  // Otherwise dependency would be too large
   val Plated<T> parent
   
-  override T get(Index<?>... indices) {
-    val Query query = Query::build(indices)
+  override T get(Query query) {
     query.indices.addAll(sliceIndices.indices)
     if (variables.containsKey(query)) {
       return variables.get(query)
@@ -46,5 +44,4 @@ class PlatedSlice<T> implements Plated<T> {
   override String toString() {
     HashPlated::toString(this)
   }
-  
 }

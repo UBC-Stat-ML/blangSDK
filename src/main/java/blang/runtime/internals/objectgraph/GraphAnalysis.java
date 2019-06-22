@@ -57,6 +57,7 @@ public class GraphAnalysis
   
   private final Map<ObjectNode<ModelComponent>,String> factorDescriptions = new LinkedHashMap<>();
   public final RealScalar annealingParameter = new RealScalar(1.0);
+  public final boolean treatNaNAsNegativeInfinity;
   
   public LinkedHashSet<Node> getLatentVariables() 
   {
@@ -113,8 +114,14 @@ public class GraphAnalysis
     this (model, new Observations());
   }
   
-  public GraphAnalysis(Model model, Observations observations)
+  public GraphAnalysis(Model model, Observations observations) 
   {
+    this (model, observations, false);
+  }
+  
+  public GraphAnalysis(Model model, Observations observations, boolean treatNaNAsNegativeInfinity)
+  {
+    this.treatNaNAsNegativeInfinity = treatNaNAsNegativeInfinity;
     this.model = model;
     
     // setup first layer of data structures
@@ -202,7 +209,7 @@ public class GraphAnalysis
         boolean isCustomAnneal = subComponent instanceof AnnealedFactor;
         if (isLogScale  // if it's numeric (not a measure-zero constraint-based factor)
             && !isCustomAnneal)  // and it's not already annealed via custom mechanism
-          subComponent = new ExponentiatedFactor((LogScaleFactor) subComponent);
+          subComponent = new ExponentiatedFactor((LogScaleFactor) subComponent, treatNaNAsNegativeInfinity);
         ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);
         if (subComponent instanceof Factor)
           factorDescriptions.put(childNode, description);
@@ -386,6 +393,14 @@ public class GraphAnalysis
     if (result == null)
       return true;
     return result;
+  }
+  
+  public boolean hasAccessibleLatentVariables(Object object)
+  {
+    return accessibilityGraph
+      .getAccessibleNodes(object)
+      .filter(current -> latentVariables.contains(current))
+      .findAny().isPresent();
   }
 
   public void exportAccessibilityGraphVisualization(File file)

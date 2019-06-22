@@ -1,0 +1,16 @@
+package blang.validation.internals.fixtures
+
+model SometimesNaN {
+  random RealVar test ?: latentReal
+
+  laws {
+    logf(test) {
+      if (test < 0.0 || test > 1.0) return Double.NaN
+      return 0.0
+    }
+  }
+  
+  generate (rand) {
+    rand.uniform(0.0, 1.0)
+  }
+}

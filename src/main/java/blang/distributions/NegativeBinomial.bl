@@ -13,7 +13,10 @@ model NegativeBinomial {
   laws {
     logf(k, r) {
       if (r <= 0 || k < 0) return NEGATIVE_INFINITY
-      return logBinomial(k+r-1.0, k)
+      val result = logBinomial(k+r-1.0, k)
+      if (result.isNaN) 
+        return NEGATIVE_INFINITY // E.g: if k = 0 and r = 1.4761528506003524E-63, logBinomial gives -INF
+      return result
     }
     logf(r, k, p) {
       if (p <= 0.0 || p >= 1.0) return NEGATIVE_INFINITY

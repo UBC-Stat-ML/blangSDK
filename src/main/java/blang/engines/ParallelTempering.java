@@ -2,6 +2,7 @@ package blang.engines;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,7 @@ import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.experiments.Cores;
 import blang.runtime.SampledModel;
+import blang.types.StaticUtils;
 import briefj.BriefParallel;
 
 public class ParallelTempering
@@ -37,10 +39,10 @@ public class ParallelTempering
   // convention: state index 0 is room temperature (target of interest)
   protected SampledModel [] states;
   protected List<Double> temperingParameters;
-  private Random [] parallelRandomStreams;
-  protected SummaryStatistics [] swapAcceptPrs;
-  private int iterationIndex = 0;
-  private boolean [] swapIndicators;
+  protected Random [] parallelRandomStreams;
+  protected SummaryStatistics [] energies, swapAcceptPrs;
+  private int swapIndex = 0;
+  protected boolean [] swapIndicators;
    
   public SampledModel getTargetState()
   {
@@ -51,27 +53,13 @@ public class ParallelTempering
   
   public boolean[] swapKernel() 
   {
-    return reversible ? reversibleSwapKernel() : nonReversibleSwapKernel();
+    return swapKernel(reversible);
   }
   
-  public boolean[] reversibleSwapKernel()
-  {
-    List<Integer> indices = new ArrayList<Integer>();
-    for (int i = 0; i < nChains() - 1; i++) indices.add(i);
-    Collections.shuffle(indices, parallelRandomStreams[0]);
-    swapIndicators = new boolean[nChains()];
-    for (int i : indices) 
-    {
-      double acceptPr = swapKernel(parallelRandomStreams[0], i);
-      swapAcceptPrs[i].addValue(acceptPr);
-    }
-    return swapIndicators;
-  }
-  
-  public boolean[] nonReversibleSwapKernel()
+  public boolean[] swapKernel(boolean reversible)
   {
     swapIndicators = new boolean[nChains()];
-    int offset = iterationIndex++ % 2;
+    int offset = reversible ? parallelRandomStreams[0].nextInt(2) : swapIndex++ % 2; 
     BriefParallel.process((nChains() - offset) / 2, nThreads.numberAvailable(), swapIndex ->
     {
       int chainIndex = offset + 2 * swapIndex;
@@ -91,6 +79,7 @@ public class ParallelTempering
         current.forwardSample(random, false);
       else
         current.posteriorSamplingScan(random, nPasses); 
+      energies[chainIndex].addValue(-current.preAnnealedLogLikelihood());
     });
   }
   
@@ -116,6 +105,14 @@ public class ParallelTempering
     return acceptPr;
   }
   
+  public double thermodynamicEstimator() 
+  {
+    double sum = 0.0;
+    for (int c = 0; c < nChains() - 1; c++)
+      sum += (temperingParameters.get(c) - temperingParameters.get(c+1)) * (energies[c].getMean() + energies[c+1].getMean())/ 2.0;
+    return -sum;
+  }
+  
   private void doSwap(int i) 
   {
     int j = i + 1;
@@ -136,25 +133,44 @@ public class ParallelTempering
     if (nChains.isPresent() && nChains.get() < 1)
       throw new RuntimeException("Number of tempering chains must be greater than zero.");
     temperingParameters = ladder.temperingParameters(nChains.orElse(nThreads.numberAvailable()));
-    if (temperingParameters.get(0) != 1.0)
-      throw new RuntimeException();
-    System.out.println("Temperatures: " + temperingParameters);
     int nChains = temperingParameters.size();
-    states = initStates(prototype, nChains, random);
-    swapAcceptPrs = new SummaryStatistics[nChains - 1];
-    for (int i = 0; i < nChains - 1; i++)
-      swapAcceptPrs[i] = new SummaryStatistics();
+    states = initStates(prototype, nChains);
+    setAnnealingParameters(temperingParameters);
     parallelRandomStreams =  Random.parallelRandomStreams(random, nChains);
   }
   
-  private SampledModel [] initStates(SampledModel prototype, int nChains, Random random)
+  public void setAnnealingParameters(List<Double> parameters) 
+  {
+    int nChains = parameters.size();
+    if (nChains != states.length)
+      throw new RuntimeException();
+    
+    temperingParameters = new ArrayList<Double>(parameters);
+    Collections.sort(temperingParameters, Comparator.reverseOrder());
+    if (temperingParameters.get(0) != 1.0)
+      throw new RuntimeException();
+    
+    for (int i = 0; i < nChains; i++)
+      states[i].setExponent(temperingParameters.get(i)); 
+    
+    swapAcceptPrs = initStats(nChains - 1);
+    energies = initStats(nChains);
+  }
+  
+  private SampledModel [] initStates(SampledModel prototype, int nChains)
   {
     SampledModel [] result = (SampledModel []) new SampledModel[nChains];
     for (int i = 0; i < nChains; i++)
-    {
       result[i] = prototype.duplicate();
-      result[i].setExponent(temperingParameters.get(i)); 
-    }
+    return result;
+  }
+  
+  
+  private static SummaryStatistics[] initStats(int size)
+  {
+    SummaryStatistics[] result = new SummaryStatistics[size];
+    for (int i = 0; i < size; i++)
+      result[i] = StaticUtils.summaryStatistics(0.0);
     return result;
   }
 }

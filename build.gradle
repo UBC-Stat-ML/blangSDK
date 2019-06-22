@@ -1,11 +1,14 @@
 plugins {
-  id 'org.xtext.xtend' version '1.0.19'
-  id 'org.xtext.builder' version '1.0.19'
+  id 'org.xtext.xtend' version '2.0.4'
+  id 'org.xtext.builder' version '2.0.4'
   id 'java'
   id 'eclipse'
   id 'maven'
   id 'application'
 }
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
   maven {
@@ -26,19 +29,20 @@ xtend {
   }
 }
 
-def blangVersion = '3.25.2'
+def blangVersion = '3.25.3' // Note to self: not the one that changes often!
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
-  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.12.0'
+  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.16.0'
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.5.0'
-  compile group: 'ca.ubc.stat', name: 'inits', version: '2.12.1'
-  compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.1.0'
+  compile group: 'ca.ubc.stat', name: 'inits', version: '2.18.1'
+  compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.1.5'
   compile group: 'ca.ubc.stat', name: 'rejectfree', version: '2.7.4'
-  compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.4'
+  compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.5'
   compile group: 'ca.ubc.stat', name: 'xlinear', version: '2.0.2'
-  compile group: 'org.jgrapht', name: 'jgrapht-dist', version: '0.9.0'
+  compile group: 'ca.ubc.stat', name: 'pxviz', version: '1.1.0'
+  compile group: 'org.jgrapht', name: 'jgrapht-core', version: '0.9.0' //  newer version, '1.3.0' breaks things, also dot exporter only available in 1.2.0 right now?
   compile group: 'uk.com.robust-it', name: 'cloning', version: '1.9.6'
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
 }
@@ -55,6 +59,37 @@ xtext {
 }
 
 mainClassName = "blang.runtime.internals.Main"
+
+// Creates scripts for entry points
+// Subproject must apply application plugin to be able to call this method.
+def createScript(project, mainClass, name) {
+  project.tasks.create(name: name, type: CreateStartScripts) {
+    outputDir       = new File(project.buildDir, 'scripts')
+    mainClassName   = mainClass
+    applicationName = name
+    classpath       = project.tasks[JavaPlugin.JAR_TASK_NAME].outputs.files + project.configurations.runtime
+  }
+  project.tasks[name].dependsOn(project.jar)
+
+  project.applicationDistribution.with {
+    into("bin") {
+      from(project.tasks[name])
+      fileMode = 0755
+    }
+  }
+}
+
+// The next two lines disable the tasks for the primary main which by default
+// generates a script with a name matching the project name. 
+// You can leave them enabled but if so you'll need to define mainClassName
+// And you'll be creating your application scripts two different ways which 
+// could lead to confusion
+startScripts.enabled = true
+run.enabled = true
+
+// Call this for each Main class you want to expose with an app script
+createScript(project, 'blang.runtime.internals.DefaultPostProcessor', 'postprocess')
+
 
 /* This exact task is used by the standalone compiler - do not remove or edit lightly! */
 task printClasspath {
@@ -74,9 +109,10 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
-configurations.archives.with { // Put before TRIM line otherwise large file gets generated each time standalone command used.
-    artifacts.remove artifacts.find { it.archiveTask.is distZip }
-    artifacts.remove artifacts.find { it.archiveTask.is distTar }
+// Put before TRIM line otherwise large file gets generated 
+configurations.archives.with {
+  artifacts.remove artifacts.find { it.file =~ 'tar' }
+  artifacts.remove artifacts.find { it.file =~ 'zip' }
 }
 
 /* blang-standalone-compiler-directive - do not edit : TRIM */
@@ -92,7 +128,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "1.21.0" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "1.32.0" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "ca.ubc.stat"
     }

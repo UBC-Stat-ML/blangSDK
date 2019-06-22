@@ -1,5 +1,5 @@
 #!/bin/bash
 
-wget http://mirror.csclub.uwaterloo.ca/eclipse/technology/epp/downloads/release/oxygen/1a/eclipse-dsl-oxygen-1a-macosx-cocoa-x86_64.dmg
+wget http://downloads.yoctoproject.org/eclipse-full/technology/epp/downloads/release/2019-03/R/eclipse-dsl-2019-03-R-macosx-cocoa-x86_64.dmg
 
 echo "Unpack and put Eclipse.app in here"

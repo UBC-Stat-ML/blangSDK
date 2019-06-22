@@ -25,6 +25,8 @@ import blang.validation.UnbiasnessTest
 class TestSMCUnbiasness {
   @Test def void testHMM() {
     
+    blang.System.out.silence
+    
     SampledModel::check = true
     
     val int chainLen = 2

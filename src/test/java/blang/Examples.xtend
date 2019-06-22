@@ -72,6 +72,7 @@ import blang.distributions.Gumbel
 import blang.distributions.Gompertz
 import blang.distributions.HyperGeometric
 import blang.distributions.BetaBinomial
+import blang.distributions.BetaNegativeBinomial
 
 class Examples {
   
@@ -198,6 +199,8 @@ class Examples {
   public val studentt = add(
       new StudentT.Builder()
         .setNu(fixedReal(2.0))
+        .setMu(fixedReal(-1.5))
+        .setSigma(fixedReal(2.2))
         .setRealization(latentReal)
             .build,
       [Math.cos(getRealization().doubleValue)]  // use bdd function to make sure it's integrable
@@ -206,6 +209,8 @@ class Examples {
   public val cauchy = add(
       new StudentT.Builder()
         .setNu(fixedReal(1.0))
+        .setMu(fixedReal(0.0))
+        .setSigma(fixedReal(1.0))
         .setRealization(latentReal)
             .build,
       [Math.cos(getRealization().doubleValue)] // use bdd function to make sure it's integrable
@@ -214,6 +219,8 @@ class Examples {
   public val thint = add(
       new StudentT.Builder()
         .setNu(fixedReal(3.0))
+        .setMu(fixedReal(0.0))
+        .setSigma(fixedReal(1.0))
         .setRealization(latentReal)
             .build,
       realRealizationSquared
@@ -260,6 +267,16 @@ class Examples {
       .setP(fixedReal(0.1))
       .setR(fixedReal(2.1))
         .build,
+    intRealizationSquared
+  )
+  
+  public val betaNegBinomial = add(
+    new BetaNegativeBinomial.Builder()
+    .setAlpha(fixedReal(1.2))
+    .setBeta(fixedReal(3.0))
+    .setR(fixedReal(3.5))
+    .setK(latentInt) 
+    .build,
     intRealizationSquared
   )
   
@@ -387,6 +404,15 @@ class Examples {
   public val poi = add(
     new Poisson.Builder()
       .setMean(fixedReal(3.4))
+      .setRealization(latentInt)
+        .build, 
+    intRealizationSquared
+  )
+  
+  public static val largeLambda = 200
+  public val largePoi = add(
+    new Poisson.Builder()
+      .setMean(fixedReal(largeLambda))
       .setRealization(latentInt)
         .build, 
     intRealizationSquared

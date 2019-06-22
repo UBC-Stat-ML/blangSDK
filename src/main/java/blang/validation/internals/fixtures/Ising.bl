@@ -4,6 +4,7 @@ import briefj.collections.UnorderedPair
 import static blang.validation.internals.fixtures.Functions.squareIsingEdges
 
 model Ising {
+  param Double moment ?: 0.0
   param Double beta ?: log(1 + sqrt(2.0)) / 2.0 // critical point
   param Integer N ?: 5
   random List<IntVar> vertices ?: latentIntList(N*N)
@@ -24,7 +25,7 @@ model Ising {
     
     // Node potentials
     for (IntVar vertex : vertices) {
-      vertex ~ Bernoulli(0.5)
+      vertex | moment ~ Bernoulli(logistic(-2.0*moment))
     }
   }
 }

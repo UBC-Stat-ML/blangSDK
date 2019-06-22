@@ -19,7 +19,7 @@ model Poisson {
     }
     logf(realization) {
       if (realization < 0) return NEGATIVE_INFINITY
-      return - factorialLog(realization)
+      return - logFactorial(realization)
     }
   }
   

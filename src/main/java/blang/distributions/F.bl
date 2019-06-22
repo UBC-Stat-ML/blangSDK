@@ -4,7 +4,7 @@ package blang.distributions
 model F {
   random RealVar realization
 	
-  /** The degrees of freedom \(\d_1 \) and \(\d_2 \) . \( \d_1, \d_2 > 0 \) */
+  /** The degrees of freedom \( d_1 \) and \( d_2 \) . \( d_1, d_2 > 0 \) */
   param RealVar d1, d2
   
   laws {

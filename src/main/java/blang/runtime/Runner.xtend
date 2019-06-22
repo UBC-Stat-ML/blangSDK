@@ -25,22 +25,24 @@ import java.util.Collections
 import java.util.Optional
 import bayonet.distributions.Random
 import blang.engines.internals.PosteriorInferenceEngine
-import blang.engines.internals.factories.SCM
 import blang.io.internals.GlobalDataSourceStore
 import ca.ubc.stat.blang.jvmmodel.SingleBlangModelInferrer
 import blang.runtime.internals.objectgraph.GraphAnalysis
 import blang.mcmc.internals.SamplerBuilderOptions
 import com.google.common.base.Stopwatch
-import briefj.BriefIO
 import java.util.concurrent.TimeUnit
 import java.util.List
+import java.util.ArrayList
+import blang.runtime.PostProcessor.NoPostProcessor
+import blang.System
+import blang.engines.internals.factories.PT
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
   val Model model
   
-  @Arg                          @DefaultValue("SCM")
-  public PosteriorInferenceEngine engine = new SCM
+  @Arg                          @DefaultValue("PT")
+  public PosteriorInferenceEngine engine = new PT
   
   @Arg                      @DefaultValue("false")
   public boolean printAccessibilityGraph = false
@@ -61,9 +63,11 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   @Arg
   public SamplerBuilderOptions samplers = new SamplerBuilderOptions
   
-  @Arg(description = "Version of the blang SDK to use (see https://github.com/UBC-Stat-ML/blangSDK/releases), of the form of a git tag x.y.z where x >= 2. If omitted, use the local SDK's 'master' version.")
-  public Optional<String> version // Only used when called from Main 
-  public static final String VERSION_FIELD_NAME = "version" 
+  @Arg                         @DefaultValue("false")
+  public boolean treatNaNAsNegativeInfinity = false;
+  
+  @Arg                      @DefaultValue("NoPostProcessor")
+  public PostProcessor postProcessor = new NoPostProcessor
   
   @GlobalArg
   public Observations observations = new Observations
@@ -80,7 +84,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
    * - simplified: just one args, the model, rest is read from config file
    * - standard
    */
-  def public static Arguments parseArguments(String ... args) {
+  def static Arguments parseArguments(String ... args) {
     if (useSimplifiedArguments(args)) {
       // try to read in (else empty)
       val File configFile = new File(CONFIG_FILE_NAME)
@@ -92,7 +96,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         }
       }
       // add the one argument (after fixing it)
-      val String modelString = fixModelBuilderArgument(args.get(0))
+      val String modelString = fixModelBuilderArgument(args.get(0).replace(".bl", ""))
       fromFile.setOrCreateChild("model", Collections.singletonList(modelString))
       fromFile.getOrCreateDesc(Collections.singletonList("experimentConfigs")).setOrCreateChild("recordGitInfo", Collections.singletonList("false"));
       return fromFile
@@ -101,15 +105,14 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
       return Posix.parse(args)
     }
   }
-  val public static final String CONFIG_FILE_NAME = "configuration.txt"
-  
+  val public static String CONFIG_FILE_NAME = "configuration.txt"
   
   def private static boolean useSimplifiedArguments(String ... args) {
     return args.size == 1
   }
   
   def static void main(String ... args) {
-    System::exit(start(args))
+    java.lang.System::exit(start(args))
   }
   
   def static int start(String ... args) {
@@ -133,7 +136,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs, Creator creator) {
     if (useSimplifiedArguments(rawArguments) && !new File(CONFIG_FILE_NAME).exists) {
-      System.err.println("Configure by pasting command line diagnosis into a file called '" + CONFIG_FILE_NAME)
+      System.err.println("Configure by pasting command line diagnosis into a file called '" + CONFIG_FILE_NAME + "'")
     }
   }
   
@@ -151,20 +154,18 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     }
   }
   
-  public static class NotDAG extends RuntimeException { new(String s) { super(s) }}
+  static class NotDAG extends RuntimeException { new(String s) { super(s) }}
   
-  override void run() {
-    println("Preprocessing started")
-    val Stopwatch preprocessingTime = Stopwatch.createStarted
+  def preprocess() {
     samplers.monitoringStatistics = results.child(MONITORING_FOLDER) 
-    val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations)
+    val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations, treatNaNAsNegativeInfinity)
     engine.check(graphAnalysis)
     if (printAccessibilityGraph) {
       graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))
       graphAnalysis.exportFactorGraphVisualization(Results.getFileInResultFolder("factor-graph.dot"))
     }
     val BuiltSamplers kernels = SamplerBuilder.build(graphAnalysis, samplers)
-    println(kernels)
+    System.out.println(kernels)
     if (checkIsDAG) {
       try {
         graphAnalysis.checkDAG
@@ -181,26 +182,59 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         }
       }
     }
+    // remove also fully observed (done after to avoid triggering !found error above)
+    for (key : new ArrayList(sampledModel.objectsToOutput.keySet)) {
+      val object = sampledModel.objectsToOutput.get(key)
+      if (!graphAnalysis.hasAccessibleLatentVariables(object))
+        sampledModel.objectsToOutput.remove(key) 
+    }
     engine.setSampledModel(sampledModel)
-    preprocessingTime.stop
-    val Stopwatch samplingTime = Stopwatch.createStarted
-    println("Sampling started")
-    engine.performInference
-    samplingTime.stop
-    reportTiming(preprocessingTime, samplingTime)
   }
   
+  override void run() {
+    
+    val preprocessTiming = System.out.indentWithTiming("Preprocess") [
+      preprocess()
+    ].watch
+    
+    val inferenceTiming = System.out.indentWithTiming("Inference") [ 
+      engine.performInference
+    ].watch
+    
+    reportTiming(preprocessTiming, inferenceTiming)
+    relaxMemory
+    results.flushAll 
+    
+    System.out.indentWithTiming("Postprocess") [
+      postProcess
+    ]
+  }
+  
+  def private void relaxMemory() {
+    this.engine = null
+    this.observations = null
+    this.samplers = null
+  }
+  
+  def private void postProcess() {
+    val _results = results
+    postProcessor => [
+      results = _results
+      blangExecutionDirectory = Optional.of(_results.resultsFolder)
+    ]
+    postProcessor.run
+  }
+    
   def void reportTiming(Stopwatch preprocessingTime, Stopwatch samplingTime) {
-    BriefIO.write(results.child(MONITORING_FOLDER).getFileInResultFolder(RUNNING_TIME_SUMMARY), 
-      "preprocessingTime_ms\t" + preprocessingTime.elapsed(TimeUnit.MILLISECONDS) + "\n" +
-      "samplingTime_ms\t" + samplingTime.elapsed(TimeUnit.MILLISECONDS) + "\n"
-    )
-    println("Preprocessing time: " + preprocessingTime.toString)
-    println("Sampling time: " + samplingTime.toString)
+    val writer = results.child(MONITORING_FOLDER).getAutoClosedBufferedWriter(RUNNING_TIME_SUMMARY)
+    writer.append("preprocessingTime_ms\t" + preprocessingTime.elapsed(TimeUnit.MILLISECONDS) + "\n")
+    writer.append("samplingTime_ms\t" + samplingTime.elapsed(TimeUnit.MILLISECONDS) + "\n")
   }
   
   public val static String RUNNING_TIME_SUMMARY = "runningTimeSummary.tsv"
   public val static String LOG_NORM_ESTIMATE = "logNormEstimate.txt"
   public val static String MONITORING_FOLDER = "monitoring"
   public val static String SAMPLES_FOLDER = "samples"
+  
+  public val static String sampleColumn = "sample"
 }

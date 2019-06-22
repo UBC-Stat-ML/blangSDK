@@ -22,7 +22,7 @@ class SimplePlate<T> implements Plate<T> {
   /**
    * Assume a non-jagged array so that parentIndices are ignored.
    */
-  override Collection<Index<T>> indices(Index<?>... parentIndices) {
+  override Collection<Index<T>> indices(Query parentIndices) {
     return indices
   }
   

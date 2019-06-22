@@ -115,7 +115,7 @@ public class SampledModel
     
     otherAnnealedFactors = annealingStructure.otherAnnealedFactors;
     
-    sparseUpdateFactors = initSparseUpdateFactors(annealingStructure);
+    sparseUpdateFactors = initSparseUpdateFactors(annealingStructure, graphAnalysis.treatNaNAsNegativeInfinity);
     caches = new double[sparseUpdateFactors.size()];
     
     sampler2sparseUpdateAnnealed = new int[samplers.list.size()][];
@@ -128,7 +128,7 @@ public class SampledModel
     
     this.objectsToOutput = new LinkedHashMap<String, Object>();
     for (Field f : StaticUtils.getDeclaredFields(model.getClass())) 
-      if (f.getAnnotation(Param.class) == null) // TODO: filter out fully observed stuff too
+      if (f.getAnnotation(Param.class) == null) // Note: Runner will then exclude things fully observed (done there to allow also explicit exclusions first)
         objectsToOutput.put(f.getName(), ReflexionUtils.getFieldValue(f, model));
     
     if (initUsingForward)
@@ -228,12 +228,12 @@ public class SampledModel
   
   /**
    * @param random
-   * @param multiplyer Can be used for performing the fraction of a scan, or many scans. 
+   * @param multiplier Can be used for performing the fraction of a scan, or many scans. 
    *  I.e. the number of steps will be floor(multiplyer * number of posterior invar moves)
    */
-  public void posteriorSamplingScan(Random random, double multiplyer)
+  public void posteriorSamplingScan(Random random, double multiplier)
   {
-    int nSteps = (int) Math.floor(multiplyer * posteriorInvariantSamplers.size());
+    int nSteps = (int) Math.floor(multiplier * posteriorInvariantSamplers.size());
     for (int i = 0; i < nSteps; i++)
       posteriorSamplingStep(random); 
   }
@@ -410,14 +410,14 @@ public class SampledModel
   /**
    * Ignore factors that are not LogScaleFactor's (e.g. constraints), make sure everything else are AnnealedFactors.
    */
-  private static List<ExponentiatedFactor> initSparseUpdateFactors(AnnealingStructure structure) 
+  private static List<ExponentiatedFactor> initSparseUpdateFactors(AnnealingStructure structure, boolean treatNaNAsNegativeInfinity) 
   {
     ArrayList<ExponentiatedFactor> result = new ArrayList<>();
     result.addAll(structure.exponentiatedFactors);
     for (LogScaleFactor f : structure.fixedLogScaleFactors)
     {
       if (!(f instanceof ExponentiatedFactor))
-        f = new ExponentiatedFactor(f);
+        f = new ExponentiatedFactor(f, treatNaNAsNegativeInfinity);
       result.add((ExponentiatedFactor) f);
     }
     return result;

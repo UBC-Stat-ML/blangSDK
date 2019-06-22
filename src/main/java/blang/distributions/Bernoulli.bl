@@ -13,4 +13,8 @@ model Bernoulli {
       return fixedSimplex(1.0 - probability, probability)
     })
   }
+  
+  generate (rand) {
+    if (rand.bernoulli(probability)) 1 else 0
+  }
 }

@@ -39,22 +39,29 @@ class CategoricalSampler implements Sampler {
      * dependencies (i.e. those coming from categorical.probabilities
      */
     _factors = null
-    logScaleFactors = new ArrayList
+    logScaleFactors = extractFactorsFor(categorical.getRealization, context)
+    if (logScaleFactors === null)
+      return false
+    return true
+  }
+  
+  static def List<LogScaleFactor> extractFactorsFor(Object object, SamplerBuilderContext context) {
+    val result = new ArrayList
     var boolean constrainedFound = false
-    for (Factor f : context.connectedFactors(StaticUtils.node(categorical.getRealization))) {
+    for (Factor f : context.connectedFactors(StaticUtils.node(object))) {
       if (f instanceof Constrained) {
         if (constrainedFound) {
-          return false
+          return null
         }
         constrainedFound = true
       }
       else if (f instanceof LogScaleFactor) {
-        logScaleFactors.add(f as LogScaleFactor)
+        result.add(f as LogScaleFactor)
       }
       else
-        return false
+        return null
     }
-    return true
+    return result
   }
 
 }

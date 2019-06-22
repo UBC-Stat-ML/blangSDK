@@ -19,6 +19,9 @@ import java.util.Collection
 import com.rits.cloning.Immutable
 import blang.inits.providers.CoreProviders
 import blang.inits.Creators
+import blang.core.IntVar
+import blang.core.RealVar
+import blang.types.internals.Query
 
 /** in the following, K is the type indexing the replicates, typically an Integer or String. We assume these indices are not random variables. */
 @Immutable
@@ -28,7 +31,11 @@ interface Plate<K> {
   def ColumnName getName() 
   
   /** Get the indices available given the indices of the parent (enclosing) plates. The parents can be provided in any order. */
-  def Collection<Index<K>> indices(Index<?> ... parentIndices)
+  def Collection<Index<K>> indices(Query parentIndices)
+  
+  def Collection<Index<K>> indices(Index<?> ... parentIndices) {
+    return indices(Query::build(parentIndices))
+  }
   
   def K parse(String string)
   
@@ -95,6 +102,8 @@ interface Plate<K> {
     val TypeLiteral<T> typeArgument = 
       TypeLiteral.get((typeLiteral.type as ParameterizedType).actualTypeArguments.get(0))
       as TypeLiteral<T>
+    if (IntVar.isAssignableFrom(typeArgument.rawType) || RealVar.isAssignableFrom(typeArgument.rawType))
+      throw new RuntimeException("Plates must be indexed by non-random types")
     // data source
     var DataSource scopedDataSource = DataSource::scopedDataSource(dataSource, globalDataSourceStore)
     if (!scopedDataSource.present || !scopedDataSource.columnNames.contains(columnName)) {

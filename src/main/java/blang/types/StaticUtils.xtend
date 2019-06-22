@@ -15,6 +15,7 @@ import blang.types.internals.RealScalar
 import blang.types.internals.IntScalar
 import blang.types.Precision.Diagonal
 import blang.types.Precision.SimpleBrownian
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics
 
 /** Automatically statically imported in Blang meaning can call "StaticUtils::function(..)" as just "function(..)". */
 class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.stat.blang.scoping.BlangImplicitlyImportedFeatures
@@ -144,6 +145,28 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
 
   def static double logBinomial(double n, double k) {
     return logFactorial(n) - logFactorial(k) - logFactorial(n-k);
+  }
+  
+  def static double logGamma(double x) {
+    return SpecialFunctions::lnGamma(x)
+  }
+  
+  def static double logBeta(double x, double y) {
+    return logGamma(x) + logGamma(y) - logGamma(x + y)
+  }
+  
+  def static SummaryStatistics summaryStatistics(List<Double> values) {
+    val result = new SummaryStatistics()
+    for (double v : values) 
+      result.addValue(v)
+    return result 
+  }
+  
+  def static SummaryStatistics summaryStatistics(double ... values) {
+    val result = new SummaryStatistics()
+    for (double v : values) 
+      result.addValue(v)
+    return result
   }
   
   def static <K> Diagonal<K> diagonalPrecision(RealVar diagonalPrecisionValue, Plate<K> plate) {

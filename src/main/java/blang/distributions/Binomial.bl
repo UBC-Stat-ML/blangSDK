@@ -1,6 +1,6 @@
 package blang.distributions
 
-/** A sum of \(n\) iid Bernoulli variables. Values in \([0, n]\). */
+/** A sum of \(n\) iid Bernoulli variables. Values in \(\{0, 1, 2, \dots, n\}\). */
 model Binomial { 
   random IntVar numberOfSuccesses 
   

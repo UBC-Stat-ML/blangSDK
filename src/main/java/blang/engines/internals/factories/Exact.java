@@ -64,7 +64,7 @@ public class Exact implements PosteriorInferenceEngine
               + "Diverging values: " + logPrior + " vs " + logPriorRealization);
       }
       
-      model.getSampleWriter(tidySerializer).write(Pair.of("sample", i++), Pair.of("logProbability", logWeight(model, exhaustive) - logNormalization)); 
+      model.getSampleWriter(tidySerializer).write(Pair.of(Runner.sampleColumn, i++), Pair.of("logProbability", logWeight(model, exhaustive) - logNormalization)); 
     }
   }
   

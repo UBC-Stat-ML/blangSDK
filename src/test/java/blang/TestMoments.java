@@ -22,6 +22,7 @@ import blang.distributions.YuleSimon;
 import blang.mcmc.internals.BuiltSamplers;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
+import blang.distributions.BetaNegativeBinomial;
 
 public class TestMoments 
 {
@@ -51,6 +52,26 @@ public class TestMoments
   public void yule()
   {
     test(10_000_000, (YuleSimon) examples.yuleSimon.model);  
+  }
+  
+  @Test
+  public void bnb()
+  {
+    test(10_000_000, (BetaNegativeBinomial) examples.betaNegBinomial.model);  
+  }
+  
+  @TestedDistribution(BetaNegativeBinomial.class)
+  private static List<Double> bnbMoments(BetaNegativeBinomial yule)
+  {
+    List<Double> result = new ArrayList<>();
+    result.add(1.0);
+    double alpha = yule.getAlpha().doubleValue();
+    double beta = yule.getBeta().doubleValue();
+    double r = yule.getR().doubleValue();
+    if (alpha <= 1) throw new RuntimeException("Mean only defined for alpha > 1");
+    double m = r * alpha / (beta - 1.0);
+    result.add(m);
+    return result;
   }
   
   @TestedDistribution(YuleSimon.class)

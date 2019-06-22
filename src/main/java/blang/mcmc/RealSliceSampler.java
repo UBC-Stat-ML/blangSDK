@@ -24,7 +24,7 @@ public class RealSliceSampler implements Sampler
   }
   
   private static final double initialWindowSize = 1.0;
-  private static final int maxNDoublingRounds = 10;
+  private static final int maxNDoublingRounds = 20;
   
   private RealSliceSampler(double fixedWindowLeft, double fixedWindowRight) 
   {

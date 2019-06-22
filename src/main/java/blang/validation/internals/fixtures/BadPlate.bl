@@ -1,0 +1,9 @@
+package blang.validation.internals.fixtures
+
+model BadPlate {
+  param Plate<WritableIntVar> bad
+  
+  laws {
+    
+  }
+}
