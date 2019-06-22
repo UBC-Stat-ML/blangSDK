@@ -126,6 +126,7 @@ public class StandaloneCompiler  {
     Command gradleCmd = 
         Command.byPath(new File(folder, "gradlew"))
           .appendArg(gradleTaskName)
+          // See issue https://github.com/UBC-Stat-ML/blangSDK/issues/139 
           //.appendArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
           .ranIn(folder)
           .throwOnNonZeroReturnCode();
