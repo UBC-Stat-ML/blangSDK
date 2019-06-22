@@ -20,6 +20,9 @@ repositories {
   maven {
     url "https://www.stat.ubc.ca/~bouchard/maven/"
   }
+  maven {
+    url "https://jitpack.io"
+  }
   jcenter()
 }
 
