@@ -56,9 +56,9 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     - All the files with extension .bl/.java/.xtend under the work directory are 
       compiled (incrementally).
     - For java files the file should be placed in a directory structure mirroring 
-      the package. For example, a Java in package "my.pack" should be in 
-      [project directory]/my/pack/File.java
-      The same is not mandatory for xtend and bl files but we recommend to follow 
+      the package. For example, a Java class named MyClass in package "my.pack" should be in 
+      [project directory]/my/pack/MyClass.java
+      This placement is not mandatory for xtend and bl files but we recommend to follow 
       this convention nonetheless. 
   '''
 
@@ -73,6 +73,12 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       System.err.println("It appears the folder already contains gradle build architecture. Use those instead of the blang command.")
       System.exit(1);
     }
+    
+    System.out.println('''
+      Compilation started...
+        Note: this may take more time the first time the command is called
+              as some dependencies will be downloaded.
+    ''')
     
     val StandaloneCompiler compiler = new StandaloneCompiler
 
