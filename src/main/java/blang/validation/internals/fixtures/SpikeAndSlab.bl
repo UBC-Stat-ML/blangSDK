@@ -18,8 +18,9 @@ model SpikeAndSlab {
           log(1.0 - zeroProbability) + nonZeroLogDensity.logDensity(variable)  
         }
       }
-      indicator(SpikedRealVar variable = variables.get(index)) {
-        variable.isZero.isBool
+      logf(SpikedRealVar variable = variables.get(index)) {
+        if (variable.isZero.isBool) return 0.0
+        else return NEGATIVE_INFINITY
       }
       variables.get(index) is Constrained 
     }

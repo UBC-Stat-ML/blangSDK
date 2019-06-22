@@ -24,8 +24,9 @@ model BadNormal {
       return - (pow((mean - realization), 2)) / variance
     }
     
-    indicator(variance)  {
-      variance > 0
+    logf(variance)  {
+      if (variance > 0) return 0.0
+      else return NEGATIVE_INFINITY
     }
   }
   

@@ -29,7 +29,7 @@ xtend {
   }
 }
 
-def blangVersion = '3.25.3' // Note to self: not the one that changes often!
+def blangVersion = '4.0.0' // Note to self: not the one that changes often!
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"

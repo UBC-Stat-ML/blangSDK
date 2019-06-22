@@ -58,7 +58,7 @@ class TestStandaloneCompiler {
     
     // try introducing an error
     BriefIO::write(blangFile, '''
-      Chtulu
+      Cthulhu
     ''')
     
     val errored = compiler(root, "pack.MyModel").call
