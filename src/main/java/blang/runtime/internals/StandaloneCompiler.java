@@ -70,7 +70,7 @@ public class StandaloneCompiler  {
     Pattern depFormat = Pattern.compile("^[^:]+[:][^:]+[:][^:]+$");
     if (dependencies.exists())
       for (String line : BriefIO.readLines(dependencies)) {
-    	  line.trim();
+    	  line = line.trim();
     	  if (line == null || line.isEmpty())
     	    continue;
     	  Matcher m = depFormat.matcher(line);
