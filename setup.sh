@@ -1,5 +1,19 @@
 #!/bin/bash
+
 ./gradlew clean
+./gradlew installDist
+
+# Fix problem arising if eclipse is used jointly
+mkdir build/xtend/test
+mkdir build/blang/test
+
+if hash blang 2>/dev/null; then
+    echo "CLI setup complete."
+else
+    echo "Add the following to classpath: $(pwd)/build/install/blang/bin/"
+fi
+
+
 ./gradlew eclipse
 
 # Fix some stuff that get broken everytime
@@ -11,17 +25,4 @@ mkdir build/blang/main
 mkdir -p build/xtend/main
 mkdir -p build/xtend/test
 
-echo "Setup for Eclipse done"
-
-./gradlew installDist
-
-# Fix problem arising if eclipse is used jointly
-mkdir -p build/xtend/test
-mkdir -p build/blang/test
-
-if hash blang 2>/dev/null; then
-    echo "Setup for CLI done."
-else
-    echo "Add the following to classpath: $(pwd)/build/install/blang/bin/"
-fi
-
+echo "Eclipse setup complete."
