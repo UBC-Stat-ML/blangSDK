@@ -14,6 +14,8 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -65,9 +67,19 @@ public class StandaloneCompiler  {
   private List<String> loadDependencies() {
     List<String> result = new ArrayList<>();
     File dependencies = new File("dependencies.txt");
+    Pattern depFormat = Pattern.compile("^[^:]+[:][^:]+[:][^:]+$");
     if (dependencies.exists())
-      for (String line : BriefIO.readLines(dependencies))
-        result.add(line.trim());
+      for (String line : BriefIO.readLines(dependencies)) {
+        line = line.trim();
+     	if (line == null || line.isEmpty())
+	  continue;
+	Matcher m = depFormat.matcher(line);
+	if (m.find()) {
+	  result.add(line);
+	} else {
+	  throw new RuntimeException("Invalid dependencies.txt format: " + line);
+        }
+      }
     return result;
   }
 
