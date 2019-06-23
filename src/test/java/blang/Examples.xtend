@@ -87,7 +87,16 @@ class Examples {
   	.build,
   	intRealizationSquared
   )
-  
+
+  public val multinomial = add(
+  	new Multinomial.Builder()
+  	  .setProbabilities(fixedSimplex(0.2,0.3,0.5))
+  	  .setNumberofTrials(fixedInt(3))
+  	  .setNumberofSuccesses(latentIntList(3))
+  	    .build,
+  	listHash
+  )
+
   public val hyperGeometric = add(
   	new HyperGeometric.Builder()
   	.setNumberOfDraws(fixedInt(3))
