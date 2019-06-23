@@ -32,13 +32,14 @@ class BlangCLI {
             (also included in the main Blang download). 
           '''
           it += '''
-            From the root of the SDK repo, run «SYMB»./setup-cli.sh«ENDSYMB» and follow the last step printed as output (setting up PATH).
+            From the root of the SDK repo, run «SYMB»source setup-cli.sh«ENDSYMB».
           '''
         ]
       ]
       
       section("Usage") [
         orderedList[
+          it += '''Type «SYMB»blang«ENDSYMB» and follow the instructions there, summarized below for convenience.'''
           it += '''
             Create a directory for your project, say «SYMB»blangProject«ENDSYMB»
           '''
