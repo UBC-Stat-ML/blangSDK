@@ -136,12 +136,7 @@ public class StandaloneCompiler  {
     Command gradleCmd = 
         Command.byPath(new File(folder, "gradlew"))
           .appendArg(gradleTaskName)
-<<<<<<< HEAD
-          // See issue https://github.com/UBC-Stat-ML/blangSDK/issues/139 
-          //.appendArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
-=======
           .appendArg("-Dorg.gradle.daemon.idletimeout=" + (1000*60*5)) // 5 minute time-out to make sure web ide does not get taxed too much memory-wise
->>>>>>> 476bb5f2127b20e84d6d9444034c26839b2a8b43
           .ranIn(folder)
           .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
