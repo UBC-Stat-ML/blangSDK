@@ -50,7 +50,7 @@ public class StandaloneCompiler  {
   private final File blangHome;
   private final File projectHome;
   private final File compilationFolder;
-  private final File excludedInputFolder; // in Silico, if an input node is itself in Blang, we want to avoid compiling it again
+  private final File excludedInputFolder; // in web ide, if an input node is itself in Blang, we want to avoid compiling it again
   private final Path srcFolder;
   private final List<String> dependencies = loadDependencies();
   
@@ -70,15 +70,15 @@ public class StandaloneCompiler  {
     Pattern depFormat = Pattern.compile("^[^:]+[:][^:]+[:][^:]+$");
     if (dependencies.exists())
       for (String line : BriefIO.readLines(dependencies)) {
-    	  line = line.trim();
-    	  if (line == null || line.isEmpty())
-    	    continue;
-    	  Matcher m = depFormat.matcher(line);
-    	  if (m.find()) {
-    	    result.add(line);
-    	  } else {
-    	    throw new RuntimeException("Invalid depedencies.txt format: " + line);
-    	  }
+        line = line.trim();
+     	if (line == null || line.isEmpty())
+	  continue;
+	Matcher m = depFormat.matcher(line);
+	if (m.find()) {
+	  result.add(line);
+	} else {
+	  throw new RuntimeException("Invalid dependencies.txt format: " + line);
+        }
       }
     return result;
   }
@@ -136,8 +136,12 @@ public class StandaloneCompiler  {
     Command gradleCmd = 
         Command.byPath(new File(folder, "gradlew"))
           .appendArg(gradleTaskName)
+<<<<<<< HEAD
           // See issue https://github.com/UBC-Stat-ML/blangSDK/issues/139 
           //.appendArg("--no-daemon") // Avoid zombie processes; gradle options allowed both after and before
+=======
+          .appendArg("-Dorg.gradle.daemon.idletimeout=" + (1000*60*5)) // 5 minute time-out to make sure web ide does not get taxed too much memory-wise
+>>>>>>> 476bb5f2127b20e84d6d9444034c26839b2a8b43
           .ranIn(folder)
           .throwOnNonZeroReturnCode();
     return Command.call(gradleCmd);
@@ -211,6 +215,7 @@ public class StandaloneCompiler  {
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
       if (dir.endsWith(COMPILATION_DIR_NAME) || 
+          dir.endsWith(".git") ||
           dir.normalize().equals(fromRoot.resolve(Results.DEFAULT_POOL_NAME).normalize()) ||
           dir.normalize().equals(excludedInputFolder.toPath().normalize())) {
         return FileVisitResult.SKIP_SUBTREE;
