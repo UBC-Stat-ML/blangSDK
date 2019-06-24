@@ -39,7 +39,7 @@ dependencies {
   compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.16.0'
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.5.0'
-  compile group: 'ca.ubc.stat', name: 'inits', version: '2.18.1'
+  compile group: 'ca.ubc.stat', name: 'inits', version: '2.18.3'
   compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.1.5'
   compile group: 'ca.ubc.stat', name: 'rejectfree', version: '2.7.4'
   compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.5'
@@ -131,7 +131,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "1.32.0" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "1.33.0" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "ca.ubc.stat"
     }

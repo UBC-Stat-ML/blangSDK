@@ -14,6 +14,8 @@ import org.junit.Test
 import blang.runtime.internals.objectgraph.DeepCloner
 import blang.runtime.internals.objectgraph.VariableUtils
 
+import blang.validation.internals.fixtures.Examples
+
 class TestCloning {
   
   val List<Object> subjects = new ArrayList => [

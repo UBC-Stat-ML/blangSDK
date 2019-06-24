@@ -249,12 +249,14 @@ public class StandaloneCompiler  {
       return fromRoot.resolve(suffix);
     }
   }
+  
+  public String blangSDKVersion() {
+    String buildFileContents = BriefIO.fileToString(new File(blangHome, BUILD_FILE));
+    return processDirective(buildFileContents, Directive.EXTRACT_VERSION);
+  }
 
-  String sdkVersion;
   private void setupBuildFiles() throws IOException {
     String buildFileContents = BriefIO.fileToString(new File(blangHome, BUILD_FILE));
-    // find version
-    sdkVersion = processDirective(buildFileContents, Directive.EXTRACT_VERSION);
     // add blangSDK dependency
     buildFileContents = processDirective(buildFileContents, Directive.ADD_SDK_DEPENDENCY);
     // remove deployment info
@@ -292,7 +294,7 @@ public class StandaloneCompiler  {
     ADD_SDK_DEPENDENCY {
       @Override
       String process(String buildFileContents, String line, StandaloneCompiler compiler) {
-        String depLine = "  compile group: 'ca.ubc.stat', name: 'blangSDK', version: '" + compiler.sdkVersion + "'";
+        String depLine = "  compile group: 'ca.ubc.stat', name: 'blangSDK', version: '" + compiler.blangSDKVersion() + "'";
         for (String dep : compiler.dependencies)
           depLine += "\n  compile '" + dep + "'";
         return buildFileContents.replace(line, depLine);

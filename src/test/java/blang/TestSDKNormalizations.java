@@ -10,6 +10,8 @@ import blang.types.StaticUtils;
 import blang.validation.NormalizationTest;
 import blang.distributions.BetaNegativeBinomial;
 
+import blang.validation.internals.fixtures.Examples;
+
 public class TestSDKNormalizations extends NormalizationTest
 {
   private Examples examples = new Examples();
