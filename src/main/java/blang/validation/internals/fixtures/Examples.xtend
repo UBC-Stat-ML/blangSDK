@@ -1,4 +1,4 @@
-package blang
+package blang.validation.internals.fixtures
 
 import blang.core.Model
 import blang.distributions.Bernoulli

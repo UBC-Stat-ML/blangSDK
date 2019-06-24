@@ -206,8 +206,8 @@ class InputOutput {
             «SYMB»arguments*«ENDSYMB»: arguments used in this run.
           '''
           it += '''
-            «SYMB»executionInfo/«ENDSYMB»: additional information for reproducibility (JVM arguments, version of the code, 
-            standard out, etc).
+            «SYMB»executionInfo/«ENDSYMB»: additional information for reproducibility (JVM arguments, 
+            standard out, etc). To automatically extract code version, use «SYMB»--experimentConfigs.recordGitInfo true«ENDSYMB».
           '''
           it += '''
             «SYMB»«Runner.MONITORING_FOLDER»/«ENDSYMB»: diagnostic for the samplers. 
@@ -254,7 +254,7 @@ class InputOutput {
             in executionInfo. 
           '''
           it += '''
-            «SYMB»--experimentConfigs.recordGitInfo«ENDSYMB»: set to false to skip git repo lookup for the code.
+            «SYMB»--experimentConfigs.recordGitInfo«ENDSYMB»: set to true to record git repo info for the code.
           '''
           it += '''
             «SYMB»--experimentConfigs.saveStandardStreams«ENDSYMB»: set to false to skip recording the standard out and err.

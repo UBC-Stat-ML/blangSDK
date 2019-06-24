@@ -5,6 +5,8 @@ import org.junit.Test
 import blang.validation.DeterminismTest
 import blang.distributions.Generators
 
+import blang.validation.internals.fixtures.Examples
+
 class TestSDKDistributions { 
   
   @Test 

@@ -2,6 +2,11 @@ package blang.runtime.internals
 
 import binc.Command.BinaryExecutionException
 import java.io.File
+import java.util.ArrayList
+
+import blang.inits.experiments.Experiment
+
+import blang.System
 
 class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
 
@@ -66,7 +71,7 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     
     if (args.length === 0) {
       System.out.println(infoMessage)
-      System.exit(1);
+      System.exit(1); 
     }
     
     if (new File("build.gradle").exists) {
@@ -74,26 +79,35 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       System.exit(1);
     }
     
-    System.out.println('''
-      Compilation started...
-        Note: this may take more time the first time the command is called
-              as some dependencies will be downloaded.
-    ''')
-    
-    val StandaloneCompiler compiler = new StandaloneCompiler
-
-    val String classpath = try {
-      compiler.compileProject()
-    } catch (BinaryExecutionException bee) {
-      System.err.println("Compilation error(s):")
-      System.err.println(clean(bee.output.toString()))
-      exitWithError
-      throw new RuntimeException
+    val StandaloneCompiler compiler = try { 
+      new StandaloneCompiler
     } catch (Exception e) {
-      System.err.println(e)
+      Experiment::printException(e)
       exitWithError
       throw new RuntimeException
     }
+    
+    System.out.indentWithTiming("Compilation")
+
+    System.out.println('''
+      Note: this may take more time the first time the command is called
+        as some dependencies will be downloaded.''')
+
+    val String classpath = try {
+      System.out.println("Using blang SDK version " + compiler.blangSDKVersion)
+      compiler.compileProject()
+    } catch (BinaryExecutionException bee) {
+      System.err.indentWithTiming("Error")
+      System.err.println("Compilation error report")
+      System.err.println(clean(bee.output.toString()))
+      System.err.popIndent
+      exitWithError
+      throw new RuntimeException
+    } catch (Exception e) {
+      Experiment::printException(e)
+      exitWithError
+      throw new RuntimeException
+    } finally { System.out.popIndent }
     
     // run
     try {
@@ -102,26 +116,29 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       // don't print: mirroring showed it already
       exitWithError
     } catch (Exception e) {
-      System.err.println(e)
+      Experiment::printException(e)
       exitWithError
       throw new RuntimeException
-    }
+    } 
   }
   
   def static void exitWithError() {
+    System.out.popAll
     System.out.flush
     System.err.flush
     System.exit(1)
   }
   
   def static String clean(String string) {
-    val StringBuilder result = new StringBuilder
+    val result = new ArrayList<String>
     for (String line : string.split("\n")) {
       if (line.startsWith("* What went wrong:"))
-        return result.toString();
-      if (!line.startsWith("WARNING:") && !line.startsWith("> Task"))
-        result.append(line.replaceAll("[/].*[/]src[/]main[/]java[/]", "") + "\n") 
+        return result.join("\n"); // cut the gradle rant
+      if (!line.startsWith("WARNING:") && !line.startsWith("> Task") && !line.trim.empty) // Warnings seem always too misleading/irrelevant
+        result.add(
+          line.replaceAll("[/].*[/]src[/]main[/]java[/]", "")  // remove compilation folder from reported paths
+        ) 
     }
-    return result.toString()
+    return result.join("\n")
   }
 }
