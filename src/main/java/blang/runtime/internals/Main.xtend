@@ -8,6 +8,8 @@ import java.util.ArrayList
 import blang.inits.experiments.Experiment
 
 import blang.System
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
 
@@ -75,9 +77,12 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       System.exit(1); 
     }
     
-    val boolean dirContainsGradle = Command.cmd("ls").appendArg("-laRI").appendArg(".blang-compilation").call().contains("build.gradle")
+    val boolean dirContainsGradle  = Files.walk(Paths.get(""))
+                  .filter(f | !(f.startsWith(".blang-compilation") && f.endsWith("build.gradle")))
+                  .anyMatch(f | f.toString().equals("build.gradle"));
+
     if (dirContainsGradle) {
-      System.err.println("It appears the folder already contains gradle build architecture. Use those instead of the blang command.")
+      System.err.println("It appears the (sub)folder(s) already contain gradle build architecture. Use those instead of the blang command.")
       System.exit(1);
     }
     
@@ -130,6 +135,9 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     System.err.flush
     System.exit(1)
   }
+  
+  
+  
   
   def static String clean(String string) {
     val result = new ArrayList<String>
