@@ -79,7 +79,7 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     
     val boolean dirContainsGradle  = Files.walk(Paths.get(""))
                   .filter(f | !(f.startsWith(".blang-compilation") && f.endsWith("build.gradle")))
-                  .anyMatch(f | f.toString().equals("build.gradle"));
+                  .anyMatch(f | f.toString().endsWith("build.gradle"));
 
     if (dirContainsGradle) {
       System.err.println("It appears the (sub)folder(s) already contain gradle build architecture. Use those instead of the blang command.")
