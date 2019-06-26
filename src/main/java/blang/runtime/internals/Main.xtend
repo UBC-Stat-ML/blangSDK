@@ -1,6 +1,7 @@
 package blang.runtime.internals
 
 import binc.Command.BinaryExecutionException
+import binc.Command
 import java.io.File
 import java.util.ArrayList
 
@@ -74,7 +75,8 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       System.exit(1); 
     }
     
-    if (new File("build.gradle").exists) {
+    val boolean dirContainsGradle = Command.cmd("ls").appendArg("-laRI").appendArg(".blang-compilation").call().contains("build.gradle")
+    if (dirContainsGradle) {
       System.err.println("It appears the folder already contains gradle build architecture. Use those instead of the blang command.")
       System.exit(1);
     }
