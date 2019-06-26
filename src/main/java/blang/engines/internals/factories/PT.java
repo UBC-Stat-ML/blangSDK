@@ -337,12 +337,6 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       Pair.of(Column.average, swapStats.getMean())
     );
     
-    double logNorm = thermodynamicEstimator();
-    writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
-      roundReport,
-      Pair.of(TidySerializer.VALUE, logNorm)
-    );
-    
     // round trip information
     results.flushAll(); // make sure first the indicators are written
     String swapIndicPath = new File(results.getFileInResultFolder(Runner.MONITORING_FOLDER), MonitoringOutput.swapIndicators + ".csv").getAbsolutePath();
@@ -375,8 +369,19 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       );
     }
     
+    Optional<Double> optionalLogNorm = thermodynamicEstimator();
+    if (optionalLogNorm.isPresent())
+      writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
+        roundReport,
+        Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
+      );
+    else
+      System.out.println("Thermodynamic integration disabled as support is being annealed\n"
+                       + "  Use \"--engine SCM\" for log normalization computation instead");
+    
     // log normalization, again (this gets overwritten, so this will be the final estimate in the same format as SCM)
-    BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNorm);
+    if (optionalLogNorm.isPresent())
+      BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + optionalLogNorm.get());
   }
   
   private SCM scmDefault() {

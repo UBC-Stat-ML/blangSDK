@@ -15,8 +15,7 @@ class InferenceAndRuntime {
     section("Inference and runtime: overview") [
       it += '''
         The runtime system is responsible for loading data and performing Bayesian inference 
-        based on that data. We seek to make inference correct, general, automated and efficient 
-        (prioritized in that order): 
+        based on that data. We seek to make inference correct, general, automated and efficient: 
       '''
       orderedList[
         it += '''

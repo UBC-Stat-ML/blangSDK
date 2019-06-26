@@ -70,6 +70,9 @@ public class SampledModel
   private final double [] caches;
   private double sumPreannealedFiniteDensities, sumFixedDensities;
   private int nOutOfSupport;
+  private boolean outOfSupportDetected = false;
+  
+  public boolean outOfSupportDetected() { return outOfSupportDetected; }
   
   /*
    * Those need to be recomputed each time
@@ -334,6 +337,8 @@ public class SampledModel
       else
         sumPreannealedFiniteDensities += newPreAnnealedCache;
     }
+    if (nOutOfSupport > 0)
+      outOfSupportDetected = true;
   }
   
   private void update(int samplerIndex)
@@ -367,9 +372,10 @@ public class SampledModel
         double newPreAnnealedCache = sparseUpdateFactors.get(annealedIndex).enclosedLogDensity();
         caches[annealedIndex] = newPreAnnealedCache;
         
-        if (newPreAnnealedCache == Double.NEGATIVE_INFINITY)
+        if (newPreAnnealedCache == Double.NEGATIVE_INFINITY) {
+          outOfSupportDetected = true;
           nOutOfSupport++;
-        else
+        } else
           sumPreannealedFiniteDensities += newPreAnnealedCache;
       }
     }
