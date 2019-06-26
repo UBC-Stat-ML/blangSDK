@@ -78,7 +78,7 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     }
     
     val boolean dirContainsGradle  = Files.walk(Paths.get(""))
-                  .filter(f | !(f.startsWith(".blang-compilation") && f.endsWith("build.gradle")))
+                  .filter(f | !(f.startsWith(".blang-compilation")))
                   .anyMatch(f | f.endsWith("build.gradle"));
 
     if (dirContainsGradle) {
