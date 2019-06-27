@@ -51,6 +51,11 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     
     To obtain a list of options, append "--help" to the command line call.
     
+    NOTE:
+    
+    The list of command line options may vary on a model-by-model basis, 
+    please append '--model modelName --help' for model specific commands.
+    
   DEPENDENCIES
   
     To import external packages and their transitive closures:
@@ -70,6 +75,12 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       this convention nonetheless. 
   '''
 
+  val static helpWarning = '''
+  =======================================================================================
+  WARNING
+  
+  'blang --help' called without a specified model, please refer to OPTIONS section above.
+  '''
   def static void main(String[] args) {
     
     if (args.length === 0) {
@@ -77,11 +88,19 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       System.exit(1); 
     }
     
+ 	val boolean helpRequested = (args.length === 1) && (args.get(0) == "--help")
+
     val boolean dirContainsGradle  = Files.walk(Paths.get(""))
                   .filter(f | !(f.startsWith(".blang-compilation")))
                   .anyMatch(f | f.endsWith("build.gradle"));
-
-    if (dirContainsGradle) {
+	
+	if (helpRequested) {
+	  System.out.println(infoMessage + '\n' + helpWarning)
+	  System.exit(1);
+	} else if (dirContainsGradle && helpRequested) {
+      System.out.println(infoMessage)
+      System.exit(1);
+    } else if (dirContainsGradle) {
       System.err.println("It appears the (sub)folder(s) already contain gradle build architecture. Use those instead of the blang command.")
       System.exit(1);
     }
