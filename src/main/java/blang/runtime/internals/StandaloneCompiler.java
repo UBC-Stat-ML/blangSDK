@@ -71,13 +71,13 @@ public class StandaloneCompiler  {
     if (dependencies.exists())
       for (String line : BriefIO.readLines(dependencies)) {
         line = line.trim();
-     	if (line == null || line.isEmpty())
-	  continue;
-	Matcher m = depFormat.matcher(line);
-	if (m.find()) {
-	  result.add(line);
-	} else {
-	  throw new RuntimeException("Invalid dependencies.txt format: " + line);
+        if (line == null || line.isEmpty())
+          continue;
+        Matcher m = depFormat.matcher(line);
+        if (m.find()) {
+          result.add(line);
+        } else {
+          throw new RuntimeException("Invalid dependencies.txt format: " + line);
         }
       }
     return result;
