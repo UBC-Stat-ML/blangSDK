@@ -26,7 +26,7 @@ public class ParallelTempering
   @Arg                   @DefaultValue("EquallySpaced")
   public TemperatureLadder ladder = new EquallySpaced();
   
-  @Arg(description = "If unspecified, use the number of threads.") 
+  @Arg(description = "If unspecified, use 8.") 
                                   @DefaultValue("8")
   public Optional<Integer> nChains = Optional.of(8);
   
@@ -105,12 +105,21 @@ public class ParallelTempering
     return acceptPr;
   }
   
-  public double thermodynamicEstimator() 
+  /**
+   * @return the estimate of log probability or empty if the conditions for thermodynamic integration 
+   *   are not met (i.e. support is being annealed).
+   */
+  public Optional<Double> thermodynamicEstimator() 
   {
+    for (int c = 0; c < nChains(); c++)
+      if (states[c].outOfSupportDetected())
+        return Optional.empty();
+    
     double sum = 0.0;
-    for (int c = 0; c < nChains() - 1; c++)
+    for (int c = 0; c < nChains() - 1; c++) {
       sum += (temperingParameters.get(c) - temperingParameters.get(c+1)) * (energies[c].getMean() + energies[c+1].getMean())/ 2.0;
-    return -sum;
+    }
+    return Optional.of(-sum);
   }
   
   private void doSwap(int i) 
