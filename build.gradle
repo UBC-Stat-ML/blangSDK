@@ -36,7 +36,7 @@ def blangVersion = '4.0.0' // Note to self: not the one that changes often!
 
 dependencies {
   xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
-  compile "com.github.kevinchern:blangSDK:master-SNAPSHOT"
+  compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.16.0'
   compile group: 'ca.ubc.stat', name: 'briefj', version: '2.5.0'
   compile group: 'ca.ubc.stat', name: 'inits', version: '3.0.0'

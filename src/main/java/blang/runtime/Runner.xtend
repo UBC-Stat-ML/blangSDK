@@ -85,7 +85,6 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
    * - standard
    */
   def static Arguments parseArguments(String ... args) {
-    args.get(0).replace(".bl","")
     if (useSimplifiedArguments(args)) {
       // try to read in (else empty)
       val File configFile = new File(CONFIG_FILE_NAME)
@@ -113,7 +112,6 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   def static void main(String ... args) {
-    args.set(0,args.get(0).replace(".bl",""))
     java.lang.System::exit(start(args))
   }
   
