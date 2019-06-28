@@ -65,6 +65,43 @@ class TestStandaloneCompiler {
     Assert::assertTrue(errored.contains("ERROR"))
   }
   
+  @Test
+  def void testGradleFixType1() {
+    val root = folder.newFolder
+    
+    val blangFile = new File(root, "MyModel.bl")
+    BriefIO::write(blangFile, '''
+      model MyModel { 
+        random RealVar x ?: latentReal
+        laws {
+          x ~ Normal(0.0, 1.0)
+        }
+      }
+    ''')
+    
+    compiler(root, "bad").call
+    compiler(root, "MyModel").throwOnNonZeroReturnCode.call
+  }
+  
+  @Test
+  def void testGradleFixType2() {
+    val root = folder.newFolder
+    
+    val blangFile = new File(root, "MyModel.bl")
+    val f = '''
+      model MyModel { 
+        random RealVar x ?: latentReal
+        laws {
+          x ~ Normal(0.0, 1.0)
+        }
+      }
+    '''
+    BriefIO::write(blangFile, f)
+    compiler(root, "MyModel").throwOnNonZeroReturnCode.call
+    BriefIO::write(blangFile, f + " ")
+    compiler(root, "MyModel").throwOnNonZeroReturnCode.call
+  }
+  
   def Command compiler(File runDir, String modelName) {
     val repoRoot = DocElementExtensions::findRepositoryRoot(Runner)
     val blangCmd = repoRoot.toPath.resolve("build/install/blang/bin/blang").toFile

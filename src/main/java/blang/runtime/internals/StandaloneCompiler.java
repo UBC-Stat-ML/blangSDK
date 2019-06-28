@@ -71,13 +71,13 @@ public class StandaloneCompiler  {
     if (dependencies.exists())
       for (String line : BriefIO.readLines(dependencies)) {
         line = line.trim();
-     	if (line == null || line.isEmpty())
-	  continue;
-	Matcher m = depFormat.matcher(line);
-	if (m.find()) {
-	  result.add(line);
-	} else {
-	  throw new RuntimeException("Invalid dependencies.txt format: " + line);
+        if (line == null || line.isEmpty())
+          continue;
+        Matcher m = depFormat.matcher(line);
+        if (m.find()) {
+          result.add(line);
+        } else {
+          throw new RuntimeException("Invalid dependencies.txt format: " + line);
         }
       }
     return result;
@@ -121,6 +121,7 @@ public class StandaloneCompiler  {
    * @return classpath-formatted list of jars created or that the build task depends on
    */
   public static String compile(File folder, String projectName) throws BinaryExecutionException {
+    runGradle("clean", folder);
     runGradle("assemble", folder);
     Path justCompiled = Paths.get(folder.getPath(), "build", "libs", PROJECT_NAME + ".jar");
     if (!Files.exists(justCompiled)) throw new RuntimeException("Not found: " + justCompiled);
@@ -185,6 +186,9 @@ public class StandaloneCompiler  {
       Files.walkFileTree(projectHome.toPath(), new FileTransferProcessor(projectHome.toPath(), srcFolder));  
       // remove deleted
       Files.walkFileTree(srcFolder, new FileRemoveProcessor(projectHome.toPath(), srcFolder));
+      // add a dummy xtend file to work around gradle/xtext bug 
+      // set to commit 54c7aba5d9e1e067ce186a5f8761a528030e4f00 run https://github.com/UBC-Stat-ML/blangBugs, type1Dummer.sh vs. type1.sh
+      BriefIO.write(new File(srcFolder.toFile(), "Dummy.xtend"), "class Dummy {}");
     }
     catch (Exception e) { throw new RuntimeException(e); }
   }
@@ -319,7 +323,7 @@ public class StandaloneCompiler  {
 
   private String findDirectiveLine(String buildFileContents, Directive directive) {
     for (String line : buildFileContents.split("\\r?\\n"))
-      if (line.contains(directive.toString()))
+      if (line.contains("blang-standalone-compiler-directive - do not edit : " + directive.toString()))
         return line;
     throw new RuntimeException();
   }
