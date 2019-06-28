@@ -319,7 +319,7 @@ public class StandaloneCompiler  {
 
   private String findDirectiveLine(String buildFileContents, Directive directive) {
     for (String line : buildFileContents.split("\\r?\\n"))
-      if (line.contains(directive.toString()))
+      if (line.contains("blang-standalone-compiler-directive - do not edit : " + directive.toString()))
         return line;
     throw new RuntimeException();
   }
