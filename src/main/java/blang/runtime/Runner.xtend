@@ -96,7 +96,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
         }
       }
       // add the one argument (after fixing it)
-      val String modelString = fixModelBuilderArgument(args.get(0).replace(".bl", ""))
+      val String modelString = fixModelBuilderArgument(args.get(0))
       fromFile.setOrCreateChild("model", Collections.singletonList(modelString))
       fromFile.getOrCreateDesc(Collections.singletonList("experimentConfigs")).setOrCreateChild("recordGitInfo", Collections.singletonList("false"));
       return fromFile
@@ -141,7 +141,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   def static String fixModelBuilderArgument(String string) {
-    return string + "$" + SingleBlangModelInferrer.BUILDER_NAME
+    return string.trim.replaceFirst("[.]bl$", "") + "$" + SingleBlangModelInferrer.BUILDER_NAME
   }
   def static void fixModelBuilderArgument(String[] strings) {
     for (var int i = 0; i < strings.size; i++) {
