@@ -49,12 +49,8 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     inference engine, tune inference, configure data input, select output format,  
     post-process the samples, etc. 
     
-    To obtain a list of options, append "--help" to the command line call.
-    
-    NOTE:
-    
-    The list of command line options may vary on a model-by-model basis, 
-    please append '--model modelName --help' for model specific commands.
+    To obtain a list of options, append "--help" to the command line call. For commands
+    specific to a model, append "--model modelName --help".
     
   DEPENDENCIES
   
@@ -75,32 +71,21 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       this convention nonetheless. 
   '''
 
-  val static helpWarning = '''
-  =======================================================================================
-  WARNING
-  
-  'blang --help' called without a specified model, please refer to OPTIONS section above.
-  '''
+
   def static void main(String[] args) {
+  	
+  	val boolean helpRequested = (args.length === 0 || (args.length === 1 && args.get(0) == "--help"))
     
-    if (args.length === 0) {
+    if (helpRequested) {
       System.out.println(infoMessage)
       System.exit(1); 
     }
     
- 	val boolean helpRequested = (args.length === 1) && (args.get(0) == "--help")
-
     val boolean dirContainsGradle  = Files.walk(Paths.get(""))
                   .filter(f | !(f.startsWith(".blang-compilation")))
                   .anyMatch(f | f.endsWith("build.gradle"));
 	
-	if (helpRequested) {
-	  System.out.println(infoMessage + '\n' + helpWarning)
-	  System.exit(1);
-	} else if (dirContainsGradle && helpRequested) {
-      System.out.println(infoMessage)
-      System.exit(1);
-    } else if (dirContainsGradle) {
+    if (dirContainsGradle) {
       System.err.println("It appears the (sub)folder(s) already contain gradle build architecture. Use those instead of the blang command.")
       System.exit(1);
     }
