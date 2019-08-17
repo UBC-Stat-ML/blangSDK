@@ -20,6 +20,7 @@ model HalfStudentT{
             return - log(sigma)
         }
         logf(nu, sigma, realization){
+        	if (realization < 0.0) return NEGATIVE_INFINITY
             if (sigma <= 0.0) return NEGATIVE_INFINITY
             if (nu <= 0.0) return NEGATIVE_INFINITY
             return -((nu + 1.0) / 2.0) * log(1.0 + 1.0 / nu * pow(realization / sigma, 2))
