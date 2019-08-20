@@ -99,25 +99,31 @@ class PlatedMatrix {
     return result
   } 
   
-  def <S> RealVar getDenseSimplexEntry(Plate<S> rowPlate, Index<S> rowIndex, Index ... parentIndices) {
+  def <S> RealVar getDenseSimplexEntry(Index<S> rowIndex, Index ... parentIndices) {
+    val rowPlate = rowIndex.plate
     val vector = getDenseSimplex(rowPlate, parentIndices)
     val Query query = Query::build(parentIndices)
     return ExtensionUtils::getRealVar(vector, rowIndexer(query).o2i(rowIndex))
   }
   
-  def <S> RealVar getDenseVectorEntry(Plate<S> rowPlate, Index<S> rowIndex, Index ... parentIndices) {
+  def <S> RealVar getDenseVectorEntry(Index<S> rowIndex, Index ... parentIndices) {
+    val rowPlate = rowIndex.plate
     val vector = getDenseVector(rowPlate, parentIndices)
     val Query query = Query::build(parentIndices)
     return ExtensionUtils::getRealVar(vector, rowIndexer(query).o2i(rowIndex))
   }
   
-  def <S,T> RealVar getDenseTransitionMatrixEntry(Plate<S> rowPlate, Index<S> rowIndex, Plate<T> colPlate, Index<T> colIndex, Index ... parentIndices) {
+  def <S,T> RealVar getDenseTransitionMatrixEntry(Index<S> rowIndex, Index<T> colIndex, Index ... parentIndices) {
+    val rowPlate = rowIndex.plate
+    val colPlate = colIndex.plate
     val matrix = getDenseTransitionMatrix(rowPlate, colPlate, parentIndices)
     val Query query = Query::build(parentIndices)
     return ExtensionUtils::getRealVar(matrix, rowIndexer(query).o2i(rowIndex), colIndexer(query).o2i(colIndex)) 
   }
   
-  def <S,T> RealVar getDenseMatrixEntry(Plate<S> rowPlate, Index<S> rowIndex, Plate<T> colPlate, Index<T> colIndex, Index ... parentIndices) {
+  def <S,T> RealVar getDenseMatrixEntry(Index<S> rowIndex, Index<T> colIndex, Index ... parentIndices) {
+    val rowPlate = rowIndex.plate
+    val colPlate = colIndex.plate
     val matrix = getDenseMatrix(rowPlate, colPlate, parentIndices)
     val Query query = Query::build(parentIndices)
     return ExtensionUtils::getRealVar(matrix, rowIndexer(query).o2i(rowIndex), colIndexer(query).o2i(colIndex))    
