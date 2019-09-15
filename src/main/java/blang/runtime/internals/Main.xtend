@@ -49,7 +49,8 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     inference engine, tune inference, configure data input, select output format,  
     post-process the samples, etc. 
     
-    To obtain a list of options, append "--help" to the command line call.
+    To obtain a list of options, append "--help" to the command line call. For commands
+    specific to a model, append "--model modelName --help".
     
   DEPENDENCIES
   
@@ -70,9 +71,12 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
       this convention nonetheless. 
   '''
 
+
   def static void main(String[] args) {
+  	
+  	val boolean helpRequested = (args.length === 0 || (args.length === 1 && args.get(0) == "--help"))
     
-    if (args.length === 0) {
+    if (helpRequested) {
       System.out.println(infoMessage)
       System.exit(1); 
     }
@@ -80,7 +84,7 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     val boolean dirContainsGradle  = Files.walk(Paths.get(""))
                   .filter(f | !(f.startsWith(".blang-compilation")))
                   .anyMatch(f | f.endsWith("build.gradle"));
-
+	
     if (dirContainsGradle) {
       System.err.println("It appears the (sub)folder(s) already contain gradle build architecture. Use those instead of the blang command.")
       System.exit(1);

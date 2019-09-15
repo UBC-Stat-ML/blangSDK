@@ -7,7 +7,7 @@ Summary [![Build Status](https://travis-ci.org/UBC-Stat-ML/blangSDK.png?branch=m
 
 This is one of the repositories hosting Blang's code. This one contains the Blang's SDK (Software Development Kit), including:
 
-- Basic datatypes suitable for sampling such as ``Real``, ``Int``, ``Simplex``, etc.
+- Basic datatypes suitable for sampling.
 - Infrastructure to create new data types and distributions.
 - Inference algorithms for such datatypes, such as [Adaptive Non-Reversible Parallel Tempering](https://www.stat.ubc.ca/~bouchard/pub/Syed2019NRPT.pdf) and Sequential Change of Measure.
 - Standard probability distributions.
