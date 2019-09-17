@@ -170,8 +170,11 @@ public class ParallelTempering
   private SampledModel [] initStates(SampledModel prototype, int nChains)
   {
     SampledModel [] result = (SampledModel []) new SampledModel[nChains];
-    for (int i = 0; i < nChains; i++)
-      result[i] = prototype.duplicate();
+    if (nChains == 1)
+      result[0] = prototype;
+    else
+      for (int i = 0; i < nChains; i++)
+        result[i] = prototype.duplicate();
     return result;
   }
   
