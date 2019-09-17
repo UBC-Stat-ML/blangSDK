@@ -46,10 +46,11 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg @DefaultValue("1_000")
   public int nScans = 1_000;
   
-  @Arg           @DefaultValue("0.5")
+  @Arg(description = "Set to zero for disabling schedule adaptation")          
+                 @DefaultValue("0.5")
   public double adaptFraction = 0.5;
   
-  @Arg         @DefaultValue("3")
+  @Arg            @DefaultValue("3")
   public double nPassesPerScan = 3;
   
   @Arg               @DefaultValue("1")

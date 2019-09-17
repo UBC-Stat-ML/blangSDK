@@ -23,7 +23,8 @@ public class ParallelTempering
   @Arg           @DefaultValue("Dynamic")
   public Cores nThreads = Cores.dynamic();  
   
-  @Arg                   @DefaultValue("EquallySpaced")
+  @Arg(description = "The annealing schedule to use or if adaptation is used, the initial value")                   
+                         @DefaultValue("EquallySpaced")
   public TemperatureLadder ladder = new EquallySpaced();
   
   @Arg(description = "If unspecified, use 8.") 
