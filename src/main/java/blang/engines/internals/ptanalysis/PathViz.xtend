@@ -9,9 +9,10 @@ import blang.inits.DesignatedConstructor
 import blang.inits.DefaultValue
 import blang.inits.Arg
 import java.util.Optional
+import processing.core.PApplet
 
 class PathViz extends Viz {
-  val Paths paths
+  public val Paths paths
   
   @Arg public Optional<Integer> boldTrajectory = Optional.empty
   
@@ -20,16 +21,22 @@ class PathViz extends Viz {
   
   public float ratio = 0.5f
   
+  val boolean animate
+  val int maxDisplayed = 100
+  public var int current = 1 
+  
   @DesignatedConstructor
   new(
     @ConstructorArg("swapIndicators") Paths paths, 
-    @ConstructorArg("size") @DefaultValue("height", "300") PublicSize publicSize
+    @ConstructorArg("size") @DefaultValue("height", "300") PublicSize publicSize,
+    @ConstructorArg("animate") @DefaultValue("false") boolean animate
   ) {
     super(publicSize)
     this.paths = paths
+    this.animate = animate
   }
   
-  val baseWeight = 0.05f
+  val baseWeight = 0.1f
   override protected draw() {
     translate(0.5f, 0.5f)
     val boldStroke = 6 * baseWeight
@@ -37,19 +44,24 @@ class PathViz extends Viz {
     val maxY = paths.nChains - 1
     val minX = 0f
     val maxX = ratio * (paths.nIterations - 1)
+    strokeWeight(0f)
+    rect(0, 0, paths.nIterations * ratio, paths.nChains - 1f)
     for (c : 0 ..< paths.nChains) {
       if (boldTrajectory.orElse(-1) == c)
         strokeWeight(boldStroke)
       else
         strokeWeight(baseWeight)
-      if (!useAcceptRejectColours)
-        setColour(c)
       val path = paths.get(c)
-      for (i : 1 ..< paths.nIterations) {
+      var float alpha = 255f
+      for (i : iterationIndices) {
         if (useAcceptRejectColours)
-          setColour(path.get(i-1) != path.get(i))
+          setColour(path.get(i-1) != path.get(i), alpha)
+        else 
+          setColour(c, alpha)
+        if (animate)
+          alpha -= 255f / maxDisplayed
         val y0 = path.get(i-1)
-        val y1 =path.get(i)
+        val y1 = path.get(i)
         line(ratio*(i-1), y0, ratio*i, y1)
         if (useAcceptRejectColours)
           stroke(0, 0, 0)
@@ -62,19 +74,30 @@ class PathViz extends Viz {
     strokeWeight(boldStroke)
     line(minX, minY, maxX, minY) 
     line(minX, maxY, maxX, maxY) 
+    if (animate)
+      current = (println(current) + 1) % paths.nIterations
   }
   
-  def void setColour(boolean accepted) {
-    if (accepted) stroke(0, 204, 0)
-    else stroke(204, 0, 0)
+  def Iterable<Integer> iterationIndices() {
+    if (animate) return (current .. Math.max(1, current - maxDisplayed))
+    else return (1 ..< paths.nIterations)
   }
   
-  def void setColour(int chainIndex) {
-    val from = color(204, 102, 0)
-    val to = color(0, 102, 153)
-    val interpolated = lerpColor(from, to, 1.0f * chainIndex / paths.nChains)
-    stroke(interpolated)
+  def void setColour(boolean accepted, float alpha) {
+    if (accepted) stroke(0, 204, 0, alpha)
+    else stroke(204, 0, 0, alpha)
   }
+  
+  def void setColour(int chainIndex, float alpha) {
+    stroke(colour(chainIndex), alpha)
+  }
+  
+  def int colour(int chainIndex) {
+    val from = -3381760 //color(204, 102, 0)
+    val to = -16750951 //color(0, 102, 153)
+    return PApplet::lerpColor(from, to, 1.0f * chainIndex / paths.nChains, PApplet.RGB)
+  }
+
   
   override protected privateSize() { new PrivateSize(paths.nIterations * ratio, paths.nChains) }
   
