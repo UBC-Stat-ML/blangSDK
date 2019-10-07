@@ -9,16 +9,12 @@ import briefj.BriefIO
 import java.io.File
 import blang.engines.internals.ptanalysis.PathViz
 import blang.engines.internals.ptanalysis.Paths
-import gifAnimation.GifMaker
 
 class CompositeSampling2dViz extends Viz {
   
   val Sampling2dViz viz1
   val Sampling2dViz viz2
   val PathViz pViz
-  
-  var GifMaker gif = null
-  var boolean setup = false
   
   new(PublicSize publicSize, Sampling2dViz viz1, Sampling2dViz viz2, PathViz pViz) {
     super(publicSize)
@@ -28,11 +24,6 @@ class CompositeSampling2dViz extends Viz {
   }
   
   override protected draw() {
-    if (!setup) {
-      this.gif = new GifMaker(applet, "export.gif") 
-      setup = true
-    }
-    
     background(51);
     addChild(viz1,0,1)
     addChild(viz2,1,1)
@@ -44,15 +35,8 @@ class CompositeSampling2dViz extends Viz {
     translate(-(pViz.current / nIterationFitting) * 2, 0)
     addChild(pViz,0,0)
     popMatrix
-    if (gif !== null) {
-      gif.setDelay(1);
-      gif.addFrame();
-    }
     if (pViz.current == pViz.paths.nIterations - 2) {
-      if (gif !== null) {
-        gif.finish
-        gif = null
-      }
+      finishGif
       pViz.current = 1
       viz1.current = 0
       viz2.current = 0
@@ -96,6 +80,6 @@ class CompositeSampling2dViz extends Viz {
     val viz1 = viz("beta", "km0", colours)
     val viz2 = viz("beta", "delta", colours)
     
-    new CompositeSampling2dViz(fixHeight(900), viz1, viz2, pathViz).show
+    new CompositeSampling2dViz(fixHeight(900), viz1, viz2, pathViz).outputAnimatedGif("test.gif")
   }
 }
