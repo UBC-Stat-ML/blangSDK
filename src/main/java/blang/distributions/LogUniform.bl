@@ -1,12 +1,13 @@
 package blang.distributions
 
+/** The random variable \(X = \exp(Y)\) where \(Y \sim \text{ContinuousUniform}[m, M]\). */
 model LogUniform {
   random RealVar realization
   
-  /** The left end point \(m\) of the interval. \(m \in (\infty, M)\) */
+  /** The left end point \(m\) of the interval. \(m \in (-\infty, M)\) */
   param  RealVar min
   
-  /** The right end point of the interval. \(M \in (m, \infty)\) */
+  /** The right end point \(M)\ of the interval. \(M \in (m, \infty)\) */
   param  RealVar max
   
   param RealVar base
@@ -18,6 +19,7 @@ model LogUniform {
     }
     logf(realization, min, max, base) {
       if (base <= 0) return NEGATIVE_INFINITY
+      if (realization <= 0) return NEGATIVE_INFINITY
       val logr = log(realization)
       val logb = log(base)
       val transformed = logr / logb
