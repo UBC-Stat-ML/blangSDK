@@ -23,7 +23,8 @@ public class ParallelTempering
   @Arg           @DefaultValue("Dynamic")
   public Cores nThreads = Cores.dynamic();  
   
-  @Arg                   @DefaultValue("EquallySpaced")
+  @Arg(description = "The annealing schedule to use or if adaptation is used, the initial value")                   
+                         @DefaultValue("EquallySpaced")
   public TemperatureLadder ladder = new EquallySpaced();
   
   @Arg(description = "If unspecified, use 8.") 
@@ -169,8 +170,11 @@ public class ParallelTempering
   private SampledModel [] initStates(SampledModel prototype, int nChains)
   {
     SampledModel [] result = (SampledModel []) new SampledModel[nChains];
-    for (int i = 0; i < nChains; i++)
-      result[i] = prototype.duplicate();
+    if (nChains == 1)
+      result[0] = prototype;
+    else
+      for (int i = 0; i < nChains; i++)
+        result[i] = prototype.duplicate();
     return result;
   }
   

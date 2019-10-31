@@ -47,8 +47,9 @@ class DefaultPostProcessor extends PostProcessor {
               @DefaultValue("4.0")
   public double facetWidth = 4.0
   
-  @Arg       @DefaultValue("true")
-  public boolean runPxviz = true
+  @Arg(description = "Run visualizations based on Processing (may need extra steps to perform in a 'headless' environment)")       
+             @DefaultValue("false")
+  public boolean runPxviz = false
   
   @Arg                    @DefaultValue("Batch")
   public EssEstimator essEstimator = new Batch

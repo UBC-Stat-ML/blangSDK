@@ -43,7 +43,7 @@ interface Plate<K> {
     return new Index<K>(this, key)
   }
   
-  // Builders
+  // Builders (see also new SimplePlate)
   
   /** a plate with indices 0, 1, 2, ..., size-1 */
   def static Plate<Integer> ofIntegers(ColumnName columnName, int size) {
