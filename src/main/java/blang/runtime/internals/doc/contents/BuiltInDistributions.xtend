@@ -56,7 +56,7 @@ class BuiltInDistributions {
       documentClass(Geometric)
       documentClass(HyperGeometric)
       documentClass(NegativeBinomial)
-      documentClass(NegativeBinomialMeanParam)
+      // documentClass(NegativeBinomialMeanParam) // Commented as not documented at the moment
       documentClass(Poisson)
       documentClass(YuleSimon)
     ]
@@ -68,7 +68,7 @@ class BuiltInDistributions {
       documentClass(Exponential)
       documentClass(F)
       documentClass(Gamma)
-      documentClass(GammaMeanParam)
+      // documentClass(GammaMeanParam) // Commented as not documented at the moment
       documentClass(Gompertz)
       documentClass(Gumbel)
       documentClass(HalfStudentT)
