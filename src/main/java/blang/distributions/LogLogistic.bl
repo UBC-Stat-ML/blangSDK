@@ -1,7 +1,6 @@
 package blang.distributions
 
-/** A log-logistic distribution is the probability distribution of a random variable
- * whose logarithm has a logistic distribution. Values in \([0, +\infty) \)*/
+/** A log-logistic distribution is the probability distribution of a random variable whose logarithm has a logistic distribution. Values in \([0, +\infty) \)*/
 model LogLogistic {
   random RealVar realization
 	

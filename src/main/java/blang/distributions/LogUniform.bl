@@ -7,7 +7,7 @@ model LogUniform {
   /** The left end point \(m\) of the interval. \(m \in (-\infty, M)\) */
   param  RealVar min
   
-  /** The right end point \(M)\ of the interval. \(M \in (m, \infty)\) */
+  /** The right end point \(M\) of the interval. \(M \in (m, \infty)\) */
   param  RealVar max
   
   param RealVar base

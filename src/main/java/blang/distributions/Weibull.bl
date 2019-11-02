@@ -1,6 +1,6 @@
 package blang.distributions
 
-/** The Weibull Distribution. Values \in \((0, \infty)\).*/
+/** The Weibull Distribution. Values in \((0, \infty)\).*/
 model Weibull {
   random RealVar realization
   
