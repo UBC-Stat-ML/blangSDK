@@ -293,17 +293,18 @@ class DefaultPostProcessor extends PostProcessor {
       val groupBy = facetVariables => [add(TidySerializer::VALUE)]
       return '''
       «removeBurnIn»
+      normalization <-  max(data$«Runner.sampleColumn») - n_samples * «processor.burnInFraction»
       data <- data %>%
         group_by(«groupBy.join(",")») %>%
         summarise(
-          frequency = n()
+          probability = n() / normalization
         )
       
-      p <- ggplot(data, aes(x = «TidySerializer::VALUE», y = frequency, xend = «TidySerializer::VALUE», yend = rep(0, length(frequency)))) +
+      p <- ggplot(data, aes(x = «TidySerializer::VALUE», y = probability, xend = «TidySerializer::VALUE», yend = rep(0, length(probability)))) +
         geom_point() + geom_segment() + «facetString»
         theme_bw() + 
         xlab("«variableName»") +
-        ylab("frequency") +
+        ylab("probability") +
         ggtitle("Probability mass function plot for: «variableName»")
       '''
     }
