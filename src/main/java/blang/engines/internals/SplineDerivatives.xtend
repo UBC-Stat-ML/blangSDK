@@ -21,9 +21,6 @@ class SplineDerivatives {
      var i = 0;
      while (_x >= mX.get(i + 1)) {
          i += 1
-//         if (_x == mX.get(i)) {
-//             return mY.get(i)
-//         }
      }
      val h = mX.get(i + 1) - mX.get(i)
      val x = new DerivativeStructure(1, 1, 0, _x)
