@@ -11,6 +11,7 @@ public class ExponentiatedFactor implements AnnealedFactor
 {
   private final LogScaleFactor enclosed;
   public final boolean treatNaNAsNegativeInfinity; 
+  public final boolean annealSupport;
   
   /**
    * Compute the density of the enclosed density.
@@ -57,8 +58,9 @@ public class ExponentiatedFactor implements AnnealedFactor
    *     cost of computing SampledModel.logDensityRatio .. 
    */
   
-  public ExponentiatedFactor(LogScaleFactor enclosed, boolean treatNaNAsNegativeInfinity)
+  public ExponentiatedFactor(LogScaleFactor enclosed, boolean treatNaNAsNegativeInfinity, boolean annealSupport)
   {
+    this.annealSupport = annealSupport;
     this.treatNaNAsNegativeInfinity = treatNaNAsNegativeInfinity;
     if (enclosed instanceof AnnealedFactor) 
       throw new RuntimeException("Trying to anneal a factor which is already annealed.");
@@ -72,7 +74,7 @@ public class ExponentiatedFactor implements AnnealedFactor
     if (expValue == 0.0)
       return 0.0;
     double enclosedLogDensity = enclosedLogDensity();
-    if (enclosedLogDensity == Double.NEGATIVE_INFINITY)
+    if (enclosedLogDensity == Double.NEGATIVE_INFINITY && annealSupport)
       return annealedMinusInfinity(expValue);  
     return expValue * enclosedLogDensity;
   }

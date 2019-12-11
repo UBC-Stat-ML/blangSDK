@@ -58,6 +58,7 @@ public class GraphAnalysis
   private final Map<ObjectNode<ModelComponent>,String> factorDescriptions = new LinkedHashMap<>();
   public final RealScalar annealingParameter = new RealScalar(1.0);
   public final boolean treatNaNAsNegativeInfinity;
+  public final boolean annealSupport;
   
   public LinkedHashSet<Node> getLatentVariables() 
   {
@@ -116,12 +117,13 @@ public class GraphAnalysis
   
   public GraphAnalysis(Model model, Observations observations) 
   {
-    this (model, observations, false);
+    this (model, observations, false, true);
   }
   
-  public GraphAnalysis(Model model, Observations observations, boolean treatNaNAsNegativeInfinity)
+  public GraphAnalysis(Model model, Observations observations, boolean treatNaNAsNegativeInfinity, boolean annealSupport)
   {
     this.treatNaNAsNegativeInfinity = treatNaNAsNegativeInfinity;
+    this.annealSupport = annealSupport;
     this.model = model;
     
     // setup first layer of data structures
@@ -209,7 +211,7 @@ public class GraphAnalysis
         boolean isCustomAnneal = subComponent instanceof AnnealedFactor;
         if (isLogScale  // if it's numeric (not a measure-zero constraint-based factor)
             && !isCustomAnneal)  // and it's not already annealed via custom mechanism
-          subComponent = new ExponentiatedFactor((LogScaleFactor) subComponent, treatNaNAsNegativeInfinity);
+          subComponent = new ExponentiatedFactor((LogScaleFactor) subComponent, treatNaNAsNegativeInfinity, annealSupport);
         ObjectNode<ModelComponent> childNode = new ObjectNode<>(subComponent);
         if (subComponent instanceof Factor)
           factorDescriptions.put(childNode, description);

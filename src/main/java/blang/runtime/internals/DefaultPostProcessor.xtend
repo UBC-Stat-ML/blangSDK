@@ -51,6 +51,8 @@ class DefaultPostProcessor extends PostProcessor {
              @DefaultValue("false")
   public boolean runPxviz = false
   
+  @Arg public Optional<Integer> boldTrajectory = Optional.empty
+  
   @Arg                    @DefaultValue("Batch")
   public EssEstimator essEstimator = new Batch
   
@@ -171,7 +173,7 @@ class DefaultPostProcessor extends PostProcessor {
       val paths = new Paths(pathsFile.absolutePath, 0, Integer.MAX_VALUE)
       val plotsFolder = outputFolder(Output::monitoringPlots)
       val pViz = new PathViz(paths, Viz::fixHeight(300))
-      pViz.boldTrajectory = Optional.of(1)
+      pViz.boldTrajectory = boldTrajectory
       pViz.output(new File(plotsFolder, Output::paths + ".pdf"))
     }
   }

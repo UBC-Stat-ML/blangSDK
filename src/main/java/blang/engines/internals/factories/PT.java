@@ -108,6 +108,16 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       densitySerializer.serialize(energy, SampleOutput.energy.toString(), 
         Pair.of(sampleColumn, iter), 
         Pair.of(Column.chain, i));
+      final int nOutOfSupport = states[i].nOutOfSupport();
+      densitySerializer.serialize(nOutOfSupport, SampleOutput.nOutOfSupport.toString(), 
+          Pair.of(sampleColumn, iter), 
+          Pair.of(Column.chain, i));
+      final double otherAnnealed = states[i].sumOtherAnnealed();
+      if (otherAnnealed != 0.0) {
+        densitySerializer.serialize(otherAnnealed, SampleOutput.otherAnnealed.toString(), 
+            Pair.of(sampleColumn, iter), 
+            Pair.of(Column.chain, i));
+      }
     }
     densitySerializer.serialize(getTargetState().logDensity(), SampleOutput.logDensity.toString(), 
       Pair.of(sampleColumn, iter));
@@ -407,7 +417,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum SampleOutput
   {
-    energy, logDensity, allLogDensities;
+    energy, logDensity, allLogDensities, nOutOfSupport, otherAnnealed;
   }
   
   public static enum Column

@@ -66,6 +66,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   @Arg                         @DefaultValue("false")
   public boolean treatNaNAsNegativeInfinity = false;
   
+  @Arg            @DefaultValue("true")
+  public boolean annealSupport = true;
+  
   @Arg                      @DefaultValue("NoPostProcessor")
   public PostProcessor postProcessor = new NoPostProcessor
   
@@ -158,7 +161,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   def preprocess() {
     samplers.monitoringStatistics = results.child(MONITORING_FOLDER) 
-    val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations, treatNaNAsNegativeInfinity)
+    val GraphAnalysis graphAnalysis = new GraphAnalysis(model, observations, treatNaNAsNegativeInfinity, annealSupport)
     engine.check(graphAnalysis)
     if (printAccessibilityGraph) {
       graphAnalysis.exportAccessibilityGraphVisualization(Results.getFileInResultFolder("accessibility-graph.dot"))

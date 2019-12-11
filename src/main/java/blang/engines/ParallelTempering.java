@@ -113,7 +113,7 @@ public class ParallelTempering
   public Optional<Double> thermodynamicEstimator() 
   {
     for (int c = 0; c < nChains(); c++)
-      if (states[c].outOfSupportDetected())
+      if (states[c].annealedOutOfSupportDetected())
         return Optional.empty();
     
     double sum = 0.0;
