@@ -35,6 +35,10 @@ import blang.distributions.Gumbel
 import blang.distributions.Gompertz
 import blang.distributions.HyperGeometric
 import blang.distributions.BetaBinomial
+import blang.distributions.BetaNegativeBinomial
+import blang.distributions.GammaMeanParam
+import blang.distributions.LogUniform
+import blang.distributions.NegativeBinomialMeanParam
 
 class BuiltInDistributions {
   
@@ -44,41 +48,45 @@ class BuiltInDistributions {
     
     section("Discrete") [
       documentClass(Bernoulli)
+      documentClass(BetaBinomial)
+      documentClass(BetaNegativeBinomial)
       documentClass(Binomial)
       documentClass(Categorical)
       documentClass(DiscreteUniform)
-      documentClass(Poisson)
-      documentClass(NegativeBinomial)
-      documentClass(YuleSimon)
       documentClass(Geometric)
       documentClass(HyperGeometric)
-      documentClass(BetaBinomial)
+      documentClass(NegativeBinomial)
+      // documentClass(NegativeBinomialMeanParam) // Commented as not documented at the moment
+      documentClass(Poisson)
+      documentClass(YuleSimon)
     ]
     
     section("Continuous") [
+      documentClass(Beta)
+      documentClass(ChiSquared)
       documentClass(ContinuousUniform)
       documentClass(Exponential)
-      documentClass(Normal)
-      documentClass(Beta)
+      documentClass(F)
       documentClass(Gamma)
-      documentClass(StudentT)
+      // documentClass(GammaMeanParam) // Commented as not documented at the moment
+      documentClass(Gompertz)
+      documentClass(Gumbel)
       documentClass(HalfStudentT)
-      documentClass(ChiSquared)
       documentClass(Laplace)
       documentClass(Logistic)
       documentClass(LogLogistic)
-      documentClass(F)
+      documentClass(LogUniform)
+      documentClass(Normal)
+      documentClass(StudentT)
       documentClass(Weibull)
-      documentClass(Gumbel)
-      documentClass(Gompertz)
     ]
     
     section("Multivariate") [
+      documentClass(Dirichlet)
       documentClass(MultivariateNormal)
       documentClass(NormalField)
-      documentClass(Dirichlet)
-      documentClass(SymmetricDirichlet)
       documentClass(SimplexUniform)
+      documentClass(SymmetricDirichlet)
     ]
     
     section("Misc") [

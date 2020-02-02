@@ -63,6 +63,10 @@ public class ExactInvarianceTest
   public List<TestResult> results = new ArrayList<>();
   private int nTests = 0;
   
+  public <M extends Model> void add(M model, Function<M, Double> ... testFunctions) {
+    add(new Instance<M>(model, testFunctions));
+  }
+  
   @SuppressWarnings("unchecked")
   public void add(Instance<?> instance) 
   {

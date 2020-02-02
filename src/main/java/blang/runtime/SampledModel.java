@@ -39,6 +39,7 @@ import briefj.ReflexionUtils;
 public class SampledModel 
 {
   public final Model model;
+  public final boolean annealSupport;
   private final List<Sampler> posteriorInvariantSamplers;
 
   private List<ForwardSimulator> forwardSamplers;
@@ -70,9 +71,9 @@ public class SampledModel
   private final double [] caches;
   private double sumPreannealedFiniteDensities, sumFixedDensities;
   private int nOutOfSupport;
-  private boolean outOfSupportDetected = false;
+  private boolean annealedOutOfSupportDetected = false;
   
-  public boolean outOfSupportDetected() { return outOfSupportDetected; }
+  public boolean annealedOutOfSupportDetected() { return annealedOutOfSupportDetected; }
   
   /*
    * Those need to be recomputed each time
@@ -107,6 +108,7 @@ public class SampledModel
       boolean createForwardSamplers,
       Random forwardInit) 
   {
+    this.annealSupport = graphAnalysis.annealSupport;
     boolean initUsingForward = forwardInit != null;
     if (!createForwardSamplers && initUsingForward)
       throw new RuntimeException();
@@ -118,7 +120,7 @@ public class SampledModel
     
     otherAnnealedFactors = annealingStructure.otherAnnealedFactors;
     
-    sparseUpdateFactors = initSparseUpdateFactors(annealingStructure, graphAnalysis.treatNaNAsNegativeInfinity);
+    sparseUpdateFactors = initSparseUpdateFactors(annealingStructure, graphAnalysis.treatNaNAsNegativeInfinity, annealSupport);
     caches = new double[sparseUpdateFactors.size()];
     
     sampler2sparseUpdateAnnealed = new int[samplers.list.size()][];
@@ -157,12 +159,16 @@ public class SampledModel
   public double logDensity()
   {
     final double exponentValue = getExponent(); 
-    final double result = 
+    
+    final double result = !annealSupport && nOutOfSupport > 0 ?
+      Double.NEGATIVE_INFINITY
+      :
       sumOtherAnnealed() 
         + sumFixedDensities 
         + exponentValue * sumPreannealedFiniteDensities
         // ?: to avoid 0 * -INF
         + (nOutOfSupport == 0 ? 0.0 : nOutOfSupport * ExponentiatedFactor.annealedMinusInfinity(exponentValue));
+       
     if (check) check(result);
     return result;
   }
@@ -203,8 +209,12 @@ public class SampledModel
     return sumPreannealedFiniteDensities;
   }
 
+  public int nOutOfSupport() 
+  {
+    return nOutOfSupport;
+  }
   
-  private double sumOtherAnnealed()
+  public double sumOtherAnnealed()
   {
     double sum = 0.0;
     for (AnnealedFactor factor : otherAnnealedFactors)
@@ -337,8 +347,8 @@ public class SampledModel
       else
         sumPreannealedFiniteDensities += newPreAnnealedCache;
     }
-    if (nOutOfSupport > 0)
-      outOfSupportDetected = true;
+    if (nOutOfSupport > 0 && annealSupport)
+      annealedOutOfSupportDetected = true;
   }
   
   private void update(int samplerIndex)
@@ -373,7 +383,8 @@ public class SampledModel
         caches[annealedIndex] = newPreAnnealedCache;
         
         if (newPreAnnealedCache == Double.NEGATIVE_INFINITY) {
-          outOfSupportDetected = true;
+          if (annealSupport)
+            annealedOutOfSupportDetected = true;
           nOutOfSupport++;
         } else
           sumPreannealedFiniteDensities += newPreAnnealedCache;
@@ -416,14 +427,14 @@ public class SampledModel
   /**
    * Ignore factors that are not LogScaleFactor's (e.g. constraints), make sure everything else are AnnealedFactors.
    */
-  private static List<ExponentiatedFactor> initSparseUpdateFactors(AnnealingStructure structure, boolean treatNaNAsNegativeInfinity) 
+  private static List<ExponentiatedFactor> initSparseUpdateFactors(AnnealingStructure structure, boolean treatNaNAsNegativeInfinity, boolean annealSupport) 
   {
     ArrayList<ExponentiatedFactor> result = new ArrayList<>();
     result.addAll(structure.exponentiatedFactors);
     for (LogScaleFactor f : structure.fixedLogScaleFactors)
     {
       if (!(f instanceof ExponentiatedFactor))
-        f = new ExponentiatedFactor(f, treatNaNAsNegativeInfinity);
+        f = new ExponentiatedFactor(f, treatNaNAsNegativeInfinity, annealSupport);
       result.add((ExponentiatedFactor) f);
     }
     return result;

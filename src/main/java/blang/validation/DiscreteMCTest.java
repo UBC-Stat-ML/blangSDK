@@ -11,6 +11,7 @@ import org.junit.Assert;
 
 import bayonet.distributions.ExhaustiveDebugRandom;
 import bayonet.math.NumericalUtils;
+import blang.core.Model;
 import blang.engines.internals.factories.Exact;
 import blang.runtime.SampledModel;
 import briefj.Indexer;
@@ -48,6 +49,20 @@ public class DiscreteMCTest
    * The transition matrix for each MCMC kernel under study.
    */
   List<SparseMatrix> transitionMatrices = new ArrayList<>();
+  
+  /**
+   * Simplified method to create a DiscreteMCTest, wrapping around some of the other tedious 
+   * constructors. 
+   */
+  @SuppressWarnings("unchecked")
+  public static <M extends Model> DiscreteMCTest create(M model, Function<M, Object> equality) {
+    SampledModel sampled = new SampledModel(model);
+    Function<SampledModel, Object> transforedEquality = (sampledModel) -> {
+      M m = (M) (sampledModel.model);
+      return equality.apply(m);
+    };
+    return new DiscreteMCTest(sampled, transforedEquality);
+  }
   
   /**
    * @param model , should support forward generation (TODO: this could be relaxed by supplying instead an 

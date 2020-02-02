@@ -73,10 +73,21 @@ import blang.distributions.Gompertz
 import blang.distributions.HyperGeometric
 import blang.distributions.BetaBinomial
 import blang.distributions.BetaNegativeBinomial
+import blang.distributions.LogUniform
 
 class Examples {
   
   public val List<Instance<? extends Model>> all = new ArrayList
+  
+  public val logUniform = add(
+    new LogUniform.Builder()
+    .setMin(fixedReal(-5.9))
+    .setMax(fixedReal(2.1))
+    .setBase(fixedReal(10.0))
+    .setRealization(latentReal)
+    .build,
+    realRealizationSquared
+  )
   
   public val betaBinomial = add(
   	new BetaBinomial.Builder()

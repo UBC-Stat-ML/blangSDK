@@ -1,18 +1,17 @@
 package blang.distributions
 
-/** Hyper-geometric distribution with population N and population satisfying certain condition K and drawing n samples
- *  with k satisfying condition*/
+/** A population of size \(N\), \(K\) of which are marked, and drawing without replacement \(n\) samples from the population; the HyperGeometric models the number in the sample that are marked. */
 model HyperGeometric{
 	
 	random IntVar numberOfSuccess
 	
-	/** number of samples (n)*/
+	/** Number sampled. \(n\) */
 	param IntVar numberOfDraws
 	
-	/** number of population (N)*/
+	/** Population size. \(N\) */
 	param IntVar population
 	
-	/** number of population satisfying condition (K) */
+	/** Number marked in the population. \(K\) */
 	param IntVar populationConditioned
 	
 	laws{

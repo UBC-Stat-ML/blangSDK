@@ -1,13 +1,13 @@
 package blang.distributions
 
-/** A random variable with a logistic probability distribution function. Values in \( \mathbb{R} \) */
+/** A random variable with a cumulative distribution given by the logistic function. Values in \( \mathbb{R} \) */
 model Logistic {
   random RealVar realization
 	
-  /** The center of the PDF. Also the mean, mode and median. \(\mu \in \mathbb{R}\) */
+  /** The mean. \(\mu \in \mathbb{R}\) */
   param RealVar location
 	
-  /** The scale parameter. \(\s > 0\) */
+  /** The scale parameter. \(s > 0\) */
   param RealVar scale
 	
   laws {
