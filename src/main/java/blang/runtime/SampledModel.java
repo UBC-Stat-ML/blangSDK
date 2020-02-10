@@ -410,7 +410,8 @@ public class SampledModel
         annealedIndices = new ArrayList<>(),
         fixedIndices = new ArrayList<>();
       for (Factor f : factors) 
-        (annealedFactors.contains(f) ? annealedIndices : fixedIndices).add(factor2Index.get(f));
+        if (!otherAnnealedFactors.contains(f))
+          (annealedFactors.contains(f) ? annealedIndices : fixedIndices).add(factor2Index.get(f));
       sampler2sparseUpdateAnnealed[samplerIndex] = annealedIndices.stream().mapToInt(i->i).toArray();
       sampler2sparseUpdateFixed   [samplerIndex] = fixedIndices   .stream().mapToInt(i->i).toArray();
     }

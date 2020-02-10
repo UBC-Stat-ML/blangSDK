@@ -118,8 +118,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     java.lang.System::exit(start(args))
   }
   
-  def static int start(String ... args) {
-    val Arguments parsedArgs = parseArguments(args)
+  def static blangParsingConfigs() {
     val Creator creator = Creators::empty()
     creator.addFactories(CoreProviders)
     creator.addFactories(Parsers)
@@ -131,13 +130,16 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     val ParsingConfigs parsingConfigs = new ParsingConfigs
     parsingConfigs.setCreator(creator) 
     parsingConfigs.experimentClass = Runner // needed when called via generated main 
-    
-    printExplationsIfNeeded(args, parsedArgs, creator)
-    
-    return Experiment::start(args, parsedArgs, parsingConfigs)
+    return parsingConfigs
   }
   
-  def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs, Creator creator) {
+  def static int start(String ... args) {
+    val Arguments parsedArgs = parseArguments(args)
+    printExplationsIfNeeded(args, parsedArgs)
+    return Experiment::start(args, parsedArgs, blangParsingConfigs)
+  }
+  
+  def static void printExplationsIfNeeded(String [] rawArguments, Arguments parsedArgs) {
     if (useSimplifiedArguments(rawArguments) && !new File(CONFIG_FILE_NAME).exists) {
       System.err.println("Configure by pasting command line diagnosis into a file called '" + CONFIG_FILE_NAME + "'")
     }

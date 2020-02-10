@@ -16,6 +16,10 @@ import blang.engines.internals.ladders.Geometric
 import blang.engines.internals.ladders.EquallySpaced
 import blang.engines.internals.factories.PT.InitType
 import blang.validation.internals.fixtures.Unid
+import blang.validation.internals.fixtures.CustomAnnealRef
+import briefj.BriefIO
+import java.io.File
+import blang.validation.internals.fixtures.CustomAnnealTest
 
 class TestEndToEnd {
   
@@ -110,6 +114,24 @@ class TestEndToEnd {
       )
     )
   }
+  
+//  slight numerical difference
+//  @Test
+//  def void testCustomAnnealer() {
+//    println("started")
+//    Runner::start(
+//      "--model", CustomAnnealRef.canonicalName
+//    )
+//    val refLikelihoodTrace = BriefIO::fileToString(new File("results/latest/samples/allLogDensities.csv"))
+//    println(refLikelihoodTrace)
+//    Runner::start(
+//      "--model", CustomAnnealTest.canonicalName
+//    )
+//    val customLikelihoodTrace = BriefIO::fileToString(new File("results/latest/samples/allLogDensities.csv"))
+//    println(customLikelihoodTrace)
+//    
+//    Assert::assertEquals(refLikelihoodTrace, customLikelihoodTrace)
+//  }
   
   @Test
   def void morePT_Tests() {

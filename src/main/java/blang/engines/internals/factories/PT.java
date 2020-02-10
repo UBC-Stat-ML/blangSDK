@@ -69,7 +69,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Override
   public void performInference() 
   {
-    List<Round> rounds = rounds(nScans, adaptFraction);
+    List<Round> rounds = rounds();
     int scanIndex = 0;
     for (Round round : rounds)
     {
@@ -207,9 +207,14 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     return;
   }
   
-  private List<Round> rounds(int nScans, double _adaptFraction) 
+  private List<Round> rounds() 
   {
-    double adaptFraction = nChains() == 1 ? 0.0 : _adaptFraction;
+    double adaptFraction = nChains() == 1 ? 0.0 : this.adaptFraction;
+    return rounds(nScans, adaptFraction);
+  }
+  
+  public static List<Round> rounds(int nScans, double adaptFraction) 
+  {
     if (adaptFraction < 0.0 || adaptFraction >= 1.0)
       throw new RuntimeException();
     List<Round> result = new ArrayList<>();
@@ -425,7 +430,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     chain, round, isAdapt, count, rate, lowest, average, beta
   }
   
-  private static class Round
+  public static class Round
   {
     int nScans;
     int roundIndex = -1;

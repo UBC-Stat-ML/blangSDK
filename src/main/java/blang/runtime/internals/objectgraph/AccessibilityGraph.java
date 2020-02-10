@@ -166,6 +166,11 @@ public class AccessibilityGraph
     return toStream(new BreadthFirstIterator<>(graph, StaticUtils.node(object)));
   }
   
+  public Iterable<Node> iterateAccessibleNodes(Object object)
+  {
+    return () -> new BreadthFirstIterator<>(graph, StaticUtils.node(object));
+  }
+  
   public Stream<Node> getAccessibleNodes()
   {
     return graph.vertexSet().stream();

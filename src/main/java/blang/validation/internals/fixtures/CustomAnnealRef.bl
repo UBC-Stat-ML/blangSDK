@@ -1,0 +1,14 @@
+package blang.validation.internals.fixtures
+
+model CustomAnnealRef {
+  
+  random RealVar mu ?: latentReal
+  random RealVar x ?: fixedReal(10.0)
+  
+  laws {
+    
+    mu ~ Normal(0.0, 1.0)
+    
+    x | mu ~ Normal(mu, 1.0)
+  }
+}
