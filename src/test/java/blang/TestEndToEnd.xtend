@@ -20,6 +20,8 @@ import blang.validation.internals.fixtures.CustomAnnealRef
 import briefj.BriefIO
 import java.io.File
 import blang.validation.internals.fixtures.CustomAnnealTest
+import java.nio.file.Files
+import blang.engines.internals.factories.PT
 
 class TestEndToEnd {
   
@@ -115,23 +117,24 @@ class TestEndToEnd {
     )
   }
   
-//  slight numerical difference
-//  @Test
-//  def void testCustomAnnealer() {
-//    println("started")
-//    Runner::start(
-//      "--model", CustomAnnealRef.canonicalName
-//    )
-//    val refLikelihoodTrace = BriefIO::fileToString(new File("results/latest/samples/allLogDensities.csv"))
-//    println(refLikelihoodTrace)
-//    Runner::start(
-//      "--model", CustomAnnealTest.canonicalName
-//    )
-//    val customLikelihoodTrace = BriefIO::fileToString(new File("results/latest/samples/allLogDensities.csv"))
-//    println(customLikelihoodTrace)
-//    
-//    Assert::assertEquals(refLikelihoodTrace, customLikelihoodTrace)
-//  }
+  @Test
+  def void testCustomAnnealer() {
+    val r1 = Runner::create(
+      Files.createTempDirectory("r1").toFile,
+      "--model", CustomAnnealRef.canonicalName
+    )
+    r1.run();
+    val l1 = (r1.engine as PT).targetState.logDensity
+    
+    val r2 = Runner::create(
+      Files.createTempDirectory("r2").toFile,
+      "--model", CustomAnnealTest.canonicalName
+    )
+    r2.run()
+    val l2 = (r2.engine as PT).targetState.logDensity
+    
+    Assert.assertEquals(l1, l2, 1e-10)
+  }
   
   @Test
   def void morePT_Tests() {

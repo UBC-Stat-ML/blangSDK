@@ -36,10 +36,12 @@ import java.util.ArrayList
 import blang.runtime.PostProcessor.NoPostProcessor
 import blang.System
 import blang.engines.internals.factories.PT
+import blang.inits.experiments.ExperimentResults
+import blang.inits.InputExceptions.InputException
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
-  val Model model
+  public val Model model
   
   @Arg                          @DefaultValue("PT")
   public PosteriorInferenceEngine engine = new PT
@@ -83,6 +85,26 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   } 
   
   /**
+   * Create, but does not preprocess/sample/postprocess the runner.
+   * Useful for tests, debug, etc.
+   */
+  def static Runner create(File outputDir, String ... args) {
+    outputDir.mkdir
+    val Arguments parsedArgs = parseArguments(args)
+    val creator = blangCreator
+    val results = new ExperimentResults(outputDir)
+    creator.addGlobal(ExperimentResults, results)
+    try {
+      val result = creator.init(Runner, parsedArgs)
+      result.results = results
+      return result
+    } catch (InputException e) {
+      System.err.println(creator.fullReport)
+      throw e
+    }
+  }
+  
+  /**
    * Two syntaxes:
    * - simplified: just one args, the model, rest is read from config file
    * - standard
@@ -118,7 +140,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     java.lang.System::exit(start(args))
   }
   
-  def static blangParsingConfigs() {
+  def static blangCreator() {
     val Creator creator = Creators::empty()
     creator.addFactories(CoreProviders)
     creator.addFactories(Parsers)
@@ -126,9 +148,14 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     creator.addGlobal(Observations, observations)
     val GlobalDataSourceStore globalDS = new GlobalDataSourceStore
     creator.addGlobal(GlobalDataSourceStore, globalDS)
+    return creator
+  }
+  
+  def static blangParsingConfigs() {
+    
     
     val ParsingConfigs parsingConfigs = new ParsingConfigs
-    parsingConfigs.setCreator(creator) 
+    parsingConfigs.setCreator(blangCreator) 
     parsingConfigs.experimentClass = Runner // needed when called via generated main 
     return parsingConfigs
   }
@@ -207,18 +234,11 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     ].watch
     
     reportTiming(preprocessTiming, inferenceTiming)
-    relaxMemory
     results.flushAll 
     
     System.out.indentWithTiming("Postprocess") [
       postProcess
     ]
-  }
-  
-  def private void relaxMemory() {
-    this.engine = null
-    this.observations = null
-    this.samplers = null
   }
   
   def private void postProcess() {
