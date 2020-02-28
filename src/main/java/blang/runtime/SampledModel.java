@@ -80,6 +80,8 @@ public class SampledModel
    */
   private final List<AnnealedFactor> otherAnnealedFactors;
   
+  public int nOtherAnnealedFactors() { return otherAnnealedFactors.size(); }
+  
   private List<Integer> currentSamplingOrder = null;
   private int currentPosition = -1;
   

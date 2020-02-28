@@ -65,10 +65,13 @@ class DefaultPostProcessor extends PostProcessor {
   
   public static final String ESS_SUFFIX = "-ess.csv"
   
-  var Command Rscript
+  var Command _Rscript
+  def Command Rscript() {
+    if (_Rscript === null)
+      _Rscript = Command.cmd(rCmd)
+    return _Rscript
+  }
   override run() {
-    Rscript = Command.cmd(rCmd)
-    
     if (!blangExecutionDirectory.present) {
       System.err.println("Set the option --blangExecutionDirectory to a blang exec directory.")
       return
