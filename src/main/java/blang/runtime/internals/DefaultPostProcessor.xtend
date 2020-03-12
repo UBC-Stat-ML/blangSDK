@@ -13,7 +13,6 @@ import blang.inits.DefaultValue
 import binc.Command
 import briefj.BriefIO
 import java.util.Map
-import blang.runtime.internals.doc.components.Document
 import blang.runtime.internals.ComputeESS.EssEstimator
 import blang.runtime.PostProcessor
 import blang.runtime.Runner
@@ -410,10 +409,6 @@ class DefaultPostProcessor extends PostProcessor {
     val scriptFile = if (_scriptFile === null) BriefFiles.createTempFile() else _scriptFile
     BriefIO.write(scriptFile, commands);
     Command.call(Rscript.appendArg(scriptFile.getAbsolutePath()))
-  }
-  
-  def Document marginalPage() {
-    return null
   }
   
   def static void main(String [] args) {

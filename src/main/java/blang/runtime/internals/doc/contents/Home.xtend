@@ -1,10 +1,8 @@
 package blang.runtime.internals.doc.contents
 
-import blang.runtime.internals.doc.components.Document
-
-import blang.runtime.internals.doc.components.Code.Language
-
-import blang.runtime.internals.doc.components.LinkTarget
+import blang.xdoc.components.Document
+import blang.xdoc.components.Code.Language
+import blang.xdoc.components.LinkTarget
 
 class Home {
   

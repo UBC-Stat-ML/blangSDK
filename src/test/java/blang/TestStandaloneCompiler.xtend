@@ -7,7 +7,7 @@ import org.junit.Test
 import briefj.BriefIO
 import blang.runtime.Runner
 import binc.Command
-import blang.runtime.internals.doc.DocElementExtensions
+import blang.xdoc.DocElementExtensions
 import org.junit.Assert
 
 

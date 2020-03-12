@@ -1,10 +1,10 @@
 package blang.runtime.internals.doc.contents
 
-import blang.runtime.internals.doc.components.Document
+import blang.xdoc.components.Document
 
-import static extension blang.runtime.internals.doc.DocElementExtensions.code
+import static extension blang.xdoc.DocElementExtensions.code
 import blang.validation.internals.fixtures.Doomsday
-import blang.runtime.internals.doc.components.Code.Language
+import blang.xdoc.components.Code.Language
 import blang.distributions.ContinuousUniform
 import blang.distributions.Exponential
 import blang.validation.internals.fixtures.HierarchicalModel
