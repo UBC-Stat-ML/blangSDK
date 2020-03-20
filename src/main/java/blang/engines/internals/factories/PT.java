@@ -142,8 +142,13 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       setAnnealingParameters(newPartition);
     }
     else
-      setAnnealingParameters(EngineStaticUtils.fixedSizeOptimalPartition(cumulativeLambdaEstimate, annealingParameters.size()));
+      setAnnealingParameters(fixedSizeOptimalPartition(cumulativeLambdaEstimate, annealingParameters.size()));
     return cumulativeLambdaEstimate;
+  }
+  
+  protected List<Double> fixedSizeOptimalPartition(MonotoneCubicSpline cumulativeLambdaEstimate, int size) 
+  {
+    return EngineStaticUtils.fixedSizeOptimalPartition(cumulativeLambdaEstimate, size);
   }
   
   private void reportAcceptanceRatios(Round round) 
