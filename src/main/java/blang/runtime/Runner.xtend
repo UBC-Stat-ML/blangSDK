@@ -137,7 +137,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   def static void main(String ... args) {
-    java.lang.System::exit(start(args))
+    val returnCode = start(args)
+    if (returnCode != 0)  
+      java.lang.System::exit(returnCode)
   }
   
   def static blangCreator() {
@@ -152,8 +154,6 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   def static blangParsingConfigs() {
-    
-    
     val ParsingConfigs parsingConfigs = new ParsingConfigs
     parsingConfigs.setCreator(blangCreator) 
     parsingConfigs.experimentClass = Runner // needed when called via generated main 
