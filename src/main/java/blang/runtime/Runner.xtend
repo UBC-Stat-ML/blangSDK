@@ -234,7 +234,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
     ].watch
     
     reportTiming(preprocessTiming, inferenceTiming)
-    results.flushAll 
+    results.closeAll // need close instead of flush to take into account gz 
     
     System.out.indentWithTiming("Postprocess") [
       postProcess

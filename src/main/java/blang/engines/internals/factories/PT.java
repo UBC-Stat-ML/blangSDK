@@ -360,8 +360,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     
     // round trip information
     results.flushAll(); // make sure first the indicators are written
-    String swapIndicPath = new File(results.getFileInResultFolder(Runner.MONITORING_FOLDER), MonitoringOutput.swapIndicators + ".csv").getAbsolutePath();
-    Paths paths = new Paths(swapIndicPath, round.firstScanInclusive, round.lastScanExclusive);
+    File swapIndicsFile = new File(results.getFileInResultFolder(Runner.MONITORING_FOLDER), MonitoringOutput.swapIndicators + ".csv");
+    
+    Paths paths = swapIndicsFile.exists() ? new Paths(swapIndicsFile.getAbsolutePath(), round.firstScanInclusive, round.lastScanExclusive) : null;
     
     double Lambda = Arrays.stream(swapAcceptPrs).map(stat -> 1.0 - stat.getMean()).mapToDouble(Double::doubleValue).sum();
     writer(MonitoringOutput.globalLambda).printAndWrite(
@@ -369,13 +370,16 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       Pair.of(TidySerializer.VALUE, Lambda)
     );
     
-    int n = paths.nRejuvenations();
-    double tau = ((double) n / round.nScans);
-    writer(MonitoringOutput.actualTemperedRestarts).printAndWrite(
-      roundReport,
-      Pair.of(Column.count, n), 
-      Pair.of(Column.rate, tau)
-    );
+    if (paths != null) 
+    {
+      int n = paths.nRejuvenations();
+      double tau = ((double) n / round.nScans);
+      writer(MonitoringOutput.actualTemperedRestarts).printAndWrite(
+        roundReport,
+        Pair.of(Column.count, n), 
+        Pair.of(Column.rate, tau)
+      );
+    }
     
     if (reversible)
       System.err.println("Using provably suboptimal reversible PT. Do this only for PT benchmarking. Asymptotic rate is zero in this regime.");

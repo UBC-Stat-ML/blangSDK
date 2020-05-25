@@ -24,6 +24,8 @@ import blang.engines.internals.ptanalysis.PathViz
 import viz.core.Viz
 import java.util.Optional
 
+import static blang.inits.experiments.tabwriters.factories.CSV.*
+
 import blang.runtime.internals.DefaultPostProcessor.Output
 import blang.runtime.internals.ComputeESS.Batch
 
@@ -81,39 +83,40 @@ class DefaultPostProcessor extends PostProcessor {
     // note comment that the workaround above breaks access to file so need something better clearly
     if (runPxviz) pxviz   
     
-    for (posteriorSamples : BriefFiles.ls(new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER), "csv")) {
-      println("Post-processing " + variableName(posteriorSamples))
-      val types = TidySerializer::types(posteriorSamples)
-      if (types.containsKey(TidySerializer::VALUE)) {
-        val type = types.get(TidySerializer::VALUE)
-        // statistics that could make sense for both reals and integers
-        if (isIntValued(type) || isRealValued(type)) {
-          computeEss(posteriorSamples, outputFolder(Output::ess))
-          createPlot(
-            new TracePlot(posteriorSamples, types, this, false),
-            outputFolder(Output::tracePlotsFull)
-          )
-          createPlot(
-            new TracePlot(posteriorSamples, types, this, true),
-            outputFolder(Output::tracePlots)
-          )
-          summary(posteriorSamples, types)
-        } 
-        // statistics for ints only
-        if (isIntValued(type)) {
-          createPlot(
-            new PMFPlot(posteriorSamples, types, this),
-            outputFolder(Output::posteriorPlots)
-          )
+    for (posteriorSamples : BriefFiles.ls(new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER))) 
+      if (posteriorSamples.name.endsWith(".csv") || posteriorSamples.name.endsWith(".csv.gz")) {
+        println("Post-processing " + variableName(posteriorSamples))
+        val types = TidySerializer::types(posteriorSamples)
+        if (types.containsKey(TidySerializer::VALUE)) {
+          val type = types.get(TidySerializer::VALUE)
+          // statistics that could make sense for both reals and integers
+          if (isIntValued(type) || isRealValued(type)) {
+            computeEss(posteriorSamples, outputFolder(Output::ess))
+            createPlot(
+              new TracePlot(posteriorSamples, types, this, false),
+              outputFolder(Output::tracePlotsFull)
+            )
+            createPlot(
+              new TracePlot(posteriorSamples, types, this, true),
+              outputFolder(Output::tracePlots)
+            )
+            summary(posteriorSamples, types)
+          } 
+          // statistics for ints only
+          if (isIntValued(type)) {
+            createPlot(
+              new PMFPlot(posteriorSamples, types, this),
+              outputFolder(Output::posteriorPlots)
+            )
+          }
+          // statistics for reals only
+          if (isRealValued(type)) {
+            createPlot(
+              new DensityPlot(posteriorSamples, types, this),
+              outputFolder(Output::posteriorPlots)
+            )
+          }
         }
-        // statistics for reals only
-        if (isRealValued(type)) {
-          createPlot(
-            new DensityPlot(posteriorSamples, types, this),
-            outputFolder(Output::posteriorPlots)
-          )
-        }
-      }
     }
     
     println("MC diagnostics")
@@ -121,25 +124,25 @@ class DefaultPostProcessor extends PostProcessor {
     val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
     
     for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound])
-      simplePlot(new File(monitoringFolder, rateName + ".csv"), Column::round, Column::rate)
+      simplePlot(csvFile(monitoringFolder, rateName.toString), Column::round, Column::rate)
       
-    simplePlot(new File(monitoringFolder, MonitoringOutput::swapSummaries + ".csv"), Column::round, Column::average)
+    simplePlot(csvFile(monitoringFolder, MonitoringOutput::swapSummaries.toString), Column::round, Column::average)
     
     for (estimateName : #[MonitoringOutput::globalLambda, MonitoringOutput::logNormalizationContantProgress])
-      simplePlot(new File(monitoringFolder, estimateName + ".csv"), Column::round, TidySerializer::VALUE)
+      simplePlot(csvFile(monitoringFolder, estimateName.toString), Column::round, TidySerializer::VALUE)
       
     simplePlot(new File(outputFolder(Output::ess), SampleOutput::energy + ESS_SUFFIX), Column::chain, TidySerializer::VALUE)
     
     for (stat : #[MonitoringOutput::swapStatistics, MonitoringOutput::annealingParameters]) {
       val scale = if (stat == MonitoringOutput::annealingParameters) "scale_y_log10() + " else ""
-      plot(new File(monitoringFolder, stat + ".csv"), '''
+      plot(csvFile(monitoringFolder, stat.toString), '''
         data <- data[data$isAdapt=="false",]
         p <- ggplot(data, aes(x = «Column::chain», y = «TidySerializer::VALUE»)) +
           geom_line() +
           ylab("«stat»") + «scale»
           theme_bw()
       ''')
-      plot(new File(monitoringFolder, stat + ".csv"), '''
+      plot(csvFile(monitoringFolder, stat.toString), '''
         p <- ggplot(data, aes(x = «Column::round», y = «TidySerializer::VALUE», colour = factor(«Column::chain»))) +
           geom_line() +
           ylab("«stat»") + «scale»
@@ -148,14 +151,14 @@ class DefaultPostProcessor extends PostProcessor {
     }
     
     for (stat : #[MonitoringOutput::cumulativeLambda, MonitoringOutput::lambdaInstantaneous]) {
-      plot(new File(monitoringFolder, stat + ".csv"), '''
+      plot(csvFile(monitoringFolder, stat.toString), '''
         data <- data[data$isAdapt=="false",]
         p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE»)) +
           geom_line() +
           ylab("«stat»") + 
           theme_bw()
       ''')
-      plot(new File(monitoringFolder, stat + ".csv"), '''
+      plot(csvFile(monitoringFolder, stat.toString), '''
         p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE», colour = factor(«Column::round»))) +
           geom_line() +
           ylab("«stat»") + 
@@ -170,7 +173,7 @@ class DefaultPostProcessor extends PostProcessor {
   
   def void paths() {
     val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
-    val pathsFile = new File(monitoringFolder, MonitoringOutput::swapIndicators.toString + ".csv")
+    val pathsFile = csvFile(monitoringFolder, MonitoringOutput::swapIndicators.toString)
     if (pathsFile.exists) {
       val paths = new Paths(pathsFile.absolutePath, 0, Integer.MAX_VALUE)
       val plotsFolder = outputFolder(Output::monitoringPlots)
@@ -201,6 +204,7 @@ class DefaultPostProcessor extends PostProcessor {
   }
   
   def void simplePlot(File data, Object x, Object y) {
+    if (data === null) return // restarts are not computed when gz used 
     val name = variableName(data)
     plot(data, '''
       p <- ggplot(data, aes(x = «x», y = «y»)) +
@@ -242,7 +246,7 @@ class DefaultPostProcessor extends PostProcessor {
   }
   
   def static String variableName(File csvFile) {
-    csvFile.name.replaceFirst("[.]csv$", "")
+    return TidySerializer::serializerName(csvFile)   
   }
   
   static class TracePlot extends GgPlot {
