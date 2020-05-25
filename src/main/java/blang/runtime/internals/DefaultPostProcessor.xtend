@@ -174,7 +174,7 @@ class DefaultPostProcessor extends PostProcessor {
   def void paths() {
     val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
     val pathsFile = csvFile(monitoringFolder, MonitoringOutput::swapIndicators.toString)
-    if (pathsFile.exists) {
+    if (pathsFile !== null && pathsFile.exists) {
       val paths = new Paths(pathsFile.absolutePath, 0, Integer.MAX_VALUE)
       val plotsFolder = outputFolder(Output::monitoringPlots)
       val pViz = new PathViz(paths, Viz::fixHeight(300))
@@ -188,7 +188,7 @@ class DefaultPostProcessor extends PostProcessor {
   }
   
   def void plot(File data, String code, String suffix) {
-    if (!data.exists) {
+    if (data === null || !data.exists) {
       return
     }
     val monitoringPlotsFolder = outputFolder(Output::monitoringPlots)
