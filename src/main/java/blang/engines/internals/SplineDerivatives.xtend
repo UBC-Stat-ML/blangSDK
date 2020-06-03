@@ -3,7 +3,7 @@ package blang.engines.internals
 import blang.engines.internals.Spline.MonotoneCubicSpline
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure
 
-import static extension blang.engines.internals.MathCommonsAutoDiff.*
+import static extension xlinear.AutoDiff.*
 
 class SplineDerivatives {
   

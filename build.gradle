@@ -42,7 +42,7 @@ dependencies {
   compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.1.6'
   compile group: 'ca.ubc.stat', name: 'rejectfree', version: '2.7.4'
   compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.5'
-  compile group: 'ca.ubc.stat', name: 'xlinear', version: '2.0.2'
+  compile group: 'ca.ubc.stat', name: 'xlinear', version: '2.3.0'
   compile group: 'ca.ubc.stat', name: 'pxviz', version: '1.1.0'
   compile group: 'uk.com.robust-it', name: 'cloning', version: '1.9.6'
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
