@@ -321,8 +321,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   private void reportRoundStatistics(Round round)
   {
-    int movesPerScan = (int) (nChains()/2 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
-    System.out.formatln("Performing", round.nScans * states.length * movesPerScan, "moves...", 
+    long movesPerScan = (long) (nChains()/2 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
+    long nMoves =  movesPerScan * round.nScans * states.length;
+    System.out.formatln("Performing", nMoves, "moves...", 
       "[", 
         Pair.of("nScans", round.nScans), 
         Pair.of("nChains", states.length), 
