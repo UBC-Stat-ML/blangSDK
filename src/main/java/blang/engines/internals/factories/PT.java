@@ -53,6 +53,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg            @DefaultValue("3")
   public double nPassesPerScan = 3;
   
+  @Arg(description = "Collect statistics every thinning iteration (=1 to always collect, >1 to save hard drive space)")
+  public int thinning = 1;
+  
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
   
@@ -79,7 +82,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       {
         moveKernel(nPassesPerScan);
         recordEnergyStatistics(densitySerializer, scanIndex);
-        recordSamples(scanIndex);
+        if (scanIndex % thinning == 0)
+          recordSamples(scanIndex);
         if (nChains() > 1)
           swapAndRecordStatistics(scanIndex);
         scanIndex++;
@@ -317,7 +321,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   private void reportRoundStatistics(Round round)
   {
-    int movesPerScan = (int) (nChains() /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
+    int movesPerScan = (int) (nChains()/2 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
     System.out.formatln("Performing", round.nScans * states.length * movesPerScan, "moves...", 
       "[", 
         Pair.of("nScans", round.nScans), 
