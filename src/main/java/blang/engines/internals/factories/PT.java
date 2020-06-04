@@ -54,6 +54,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   public double nPassesPerScan = 3;
   
   @Arg(description = "Collect statistics every thinning iteration (=1 to always collect, >1 to save hard drive space)")
+         @DefaultValue("1")
   public int thinning = 1;
   
   @Arg               @DefaultValue("1")
