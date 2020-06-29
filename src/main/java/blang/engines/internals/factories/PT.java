@@ -1,5 +1,6 @@
 package blang.engines.internals.factories;
 
+import java.io.EOFException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import blang.inits.experiments.ExperimentResults;
 import blang.System;
 import blang.inits.experiments.tabwriters.TabularWriter;
 import blang.inits.experiments.tabwriters.TidySerializer;
+import blang.inits.experiments.tabwriters.factories.CSV;
 import blang.io.BlangTidySerializer;
 import blang.runtime.Runner;
 import blang.runtime.SampledModel;
@@ -366,9 +368,18 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     
     // round trip information
     results.flushAll(); // make sure first the indicators are written
-    File swapIndicsFile = new File(results.getFileInResultFolder(Runner.MONITORING_FOLDER), MonitoringOutput.swapIndicators + ".csv");
+    File swapIndicsFile = CSV.csvFile(results.getFileInResultFolder(Runner.MONITORING_FOLDER), MonitoringOutput.swapIndicators.toString());
     
-    Paths paths = swapIndicsFile.exists() ? new Paths(swapIndicsFile.getAbsolutePath(), round.firstScanInclusive, round.lastScanExclusive) : null;
+    if (round.isAdapt == false) {
+      writer(MonitoringOutput.swapIndicators).close(); // workaround when using compressed output: at least show path info at last round
+    }
+    
+    Paths paths = null; 
+    try {
+      paths = new Paths(swapIndicsFile.getAbsolutePath(), round.firstScanInclusive, round.lastScanExclusive);
+    } catch (Exception eof) { 
+      // ignore: probably just mean EOFException thrown when using compressed output
+    }
     
     double Lambda = Arrays.stream(swapAcceptPrs).map(stat -> 1.0 - stat.getMean()).mapToDouble(Double::doubleValue).sum();
     writer(MonitoringOutput.globalLambda).printAndWrite(
