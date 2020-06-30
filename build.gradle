@@ -82,6 +82,7 @@ run.enabled = true
 
 // Call this for each Main class you want to expose with an app script
 createScript(project, 'blang.runtime.internals.DefaultPostProcessor', 'postprocess')
+createScript(project, 'blang.runtime.internals.CreateBlangGradleProject', 'create-blang-gradle-project')
 
 
 /* This exact task is used by the standalone compiler - do not remove or edit lightly! */
@@ -112,7 +113,9 @@ configurations.archives.with {
 
 /*
   Things below the above line will NOT be included in the on-the-fly compilation used by the blang standalone command.
-/*
+*/
+
+
 
 /** Deployment information */
 
