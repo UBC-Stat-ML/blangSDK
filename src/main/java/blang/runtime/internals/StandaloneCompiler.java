@@ -304,7 +304,7 @@ public class StandaloneCompiler  {
     ADD_SDK_DEPENDENCY {
       @Override
       String process(String buildFileContents, String line, StandaloneCompiler compiler) {
-        String depLine = "  compile group: 'ca.ubc.stat', name: 'blangSDK', version: '" + compiler.blangSDKVersion() + "'";
+        String depLine = "  compile group: 'com.github.UBC-Stat-ML', name: 'blangSDK', version: '" + compiler.blangSDKVersion() + "'";
         for (String dep : compiler.dependencies)
           depLine += "\n  compile '" + dep + "'";
         return buildFileContents.replace(line, depLine);
