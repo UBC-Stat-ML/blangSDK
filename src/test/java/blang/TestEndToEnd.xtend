@@ -22,6 +22,7 @@ import java.io.File
 import blang.validation.internals.fixtures.CustomAnnealTest
 import java.nio.file.Files
 import blang.engines.internals.factories.PT
+import java.util.ArrayList
 
 class TestEndToEnd {
   
@@ -115,6 +116,31 @@ class TestEndToEnd {
         "--experimentConfigs.maxIndentationToPrint", "-1"
       )
     )
+  }
+  
+  @Test
+  def void testNormalizationEstimates() {
+    var int i = 0;
+    var Double previous = null
+    for (engine : #[
+      #["--engine.logNormalizationEstimator", "steppingStone"],
+      #["--engine.logNormalizationEstimator", "thermodynamicIntegration"],
+      #["--engine", "SCM"]
+    ]) {
+      val exec = Files.createTempDirectory("r" + i++).toFile
+      val args = new ArrayList(#["--model", Ising.canonicalName, "--experimentConfigs.maxIndentationToPrint", "-1"])
+      args.addAll(engine)
+      val runner = Runner::create(
+        exec,
+        args
+      )
+      runner.run
+      val logNormFile = new File(exec, Runner.LOG_NORM_ESTIMATE)
+      val current = Double.parseDouble(BriefIO::fileToString(logNormFile))
+      if (previous !== null) 
+        Assert.assertEquals(previous, current, 0.1) 
+      previous = current
+    }
   }
   
   @Test

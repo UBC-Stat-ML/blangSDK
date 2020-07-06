@@ -1,6 +1,5 @@
 package blang.engines.internals.factories;
 
-import java.io.EOFException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +70,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   @Arg                       @DefaultValue("SCM")
   public InitType initialization = InitType.SCM; 
+  
+  @Arg  @DefaultValue("steppingStone") // should edit scmDefaults if defaults changed
+  public LogNormalizationEstimator logNormalizationEstimator = LogNormalizationEstimator.steppingStone;
   
   @Override
   public void performInference() 
@@ -255,6 +257,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum InitType { COPIES, FORWARD, SCM }
   
+  public static enum LogNormalizationEstimator { thermodynamicIntegration, steppingStone }
+  
   @Override
   public void setSampledModel(SampledModel model) 
   {
@@ -307,6 +311,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
             states[chainIndex] = init;
           }
         }
+        double logNormEstimate = population.logNormEstimate();
+        System.out.println("Log normalization constant estimate: " + logNormEstimate);
+        BriefIO.write(scmInit.results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
         break;
       default : throw new RuntimeException();
     }
@@ -324,8 +331,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   private void reportRoundStatistics(Round round)
   {
-    long movesPerScan = (long) (nChains()/2 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() /* exploration */);
-    long nMoves =  movesPerScan * round.nScans * states.length;
+    long movesPerScan = (long) (nChains()/2 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() * nChains() /* exploration */);
+    long nMoves =  movesPerScan * round.nScans;
     System.out.formatln("Performing", nMoves, "moves...", 
       "[", 
         Pair.of("nScans", round.nScans), 
@@ -411,14 +418,20 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       );
     }
     
-    Optional<Double> optionalLogNorm = thermodynamicEstimator();
+    Optional<Double> optionalLogNorm = null;
+    if (logNormalizationEstimator == LogNormalizationEstimator.steppingStone)
+      optionalLogNorm = steppingStoneEstimator();
+    else if (logNormalizationEstimator == LogNormalizationEstimator.thermodynamicIntegration)
+      optionalLogNorm = thermodynamicEstimator();
+    else
+      throw new RuntimeException();
     if (optionalLogNorm.isPresent())
       writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
         roundReport,
         Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
       );
     else
-      System.out.println("Thermodynamic integration disabled as support is being annealed\n"
+      System.out.println("Make sure nChains > 1 and note also thermodynamic integration disabled as support is being annealed\n"
                        + "  Use \"--engine SCM\" for log normalization computation instead");
     
     // log normalization, again (this gets overwritten, so this will be the final estimate in the same format as SCM)

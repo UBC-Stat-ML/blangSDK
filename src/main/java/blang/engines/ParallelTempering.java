@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import bayonet.distributions.Random;
+import blang.engines.internals.LogSumAccumulator;
 import blang.engines.internals.ladders.EquallySpaced;
 import blang.engines.internals.ladders.TemperatureLadder;
 import blang.inits.Arg;
@@ -42,6 +43,7 @@ public class ParallelTempering
   protected List<Double> temperingParameters;
   protected Random [] parallelRandomStreams;
   protected SummaryStatistics [] energies, swapAcceptPrs;
+  protected LogSumAccumulator [] logSumLikelihoodRatios; // used by Stepping stone marginalization
   private int swapIndex = 0;
   protected boolean [] swapIndicators;
    
@@ -92,9 +94,17 @@ public class ParallelTempering
   public double swapKernel(Random random, int i)
   {
     int j = i + 1;
-    double logRatio = 
-        states[i].logDensity(temperingParameters.get(j)) + states[j].logDensity(temperingParameters.get(i))
-      - states[i].logDensity(temperingParameters.get(i)) - states[j].logDensity(temperingParameters.get(j));
+    
+    final double steppingStoneLogRatio = // recall: tempering parameter j is closer to prior
+        + states[j].logDensity(temperingParameters.get(i))   
+        - states[j].logDensity(temperingParameters.get(j)); // so for stepping stone we want the proposal to be the one closer to prior (this is IS so we want proposal to be wider)
+    
+    logSumLikelihoodRatios[i].add(steppingStoneLogRatio); 
+      
+    final double logRatio = steppingStoneLogRatio 
+        + states[i].logDensity(temperingParameters.get(j))
+        - states[i].logDensity(temperingParameters.get(i));
+        
     double acceptPr = Math.min(1.0, Math.exp(logRatio));
     if (Double.isNaN(acceptPr))
       acceptPr = 0.0; // should only happen right at the beginning
@@ -121,6 +131,18 @@ public class ParallelTempering
       sum += (temperingParameters.get(c) - temperingParameters.get(c+1)) * (energies[c].getMean() + energies[c+1].getMean())/ 2.0;
     }
     return Optional.of(-sum);
+  }
+  
+  public Optional<Double> steppingStoneEstimator() 
+  {
+    if (nChains() == 1) return Optional.empty();
+    
+    double result = 0.0;
+    for (int c = 0; c < nChains() - 1; c++) {
+      LogSumAccumulator accumulator = logSumLikelihoodRatios[c];
+      result += accumulator.logSum() - Math.log(accumulator.numberOfTerms());
+    }
+    return Optional.of(result);
   }
   
   private void doSwap(int i) 
@@ -165,6 +187,9 @@ public class ParallelTempering
     
     swapAcceptPrs = initStats(nChains - 1);
     energies = initStats(nChains);
+    logSumLikelihoodRatios = new LogSumAccumulator[nChains - 1];
+    for (int i = 0; i < nChains - 1; i++)
+      logSumLikelihoodRatios[i] = new LogSumAccumulator(); 
   }
   
   private SampledModel [] initStates(SampledModel prototype, int nChains)
