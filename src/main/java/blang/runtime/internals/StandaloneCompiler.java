@@ -120,7 +120,7 @@ public class StandaloneCompiler  {
   final static String BUILD_FILE = "build.gradle";
   
   public String compileProject() {
-    return compile(compilationFolder, compilationDirName);
+    return compile(compilationFolder, projectName);
   }
   
   /**
