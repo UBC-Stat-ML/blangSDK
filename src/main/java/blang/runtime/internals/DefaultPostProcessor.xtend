@@ -60,7 +60,7 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg(description = "A directory containing means and variance estimates from a long run, used to improve ESS estimates; usually of the form /path/to/[longRunId].exec/summaries")
   public Optional<File> referenceSamples = Optional.empty 
   
-  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss }
+  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss, autocorrelationFunctions }
   
   def File outputFolder(Output out) { return results.getFileInResultFolder(out.toString) }
   
@@ -100,6 +100,12 @@ class DefaultPostProcessor extends PostProcessor {
               new TracePlot(posteriorSamples, types, this, true),
               outputFolder(Output::tracePlots)
             )
+            if (indices(types).empty) { // ACF only available for univariate qts for now
+              createPlot(
+                new ACFPlot(posteriorSamples, types, this),
+                outputFolder(Output::autocorrelationFunctions)
+              )
+            }
             summary(posteriorSamples, types)
           } 
           // statistics for ints only
@@ -143,7 +149,7 @@ class DefaultPostProcessor extends PostProcessor {
           theme_bw()
       ''')
       plot(csvFile(monitoringFolder, stat.toString), '''
-        p <- ggplot(data, aes(x = «Column::round», y = «TidySerializer::VALUE», colour = factor(«Column::chain»))) +
+        p <- ggplot(data, aes(x = «Column::round», y = «TidySerializer::VALUE», colour = «Column::chain», group = «Column::chain»)) +
           geom_line() +
           ylab("«stat»") + «scale»
           theme_bw()
@@ -159,7 +165,7 @@ class DefaultPostProcessor extends PostProcessor {
           theme_bw()
       ''')
       plot(csvFile(monitoringFolder, stat.toString), '''
-        p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE», colour = factor(«Column::round»))) +
+        p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE», colour = «Column::round», group = «Column::round»)) +
           geom_line() +
           ylab("«stat»") + 
           theme_bw()
@@ -289,6 +295,28 @@ class DefaultPostProcessor extends PostProcessor {
         xlab("«variableName»") +
         ylab("density") +
         ggtitle("Density plot for: «variableName»")
+      '''
+    }
+  }
+  
+  static class ACFPlot extends GgPlot {
+    new(File posteriorSamples, Map<String, Class<?>> types, DefaultPostProcessor processor) {
+      super(posteriorSamples, types, processor)
+    }
+    override ggCommand() {
+      return '''
+      «removeBurnIn»
+      
+      bacf <- acf(data$«TidySerializer::VALUE», plot = FALSE)
+      bacfdf <- with(bacf, data.frame(lag, acf))
+      
+      p <- ggplot(data = bacfdf, mapping = aes(x = lag, y = acf)) +
+             xlab("Lag") +
+             ylab("Autocorrelation") +
+             ggtitle("Autocorrelation function for: «variableName»") +
+             geom_hline(aes(yintercept = 0)) +
+             theme_bw() + 
+             geom_segment(mapping = aes(xend = lag, yend = 0))
       '''
     }
   }
