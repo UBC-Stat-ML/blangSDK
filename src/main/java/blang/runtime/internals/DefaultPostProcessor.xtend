@@ -129,7 +129,7 @@ class DefaultPostProcessor extends PostProcessor {
     
     val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
     
-    for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound])
+    for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound, MonitoringOutput::nonAsymptoticRountTrip])
       simplePlot(csvFile(monitoringFolder, rateName.toString), Column::round, Column::rate)
       
     simplePlot(csvFile(monitoringFolder, MonitoringOutput::swapSummaries.toString), Column::round, Column::average)

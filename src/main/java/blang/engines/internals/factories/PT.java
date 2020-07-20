@@ -416,6 +416,15 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         Pair.of(Column.count, nBar), 
         Pair.of(Column.rate, tauBar)
       );
+      
+      double inefficiency = Arrays.stream(swapAcceptPrs).map(stat -> {double s = stat.getMean(); return (1.0 - s) / s;}).mapToDouble(Double::doubleValue).sum();
+      double tau = 1.0 / (2.0 + 2.0 * inefficiency);
+      double nTheoretical = tau * round.nScans;
+      writer(nonAsymptoticRountTrip).printAndWrite(
+          roundReport,
+          Pair.of(Column.count, nTheoretical), 
+          Pair.of(Column.rate, tau)
+        );
     }
     
     Optional<Double> optionalLogNorm = null;
@@ -456,7 +465,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   public static enum MonitoringOutput
   {
     swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, 
-    globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, roundTimings, lambdaInstantaneous, cumulativeLambda
+    globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
   }
   
   public static enum SampleOutput
