@@ -294,6 +294,9 @@ class DefaultPostProcessor extends PostProcessor {
         
       p <- ggplot(dependences, aes(x = as.integer(warmer_chain_index), y = mutualInformation_oqrApprox)) + 
               geom_line() + 
+              ggtitle("Mutual information between interacting chain energies") +
+              xlab("Warmer chain index") + 
+              ylab("Mutual Information (OQR approximation)") + 
               theme_bw()
               
       ggsave(paste0("«outputPrefix»", "/mutualInformation_oqrApprox.pdf"), p)
