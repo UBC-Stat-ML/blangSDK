@@ -171,6 +171,8 @@ class DefaultPostProcessor extends PostProcessor {
           theme_bw()
       ''', "-progress")
     }
+    
+    plotELEDiagnostics()
   }
   
   protected def void pxviz() {
@@ -219,6 +221,92 @@ class DefaultPostProcessor extends PostProcessor {
         theme_bw()
     ''')
   }
+  
+  def plotELEDiagnostics() {
+    val samplesDir = new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER)
+    val energySamples = csvFile(samplesDir, SampleOutput::energy.toString)
+    val elePlotsDir = new File(outputFolder(Output::monitoringPlots), "ele")
+    elePlotsDir.mkdir
+    val rScript = new File(elePlotsDir, ".eleDiagnostics.r") 
+    val outputPrefix = elePlotsDir.absolutePath
+    callR(rScript, '''
+      require("ggplot2")
+      require("dplyr")
+      require("tidyr")
+      data <- read.csv("«energySamples.absolutePath»")
+      
+      n_samples <- max(data$«Runner.sampleColumn»)
+      cut_off <- n_samples * «burnInFraction»
+      data <- subset(data, «Runner.sampleColumn» > cut_off)
+      
+      maxChainIndex <- max(data$chain)
+      
+      listOfDataFrames <- vector(mode = "list", length = maxChainIndex)
+      
+      for (c in 1:maxChainIndex) {
+        sub <- data %>% filter(chain == c - 1 | chain == c) %>% filter(sample %% 2 == 0) %>% pivot_wider(names_from = «Column::chain», values_from = «TidySerializer::VALUE»)
+        
+        colnames(sub)[2] <- "colder_chain"
+        colnames(sub)[3] <- "warmer_chain"
+        
+        p <- ggplot(sub, aes(x = colder_chain, y = warmer_chain)) + 
+          geom_density_2d() + 
+          ggtitle("Interacting energies") +
+          theme_bw()  
+          
+        ggsave(paste0("«outputPrefix»", "/chain_", c-1, "_", c, "_raw.pdf"), p)
+        
+        # from Bartlett, 1947; Van der Waerden, 1952 "Order tests for the two sample problem and their power", https://cran.r-project.org/web/packages/bestNormalize/vignettes/bestNormalize.html
+        sub$transformed_colder_chain <- qnorm((rank(sub$colder_chain) - 0.5)/length(sub$colder_chain))
+        sub$transformed_warmer_chain <- qnorm((rank(sub$warmer_chain) - 0.5)/length(sub$warmer_chain))
+        
+        p <- ggplot(sub, aes(x = transformed_colder_chain, y = transformed_warmer_chain)) + 
+          geom_density_2d() + 
+          ggtitle("Interacting energies") +
+          theme_bw()  
+                  
+        ggsave(paste0("«outputPrefix»", "/chain_", c-1, "_", c, "_orq.pdf"), p)
+        
+        listOfDataFrames[[c]] <- sub
+      }
+      
+      all <- bind_rows(listOfDataFrames, .id = "warmer_chain_index")
+      
+      
+      p <- ggplot(all, aes(x = colder_chain, y = warmer_chain)) + 
+          geom_density_2d() + 
+          ggtitle("Interacting energies") +
+          theme_bw()  
+                
+      ggsave(paste0("«outputPrefix»", "/all_raw.pdf"), p)
+      
+      p <- ggplot(all, aes(x = transformed_colder_chain, y = transformed_warmer_chain)) + 
+        geom_density_2d() + 
+        ggtitle("Interacting energies") +
+        theme_bw()  
+        
+      ggsave(paste0("«outputPrefix»", "/all_orq.pdf"), p)
+      
+      dependences <- all %>% 
+        group_by(warmer_chain_index) %>% 
+        summarize(correlation = cor(transformed_colder_chain,transformed_warmer_chain)) %>%
+        mutate(mutualInformation_oqrApprox = -0.5 * log(1 - correlation^2))
+        
+      p <- ggplot(dependences, aes(x = as.integer(warmer_chain_index), y = mutualInformation_oqrApprox)) + 
+              geom_line() + 
+              theme_bw()
+              
+      ggsave(paste0("«outputPrefix»", "/mutualInformation_oqrApprox.pdf"), p)
+      
+      write.csv(dependences, paste0("«outputPrefix»", "/interactingChainEnergyDependence.csv"))
+      
+      dependencesSummary <- all %>%  
+              summarize(correlation = cor(transformed_colder_chain,transformed_warmer_chain)) %>%
+              mutate(mutualInformation_oqrApprox = -0.5 * log(1 - correlation^2))
+              
+      write.csv(dependencesSummary, paste0("«outputPrefix»", "/interactingChainEnergyDependenceSummary.csv"))
+    ''') 
+  } 
   
   def static boolean isRealValued(Class<?> type) {
     return type == Double || RealVar.isAssignableFrom(type)
@@ -281,10 +369,10 @@ class DefaultPostProcessor extends PostProcessor {
     }
     override ggCommand() {
       val energyHack = // energy across temperature is very dynamic so truncate the extremes
-        if (variableName != SampleOutput::energy) 
+        if (variableName != SampleOutput::energy.toString) 
           "" else '''
-        data <- data[data$value < quantile(data$«TidySerializer::VALUE», 0.95), ]
-        data <- data[data$value > quantile(data$«TidySerializer::VALUE», 0.05), ]
+        data <- data[data$value < quantile(data$«TidySerializer::VALUE», 0.9), ]
+        data <- data[data$value > quantile(data$«TidySerializer::VALUE», 0.1), ]
         ''' 
       return '''
       «removeBurnIn»
