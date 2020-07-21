@@ -35,6 +35,7 @@ import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.types.StaticUtils;
 import briefj.BriefIO;
+import briefj.BriefLog;
 
 import static blang.engines.internals.factories.PT.MonitoringOutput.*;
 
@@ -74,6 +75,10 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg  @DefaultValue("steppingStone") // should edit scmDefaults if defaults changed
   public LogNormalizationEstimator logNormalizationEstimator = LogNormalizationEstimator.steppingStone;
   
+  @Arg(description = "Use when huge number of chains are utilized. Statistics like energy, logLikelihood are only recorded for the first so many indices to avoid excessive output size.")         
+                               @DefaultValue("100")
+  public int statisticRecordedMaxChainIndex = 100;
+  
   @Override
   public void performInference() 
   {
@@ -108,7 +113,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @SuppressWarnings("unchecked")
   private void recordEnergyStatistics(BlangTidySerializer densitySerializer, int iter)  
   {
-    for (int i = 0; i < temperingParameters.size(); i++)  
+    if (temperingParameters.size() > statisticRecordedMaxChainIndex)
+      BriefLog.warnOnce("Only printing energy statistics for the first " + statisticRecordedMaxChainIndex + " chains, see statisticRecordedMaxChainIndex option in PT");
+    for (int i = 0; i < Math.min(temperingParameters.size(), statisticRecordedMaxChainIndex); i++)  
     {
       densitySerializer.serialize(states[i].logDensity(), SampleOutput.allLogDensities.toString(), 
         Pair.of(sampleColumn, iter), 
@@ -394,10 +401,22 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       Pair.of(TidySerializer.VALUE, Lambda)
     );
     
+    double inefficiency = Arrays.stream(swapAcceptPrs).map(stat -> {double s = stat.getMean(); return (1.0 - s) / s;}).mapToDouble(Double::doubleValue).sum();
+    double timeToFirst = 2.0*nChains()*(1.0 + inefficiency);
+    double effectiveNScans = Math.max(0.0, round.nScans - timeToFirst);
+    
+    writer(MonitoringOutput.timeToFirstRestart).printAndWrite(
+        roundReport,
+        Pair.of(Column.time, timeToFirst), 
+        Pair.of(Column.effectiveNScans, effectiveNScans)
+      );
+    
     if (paths != null) 
     {
       int n = paths.nRejuvenations();
-      double tau = ((double) n / round.nScans);
+      double tau;
+      if (effectiveNScans == 0) tau = 0.0;
+      else tau = ((double) n / effectiveNScans);
       writer(MonitoringOutput.actualTemperedRestarts).printAndWrite(
         roundReport,
         Pair.of(Column.count, n), 
@@ -410,16 +429,15 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     else
     {
       double tauBar = 1.0 / (2.0 + 2.0 * Lambda);
-      double nBar = tauBar * round.nScans;
+      double nBar = tauBar * effectiveNScans;
       writer(asymptoticRoundTripBound).printAndWrite(
         roundReport,
         Pair.of(Column.count, nBar), 
         Pair.of(Column.rate, tauBar)
       );
       
-      double inefficiency = Arrays.stream(swapAcceptPrs).map(stat -> {double s = stat.getMean(); return (1.0 - s) / s;}).mapToDouble(Double::doubleValue).sum();
       double tau = 1.0 / (2.0 + 2.0 * inefficiency);
-      double nTheoretical = tau * round.nScans;
+      double nTheoretical = tau * effectiveNScans;
       writer(nonAsymptoticRountTrip).printAndWrite(
           roundReport,
           Pair.of(Column.count, nTheoretical), 
@@ -464,7 +482,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum MonitoringOutput
   {
-    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, 
+    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, timeToFirstRestart, 
     globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
   }
   
@@ -475,7 +493,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum Column
   {
-    chain, round, isAdapt, count, rate, lowest, average, beta
+    chain, round, isAdapt, count, rate, lowest, average, beta, time, effectiveNScans
   }
   
   public static class Round

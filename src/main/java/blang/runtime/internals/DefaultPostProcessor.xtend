@@ -52,6 +52,9 @@ class DefaultPostProcessor extends PostProcessor {
              @DefaultValue("false")
   public boolean runPxviz = false
   
+  @Arg            @DefaultValue("false")
+  public boolean eleDiagnostic = false
+  
   @Arg public Optional<Integer> boldTrajectory = Optional.empty
   
   @Arg                    @DefaultValue("Batch")
@@ -172,7 +175,8 @@ class DefaultPostProcessor extends PostProcessor {
       ''', "-progress")
     }
     
-    plotELEDiagnostics()
+    if (eleDiagnostic)
+      plotELEDiagnostics()
   }
   
   protected def void pxviz() {
