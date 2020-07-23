@@ -198,7 +198,7 @@ class InputOutput {
             observed, use «SYMB»--excludeFromOutput«ENDSYMB»). We describe the format in more detail below.
           '''
           it += '''
-            «SYMB»«Runner.LOG_NORM_ESTIMATE»«ENDSYMB»«ENDSYMB»: estimate of the natural logarithm of the probability of the data 
+            «SYMB»«Runner.LOG_NORMALIZATION_ESTIMATE».csv«ENDSYMB»«ENDSYMB»: estimate of the natural logarithm of the probability of the data 
             (also known as the log of the normalization constant of the prior times the likelihood, integrating over the latent). 
             Only available for certain inference engines such as SCM.
           '''

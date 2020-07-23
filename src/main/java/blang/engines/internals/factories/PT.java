@@ -34,7 +34,6 @@ import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.types.StaticUtils;
-import briefj.BriefIO;
 import briefj.BriefLog;
 
 import static blang.engines.internals.factories.PT.MonitoringOutput.*;
@@ -72,7 +71,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg                       @DefaultValue("SCM")
   public InitType initialization = InitType.SCM; 
   
-  @Arg  @DefaultValue("steppingStone") // should edit scmDefaults if defaults changed
+  @Arg                                                                    @DefaultValue("steppingStone") 
   public LogNormalizationEstimator logNormalizationEstimator = LogNormalizationEstimator.steppingStone;
   
   @Arg(description = "Use when huge number of chains are utilized. Statistics like energy, logLikelihood are only recorded for the first so many indices to avoid excessive output size.")         
@@ -221,12 +220,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     }
   }
 
-  @Override
-  public void check(GraphAnalysis analysis) 
-  {
-    // TODO: may want to check forward simulators ok
-    return;
-  }
+  @Override public void check(GraphAnalysis analysis) { return; }
   
   private List<Round> rounds() 
   {
@@ -320,7 +314,10 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         }
         double logNormEstimate = population.logNormEstimate();
         System.out.println("Log normalization constant estimate: " + logNormEstimate);
-        BriefIO.write(scmInit.results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
+        results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
+          Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SMC-initialization"),
+          Pair.of(TidySerializer.VALUE, logNormEstimate)
+        );
         break;
       default : throw new RuntimeException();
     }
@@ -446,25 +443,28 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     }
     
     Optional<Double> optionalLogNorm = null;
-    if (logNormalizationEstimator == LogNormalizationEstimator.steppingStone)
-      optionalLogNorm = steppingStoneEstimator();
-    else if (logNormalizationEstimator == LogNormalizationEstimator.thermodynamicIntegration)
-      optionalLogNorm = thermodynamicEstimator();
-    else
-      throw new RuntimeException();
-    if (optionalLogNorm.isPresent())
-      writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
-        roundReport,
-        Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
-      );
-    else
-      System.out.println("Make sure nChains > 1 and note also thermodynamic integration disabled as support is being annealed\n"
-                       + "  Use \"--engine SCM\" for log normalization computation instead");
+      if (logNormalizationEstimator == LogNormalizationEstimator.steppingStone)
+        optionalLogNorm = steppingStoneEstimator();
+      else if (logNormalizationEstimator == LogNormalizationEstimator.thermodynamicIntegration)
+        optionalLogNorm = thermodynamicEstimator();
+      else
+        throw new RuntimeException();
+      if (optionalLogNorm.isPresent())
+        writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
+          roundReport,
+          Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
+        );
+      else
+        System.out.println("To obtain an estimate of the marginal likelihood (log normalization), note that thermodynamic integration is disabled when the support is being annealed");
     
     // log normalization, again (this gets overwritten, so this will be the final estimate in the same format as SCM)
-    if (optionalLogNorm.isPresent())
-      BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + optionalLogNorm.get());
+    if (optionalLogNorm.isPresent() && !round.isAdapt)
+      results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
+          Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, logNormalizationEstimator),
+          Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
+        );
   }
+
   
   private SCM scmDefault() {
     SCM scmDefault = new SCM();

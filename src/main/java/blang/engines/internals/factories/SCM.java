@@ -10,6 +10,7 @@ import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.GlobalArg;
 import blang.inits.experiments.ExperimentResults;
+import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.io.BlangTidySerializer;
 import blang.runtime.Runner;
 import blang.runtime.SampledModel;
@@ -48,7 +49,10 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     // write Z estimate
     double logNormEstimate = approximation.logNormEstimate();
     System.out.println("Log normalization constant estimate: " + logNormEstimate);
-    BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
+    results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
+        Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SMC"),
+        Pair.of(TidySerializer.VALUE, logNormEstimate)
+      );
     
     // resample & rejuvenate the last iteration to simplify processing downstream
     if (!isUniform(approximation)) // could happen if there were zero-weight particles in last round

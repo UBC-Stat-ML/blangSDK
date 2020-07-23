@@ -23,6 +23,8 @@ import blang.validation.internals.fixtures.CustomAnnealTest
 import java.nio.file.Files
 import blang.engines.internals.factories.PT
 import java.util.ArrayList
+import blang.inits.experiments.tabwriters.TidySerializer
+import blang.inits.experiments.tabwriters.factories.CSV
 
 class TestEndToEnd {
   
@@ -135,8 +137,9 @@ class TestEndToEnd {
         args
       )
       runner.run
-      val logNormFile = new File(exec, Runner.LOG_NORM_ESTIMATE)
-      val current = Double.parseDouble(BriefIO::fileToString(logNormFile))
+      val logNormFile = CSV::csvFile(exec, Runner.LOG_NORMALIZATION_ESTIMATE)
+      val estimateStr = BriefIO::readLines(logNormFile).indexCSV.last.get.get(TidySerializer::VALUE)
+      val current = Double.parseDouble(estimateStr)
       if (previous !== null) 
         Assert.assertEquals(previous, current, 0.1) 
       previous = current
