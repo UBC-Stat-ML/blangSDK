@@ -357,7 +357,7 @@ class DefaultPostProcessor extends PostProcessor {
       this.removeBurnIn = removeBurnIn
     }
     override ggCommand() {
-      val geomString = if (isRealValued(types.get(TidySerializer::VALUE))) "geom_line()" else "geom_step()"
+      val geomString = if (isRealValued(types.get(TidySerializer::VALUE))) "geom_point(size = 0.1) + geom_line(alpha = 0.5)" else "geom_step()"
       return (if (removeBurnIn) removeBurnIn() else "") + '''
       
       p <- ggplot(data, aes(x = «Runner::sampleColumn», y = «TidySerializer::VALUE»)) +
@@ -375,15 +375,8 @@ class DefaultPostProcessor extends PostProcessor {
       super(posteriorSamples, types, processor)
     }
     override ggCommand() {
-      val energyHack = // energy across temperature is very dynamic so truncate the extremes
-        if (variableName != SampleOutput::energy.toString) 
-          "" else '''
-        data <- data[data$value < quantile(data$«TidySerializer::VALUE», 0.9), ]
-        data <- data[data$value > quantile(data$«TidySerializer::VALUE», 0.1), ]
-        ''' 
       return '''
       «removeBurnIn»
-      «energyHack»
       p <- ggplot(data, aes(x = «TidySerializer::VALUE»)) +
         geom_density() + «facetString»
         theme_bw() + 

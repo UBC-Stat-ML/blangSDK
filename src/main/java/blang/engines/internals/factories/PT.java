@@ -385,12 +385,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       writer(MonitoringOutput.swapIndicators).close(); // workaround when using compressed output: at least show path info at last round
     }
     
-    Paths paths = null; 
-    try {
-      paths = new Paths(swapIndicsFile.getAbsolutePath(), round.firstScanInclusive, round.lastScanExclusive);
-    } catch (Exception eof) { 
-      // ignore: probably just mean EOFException thrown when using compressed output
-    }
+    Paths paths = swapIndicsFile.getName().endsWith("csv") || !round.isAdapt
+      ? paths = new Paths(swapIndicsFile.getAbsolutePath(), round.firstScanInclusive, round.lastScanExclusive)
+      : null; // When using .csv.gz, we cannot flush part-way through
     
     double Lambda = Arrays.stream(swapAcceptPrs).map(stat -> 1.0 - stat.getMean()).mapToDouble(Double::doubleValue).sum();
     writer(MonitoringOutput.globalLambda).printAndWrite(
