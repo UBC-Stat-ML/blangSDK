@@ -28,6 +28,7 @@ import static blang.inits.experiments.tabwriters.factories.CSV.*
 
 import blang.runtime.internals.DefaultPostProcessor.Output
 import blang.runtime.internals.ComputeESS.Batch
+import blang.engines.internals.factories.SCM
 
 class DefaultPostProcessor extends PostProcessor {
   
@@ -132,6 +133,15 @@ class DefaultPostProcessor extends PostProcessor {
     
     val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
     
+    // for SCM:
+    
+    simplePlot(csvFile(monitoringFolder, SCM::propagationFileName), SCM::iterationColumn, SCM::annealingParameterColumn)
+    simplePlot(csvFile(monitoringFolder, SCM::propagationFileName), SCM::iterationColumn, SCM::essColumn, "-ess")
+    simplePlot(csvFile(monitoringFolder, SCM::resamplingFileName), SCM::iterationColumn, SCM::annealingParameterColumn)
+    simplePlot(csvFile(monitoringFolder, SCM::resamplingFileName), SCM::iterationColumn, SCM::logNormalizationColumn, "-logNormalization")
+    
+    // for PT:
+    
     for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound, MonitoringOutput::nonAsymptoticRountTrip])
       simplePlot(csvFile(monitoringFolder, rateName.toString), Column::round, Column::rate)
       
@@ -215,15 +225,16 @@ class DefaultPostProcessor extends PostProcessor {
     ''')
   }
   
-  def void simplePlot(File data, Object x, Object y) {
-    if (data === null) return // restarts are not computed when gz used 
+  def void simplePlot(File data, Object x, Object y) { simplePlot(data, x, y, "") }
+  def void simplePlot(File data, Object x, Object y, String suffix) {
+    if (data === null) return 
     val name = variableName(data)
     plot(data, '''
       p <- ggplot(data, aes(x = «x», y = «y»)) +
         geom_line() +
         ylab("«name + " " + y»") + 
         theme_bw()
-    ''')
+    ''', suffix)
   }
   
   def plotELEDiagnostics() {
