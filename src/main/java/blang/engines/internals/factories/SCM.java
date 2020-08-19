@@ -15,7 +15,6 @@ import blang.io.BlangTidySerializer;
 import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
-import briefj.BriefIO;
 import briefj.BriefParallel;
 
 import blang.System;
@@ -71,7 +70,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     }
   }
   
-  private boolean isUniform(ParticlePopulation<?> pop)
+  public static boolean isUniform(ParticlePopulation<?> pop)
   {
     for (int i = 0; i < pop.nParticles(); i++) 
       if (pop.getNormalizedWeight(i) != 1.0 / ((double) pop.nParticles()))

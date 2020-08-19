@@ -145,7 +145,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     List<Double> annealingParameters = new ArrayList<>(temperingParameters);
     Collections.reverse(annealingParameters);
-    List<Double> acceptanceProbabilities = Arrays.stream(swapAcceptPrs).map(stat -> stat.getMean()).collect(Collectors.toList());
+    List<Double> acceptanceProbabilities = Arrays.stream(swapAcceptPrs).map(stat -> {double result = stat.getMean(); if (result == 1.0) return 0.99999; if (Double.isFinite(result)) return result; else return 0.0;}).collect(Collectors.toList());
     Collections.reverse(acceptanceProbabilities);
     MonotoneCubicSpline cumulativeLambdaEstimate = EngineStaticUtils.estimateCumulativeLambda(annealingParameters, acceptanceProbabilities);
     if (targetAccept.isPresent() && finalAdapt)
