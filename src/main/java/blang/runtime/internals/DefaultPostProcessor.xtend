@@ -157,7 +157,7 @@ class DefaultPostProcessor extends PostProcessor {
       plot(csvFile(monitoringFolder, stat.toString), '''
         data <- data[data$isAdapt=="false",]
         p <- ggplot(data, aes(x = «Column::chain», y = «TidySerializer::VALUE»)) +
-          geom_line() +
+          geom_point(size = 0.1) + geom_line(alpha = 0.5) +
           ylab("«stat»") + «scale»
           theme_bw()
       ''')
@@ -169,11 +169,13 @@ class DefaultPostProcessor extends PostProcessor {
       ''', "-progress")
     }
     
+    plotAdaptationIterations()
+    
     for (stat : #[MonitoringOutput::cumulativeLambda, MonitoringOutput::lambdaInstantaneous]) {
       plot(csvFile(monitoringFolder, stat.toString), '''
         data <- data[data$isAdapt=="false",]
         p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE»)) +
-          geom_line() +
+          geom_point(size = 0.1) + geom_line(alpha = 0.5) +
           ylab("«stat»") + 
           theme_bw()
       ''')
@@ -191,6 +193,31 @@ class DefaultPostProcessor extends PostProcessor {
   
   protected def void pxviz() {
     paths()
+  }
+  
+  def void plotAdaptationIterations() {
+    val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
+    val adaptationIterationsPlotsFolder = new File(outputFolder(Output::monitoringPlots), "adaptationIterations")
+    adaptationIterationsPlotsFolder.mkdir
+    val rScript = new File(adaptationIterationsPlotsFolder, ".script.r")
+    val ratesData = csvFile(monitoringFolder, MonitoringOutput::swapStatistics.toString)
+    val paramsData = csvFile(monitoringFolder, MonitoringOutput::annealingParameters.toString)
+    callR(rScript, '''
+      require("ggplot2")
+      require("dplyr")
+      allRates <- read.csv("«ratesData.absolutePath»") 
+      allParams <- read.csv("«paramsData.absolutePath»") 
+      maxRound <- max(allRates$round)
+      for (r in 0:maxRound) {
+        rates <- allRates %>% filter(round == r)
+        params <- allParams %>% filter(round == r)
+        rejections <- rev(1 - rates$value)
+        cumRejections <- cumsum(rejections)
+        empirical <- data.frame("beta" = rev(params$value), "Lambda" = cumRejections)
+        p <- ggplot(empirical, aes(x = beta, y = Lambda)) + geom_step(direction="vh") + xlim(0,1) + theme_bw()
+        ggsave(paste0("«adaptationIterationsPlotsFolder.absolutePath»/iteration-", r, ".«imageFormat»"), limitsize = F) 
+      }
+    ''')
   }
   
   def void paths() {
@@ -231,7 +258,7 @@ class DefaultPostProcessor extends PostProcessor {
     val name = variableName(data)
     plot(data, '''
       p <- ggplot(data, aes(x = «x», y = «y»)) +
-        geom_line() +
+        geom_point(size = 0.1) + geom_line(alpha = 0.5) +
         ylab("«name + " " + y»") + 
         theme_bw()
     ''', suffix)

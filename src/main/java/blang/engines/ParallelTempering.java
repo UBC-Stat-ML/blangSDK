@@ -112,7 +112,7 @@ public class ParallelTempering
     {
       swapIndicators[i] = true;
       doSwap(i);
-    }
+    } 
     return acceptPr;
   }
   
@@ -208,7 +208,7 @@ public class ParallelTempering
   {
     SummaryStatistics[] result = new SummaryStatistics[size];
     for (int i = 0; i < size; i++)
-      result[i] = StaticUtils.summaryStatistics(0.0);
+      result[i] = StaticUtils.summaryStatistics();
     return result;
   }
 }
