@@ -1,0 +1,6 @@
+package blang.validation.internals.fixtures
+
+model Empty {
+  
+  laws {}
+}
