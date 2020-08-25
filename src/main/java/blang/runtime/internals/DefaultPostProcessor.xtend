@@ -277,11 +277,14 @@ class DefaultPostProcessor extends PostProcessor {
       return '''
       «removeBurnIn»
       «energyHack»
+      interval_lower <- quantile(data$«TidySerializer::VALUE», 0.025)
+      interval_upper <- quantile(data$«TidySerializer::VALUE», 0.975)
       p <- ggplot(data, aes(x = «TidySerializer::VALUE»)) +
         geom_density() + «facetString»
         theme_bw() + 
         xlab("«variableName»") +
         ylab("density") +
+        geom_segment(x=interval_lower, xend=interval_upper, y=0, yend=0)
         ggtitle("Density plot for: «variableName»")
       '''
     }
@@ -302,8 +305,12 @@ class DefaultPostProcessor extends PostProcessor {
           probability = n() / normalization
         )
       
+      interval_lower <- quantile(data$«TidySerializer::VALUE», 0.025)
+      interval_upper <- quantile(data$«TidySerializer::VALUE», 0.975)
+
       p <- ggplot(data, aes(x = «TidySerializer::VALUE», y = probability, xend = «TidySerializer::VALUE», yend = rep(0, length(probability)))) +
         geom_point() + geom_segment() + «facetString»
+        geom_segment(x=interval_lower, xend=interval_upper, y=0, yend=0)
         theme_bw() + 
         xlab("«variableName»") +
         ylab("probability") +
@@ -399,6 +406,8 @@ class DefaultPostProcessor extends PostProcessor {
           median = median(«TidySerializer::VALUE»),
           max = max(«TidySerializer::VALUE»)
         )
+      summary$HDI_lower <- quantile(data$«TidySerializer::VALUE», 0.025)
+      summary$HDI_upper <- quantile(data$«TidySerializer::VALUE», 0.975)
       write.csv(summary, "«outputFile.absolutePath»")
     ''')
   }
