@@ -1,10 +1,10 @@
 package blang.runtime.internals.doc.contents
 
-import blang.runtime.internals.doc.components.Document
+import blang.xdoc.components.Document
 import blang.runtime.internals.doc.Categories
 import blang.distributions.Bernoulli
 
-import static extension blang.runtime.internals.doc.DocElementExtensions.documentClass
+import static extension blang.xdoc.DocElementExtensions.documentClass
 import blang.distributions.Beta
 import blang.distributions.Binomial
 import blang.distributions.Categorical
@@ -36,9 +36,7 @@ import blang.distributions.Gompertz
 import blang.distributions.HyperGeometric
 import blang.distributions.BetaBinomial
 import blang.distributions.BetaNegativeBinomial
-import blang.distributions.GammaMeanParam
 import blang.distributions.LogUniform
-import blang.distributions.NegativeBinomialMeanParam
 
 class BuiltInDistributions {
   

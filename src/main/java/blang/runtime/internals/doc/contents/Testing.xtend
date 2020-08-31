@@ -1,11 +1,11 @@
 package blang.runtime.internals.doc.contents
 
 import blang.runtime.internals.doc.Categories
-import blang.runtime.internals.doc.components.Code.Language
-import blang.runtime.internals.doc.components.Document
+import blang.xdoc.components.Code.Language
+import blang.xdoc.components.Document
 import blang.validation.UnbiasnessTest
 
-import static extension blang.runtime.internals.doc.DocElementExtensions.*
+import static extension blang.xdoc.DocElementExtensions.*
 
 class Testing {
   

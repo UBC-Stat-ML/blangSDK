@@ -1,8 +1,6 @@
 package blang.runtime.internals
 
 import binc.Command.BinaryExecutionException
-import binc.Command
-import java.io.File
 import java.util.ArrayList
 
 import blang.inits.experiments.Experiment
@@ -91,7 +89,9 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     }
     
     val StandaloneCompiler compiler = try { 
-      new StandaloneCompiler
+      val result = new StandaloneCompiler
+      result.init
+      result
     } catch (Exception e) {
       Experiment::printException(e)
       exitWithError

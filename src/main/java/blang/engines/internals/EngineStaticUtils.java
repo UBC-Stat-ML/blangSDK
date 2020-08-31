@@ -82,8 +82,7 @@ public class EngineStaticUtils
   
   /**
    * 
-   * @param annealingParameters length N + 1
-   * @param acceptanceProbabilities length N, entry i is accept b/w chain i-1 and i
+   * @param annealingParameters 
    * @param nGrids number of grids in output partition (including both end points)
    * @return list of size nGrids with optimized partition, sorted in increasing order
    */

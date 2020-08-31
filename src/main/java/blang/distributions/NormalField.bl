@@ -11,7 +11,7 @@ import briefj.Indexer
  * for the precision, outside of which the precision is guaranteed to be zero. This 
  * can speed up sampling considerably.
  */
-//@Samplers(EllipticalSliceSampler, BouncyParticleSampler) // Specialized samplers disabled for now make tests too slow - re-enable once new BPS impl is finished
+@Samplers(EllipticalSliceSampler)
 model NormalField {
   /** Precision matrix structure.
    * precision.support is assumed to be constant.

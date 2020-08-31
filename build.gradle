@@ -1,6 +1,6 @@
 plugins {
-  id 'org.xtext.xtend' version '2.0.4'
-  id 'org.xtext.builder' version '2.0.4'
+  id 'org.xtext.xtend' version '2.0.5'
+  id 'org.xtext.builder' version '2.0.5'
   id 'java'
   id 'eclipse'
   id 'maven'
@@ -11,19 +11,12 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 repositories {
-  maven {
-    url "file:///${System.properties['user.home']}/artifacts/"
-  }
-  maven {
-    url "https://ubc-stat-ml.github.io/artifacts/"
-  }
-  maven {
-    url "https://www.stat.ubc.ca/~bouchard/maven/"
-  }
-  maven {
-    url "https://jitpack.io"
-  }
+  mavenCentral()
   jcenter()
+  maven { url "file:///${System.properties['user.home']}/artifacts/" }
+  maven { url 'https://jitpack.io' }
+  maven { url "https://ubc-stat-ml.github.io/artifacts/" }
+  maven { url "https://www.stat.ubc.ca/~bouchard/maven/" }
 }
 
 xtend {
@@ -35,16 +28,14 @@ xtend {
 def blangVersion = '4.0.1' // Note to self: not the one that changes often!
 
 dependencies {
-  xtextLanguages "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
-  compile "ca.ubc.stat.blang:ca.ubc.stat.blang:${blangVersion}"
+  xtextLanguages "com.github.UBC-Stat-ML.blangDSL:ca.ubc.stat.blang:${blangVersion}"
+  compile "com.github.UBC-Stat-ML.blangDSL:ca.ubc.stat.blang:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.16.0'
-  compile group: 'ca.ubc.stat', name: 'briefj', version: '2.5.2'
-  compile group: 'ca.ubc.stat', name: 'inits', version: '3.0.0'
-  compile group: 'ca.ubc.stat', name: 'bayonet', version: '4.1.6'
-  compile group: 'ca.ubc.stat', name: 'rejectfree', version: '2.7.4'
-  compile group: 'ca.ubc.stat', name: 'binc', version: '2.0.5'
-  compile group: 'ca.ubc.stat', name: 'xlinear', version: '2.0.2'
-  compile group: 'ca.ubc.stat', name: 'pxviz', version: '1.1.0'
+  compile group: 'com.github.UBC-Stat-ML', name: 'inits', version: '3.3.4'
+  compile group: 'com.github.UBC-Stat-ML', name: 'bayonet', version: '4.1.7'
+  compile group: 'com.github.UBC-Stat-ML', name: 'binc', version: '2.0.5'
+  compile group: 'com.github.UBC-Stat-ML', name: 'xlinear', version: '2.3.0'
+  compile group: 'com.github.UBC-Stat-ML', name: 'pxviz', version: '1.2.1'
   compile group: 'uk.com.robust-it', name: 'cloning', version: '1.9.6'
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
 }
@@ -91,6 +82,7 @@ run.enabled = true
 
 // Call this for each Main class you want to expose with an app script
 createScript(project, 'blang.runtime.internals.DefaultPostProcessor', 'postprocess')
+createScript(project, 'blang.runtime.internals.CreateBlangGradleProject', 'create-blang-gradle-project')
 
 
 /* This exact task is used by the standalone compiler - do not remove or edit lightly! */
@@ -121,7 +113,9 @@ configurations.archives.with {
 
 /*
   Things below the above line will NOT be included in the on-the-fly compilation used by the blang standalone command.
-/*
+*/
+
+
 
 /** Deployment information */
 
@@ -130,9 +124,9 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "2.0.8" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "2.8.1" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
-      pom.groupId = "ca.ubc.stat"
+      pom.groupId = "com.github.UBC-Stat-ML"
     }
   }
 }

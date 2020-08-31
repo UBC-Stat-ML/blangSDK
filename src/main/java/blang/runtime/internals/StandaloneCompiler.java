@@ -47,21 +47,28 @@ import briefj.run.Results;
  */
 public class StandaloneCompiler  {
   
-  private final File blangHome;
+  public final File blangHome;
   private final File projectHome;
   private final File compilationFolder;
   private final File excludedInputFolder; // in web ide, if an input node is itself in Blang, we want to avoid compiling it again
   private final Path srcFolder;
   private final List<String> dependencies = loadDependencies();
   
+  public final String projectName; 
+  public final String compilationDirName; 
+
   public StandaloneCompiler() {
-    
+    this("temporary", ".blang-compilation");
+  }
+  
+  public StandaloneCompiler(String projectName, String compilationDirName) {
+    this.projectName = projectName;
+    this.compilationDirName = compilationDirName;
     this.blangHome = findBlangHome();
     this.projectHome = new File(".");
-    this.compilationFolder = new File(COMPILATION_DIR_NAME);
+    this.compilationFolder = new File(compilationDirName);
     this.excludedInputFolder = new File(projectHome, "input");
     this.srcFolder = Paths.get(compilationFolder.getPath(), "src", "main", "java");
-    init();
   }
   
   private List<String> loadDependencies() {
@@ -113,7 +120,7 @@ public class StandaloneCompiler  {
   final static String BUILD_FILE = "build.gradle";
   
   public String compileProject() {
-    return compile(compilationFolder, COMPILATION_DIR_NAME);
+    return compile(compilationFolder, projectName);
   }
   
   /**
@@ -123,7 +130,7 @@ public class StandaloneCompiler  {
   public static String compile(File folder, String projectName) throws BinaryExecutionException {
     runGradle("clean", folder);
     runGradle("assemble", folder);
-    Path justCompiled = Paths.get(folder.getPath(), "build", "libs", PROJECT_NAME + ".jar");
+    Path justCompiled = Paths.get(folder.getPath(), "build", "libs", projectName + ".jar");
     if (!Files.exists(justCompiled)) throw new RuntimeException("Not found: " + justCompiled);
     return "" +
         parseClasspath(runGradle("printClasspath", folder)) + // dependencies
@@ -177,11 +184,10 @@ public class StandaloneCompiler  {
     return Joiner.on(File.pathSeparator).join(items);
   }
 
-  private void init() {
-    
+  public void init() {
     try { 
       setupBuildFiles();
-      Files.createDirectories(srcFolder);
+      
       // update
       Files.walkFileTree(projectHome.toPath(), new FileTransferProcessor(projectHome.toPath(), srcFolder));  
       // remove deleted
@@ -213,7 +219,7 @@ public class StandaloneCompiler  {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-      if (dir.endsWith(COMPILATION_DIR_NAME) || 
+      if (dir.endsWith(compilationDirName) || 
           dir.endsWith(".git") ||
           dir.normalize().equals(fromRoot.resolve(Results.DEFAULT_POOL_NAME).normalize()) ||
           dir.normalize().equals(excludedInputFolder.toPath().normalize())) {
@@ -259,7 +265,7 @@ public class StandaloneCompiler  {
     return processDirective(buildFileContents, Directive.EXTRACT_VERSION);
   }
 
-  private void setupBuildFiles() throws IOException {
+  public void setupBuildFiles() throws IOException {
     String buildFileContents = BriefIO.fileToString(new File(blangHome, BUILD_FILE));
     // add blangSDK dependency
     buildFileContents = processDirective(buildFileContents, Directive.ADD_SDK_DEPENDENCY);
@@ -283,10 +289,10 @@ public class StandaloneCompiler  {
     // need to give it an explicit name because gradle otherwise allocate the folder name which start with dot which gradle does not like
     File settings = new File(compilationFolder, "settings.gradle");
     if (!settings.exists())
-      BriefIO.write(settings, "rootProject.name = \"" + PROJECT_NAME + "\"");
-  }
+      BriefIO.write(settings, "rootProject.name = \"" + projectName + "\"");
   
-  public static final String PROJECT_NAME = "temporary";
+    Files.createDirectories(srcFolder);
+  }
   
   private static enum Directive {
     EXTRACT_VERSION {
@@ -298,7 +304,7 @@ public class StandaloneCompiler  {
     ADD_SDK_DEPENDENCY {
       @Override
       String process(String buildFileContents, String line, StandaloneCompiler compiler) {
-        String depLine = "  compile group: 'ca.ubc.stat', name: 'blangSDK', version: '" + compiler.blangSDKVersion() + "'";
+        String depLine = "  compile group: 'com.github.UBC-Stat-ML', name: 'blangSDK', version: '" + compiler.blangSDKVersion() + "'";
         for (String dep : compiler.dependencies)
           depLine += "\n  compile '" + dep + "'";
         return buildFileContents.replace(line, depLine);
@@ -327,7 +333,4 @@ public class StandaloneCompiler  {
         return line;
     throw new RuntimeException();
   }
-
-  public static final String COMPILATION_DIR_NAME = ".blang-compilation";
-
 }

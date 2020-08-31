@@ -33,6 +33,7 @@ import blang.core.ModelComponent;
 import blang.core.Param;
 import blang.mcmc.internals.ExponentiatedFactor;
 import blang.runtime.Observations;
+import blang.types.AnnealingParameter;
 import blang.types.internals.RealScalar;
 import briefj.ReflexionUtils;
 import briefj.collections.UnorderedPair;
@@ -208,7 +209,10 @@ public class GraphAnalysis
       {
         String description = subComponent.toString();
         boolean isLogScale = subComponent instanceof LogScaleFactor;
+        
+        // deprecate this: seems unnecessary to create new language construct?
         boolean isCustomAnneal = subComponent instanceof AnnealedFactor;
+        
         if (isLogScale  // if it's numeric (not a measure-zero constraint-based factor)
             && !isCustomAnneal)  // and it's not already annealed via custom mechanism
           subComponent = new ExponentiatedFactor((LogScaleFactor) subComponent, treatNaNAsNegativeInfinity, annealSupport);
@@ -234,11 +238,30 @@ public class GraphAnalysis
             if (f instanceof ExponentiatedFactor)
             {
               ExponentiatedFactor expFactor = (ExponentiatedFactor) f;
-              ((ExponentiatedFactor) f).setAnnealingParameter(annealingStructure.annealingParameter);
-              annealingStructure.exponentiatedFactors.add(expFactor);
+              
+              boolean foundAnnealingParamAccess = false;
+              for (Node node : accessibilityGraph.iterateAccessibleNodes(expFactor)) {
+                if (node instanceof ObjectNode) {
+                  ObjectNode<?> objectNode = (ObjectNode<?>) node;
+                  if (objectNode.object instanceof AnnealingParameter) {
+                    AnnealingParameter param = (AnnealingParameter) objectNode.object;
+                    foundAnnealingParamAccess = true;
+                    param._set(annealingStructure.annealingParameter);
+                  }
+                }
+              }
+
+              if (foundAnnealingParamAccess) {
+                annealingStructure.otherAnnealedFactors.add(expFactor);
+              } else {
+                ((ExponentiatedFactor) f).setAnnealingParameter(annealingStructure.annealingParameter);
+                annealingStructure.exponentiatedFactors.add(expFactor);
+              }
             }
-            else
-              annealingStructure.otherAnnealedFactors.add((AnnealedFactor) f);
+            else {
+              throw new RuntimeException("Deprecated");
+              // annealingStructure.otherAnnealedFactors.add((AnnealedFactor) f);
+            }
           }
           else
             annealingStructure.fixedLogScaleFactors.add((LogScaleFactor) f);
