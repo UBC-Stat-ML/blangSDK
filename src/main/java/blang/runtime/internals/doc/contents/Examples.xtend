@@ -1,9 +1,9 @@
 package blang.runtime.internals.doc.contents
 
-import blang.runtime.internals.doc.components.Document
+import blang.xdoc.components.Document
 import blang.validation.internals.fixtures.MarkovChain
 
-import static extension blang.runtime.internals.doc.DocElementExtensions.code
+import static extension blang.xdoc.DocElementExtensions.code
 import blang.validation.internals.fixtures.DynamicNormalMixture
 import blang.validation.internals.fixtures.SpikedRealVar
 import blang.validation.internals.fixtures.SpikedRealVarSampler

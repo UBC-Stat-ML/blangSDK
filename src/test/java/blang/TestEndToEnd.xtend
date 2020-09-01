@@ -16,6 +16,13 @@ import blang.engines.internals.ladders.Geometric
 import blang.engines.internals.ladders.EquallySpaced
 import blang.engines.internals.factories.PT.InitType
 import blang.validation.internals.fixtures.Unid
+import blang.validation.internals.fixtures.CustomAnnealRef
+import briefj.BriefIO
+import java.io.File
+import blang.validation.internals.fixtures.CustomAnnealTest
+import java.nio.file.Files
+import blang.engines.internals.factories.PT
+import java.util.ArrayList
 
 class TestEndToEnd {
   
@@ -109,6 +116,50 @@ class TestEndToEnd {
         "--experimentConfigs.maxIndentationToPrint", "-1"
       )
     )
+  }
+  
+  @Test
+  def void testNormalizationEstimates() {
+    var int i = 0;
+    var Double previous = null
+    for (engine : #[
+      #["--engine.logNormalizationEstimator", "steppingStone"],
+      #["--engine.logNormalizationEstimator", "thermodynamicIntegration"],
+      #["--engine", "SCM"]
+    ]) {
+      val exec = Files.createTempDirectory("r" + i++).toFile
+      val args = new ArrayList(#["--model", Ising.canonicalName, "--experimentConfigs.maxIndentationToPrint", "-1"])
+      args.addAll(engine)
+      val runner = Runner::create(
+        exec,
+        args
+      )
+      runner.run
+      val logNormFile = new File(exec, Runner.LOG_NORM_ESTIMATE)
+      val current = Double.parseDouble(BriefIO::fileToString(logNormFile))
+      if (previous !== null) 
+        Assert.assertEquals(previous, current, 0.1) 
+      previous = current
+    }
+  }
+  
+  @Test
+  def void testCustomAnnealer() {
+    val r1 = Runner::create(
+      Files.createTempDirectory("r1").toFile,
+      "--model", CustomAnnealRef.canonicalName
+    )
+    r1.run();
+    val l1 = (r1.engine as PT).targetState.logDensity
+    
+    val r2 = Runner::create(
+      Files.createTempDirectory("r2").toFile,
+      "--model", CustomAnnealTest.canonicalName
+    )
+    r2.run()
+    val l2 = (r2.engine as PT).targetState.logDensity
+    
+    Assert.assertEquals(l1, l2, 1e-10)
   }
   
   @Test

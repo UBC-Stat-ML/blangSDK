@@ -1,11 +1,11 @@
 package blang.runtime.internals.doc.contents
 
-import blang.runtime.internals.doc.components.Document
+import blang.xdoc.components.Document
 import blang.runtime.internals.doc.Categories
 import blang.engines.internals.PosteriorInferenceEngine
 
-import static extension blang.runtime.internals.doc.DocElementExtensions.code
-import blang.runtime.internals.doc.components.Code.Language
+import static extension blang.xdoc.DocElementExtensions.code
+import blang.xdoc.components.Code.Language
 import blang.runtime.Runner
 
 class InputOutput {

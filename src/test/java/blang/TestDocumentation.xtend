@@ -2,7 +2,7 @@ package blang
 
 import org.junit.Test
 import blang.runtime.internals.doc.contents.BuiltInDistributions
-import blang.runtime.internals.doc.DocElementExtensions
+import blang.xdoc.DocElementExtensions
 
 class TestDocumentation {
   @Test

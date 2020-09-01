@@ -1,6 +1,6 @@
 package blang.runtime.internals.doc.contents
 
-import blang.runtime.internals.doc.components.Document
+import blang.xdoc.components.Document
 import blang.runtime.internals.doc.Categories
 
 class BuiltInFunctions {

@@ -1,0 +1,17 @@
+package blang.validation.internals.fixtures
+
+model CustomAnnealTest {
+  
+  random RealVar mu ?: latentReal
+  random RealVar x ?: fixedReal(10.0)
+  
+  laws {
+    
+    mu ~ Normal(0.0, 1.0)
+    
+    | x, mu, RealVar beta = new AnnealingParameter ~ LogPotential({
+      val dist = Normal::distribution(mu, 1.0)
+      return dist.logDensity(x) * beta
+    })
+  }
+}

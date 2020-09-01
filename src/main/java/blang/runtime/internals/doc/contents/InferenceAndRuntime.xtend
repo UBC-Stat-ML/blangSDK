@@ -1,12 +1,12 @@
 package blang.runtime.internals.doc.contents
 
-import blang.runtime.internals.doc.components.Document
+import blang.xdoc.components.Document
 import blang.runtime.internals.doc.Categories
 import blang.mcmc.SimplexSampler
 
-import static extension blang.runtime.internals.doc.DocElementExtensions.code
+import static extension blang.xdoc.DocElementExtensions.code
 import blang.types.DenseSimplex
-import blang.runtime.internals.doc.components.Code.Language
+import blang.xdoc.components.Code.Language
 
 class InferenceAndRuntime {
   
