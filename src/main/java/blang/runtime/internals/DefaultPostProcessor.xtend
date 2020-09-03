@@ -298,7 +298,7 @@ class DefaultPostProcessor extends PostProcessor {
       p <- ggplot(data, aes(x = «TidySerializer::VALUE»)) +
         geom_density() + «facetString»
         theme_bw() + 
-    geom_segment(data = hdi_df, aes(x=HDI$lower, xend=HDI$upper, y=0, yend=0)) + 
+        geom_segment(data = hdi_df, aes(x=HDI$lower, xend=HDI$upper, y=0, yend=0), col="red") + 
         xlab("«variableName»") +
         ylab("density") +
         ggtitle("Density plot for: «variableName»")
@@ -496,11 +496,7 @@ class DefaultPostProcessor extends PostProcessor {
       }
       '''
     }
-  def String highestDensityRegions() {
-    return '''
-     // hdi_continuous.R 
-     '''
-  }
+    
   
   def void callR(File _scriptFile, String commands) {
     val scriptFile = if (_scriptFile === null) BriefFiles.createTempFile() else _scriptFile
