@@ -140,9 +140,6 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     System.exit(1)
   }
   
-  
-  
-  
   def static String clean(String string) {
     val result = new ArrayList<String>
     for (String line : string.split("\n")) {
