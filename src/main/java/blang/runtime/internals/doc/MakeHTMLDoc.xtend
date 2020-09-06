@@ -21,6 +21,7 @@ import blang.runtime.internals.doc.contents.BuiltInDistributions
 import blang.runtime.internals.doc.contents.BuiltInFunctions
 import blang.runtime.internals.doc.contents.Examples
 import blang.runtime.internals.doc.contents.BlangCLI
+import blang.runtime.internals.doc.contents.Javadoc
 
 class MakeHTMLDoc extends BootstrapHTMLRenderer {
   
@@ -38,7 +39,8 @@ class MakeHTMLDoc extends BootstrapHTMLRenderer {
     InputOutput::page,
     InferenceAndRuntime::page,
     CreatingTypes::page,
-    Testing::page
+    Testing::page,
+    Javadoc::page
   ]
   
   override protected List<String> recurse(DocElement page) {
