@@ -39,6 +39,9 @@ class DefaultPostProcessor extends PostProcessor {
   
   @Arg            @DefaultValue("0.5")
   public double burnInFraction = 0.5
+
+  @Arg            @DefaultValue("0.9")
+  public double highestDensityIntervalValue = 0.9
   
   @Arg(description = "In inches")         
                @DefaultValue("2.0")
@@ -289,9 +292,13 @@ class DefaultPostProcessor extends PostProcessor {
       return '''
       «removeBurnIn»
       «energyHack»
+      «processor.highestDensityInterval»
+      hdi_df <- data %>% group_by(«facetStringName») %>% summarise(HDI=hdi(«TidySerializer::VALUE»))
+      
       p <- ggplot(data, aes(x = «TidySerializer::VALUE»)) +
         geom_density() + «facetString»
         theme_bw() + 
+        geom_segment(data = hdi_df, aes(x=HDI$lower, xend=HDI$upper, y=0, yend=0), col="red") + 
         xlab("«variableName»") +
         ylab("density") +
         ggtitle("Density plot for: «variableName»")
@@ -336,6 +343,7 @@ class DefaultPostProcessor extends PostProcessor {
           probability = n() / normalization
         )
       
+
       p <- ggplot(data, aes(x = «TidySerializer::VALUE», y = probability, xend = «TidySerializer::VALUE», yend = rep(0, length(probability)))) +
         geom_point() + geom_segment() + «facetString»
         theme_bw() + 
@@ -367,6 +375,17 @@ class DefaultPostProcessor extends PostProcessor {
       '''
     }
     
+    
+    def String facetStringName() { facetStringName(null) }
+    def String facetStringName(String extraOptions) {
+      val facetVariables = facetVariables()
+      return 
+        if (facetVariables.empty) 
+        ""
+        else 
+        '''«facetVariables.get(0)»'''
+    }
+     
     def String facetString() { facetString(null) }
     def String facetString(String extraOptions) {
       val facetVariables = facetVariables()
@@ -424,6 +443,7 @@ class DefaultPostProcessor extends PostProcessor {
     val outputFile = new File(directory, variableName + "-summary.csv")
     callR(scriptFile, '''
       require("dplyr")
+      «highestDensityInterval»
       data <- read.csv("«posteriorSamples.absolutePath»")
       summary <- data %>% «IF !groups.empty» group_by(«groups.join(", ")») %>% «ENDIF» 
         summarise( 
@@ -431,11 +451,52 @@ class DefaultPostProcessor extends PostProcessor {
           sd = sd(«TidySerializer::VALUE»),
           min = min(«TidySerializer::VALUE»),
           median = median(«TidySerializer::VALUE»),
-          max = max(«TidySerializer::VALUE»)
+          max = max(«TidySerializer::VALUE»),
+          HDI = hdi(«TidySerializer::VALUE»)
         )
       write.csv(summary, "«outputFile.absolutePath»")
     ''')
   }
+
+  def String highestDensityInterval() {
+    return '''
+      hdi <- function(samples) {
+        kde <- density(samples)
+        kde$y <- kde$y/sum(kde$y)
+        m <- length(kde$y)
+        shortest_length <- Inf
+        interval <- c()
+        for (i in 1:(m-1)) {
+            right_endpoint_index <- i + which(cumsum(kde$y[i:m]) >= «highestDensityIntervalValue»)[1] - 1
+            if (is.na(right_endpoint_index)) {
+              break
+            }
+            left_endpoint <- kde$x[i]
+            right_endpoint <- kde$x[right_endpoint_index]
+            interval_length <- right_endpoint - left_endpoint
+            if (interval_length <= shortest_length) {
+              shortest_length <- interval_length
+              interval <- c(left_endpoint, right_endpoint)
+            }
+          }
+        for (j in (m:2)) {
+          left_endpoint_index <- j - which(cumsum(kde$y[j:1]) >= «highestDensityIntervalValue»)[1] + 1
+          if (is.na(left_endpoint_index)) {
+            break
+          }
+          right_endpoint <- kde$x[j]
+          left_endpoint <- kde$x[left_endpoint_index]
+          interval_length <- right_endpoint - left_endpoint
+          if (interval_length <= shortest_length) {
+            shortest_length <- interval_length
+            interval <- c(left_endpoint, right_endpoint)
+          }
+        }
+          return (data.frame(lower=interval[1], upper=interval[2]))
+      }
+      '''
+    }
+    
   
   def void callR(File _scriptFile, String commands) {
     val scriptFile = if (_scriptFile === null) BriefFiles.createTempFile() else _scriptFile
