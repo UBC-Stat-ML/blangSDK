@@ -38,6 +38,7 @@ import blang.System
 import blang.engines.internals.factories.PT
 import blang.inits.experiments.ExperimentResults
 import blang.inits.InputExceptions.InputException
+import blang.engines.internals.factories.MCMC
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
@@ -224,6 +225,11 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   override void run() {
+    
+    if (engine instanceof MCMC) {
+      stripped = true
+      checkIsDAG = false
+    }
     
     val preprocessTiming = System.out.indentWithTiming("Preprocess") [
       preprocess()

@@ -25,6 +25,7 @@ import blang.engines.internals.factories.PT
 import java.util.ArrayList
 import blang.inits.experiments.tabwriters.TidySerializer
 import blang.inits.experiments.tabwriters.factories.CSV
+import blang.validation.internals.fixtures.NotNormalForm
 
 class TestEndToEnd {
   
@@ -33,7 +34,7 @@ class TestEndToEnd {
     
     SampledModel::check = true
     
-    for (engine : #["SCM", "PT"]) {
+    for (engine : #["SCM", "PT", "AIS"]) {
       Assert.assertEquals(
         0, 
         Runner::start(
@@ -46,6 +47,21 @@ class TestEndToEnd {
         )
       )
     }
+  }
+  
+  @Test
+  def void notNormalForm() {
+    
+    SampledModel::check = true
+    
+    Assert.assertEquals(
+      0, 
+      Runner::start(
+        "--model", NotNormalForm.canonicalName,
+        "--experimentConfigs.maxIndentationToPrint", "-1",
+        "--engine", "MCMC"
+      )
+    )
   }
   
   @Test

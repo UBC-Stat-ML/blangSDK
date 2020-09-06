@@ -197,11 +197,13 @@ class DefaultPostProcessor extends PostProcessor {
   
   def void plotAdaptationIterations() {
     val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
+    val ratesData = csvFile(monitoringFolder, MonitoringOutput::swapStatistics.toString)
+    val paramsData = csvFile(monitoringFolder, MonitoringOutput::annealingParameters.toString)
+    if (ratesData === null || paramsData === null) return
     val adaptationIterationsPlotsFolder = new File(outputFolder(Output::monitoringPlots), "adaptationIterations")
     adaptationIterationsPlotsFolder.mkdir
     val rScript = new File(adaptationIterationsPlotsFolder, ".script.r")
-    val ratesData = csvFile(monitoringFolder, MonitoringOutput::swapStatistics.toString)
-    val paramsData = csvFile(monitoringFolder, MonitoringOutput::annealingParameters.toString)
+    
     callR(rScript, '''
       require("ggplot2")
       require("dplyr")

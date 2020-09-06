@@ -152,7 +152,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     {
       List<Double> newPartition = EngineStaticUtils.targetAcceptancePartition(cumulativeLambdaEstimate, targetAccept.get());
       // here we need to take care of fact grid size may change
-      nChains = Optional.of(newPartition.size());
+      nChains = newPartition.size();
       initialize(states[0], random);
       setAnnealingParameters(newPartition);
     }

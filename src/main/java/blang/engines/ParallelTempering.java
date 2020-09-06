@@ -28,9 +28,9 @@ public class ParallelTempering
                          @DefaultValue("EquallySpaced")
   public TemperatureLadder ladder = new EquallySpaced();
   
-  @Arg(description = "If unspecified, use 8.") 
-                                  @DefaultValue("8")
-  public Optional<Integer> nChains = Optional.of(8);
+  @Arg
+        @DefaultValue("8")
+  public int nChains = 8;
   
   @Arg              @DefaultValue("true")
   public boolean usePriorSamples = true;
@@ -162,9 +162,9 @@ public class ParallelTempering
   
   public void initialize(SampledModel prototype, Random random)
   {
-    if (nChains.isPresent() && nChains.get() < 1)
+    if (nChains < 1)
       throw new RuntimeException("Number of tempering chains must be greater than zero.");
-    temperingParameters = ladder.temperingParameters(nChains.orElse(nThreads.numberAvailable()));
+    temperingParameters = ladder.temperingParameters(nChains);
     int nChains = temperingParameters.size();
     states = initStates(prototype, nChains);
     setAnnealingParameters(temperingParameters);
