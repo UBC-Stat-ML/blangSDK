@@ -27,3 +27,47 @@ cd -
 cd www
 java -cp ../../build/install/blang/lib/\* blang.runtime.internals.doc.MakeHTMLDoc
 cd -
+
+
+##### Javadocs
+
+## DSL
+
+cd ../../blangDSL/ca.ubc.stat.blang.parent
+./gradlew assemble
+cd -
+
+rm -rf www/javadoc-dsl
+mv ../../blangDSL/ca.ubc.stat.blang.parent/ca.ubc.stat.blang/build/docs/javadoc www/javadoc-dsl
+
+
+
+## xlinear
+
+cd ../../xlinear
+./gradlew assemble
+cd -
+
+rm -rf www/javadoc-xlinear
+mv ../../xlinear/build/docs/javadoc www/javadoc-xlinear
+
+
+## inits
+
+cd ../../inits
+./gradlew assemble
+cd -
+
+rm -rf www/javadoc-inits
+mv ../../inits/build/docs/javadoc www/javadoc-inits
+
+
+## SDK
+
+cd ..
+./gradlew assemble
+cd -
+
+rm -rf www/javadoc-sdk
+mv ../build/docs/javadoc www/javadoc-sdk
+

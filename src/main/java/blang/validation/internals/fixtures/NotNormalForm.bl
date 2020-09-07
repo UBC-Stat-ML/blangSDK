@@ -1,0 +1,12 @@
+package blang.validation.internals.fixtures
+
+model NotNormalForm {
+  
+  random RealVar x ?: latentReal
+  random RealVar y ?: latentReal
+  
+  laws{
+    logf(y) {-y*y }
+    x | y ~ Normal(y, 1.0)
+  }
+}

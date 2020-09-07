@@ -357,7 +357,7 @@ public class SampledModel
   {
     if (sumPreannealedFiniteDensities == Double.NEGATIVE_INFINITY || sumFixedDensities == Double.NEGATIVE_INFINITY)
     {
-      System.err.println("WARNING: forward simulation generated a particle of probability zero. This could happen infrequently due to numerical precision but could lead to performance problems if it happens frequently (e.g. due to determinism in likelihood).");
+      System.err.println("WARNING: encountered unannealed probability zero configuration. This could happen infrequently due to numerical precision but could lead to performance problems if it happens frequently (e.g. due to determinism in likelihood). Try SCM or PT initialized with SCM and/or more particles");
       updateAll();
       return;
     }

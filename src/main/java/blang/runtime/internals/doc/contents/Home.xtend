@@ -42,7 +42,7 @@ class Home {
     
     it += '''
       If you have one more minute to spare, let us see what happen when we run this model (if you want to try at home, 
-      all you need to run this is «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html")»Java 8 SDK«ENDLINK» 
+      all you need to run this is «LINK("https://openjdk.java.net/")»Open or Oracle SDK 8 SDK«ENDLINK» 
       and git installed):
     '''
     

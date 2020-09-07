@@ -38,6 +38,7 @@ import blang.System
 import blang.engines.internals.factories.PT
 import blang.inits.experiments.ExperimentResults
 import blang.inits.InputExceptions.InputException
+import blang.engines.internals.factories.MCMC
 
 class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded in ca.ubc.stat.blang.StaticJavaUtils
   
@@ -225,6 +226,11 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   
   override void run() {
     
+    if (engine instanceof MCMC) {
+      stripped = true
+      checkIsDAG = false
+    }
+    
     val preprocessTiming = System.out.indentWithTiming("Preprocess") [
       preprocess()
     ].watch
@@ -257,7 +263,8 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   public val static String RUNNING_TIME_SUMMARY = "runningTimeSummary.tsv"
-  public val static String LOG_NORM_ESTIMATE = "logNormEstimate.txt"
+  public val static String LOG_NORMALIZATION_ESTIMATE = "logNormalizationEstimate"
+    public val static String LOG_NORMALIZATION_ESTIMATOR = "estimator"
   public val static String MONITORING_FOLDER = "monitoring"
   public val static String SAMPLES_FOLDER = "samples"
   
