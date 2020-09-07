@@ -293,12 +293,14 @@ class DefaultPostProcessor extends PostProcessor {
       «removeBurnIn»
       «energyHack»
       «processor.highestDensityInterval»
-      hdi_df <- data %>% group_by(«facetStringName») %>% summarise(HDI=hdi(«TidySerializer::VALUE»))
+      hdi_df <- data %>% group_by(«facetStringName») %>%
+       summarise(HDI.lower=hdi_lower(«TidySerializer::VALUE»),
+                 HDI.upper=hdi_upper(«TidySerializer::VALUE»))
       
       p <- ggplot(data, aes(x = «TidySerializer::VALUE»)) +
         geom_density() + «facetString»
         theme_bw() + 
-        geom_segment(data = hdi_df, aes(x=HDI$lower, xend=HDI$upper, y=0, yend=0), col="red") + 
+        geom_segment(data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
         xlab("«variableName»") +
         ylab("density") +
         ggtitle("Density plot for: «variableName»")
@@ -342,10 +344,15 @@ class DefaultPostProcessor extends PostProcessor {
         summarise(
           probability = n() / normalization
         )
+      «processor.highestDensityInterval»
+      hdi_df <- data %>% group_by(«facetStringName») %>%
+       summarise(HDI.lower=hdi_lower(«TidySerializer::VALUE»),
+                 HDI.upper=hdi_upper(«TidySerializer::VALUE»))
       
 
       p <- ggplot(data, aes(x = «TidySerializer::VALUE», y = probability, xend = «TidySerializer::VALUE», yend = rep(0, length(probability)))) +
         geom_point() + geom_segment() + «facetString»
+        geom_segment(data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
         theme_bw() + 
         xlab("«variableName»") +
         ylab("probability") +
@@ -452,7 +459,8 @@ class DefaultPostProcessor extends PostProcessor {
           min = min(«TidySerializer::VALUE»),
           median = median(«TidySerializer::VALUE»),
           max = max(«TidySerializer::VALUE»),
-          HDI = hdi(«TidySerializer::VALUE»)
+          HDI.lower = hdi_lower(«TidySerializer::VALUE»),
+          HDI.upper = hdi_upper(«TidySerializer::VALUE»)
         )
       write.csv(summary, "«outputFile.absolutePath»")
     ''')
@@ -460,39 +468,39 @@ class DefaultPostProcessor extends PostProcessor {
 
   def String highestDensityInterval() {
     return '''
-      hdi <- function(samples) {
-        kde <- density(samples)
-        kde$y <- kde$y/sum(kde$y)
-        m <- length(kde$y)
+      hdi_upper <- function(samples) {
+      	n = length(samples)
+      	m = as.integer(«highestDensityIntervalValue» * n)
+      	sorted_samples <- sort(samples)
         shortest_length <- Inf
-        interval <- c()
-        for (i in 1:(m-1)) {
-            right_endpoint_index <- i + which(cumsum(kde$y[i:m]) >= «highestDensityIntervalValue»)[1] - 1
-            if (is.na(right_endpoint_index)) {
-              break
-            }
-            left_endpoint <- kde$x[i]
-            right_endpoint <- kde$x[right_endpoint_index]
-            interval_length <- right_endpoint - left_endpoint
-            if (interval_length <= shortest_length) {
-              shortest_length <- interval_length
-              interval <- c(left_endpoint, right_endpoint)
-            }
-          }
-        for (j in (m:2)) {
-          left_endpoint_index <- j - which(cumsum(kde$y[j:1]) >= «highestDensityIntervalValue»)[1] + 1
-          if (is.na(left_endpoint_index)) {
-            break
-          }
-          right_endpoint <- kde$x[j]
-          left_endpoint <- kde$x[left_endpoint_index]
-          interval_length <- right_endpoint - left_endpoint
-          if (interval_length <= shortest_length) {
+        shortest_interval <- c()
+        for (i in 1:(n-m)){
+          lower <- sorted_samples[i]
+          upper <- sorted_samples[i+m]
+          interval_length <- upper - lower
+          if (interval_length < shortest_length) {
             shortest_length <- interval_length
-            interval <- c(left_endpoint, right_endpoint)
+            shortest_interval <- c(lower, upper)
           }
         }
-          return (data.frame(lower=interval[1], upper=interval[2]))
+      return (shortest_interval[2])
+      }
+      hdi_lower <- function(samples) {
+      	n = length(samples)
+      	m = as.integer(«highestDensityIntervalValue» * n)
+      	sorted_samples <- sort(samples)
+        shortest_length <- Inf
+        shortest_interval <- c()
+        for (i in 1:(n-m)){
+          lower <- sorted_samples[i]
+          upper <- sorted_samples[i+m]
+          interval_length <- upper - lower
+          if (interval_length < shortest_length) {
+            shortest_length <- interval_length
+            shortest_interval <- c(lower, upper)
+          }
+        }
+      return (shortest_interval[1])
       }
       '''
     }
