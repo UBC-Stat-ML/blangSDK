@@ -138,14 +138,15 @@ class TestEndToEnd {
   
   @Test
   def void testNormalizationEstimates() {
+    val engines = {#[
+      #["--engine.logNormalizationEstimator", "steppingStone",            " --engine.nScans", "2_000"],
+      #["--engine.logNormalizationEstimator", "thermodynamicIntegration", " --engine.nScans", "2_000"],
+      #["--engine", "SCM",                                            " --engine.nParticles", "2_000"]
+    ]}
+    val estimates = newArrayOfSize(engines.size)
     var int i = 0;
-    var Double previous = null
-    for (engine : #[
-      #["--engine.logNormalizationEstimator", "steppingStone"],
-      #["--engine.logNormalizationEstimator", "thermodynamicIntegration"],
-      #["--engine", "SCM"]
-    ]) {
-      val exec = Files.createTempDirectory("r" + i++).toFile
+    for (engine : engines) {
+      val exec = Files.createTempDirectory("r" + (i+1)).toFile
       val args = new ArrayList(#["--model", Ising.canonicalName, "--experimentConfigs.maxIndentationToPrint", "-1"])
       args.addAll(engine)
       val runner = Runner::create(
@@ -155,10 +156,13 @@ class TestEndToEnd {
       runner.run
       val logNormFile = CSV::csvFile(exec, Runner.LOG_NORMALIZATION_ESTIMATE)
       val estimateStr = BriefIO::readLines(logNormFile).indexCSV.last.get.get(TidySerializer::VALUE)
-      val current = Double.parseDouble(estimateStr)
-      if (previous !== null) 
-        Assert.assertEquals(previous, current, 0.1) 
-      previous = current
+      val estimate = Double.parseDouble(estimateStr)
+      estimates.set(i, estimate)
+      i++
+    }
+
+    for (int j : 1 ..< estimates.size) {
+      Assert.assertEquals(estimates.get(j-1), estimates.get(j), 0.1)    
     }
   }
   
