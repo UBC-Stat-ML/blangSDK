@@ -49,7 +49,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     double logNormEstimate = approximation.logNormEstimate();
     System.out.println("Log normalization constant estimate: " + logNormEstimate);
     results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
-        Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SMC"),
+        Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SCM"),
         Pair.of(TidySerializer.VALUE, logNormEstimate)
       );
     
