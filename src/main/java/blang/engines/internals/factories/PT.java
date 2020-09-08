@@ -315,7 +315,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         double logNormEstimate = population.logNormEstimate();
         System.out.println("Log normalization constant estimate: " + logNormEstimate);
         results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
-          Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SMC-initialization"),
+          Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SCM-initialization"),
           Pair.of(TidySerializer.VALUE, logNormEstimate)
         );
         break;
