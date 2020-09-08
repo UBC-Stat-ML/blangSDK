@@ -28,6 +28,7 @@ import static blang.inits.experiments.tabwriters.factories.CSV.*
 
 import blang.runtime.internals.DefaultPostProcessor.Output
 import blang.runtime.internals.ComputeESS.Batch
+import blang.engines.internals.factories.SCM
 
 class DefaultPostProcessor extends PostProcessor {
   
@@ -54,6 +55,9 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg(description = "Run visualizations based on Processing (may need extra steps to perform in a 'headless' environment)")       
              @DefaultValue("false")
   public boolean runPxviz = false
+  
+  @Arg            @DefaultValue("false")
+  public boolean eleDiagnostic = false
   
   @Arg public Optional<Integer> boldTrajectory = Optional.empty
   
@@ -132,7 +136,16 @@ class DefaultPostProcessor extends PostProcessor {
     
     val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
     
-    for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound])
+    // for SCM:
+    
+    simplePlot(csvFile(monitoringFolder, SCM::propagationFileName), SCM::iterationColumn, SCM::annealingParameterColumn)
+    simplePlot(csvFile(monitoringFolder, SCM::propagationFileName), SCM::iterationColumn, SCM::essColumn, "-ess")
+    simplePlot(csvFile(monitoringFolder, SCM::resamplingFileName), SCM::iterationColumn, SCM::annealingParameterColumn)
+    simplePlot(csvFile(monitoringFolder, SCM::resamplingFileName), SCM::iterationColumn, SCM::logNormalizationColumn, "-logNormalization")
+    
+    // for PT:
+    
+    for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound, MonitoringOutput::nonAsymptoticRountTrip])
       simplePlot(csvFile(monitoringFolder, rateName.toString), Column::round, Column::rate)
       
     simplePlot(csvFile(monitoringFolder, MonitoringOutput::swapSummaries.toString), Column::round, Column::average)
@@ -147,7 +160,7 @@ class DefaultPostProcessor extends PostProcessor {
       plot(csvFile(monitoringFolder, stat.toString), '''
         data <- data[data$isAdapt=="false",]
         p <- ggplot(data, aes(x = «Column::chain», y = «TidySerializer::VALUE»)) +
-          geom_line() +
+          geom_point(size = 0.1) + geom_line(alpha = 0.5) +
           ylab("«stat»") + «scale»
           theme_bw()
       ''')
@@ -159,11 +172,13 @@ class DefaultPostProcessor extends PostProcessor {
       ''', "-progress")
     }
     
+    plotAdaptationIterations()
+    
     for (stat : #[MonitoringOutput::cumulativeLambda, MonitoringOutput::lambdaInstantaneous]) {
       plot(csvFile(monitoringFolder, stat.toString), '''
         data <- data[data$isAdapt=="false",]
         p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE»)) +
-          geom_line() +
+          geom_point(size = 0.1) + geom_line(alpha = 0.5) +
           ylab("«stat»") + 
           theme_bw()
       ''')
@@ -174,10 +189,40 @@ class DefaultPostProcessor extends PostProcessor {
           theme_bw()
       ''', "-progress")
     }
+    
+    if (eleDiagnostic)
+      plotELEDiagnostics()
   }
   
   protected def void pxviz() {
     paths()
+  }
+  
+  def void plotAdaptationIterations() {
+    val monitoringFolder = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
+    val ratesData = csvFile(monitoringFolder, MonitoringOutput::swapStatistics.toString)
+    val paramsData = csvFile(monitoringFolder, MonitoringOutput::annealingParameters.toString)
+    if (ratesData === null || paramsData === null) return
+    val adaptationIterationsPlotsFolder = new File(outputFolder(Output::monitoringPlots), "adaptationIterations")
+    adaptationIterationsPlotsFolder.mkdir
+    val rScript = new File(adaptationIterationsPlotsFolder, ".script.r")
+    
+    callR(rScript, '''
+      require("ggplot2")
+      require("dplyr")
+      allRates <- read.csv("«ratesData.absolutePath»") 
+      allParams <- read.csv("«paramsData.absolutePath»") 
+      maxRound <- max(allRates$round)
+      for (r in 0:maxRound) {
+        rates <- allRates %>% filter(round == r)
+        params <- allParams %>% filter(round == r)
+        rejections <- rev(1 - rates$value)
+        cumRejections <- cumsum(rejections)
+        empirical <- data.frame("beta" = rev(params$value), "Lambda" = cumRejections)
+        p <- ggplot(empirical, aes(x = beta, y = Lambda)) + geom_step(direction="vh") + xlim(0,1) + theme_bw()
+        ggsave(paste0("«adaptationIterationsPlotsFolder.absolutePath»/iteration-", r, ".«imageFormat»"), limitsize = F) 
+      }
+    ''')
   }
   
   def void paths() {
@@ -212,16 +257,106 @@ class DefaultPostProcessor extends PostProcessor {
     ''')
   }
   
-  def void simplePlot(File data, Object x, Object y) {
-    if (data === null) return // restarts are not computed when gz used 
+  def void simplePlot(File data, Object x, Object y) { simplePlot(data, x, y, "") }
+  def void simplePlot(File data, Object x, Object y, String suffix) {
+    if (data === null) return 
     val name = variableName(data)
     plot(data, '''
       p <- ggplot(data, aes(x = «x», y = «y»)) +
-        geom_line() +
+        geom_point(size = 0.1) + geom_line(alpha = 0.5) +
         ylab("«name + " " + y»") + 
         theme_bw()
-    ''')
+    ''', suffix)
   }
+  
+  def plotELEDiagnostics() {
+    val samplesDir = new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER)
+    val energySamples = csvFile(samplesDir, SampleOutput::energy.toString)
+    val elePlotsDir = new File(outputFolder(Output::monitoringPlots), "ele")
+    elePlotsDir.mkdir
+    val rScript = new File(elePlotsDir, ".eleDiagnostics.r") 
+    val outputPrefix = elePlotsDir.absolutePath
+    callR(rScript, '''
+      require("ggplot2")
+      require("dplyr")
+      require("tidyr")
+      data <- read.csv("«energySamples.absolutePath»")
+      
+      n_samples <- max(data$«Runner.sampleColumn»)
+      cut_off <- n_samples * «burnInFraction»
+      data <- subset(data, «Runner.sampleColumn» > cut_off)
+      
+      maxChainIndex <- max(data$chain)
+      
+      listOfDataFrames <- vector(mode = "list", length = maxChainIndex)
+      
+      for (c in 1:maxChainIndex) {
+        sub <- data %>% filter(chain == c - 1 | chain == c) %>% filter(sample %% 2 == 0) %>% pivot_wider(names_from = «Column::chain», values_from = «TidySerializer::VALUE»)
+        
+        colnames(sub)[2] <- "colder_chain"
+        colnames(sub)[3] <- "warmer_chain"
+        
+        p <- ggplot(sub, aes(x = colder_chain, y = warmer_chain)) + 
+          geom_density_2d() + 
+          ggtitle("Interacting energies") +
+          theme_bw()  
+          
+        ggsave(paste0("«outputPrefix»", "/chain_", c-1, "_", c, "_raw.pdf"), p)
+        
+        # from Bartlett, 1947; Van der Waerden, 1952 "Order tests for the two sample problem and their power", https://cran.r-project.org/web/packages/bestNormalize/vignettes/bestNormalize.html
+        sub$transformed_colder_chain <- qnorm((rank(sub$colder_chain) - 0.5)/length(sub$colder_chain))
+        sub$transformed_warmer_chain <- qnorm((rank(sub$warmer_chain) - 0.5)/length(sub$warmer_chain))
+        
+        p <- ggplot(sub, aes(x = transformed_colder_chain, y = transformed_warmer_chain)) + 
+          geom_density_2d() + 
+          ggtitle("Interacting energies") +
+          theme_bw()  
+                  
+        ggsave(paste0("«outputPrefix»", "/chain_", c-1, "_", c, "_orq.pdf"), p)
+        
+        listOfDataFrames[[c]] <- sub
+      }
+      
+      all <- bind_rows(listOfDataFrames, .id = "warmer_chain_index")
+      
+      
+      p <- ggplot(all, aes(x = colder_chain, y = warmer_chain)) + 
+          geom_density_2d() + 
+          ggtitle("Interacting energies") +
+          theme_bw()  
+                
+      ggsave(paste0("«outputPrefix»", "/all_raw.pdf"), p)
+      
+      p <- ggplot(all, aes(x = transformed_colder_chain, y = transformed_warmer_chain)) + 
+        geom_density_2d() + 
+        ggtitle("Interacting energies") +
+        theme_bw()  
+        
+      ggsave(paste0("«outputPrefix»", "/all_orq.pdf"), p)
+      
+      dependences <- all %>% 
+        group_by(warmer_chain_index) %>% 
+        summarize(correlation = cor(transformed_colder_chain,transformed_warmer_chain)) %>%
+        mutate(mutualInformation_oqrApprox = -0.5 * log(1 - correlation^2))
+        
+      p <- ggplot(dependences, aes(x = as.integer(warmer_chain_index), y = mutualInformation_oqrApprox)) + 
+              geom_line() + 
+              ggtitle("Mutual information between interacting chain energies") +
+              xlab("Warmer chain index") + 
+              ylab("Mutual Information (OQR approximation)") + 
+              theme_bw()
+              
+      ggsave(paste0("«outputPrefix»", "/mutualInformation_oqrApprox.pdf"), p)
+      
+      write.csv(dependences, paste0("«outputPrefix»", "/interactingChainEnergyDependence.csv"))
+      
+      dependencesSummary <- all %>%  
+              summarize(correlation = cor(transformed_colder_chain,transformed_warmer_chain)) %>%
+              mutate(mutualInformation_oqrApprox = -0.5 * log(1 - correlation^2))
+              
+      write.csv(dependencesSummary, paste0("«outputPrefix»", "/interactingChainEnergyDependenceSummary.csv"))
+    ''') 
+  } 
   
   def static boolean isRealValued(Class<?> type) {
     return type == Double || RealVar.isAssignableFrom(type)
@@ -265,7 +400,7 @@ class DefaultPostProcessor extends PostProcessor {
       this.removeBurnIn = removeBurnIn
     }
     override ggCommand() {
-      val geomString = if (isRealValued(types.get(TidySerializer::VALUE))) "geom_line()" else "geom_step()"
+      val geomString = if (isRealValued(types.get(TidySerializer::VALUE))) "geom_point(size = 0.1) + geom_line(alpha = 0.5)" else "geom_step()"
       return (if (removeBurnIn) removeBurnIn() else "") + '''
       
       p <- ggplot(data, aes(x = «Runner::sampleColumn», y = «TidySerializer::VALUE»)) +
@@ -283,22 +418,17 @@ class DefaultPostProcessor extends PostProcessor {
       super(posteriorSamples, types, processor)
     }
     override ggCommand() {
-      val energyHack = // energy across temperature is very dynamic so truncate the extremes
-        if (variableName != SampleOutput::energy) 
-          "" else '''
-        data <- data[data$value < quantile(data$«TidySerializer::VALUE», 0.95), ]
-        data <- data[data$value > quantile(data$«TidySerializer::VALUE», 0.05), ]
-        ''' 
       return '''
       «removeBurnIn»
-      «energyHack»
       «processor.highestDensityInterval»
-      hdi_df <- data %>% group_by(«facetStringName») %>% summarise(HDI=hdi(«TidySerializer::VALUE»))
+      hdi_df <- data %>% group_by(«facetStringName») %>%
+       summarise(HDI.lower=hdi_lower(«TidySerializer::VALUE»),
+                 HDI.upper=hdi_upper(«TidySerializer::VALUE»))
       
       p <- ggplot(data, aes(x = «TidySerializer::VALUE»)) +
         geom_density() + «facetString»
         theme_bw() + 
-        geom_segment(data = hdi_df, aes(x=HDI$lower, xend=HDI$upper, y=0, yend=0), col="red") + 
+        geom_segment(data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
         xlab("«variableName»") +
         ylab("density") +
         ggtitle("Density plot for: «variableName»")
@@ -342,10 +472,15 @@ class DefaultPostProcessor extends PostProcessor {
         summarise(
           probability = n() / normalization
         )
+      «processor.highestDensityInterval»
+      hdi_df <- data %>% group_by(«facetStringName») %>%
+       summarise(HDI.lower=hdi_lower(«TidySerializer::VALUE»),
+                 HDI.upper=hdi_upper(«TidySerializer::VALUE»))
       
 
       p <- ggplot(data, aes(x = «TidySerializer::VALUE», y = probability, xend = «TidySerializer::VALUE», yend = rep(0, length(probability)))) +
         geom_point() + geom_segment() + «facetString»
+        geom_segment(data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
         theme_bw() + 
         xlab("«variableName»") +
         ylab("probability") +
@@ -452,7 +587,8 @@ class DefaultPostProcessor extends PostProcessor {
           min = min(«TidySerializer::VALUE»),
           median = median(«TidySerializer::VALUE»),
           max = max(«TidySerializer::VALUE»),
-          HDI = hdi(«TidySerializer::VALUE»)
+          HDI.lower = hdi_lower(«TidySerializer::VALUE»),
+          HDI.upper = hdi_upper(«TidySerializer::VALUE»)
         )
       write.csv(summary, "«outputFile.absolutePath»")
     ''')
@@ -460,39 +596,39 @@ class DefaultPostProcessor extends PostProcessor {
 
   def String highestDensityInterval() {
     return '''
-      hdi <- function(samples) {
-        kde <- density(samples)
-        kde$y <- kde$y/sum(kde$y)
-        m <- length(kde$y)
+      hdi_upper <- function(samples) {
+      	n = length(samples)
+      	m = as.integer(«highestDensityIntervalValue» * n)
+      	sorted_samples <- sort(samples)
         shortest_length <- Inf
-        interval <- c()
-        for (i in 1:(m-1)) {
-            right_endpoint_index <- i + which(cumsum(kde$y[i:m]) >= «highestDensityIntervalValue»)[1] - 1
-            if (is.na(right_endpoint_index)) {
-              break
-            }
-            left_endpoint <- kde$x[i]
-            right_endpoint <- kde$x[right_endpoint_index]
-            interval_length <- right_endpoint - left_endpoint
-            if (interval_length <= shortest_length) {
-              shortest_length <- interval_length
-              interval <- c(left_endpoint, right_endpoint)
-            }
-          }
-        for (j in (m:2)) {
-          left_endpoint_index <- j - which(cumsum(kde$y[j:1]) >= «highestDensityIntervalValue»)[1] + 1
-          if (is.na(left_endpoint_index)) {
-            break
-          }
-          right_endpoint <- kde$x[j]
-          left_endpoint <- kde$x[left_endpoint_index]
-          interval_length <- right_endpoint - left_endpoint
-          if (interval_length <= shortest_length) {
+        shortest_interval <- c()
+        for (i in 1:(n-m)){
+          lower <- sorted_samples[i]
+          upper <- sorted_samples[i+m]
+          interval_length <- upper - lower
+          if (interval_length < shortest_length) {
             shortest_length <- interval_length
-            interval <- c(left_endpoint, right_endpoint)
+            shortest_interval <- c(lower, upper)
           }
         }
-          return (data.frame(lower=interval[1], upper=interval[2]))
+      return (shortest_interval[2])
+      }
+      hdi_lower <- function(samples) {
+      	n = length(samples)
+      	m = as.integer(«highestDensityIntervalValue» * n)
+      	sorted_samples <- sort(samples)
+        shortest_length <- Inf
+        shortest_interval <- c()
+        for (i in 1:(n-m)){
+          lower <- sorted_samples[i]
+          upper <- sorted_samples[i+m]
+          interval_length <- upper - lower
+          if (interval_length < shortest_length) {
+            shortest_length <- interval_length
+            shortest_interval <- c(lower, upper)
+          }
+        }
+      return (shortest_interval[1])
       }
       '''
     }

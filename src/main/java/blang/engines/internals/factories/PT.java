@@ -34,7 +34,7 @@ import blang.runtime.Runner;
 import blang.runtime.SampledModel;
 import blang.runtime.internals.objectgraph.GraphAnalysis;
 import blang.types.StaticUtils;
-import briefj.BriefIO;
+import briefj.BriefLog;
 
 import static blang.engines.internals.factories.PT.MonitoringOutput.*;
 
@@ -71,8 +71,12 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @Arg                       @DefaultValue("SCM")
   public InitType initialization = InitType.SCM; 
   
-  @Arg  @DefaultValue("steppingStone") // should edit scmDefaults if defaults changed
+  @Arg                                                                    @DefaultValue("steppingStone") 
   public LogNormalizationEstimator logNormalizationEstimator = LogNormalizationEstimator.steppingStone;
+  
+  @Arg(description = "Use when huge number of chains are utilized. Statistics like energy, logLikelihood are only recorded for the first so many indices to avoid excessive output size.")         
+                               @DefaultValue("100")
+  public int statisticRecordedMaxChainIndex = 100;
   
   @Override
   public void performInference() 
@@ -108,7 +112,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   @SuppressWarnings("unchecked")
   private void recordEnergyStatistics(BlangTidySerializer densitySerializer, int iter)  
   {
-    for (int i = 0; i < temperingParameters.size(); i++)  
+    if (temperingParameters.size() > statisticRecordedMaxChainIndex)
+      BriefLog.warnOnce("Only printing energy statistics for the first " + statisticRecordedMaxChainIndex + " chains, see statisticRecordedMaxChainIndex option in PT");
+    for (int i = 0; i < Math.min(temperingParameters.size(), statisticRecordedMaxChainIndex); i++)  
     {
       densitySerializer.serialize(states[i].logDensity(), SampleOutput.allLogDensities.toString(), 
         Pair.of(sampleColumn, iter), 
@@ -139,14 +145,14 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     List<Double> annealingParameters = new ArrayList<>(temperingParameters);
     Collections.reverse(annealingParameters);
-    List<Double> acceptanceProbabilities = Arrays.stream(swapAcceptPrs).map(stat -> stat.getMean()).collect(Collectors.toList());
+    List<Double> acceptanceProbabilities = Arrays.stream(swapAcceptPrs).map(stat -> {double result = stat.getMean(); if (result == 1.0) return 0.99999; if (Double.isFinite(result)) return result; else return 0.0;}).collect(Collectors.toList());
     Collections.reverse(acceptanceProbabilities);
     MonotoneCubicSpline cumulativeLambdaEstimate = EngineStaticUtils.estimateCumulativeLambda(annealingParameters, acceptanceProbabilities);
     if (targetAccept.isPresent() && finalAdapt)
     {
       List<Double> newPartition = EngineStaticUtils.targetAcceptancePartition(cumulativeLambdaEstimate, targetAccept.get());
       // here we need to take care of fact grid size may change
-      nChains = Optional.of(newPartition.size());
+      nChains = newPartition.size();
       initialize(states[0], random);
       setAnnealingParameters(newPartition);
     }
@@ -214,12 +220,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     }
   }
 
-  @Override
-  public void check(GraphAnalysis analysis) 
-  {
-    // TODO: may want to check forward simulators ok
-    return;
-  }
+  @Override public void check(GraphAnalysis analysis) { return; }
   
   private List<Round> rounds() 
   {
@@ -313,7 +314,10 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         }
         double logNormEstimate = population.logNormEstimate();
         System.out.println("Log normalization constant estimate: " + logNormEstimate);
-        BriefIO.write(scmInit.results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + logNormEstimate);
+        results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
+          Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SCM-initialization"),
+          Pair.of(TidySerializer.VALUE, logNormEstimate)
+        );
         break;
       default : throw new RuntimeException();
     }
@@ -381,12 +385,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       writer(MonitoringOutput.swapIndicators).close(); // workaround when using compressed output: at least show path info at last round
     }
     
-    Paths paths = null; 
-    try {
-      paths = new Paths(swapIndicsFile.getAbsolutePath(), round.firstScanInclusive, round.lastScanExclusive);
-    } catch (Exception eof) { 
-      // ignore: probably just mean EOFException thrown when using compressed output
-    }
+    Paths paths = swapIndicsFile.getName().endsWith("csv") || !round.isAdapt
+      ? paths = new Paths(swapIndicsFile.getAbsolutePath(), round.firstScanInclusive, round.lastScanExclusive)
+      : null; // When using .csv.gz, we cannot flush part-way through
     
     double Lambda = Arrays.stream(swapAcceptPrs).map(stat -> 1.0 - stat.getMean()).mapToDouble(Double::doubleValue).sum();
     writer(MonitoringOutput.globalLambda).printAndWrite(
@@ -394,10 +395,22 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       Pair.of(TidySerializer.VALUE, Lambda)
     );
     
+    double inefficiency = Arrays.stream(swapAcceptPrs).map(stat -> {double s = stat.getMean(); return (1.0 - s) / s;}).mapToDouble(Double::doubleValue).sum();
+    double timeToFirst = 2.0*nChains()*(1.0 + inefficiency);
+    double effectiveNScans = Math.max(0.0, round.nScans - timeToFirst);
+    
+    writer(MonitoringOutput.timeToFirstRestart).printAndWrite(
+        roundReport,
+        Pair.of(Column.time, timeToFirst), 
+        Pair.of(Column.effectiveNScans, effectiveNScans)
+      );
+    
     if (paths != null) 
     {
       int n = paths.nRejuvenations();
-      double tau = ((double) n / round.nScans);
+      double tau;
+      if (effectiveNScans == 0) tau = 0.0;
+      else tau = ((double) n / effectiveNScans);
       writer(MonitoringOutput.actualTemperedRestarts).printAndWrite(
         roundReport,
         Pair.of(Column.count, n), 
@@ -410,34 +423,45 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     else
     {
       double tauBar = 1.0 / (2.0 + 2.0 * Lambda);
-      double nBar = tauBar * round.nScans;
+      double nBar = tauBar * effectiveNScans;
       writer(asymptoticRoundTripBound).printAndWrite(
         roundReport,
         Pair.of(Column.count, nBar), 
         Pair.of(Column.rate, tauBar)
       );
+      
+      double tau = 1.0 / (2.0 + 2.0 * inefficiency);
+      double nTheoretical = tau * effectiveNScans;
+      writer(nonAsymptoticRountTrip).printAndWrite(
+          roundReport,
+          Pair.of(Column.count, nTheoretical), 
+          Pair.of(Column.rate, tau)
+        );
     }
     
     Optional<Double> optionalLogNorm = null;
-    if (logNormalizationEstimator == LogNormalizationEstimator.steppingStone)
-      optionalLogNorm = steppingStoneEstimator();
-    else if (logNormalizationEstimator == LogNormalizationEstimator.thermodynamicIntegration)
-      optionalLogNorm = thermodynamicEstimator();
-    else
-      throw new RuntimeException();
-    if (optionalLogNorm.isPresent())
-      writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
-        roundReport,
-        Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
-      );
-    else
-      System.out.println("Make sure nChains > 1 and note also thermodynamic integration disabled as support is being annealed\n"
-                       + "  Use \"--engine SCM\" for log normalization computation instead");
+      if (logNormalizationEstimator == LogNormalizationEstimator.steppingStone)
+        optionalLogNorm = steppingStoneEstimator();
+      else if (logNormalizationEstimator == LogNormalizationEstimator.thermodynamicIntegration)
+        optionalLogNorm = thermodynamicEstimator();
+      else
+        throw new RuntimeException();
+      if (optionalLogNorm.isPresent())
+        writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
+          roundReport,
+          Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
+        );
+      else
+        System.out.println("To obtain an estimate of the marginal likelihood (log normalization), note that thermodynamic integration is disabled when the support is being annealed");
     
     // log normalization, again (this gets overwritten, so this will be the final estimate in the same format as SCM)
-    if (optionalLogNorm.isPresent())
-      BriefIO.write(results.getFileInResultFolder(Runner.LOG_NORM_ESTIMATE), "" + optionalLogNorm.get());
+    if (optionalLogNorm.isPresent() && !round.isAdapt)
+      results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
+          Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, logNormalizationEstimator),
+          Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
+        );
   }
+
   
   private SCM scmDefault() {
     SCM scmDefault = new SCM();
@@ -455,8 +479,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum MonitoringOutput
   {
-    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, 
-    globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, roundTimings, lambdaInstantaneous, cumulativeLambda
+    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, timeToFirstRestart, 
+    globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
   }
   
   public static enum SampleOutput
@@ -466,7 +490,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum Column
   {
-    chain, round, isAdapt, count, rate, lowest, average, beta
+    chain, round, isAdapt, count, rate, lowest, average, beta, time, effectiveNScans
   }
   
   public static class Round

@@ -23,6 +23,9 @@ import blang.validation.internals.fixtures.CustomAnnealTest
 import java.nio.file.Files
 import blang.engines.internals.factories.PT
 import java.util.ArrayList
+import blang.inits.experiments.tabwriters.TidySerializer
+import blang.inits.experiments.tabwriters.factories.CSV
+import blang.validation.internals.fixtures.NotNormalForm
 
 class TestEndToEnd {
   
@@ -31,7 +34,7 @@ class TestEndToEnd {
     
     SampledModel::check = true
     
-    for (engine : #["SCM", "PT"]) {
+    for (engine : #["SCM", "PT", "AIS"]) {
       Assert.assertEquals(
         0, 
         Runner::start(
@@ -44,6 +47,21 @@ class TestEndToEnd {
         )
       )
     }
+  }
+  
+  @Test
+  def void notNormalForm() {
+    
+    SampledModel::check = true
+    
+    Assert.assertEquals(
+      0, 
+      Runner::start(
+        "--model", NotNormalForm.canonicalName,
+        "--experimentConfigs.maxIndentationToPrint", "-1",
+        "--engine", "MCMC"
+      )
+    )
   }
   
   @Test
@@ -120,14 +138,15 @@ class TestEndToEnd {
   
   @Test
   def void testNormalizationEstimates() {
+    val engines = {#[
+      #["--engine.logNormalizationEstimator", "steppingStone",            " --engine.nScans", "2_000"],
+      #["--engine.logNormalizationEstimator", "thermodynamicIntegration", " --engine.nScans", "2_000"],
+      #["--engine", "SCM",                                            " --engine.nParticles", "2_000"]
+    ]}
+    val estimates = newArrayOfSize(engines.size)
     var int i = 0;
-    var Double previous = null
-    for (engine : #[
-      #["--engine.logNormalizationEstimator", "steppingStone"],
-      #["--engine.logNormalizationEstimator", "thermodynamicIntegration"],
-      #["--engine", "SCM"]
-    ]) {
-      val exec = Files.createTempDirectory("r" + i++).toFile
+    for (engine : engines) {
+      val exec = Files.createTempDirectory("r" + (i+1)).toFile
       val args = new ArrayList(#["--model", Ising.canonicalName, "--experimentConfigs.maxIndentationToPrint", "-1"])
       args.addAll(engine)
       val runner = Runner::create(
@@ -135,11 +154,15 @@ class TestEndToEnd {
         args
       )
       runner.run
-      val logNormFile = new File(exec, Runner.LOG_NORM_ESTIMATE)
-      val current = Double.parseDouble(BriefIO::fileToString(logNormFile))
-      if (previous !== null) 
-        Assert.assertEquals(previous, current, 0.1) 
-      previous = current
+      val logNormFile = CSV::csvFile(exec, Runner.LOG_NORMALIZATION_ESTIMATE)
+      val estimateStr = BriefIO::readLines(logNormFile).indexCSV.last.get.get(TidySerializer::VALUE)
+      val estimate = Double.parseDouble(estimateStr)
+      estimates.set(i, estimate)
+      i++
+    }
+
+    for (int j : 1 ..< estimates.size) {
+      Assert.assertEquals(estimates.get(j-1), estimates.get(j), 0.1)    
     }
   }
   
