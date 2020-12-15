@@ -19,7 +19,7 @@ model SpikeAndSlab {
         }
       }
       logf(SpikedRealVar variable = variables.get(index)) {
-        if (variable.isZero.isBool) return 0.0
+        if (variable.selected.isBool) return 0.0
         else return NEGATIVE_INFINITY
       }
       variables.get(index) is Constrained 
@@ -27,10 +27,10 @@ model SpikeAndSlab {
     
   }
   
-  generate(rand) {
+  generate(rand) { 
     for (SpikedRealVar variable : variables) {
-      variable.isZero.set(Generators::bernoulli(rand, zeroProbability).asInt)
-      variable.realPart.set(nonZeroLogDensity.sample(rand)) 
+      (variable.selected as WritableIntVar).set(Generators::bernoulli(rand, zeroProbability).asInt)
+      (variable.continuousPart as WritableRealVar).set(nonZeroLogDensity.sample(rand)) 
     }
   }
 }

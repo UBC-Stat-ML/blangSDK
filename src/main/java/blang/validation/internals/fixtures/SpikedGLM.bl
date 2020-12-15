@@ -1,6 +1,5 @@
 package blang.validation.internals.fixtures
 
-import static extension blang.validation.internals.fixtures.SpikedRealVar.*
 
 
 model SpikedGLM {
@@ -27,7 +26,12 @@ model SpikedGLM {
     for (int index : 0 ..< output.size) {
       output.get(index) | coefficients, 
                           Matrix predictors = designMatrix.row(index) 
-                        ~ Bernoulli(logistic(coefficients * predictors))
+                        ~ Bernoulli(logistic({
+                          var sum = 0.0
+                          for (i : 0 ..< coefficients.size)
+                            sum += coefficients.get(i).doubleValue * predictors.get(i)
+                          sum
+                        }))
     }
     
   }

@@ -458,8 +458,8 @@ class Examples {
       .setOutput(latentIntList(3))
       .setDesignMatrix(designMatrix)
         .build,
-    [coefficients.get(0).realPart.doubleValue],
-    [coefficients.get(0).isZero.intValue as double]
+    [coefficients.get(0).continuousPart.doubleValue],
+    [coefficients.get(0).selected.intValue as double]
   )
  
   public val mix = add(
