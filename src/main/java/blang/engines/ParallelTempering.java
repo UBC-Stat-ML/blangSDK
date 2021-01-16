@@ -44,7 +44,7 @@ public class ParallelTempering
   protected Random [] parallelRandomStreams;
   protected SummaryStatistics [] energies, swapAcceptPrs;
   protected LogSumAccumulator [] logSumLikelihoodRatios; // used by Stepping stone marginalization
-  private int swapIndex = 0;
+  protected int swapIndex = 0;
   protected boolean [] swapIndicators;
    
   public SampledModel getTargetState()
@@ -93,8 +93,15 @@ public class ParallelTempering
    */
   public double swapKernel(Random random, int i)
   {
+    final double acceptPr = swapAcceptPr(i);
+    if (random.nextBernoulli(acceptPr))
+      doSwap(i);
+    return acceptPr;
+  }
+  
+  public double swapAcceptPr(int i) 
+  {
     int j = i + 1;
-    
     final double steppingStoneLogRatio = // recall: tempering parameter j is closer to prior
         + states[j].logDensity(temperingParameters.get(i))   
         - states[j].logDensity(temperingParameters.get(j)); // so for stepping stone we want the proposal to be the one closer to prior (this is IS so we want proposal to be wider)
@@ -108,11 +115,6 @@ public class ParallelTempering
     double acceptPr = Math.min(1.0, Math.exp(logRatio));
     if (Double.isNaN(acceptPr))
       acceptPr = 0.0; // should only happen right at the beginning
-    if (random.nextBernoulli(acceptPr))
-    {
-      swapIndicators[i] = true;
-      doSwap(i);
-    } 
     return acceptPr;
   }
   
@@ -153,6 +155,7 @@ public class ParallelTempering
     states[j] = tmp;
     states[i].setExponent(temperingParameters.get(i));
     states[j].setExponent(temperingParameters.get(j));
+    swapIndicators[i] = true;
   }
   
   public int nChains()
