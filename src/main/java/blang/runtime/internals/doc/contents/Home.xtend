@@ -65,9 +65,9 @@ class Home {
         Massive distribution over many nodes is in the pipeline. 
       '''
       it += '''
-        The method provides an estimate of the evidence, here «SYMB»-1216.12«ENDSYMB», which is critical for model 
+        The method provides an estimate of the evidence, here «SYMB»-1216.56«ENDSYMB», which is critical for model 
         selection and lacking in many 
-        existing tools. Running again the method with twice as many particles, we get «SYMB»-1215.95«ENDSYMB», 
+        existing tools. Running again the method with twice as many particles, we get «SYMB»-1216.00«ENDSYMB», 
         suggesting the estimate is getting close to the true value. In contrast, variational methods will 
         typically only give a bound on the true evidence.
       '''
@@ -154,18 +154,21 @@ class Home {
         --engine.nThreads Max \
         --excludeFromOutput observations 
       
-      Preprocessing started
-      4 samplers constructed with following prototypes:
-      RealScalar sampled via: [RealSliceSampler]
-      UnrootedTree sampled via: [SingleNNI, SingleBranchScaling]
-      Sampling started
-      [sampling progress report]
-      Normalization constant estimate: -1216.1211229417504
-      Final rejuvenation started
-      Preprocessing time: 141.4 ms
-      Sampling time: 2.304 min
-      executionMilliseconds : 138405
-      outputFolder : /Users/bouchard/blangExample/results/all/2017-12-15-14-00-21-3aKAx62h.exec
+      Preprocess {
+        4 samplers constructed with following prototypes:
+          RealScalar sampled via: [RealSliceSampler]
+          UnrootedTree sampled via: [SingleNNI, SingleBranchScaling]
+      } [ endingBlock=Preprocess blockTime=194.1ms blockNErrors=0 ]
+      Inference {
+        [...]
+        Log normalization constant estimate: -1216.5646966156646
+        Final rejuvenation started
+      } [ endingBlock=Inference blockTime=2.763min blockNErrors=0 ]
+      Postprocess {
+        No post-processing requested. Use '--postProcessor DefaultPostProcessor' or run after the fact using 'postprocess --help'
+      } [ endingBlock=Postprocess blockTime=1.446ms blockNErrors=0 ]
+      executionMilliseconds : 166022
+      outputFolder : /Users/bouchard/w/blangExample/results/all/2020-09-24-22-06-26-pAotxNaQ.exec
     '''
   }
   
