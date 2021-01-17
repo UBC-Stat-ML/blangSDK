@@ -428,7 +428,10 @@ class DefaultPostProcessor extends PostProcessor {
       p <- ggplot(data, aes(x = «TidySerializer::VALUE»)) +
         geom_density() + «facetString»
         theme_bw() + 
-        geom_segment(data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
+        geom_segment(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
+        geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, y=0), col="red") + 
+        geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.upper, y=0), col="red") + 
+        geom_text(inherit.aes = FALSE, data = hdi_df, aes(y= 0, label="approx. «processor.highestDensityIntervalValue»-HDI", x=(HDI.lower + HDI.upper)/2), vjust=-0.5) +
         xlab("«variableName»") +
         ylab("density") +
         ggtitle("Density plot for: «variableName»")
@@ -480,7 +483,10 @@ class DefaultPostProcessor extends PostProcessor {
 
       p <- ggplot(data, aes(x = «TidySerializer::VALUE», y = probability, xend = «TidySerializer::VALUE», yend = rep(0, length(probability)))) +
         geom_point() + geom_segment() + «facetString»
-        geom_segment(data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
+        geom_segment(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
+        geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, y=0), col="red") + 
+        geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.upper, y=0), col="red") + 
+        geom_text(inherit.aes = FALSE, data = hdi_df, aes(y=0, label="approx. «processor.highestDensityIntervalValue»-HDI", x=(HDI.lower + HDI.upper)/2), vjust=-0.5) +
         theme_bw() + 
         xlab("«variableName»") +
         ylab("probability") +
