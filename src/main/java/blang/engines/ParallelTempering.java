@@ -39,10 +39,10 @@ public class ParallelTempering
   public boolean reversible = false;
   
   // convention: state index 0 is room temperature (target of interest)
-  protected SampledModel [] states;
-  protected List<Double> temperingParameters;
+  public SampledModel [] states;
+  public List<Double> temperingParameters;
   protected Random [] parallelRandomStreams;
-  protected SummaryStatistics [] energies, swapAcceptPrs;
+  public SummaryStatistics [] energies, swapAcceptPrs;
   protected LogSumAccumulator [] logSumLikelihoodRatios; // used by Stepping stone marginalization
   protected int swapIndex = 0;
   protected boolean [] swapIndicators;
@@ -207,7 +207,7 @@ public class ParallelTempering
   }
   
   
-  private static SummaryStatistics[] initStats(int size)
+  public static SummaryStatistics[] initStats(int size)
   {
     SummaryStatistics[] result = new SummaryStatistics[size];
     for (int i = 0; i < size; i++)
