@@ -32,6 +32,11 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     return new RealScalar(0.0)
   }
   
+  /** unobserved real variable supporting a spike at zero (represented in double precision, initialized at zero).  */
+  def static SpikedRealVar latentSpikedReal() {
+    return new SpikedRealVar
+  }
+  
   /** fixed (constant or conditioned upon) integer scalar. */
   def static IntConstant fixedInt(int value) {
     return new IntConstant(value)
@@ -56,6 +61,15 @@ class StaticUtils { // Warning: blang.types.StaticUtils hard-coded in ca.ubc.sta
     val List<RealVar> result = new ArrayList
     for (var int i = 0; i < size; i++) {
       result.add(blang.types.StaticUtils.latentReal)
+    }
+    return result
+  }
+  
+  /** size specifies the length of the list. */
+  def static List<SpikedRealVar> latentSpikedRealList(int size) {
+    val List<SpikedRealVar> result = new ArrayList
+    for (var int i = 0; i < size; i++) {
+      result.add(blang.types.StaticUtils.latentSpikedReal)
     }
     return result
   }

@@ -29,6 +29,7 @@ import static blang.inits.experiments.tabwriters.factories.CSV.*
 import blang.runtime.internals.DefaultPostProcessor.Output
 import blang.runtime.internals.ComputeESS.Batch
 import blang.engines.internals.factories.SCM
+import blang.types.SpikedRealVar
 
 class DefaultPostProcessor extends PostProcessor {
   
@@ -127,6 +128,13 @@ class DefaultPostProcessor extends PostProcessor {
             createPlot(
               new DensityPlot(posteriorSamples, types, this),
               outputFolder(Output::posteriorPlots)
+            )
+          }
+          if (isSpikeSlab(type)) {
+            createPlot(
+              new PMFPlot(posteriorSamples, types, this) => [postBurnInExtra = '''data$value <- ifelse(data$value != 0.0, 1.0, 0.0)'''], 
+              outputFolder(Output::posteriorPlots),
+              "-probabilityNonZero"
             )
           }
         }
@@ -362,6 +370,10 @@ class DefaultPostProcessor extends PostProcessor {
     return type == Double || RealVar.isAssignableFrom(type)
   }
   
+  def static boolean isSpikeSlab(Class<?> type) {
+    return SpikedRealVar.isAssignableFrom(type)
+  }
+  
   def static boolean isIntValued(Class<?> type) {
     return type == Integer || IntVar.isAssignableFrom(type)
   }
@@ -494,6 +506,7 @@ class DefaultPostProcessor extends PostProcessor {
     public val Map<String,Class<?>> types
     public val String variableName
     public val DefaultPostProcessor processor
+    public var String postBurnInExtra = ""
     
     new (File posteriorSamples, Map<String,Class<?>> types, DefaultPostProcessor processor) {
       this.posteriorSamples = posteriorSamples
@@ -507,6 +520,7 @@ class DefaultPostProcessor extends PostProcessor {
       n_samples <- max(data$«Runner.sampleColumn»)
       cut_off <- n_samples * «processor.burnInFraction»
       data <- subset(data, «Runner.sampleColumn» > cut_off)
+      «postBurnInExtra»
       '''
     }
     
@@ -546,9 +560,10 @@ class DefaultPostProcessor extends PostProcessor {
     types.keySet.filter[it != TidySerializer::VALUE && it != Runner::sampleColumn].toList
   }
   
-  def void createPlot(GgPlot plot, File directory) {
-    val scriptFile = new File(directory, "." + plot.variableName + ".r")
-    val imageFile = new File(directory, plot.variableName + "." + imageFormat)
+  def void createPlot(GgPlot plot, File directory) { createPlot(plot, directory, "")}
+  def void createPlot(GgPlot plot, File directory, String suffix) {
+    val scriptFile = new File(directory, "." + plot.variableName + suffix + ".r")
+    val imageFile = new File(directory, plot.variableName + suffix + "." + imageFormat)
     
     callR(scriptFile, '''
       require("ggplot2")
