@@ -478,7 +478,7 @@ class DefaultPostProcessor extends PostProcessor {
       val groupBy = facetVariables => [add(TidySerializer::VALUE)]
       return '''
       «removeBurnIn»
-      normalization <-  max(data$«Runner.sampleColumn») - n_samples * «processor.burnInFraction»
+      normalization <-  length(unique(data$«Runner.sampleColumn»))
       data <- data %>%
         group_by(«groupBy.join(",")») %>%
         summarise(
