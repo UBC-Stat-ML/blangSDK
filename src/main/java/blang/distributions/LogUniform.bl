@@ -1,6 +1,6 @@
 package blang.distributions
 
-/** The random variable \(X = \exp(Y)\) where \(Y \sim \text{ContinuousUniform}[m, M]\). */
+/** The random variable \(X = b^Y\) where \(Y \sim \text{ContinuousUniform}[m, M]\). */
 model LogUniform {
   random RealVar realization
   
@@ -10,6 +10,7 @@ model LogUniform {
   /** The right end point \(M\) of the interval. \(M \in (m, \infty)\) */
   param  RealVar max
   
+  /** The base \(b\). \(b > 0\) */
   param RealVar base
   
   laws {

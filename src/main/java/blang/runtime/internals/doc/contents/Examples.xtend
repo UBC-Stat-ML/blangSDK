@@ -5,11 +5,10 @@ import blang.validation.internals.fixtures.MarkovChain
 
 import static extension blang.xdoc.DocElementExtensions.code
 import blang.validation.internals.fixtures.DynamicNormalMixture
-import blang.validation.internals.fixtures.SpikedRealVar
-import blang.validation.internals.fixtures.SpikedRealVarSampler
 import blang.validation.internals.fixtures.SpikeAndSlab
 import blang.validation.internals.fixtures.SpikedGLM
 import blang.validation.internals.fixtures.Ising
+import blang.types.SpikedRealVar
 
 class Examples {
   
@@ -74,11 +73,7 @@ class Examples {
         
         code(SpikedRealVar)
         
-        it += '''
-          Then a corresponding sampler:
-        '''
         
-        code(SpikedRealVarSampler)
         
         it += '''
           We can now define a distribution for this type:

@@ -1,0 +1,22 @@
+package blang.distributions
+
+/** The random variable \(X = e^Y\) where \(Y \sim \text{ContinuousUniform}[m, M]\). */
+model LnUniform {
+  random RealVar realization
+  
+  /** The left end point \(m\) of the interval. \(m \in (-\infty, M)\) */
+  param  RealVar min
+  
+  /** The right end point \(M\) of the interval. \(M \in (m, \infty)\) */
+  param  RealVar max
+
+  
+  laws {
+    realization | min, max ~ LogUniform(min, max, Math::E)
+  }
+  
+  generate (rand) {
+    val u = rand.uniform(min, max)
+    return pow(Math::E, u)
+  }
+}

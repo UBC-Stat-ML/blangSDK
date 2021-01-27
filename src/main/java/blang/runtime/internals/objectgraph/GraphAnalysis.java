@@ -225,6 +225,21 @@ public class GraphAnalysis
     }
   }
   
+  private boolean findAndInitAnnealingParam(Factor f, AnnealingStructure annealingStructure) {
+    boolean foundAnnealingParamAccess = false;
+    for (Node node : accessibilityGraph.iterateAccessibleNodes(f)) {
+      if (node instanceof ObjectNode) {
+        ObjectNode<?> objectNode = (ObjectNode<?>) node;
+        if (objectNode.object instanceof AnnealingParameter) {
+          AnnealingParameter param = (AnnealingParameter) objectNode.object;
+          foundAnnealingParamAccess = true;
+          param._set(annealingStructure.annealingParameter);
+        }
+      }
+    }
+    return foundAnnealingParamAccess;
+  }
+  
   private void createLikelihoodAnnealer(Model model, AnnealingStructure annealingStructure)
   {
     if (model instanceof ForwardSimulator)
@@ -233,24 +248,13 @@ public class GraphAnalysis
       for (Factor f : factorsDefinedBy((Model) model))
         if (f instanceof LogScaleFactor)
         {
-          if (allRandomNodesObserved)
+          boolean foundAnnealingParamAccess = findAndInitAnnealingParam(f, annealingStructure);
+          
+          if (allRandomNodesObserved || foundAnnealingParamAccess)
           {
             if (f instanceof ExponentiatedFactor)
             {
               ExponentiatedFactor expFactor = (ExponentiatedFactor) f;
-              
-              boolean foundAnnealingParamAccess = false;
-              for (Node node : accessibilityGraph.iterateAccessibleNodes(expFactor)) {
-                if (node instanceof ObjectNode) {
-                  ObjectNode<?> objectNode = (ObjectNode<?>) node;
-                  if (objectNode.object instanceof AnnealingParameter) {
-                    AnnealingParameter param = (AnnealingParameter) objectNode.object;
-                    foundAnnealingParamAccess = true;
-                    param._set(annealingStructure.annealingParameter);
-                  }
-                }
-              }
-
               if (foundAnnealingParamAccess) {
                 annealingStructure.otherAnnealedFactors.add(expFactor);
               } else {

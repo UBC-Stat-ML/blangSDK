@@ -37,6 +37,7 @@ import blang.distributions.HyperGeometric
 import blang.distributions.BetaBinomial
 import blang.distributions.BetaNegativeBinomial
 import blang.distributions.LogUniform
+import blang.distributions.LnUniform
 
 class BuiltInDistributions {
   
@@ -74,6 +75,7 @@ class BuiltInDistributions {
       documentClass(Logistic)
       documentClass(LogLogistic)
       documentClass(LogUniform)
+      documentClass(LnUniform)
       documentClass(Normal)
       documentClass(StudentT)
       documentClass(Weibull)

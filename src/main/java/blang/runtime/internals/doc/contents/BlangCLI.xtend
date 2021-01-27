@@ -2,6 +2,7 @@ package blang.runtime.internals.doc.contents
 
 import blang.xdoc.components.Document
 import blang.runtime.internals.doc.Categories
+import blang.xdoc.components.Code.Language
 
 class BlangCLI {
   
@@ -9,59 +10,37 @@ class BlangCLI {
     
     category = Categories::tools 
     
-    section("Blang Command Line Interface (CLI) setup") [
+    section("Installing Blang Command Line Interface (CLI)") [
+        
+      it += '''The prerequisites for the CLI installation process are:'''
       
-      it += '''
-        This page explains the simple possible method for using Blang from the command line. A more advanced 
-        method is to use Blang within a Nextflow pipeline. This makes it easier to share and reproduce results, 
-        and to systematically explore and combine several command line arguments. An example of how to do 
-        this is available «LINK("https://github.com/UBC-Stat-ML/blang-mixture-tempering")»at this repository«ENDLINK».
+      orderedList[
+        
+        it += '''A UNIX-compatible environment running «SYMB»bash«ENDSYMB». This includes, in particular, Mac OS
+        X, where bash is the default terminal interpreter when launching Terminal.app.'''
+        
+        it += '''The «SYMB»git«ENDSYMB» command'''
+        
+        it += '''The Java Software Development Kit (SDK), version 8 or more recent (at the time of publication, 
+        «SYMB»Open SDK«ENDSYMB» 8 and 11 are tested). The Java runtime environment is not sufficient, as 
+        compilation of models requires compilation into the Java Virtual Machine. Type «SYMB»javac -version«ENDSYMB» to 
+        test if the Java SDK is installed. If not, the Java SDK is freely available at 
+        «LINK("https://openjdk.java.net/")»https://openjdk.java.net/«ENDLINK».'''
+      ]
+      
+      it += '''The following installation process is most thoroughly tested on Mac OS X, which is the primary 
+      supported platform at the moment, however users have reported installing it suc- cessfully on certain Linux 
+      and Windows configurations and we plan to expand the set of officially supported platforms to both in the near future.
+      To install the CLI tools, input the following commands in a bash terminal interpreter:
       '''
       
-      section("Prerequisites") [
-        unorderedList[
-          it += '''Java 8+ installed.'''
-          it += '''Tested on a few UNIX architectures; in theory should run on windows but not tested yet.'''
-        ]
-      ]
+      code(Language::sh, '''
+      git clone https://github.com/UBC-Stat-ML/blangSDK.git
+      cd blangSDK
+      source setup-cli.sh
+      cd ..
+      ''')
       
-      section("Instruction") [
-        orderedList[
-          it += '''
-            Clone the «LINK("https://github.com/UBC-Stat-ML/blangSDK")»blangSDK repository«ENDLINK» 
-            (also included in the main Blang download). 
-          '''
-          it += '''
-            From the root of the SDK repo, run «SYMB»source setup-cli.sh«ENDSYMB».
-          '''
-        ]
-      ]
-      
-      section("Usage") [
-        orderedList[
-          it += '''Type «SYMB»blang«ENDSYMB» and follow the instructions there, summarized below for convenience.'''
-          it += '''
-            Create a directory for your project, say «SYMB»blangProject«ENDSYMB»
-          '''
-          it += '''
-            Create a blang file, e.g. an empty model «SYMB»model MyModel { laws{} }«ENDSYMB», save it as «SYMB»blangProject/MyModel.bl«ENDSYMB»
-            (Note: the extension «SYMB».bl«ENDSYMB» is required.)
-          '''
-          it += '''
-            From «SYMB»blangProject«ENDSYMB», type «SYMB»blang --model MyModel«ENDSYMB»
-          '''
-          unorderedList[
-            it += '''
-              This will compile every «SYMB».bl«ENDSYMB» file in «SYMB»blangProject«ENDSYMB» (and its subdirectories, if any)
-            '''
-            it += '''
-              After compilation, the model «SYMB»MyModel«ENDSYMB» will be ran.
-            '''
-          ]
-        ]
-      ]
     ]
-    
   ]
-  
 }
