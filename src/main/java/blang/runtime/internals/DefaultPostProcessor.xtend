@@ -443,7 +443,7 @@ class DefaultPostProcessor extends PostProcessor {
         geom_segment(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
         geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, y=0), col="red") + 
         geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.upper, y=0), col="red") + 
-        geom_text(inherit.aes = FALSE, data = hdi_df, aes(y= 0, label="approx. «processor.highestDensityIntervalValue»-HDI", x=(HDI.lower + HDI.upper)/2), vjust=-0.5) +
+        geom_text(inherit.aes = FALSE, data = hdi_df, aes(y= 0, label="«processor.highestDensityIntervalValue»-HDI", x=(HDI.lower + HDI.upper)/2), vjust=-0.5) +
         xlab("«variableName»") +
         ylab("density") +
         ggtitle("Density plot for: «variableName»")
@@ -498,7 +498,7 @@ class DefaultPostProcessor extends PostProcessor {
         geom_segment(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
         geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, y=0), col="red") + 
         geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.upper, y=0), col="red") + 
-        geom_text(inherit.aes = FALSE, data = hdi_df, aes(y=0, label="approx. «processor.highestDensityIntervalValue»-HDI", x=(HDI.lower + HDI.upper)/2), vjust=-0.5) +
+        geom_text(inherit.aes = FALSE, data = hdi_df, aes(y=0, label="«processor.highestDensityIntervalValue»-HDI", x=(HDI.lower + HDI.upper)/2), vjust=-0.5) +
         theme_bw() + 
         xlab("«variableName»") +
         ylab("probability") +
@@ -591,6 +591,14 @@ class DefaultPostProcessor extends PostProcessor {
   
   val static SUMMARY_SUFFIX = "-summary.csv"
   
+  def String removeBurnIn() {
+    return '''
+    n_samples <- max(data$«Runner.sampleColumn»)
+    cut_off <- n_samples * «burnInFraction»
+    data <- subset(data, «Runner.sampleColumn» > cut_off)
+    '''
+  }
+
   def summary(File posteriorSamples, Map<String, Class<?>> types) {
     val directory = outputFolder(Output::summaries)
     val variableName = variableName(posteriorSamples)
@@ -601,6 +609,7 @@ class DefaultPostProcessor extends PostProcessor {
       require("dplyr")
       «highestDensityInterval»
       data <- read.csv("«posteriorSamples.absolutePath»")
+      «removeBurnIn»
       summary <- data %>% «IF !groups.empty» group_by(«groups.join(", ")») %>% «ENDIF» 
         summarise( 
           mean = mean(«TidySerializer::VALUE»),
