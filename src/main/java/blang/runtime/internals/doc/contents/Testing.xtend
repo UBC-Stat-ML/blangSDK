@@ -305,7 +305,7 @@ class Testing {
         section("Implementation of EIT in Blang") [
           
           it += '''
-            Prepare the EIS tests by assembling objects of type «SYMB»Instance«ENDSYMB», for which the constructor's first argument 
+            Prepare the EITs by assembling objects of type «SYMB»Instance«ENDSYMB», for which the constructor's first argument 
             is a Blang model, and the following arguments are one or more test functions, playing the role of «MATH»f«ENDMATH» in the 
             previous section. See for example 
             «LINK("https://github.com/UBC-Stat-ML/blangSDK/blob/master/src/main/java/blang/validation/internals/fixtures/Examples.xtend")»the list of 
