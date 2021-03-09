@@ -8,6 +8,9 @@ import blang.inits.experiments.Experiment
 import blang.System
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.io.File
+import briefj.BriefFiles
+import briefj.BriefIO
 
 class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
 
@@ -110,7 +113,11 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
     } catch (BinaryExecutionException bee) {
       System.err.indentWithTiming("Error")
       System.err.println("Compilation error report")
-      System.err.println(clean(bee.output.toString()))
+      val errorLog = bee.output.toString()
+      System.err.println(clean(errorLog))
+      val detailedErrors = new File("detailed-errors-" + System.currentTimeMillis + ".txt")
+      BriefIO::stringToFile(detailedErrors, errorLog)
+      System.err.println("Raw error output saved in: " + detailedErrors.absolutePath)
       System.err.popIndent
       exitWithError
       throw new RuntimeException
@@ -142,6 +149,7 @@ class Main { // Warning: blang.runtime.internals.Main hard-coded in build.gradle
   
   def static String clean(String string) {
     val result = new ArrayList<String>
+    
     for (String line : string.split("\n")) {
       if (line.startsWith("* What went wrong:"))
         return result.join("\n"); // cut the gradle rant
