@@ -7,8 +7,7 @@ plugins {
   id 'application'
 }
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+
 
 repositories {
   mavenCentral()
@@ -23,6 +22,12 @@ xtend {
   generator {
     javaSourceLevel = 1.8
   }
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
 }
 
 def blangVersion = '4.0.8' // Note to self: not the one that changes often!
@@ -124,7 +129,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "2.12.5" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "2.12.6" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "com.github.UBC-Stat-ML"
     }
