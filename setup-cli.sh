@@ -25,7 +25,7 @@ echo
 if hash blang 2>/dev/null; then
     echo 
 else
-    echo "NOTE: We are adding a line into ~/.bash_profile to make the blang CLI command"
+    echo "NOTE: We are adding a line into ~/.bash_profile and ~/.zshenv to make the blang CLI command"
     echo "      accessible from any directory (as blang is not found in PATH right now)."
     echo
     to_add="$(pwd)/build/install/blang/bin/"
@@ -33,4 +33,5 @@ else
     line="export PATH=${existing}:${to_add}"
     export PATH=$PATH:${to_add}
     echo $line >>~/.bash_profile
+    echo $line >>~/.zshenv
 fi
