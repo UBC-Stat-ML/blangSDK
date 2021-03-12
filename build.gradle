@@ -25,12 +25,12 @@ xtend {
   }
 }
 
-def blangVersion = '4.0.1' // Note to self: not the one that changes often!
+def blangVersion = '4.0.8' // Note to self: not the one that changes often!
 
 dependencies {
   xtextLanguages "com.github.UBC-Stat-ML.blangDSL:ca.ubc.stat.blang:${blangVersion}"
   compile "com.github.UBC-Stat-ML.blangDSL:ca.ubc.stat.blang:${blangVersion}"
-  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.16.0'
+  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.17.0'
   compile group: 'com.github.UBC-Stat-ML', name: 'inits', version: '3.4.1'
   compile group: 'com.github.UBC-Stat-ML', name: 'bayonet', version: '4.1.11'
   compile group: 'com.github.UBC-Stat-ML', name: 'binc', version: '2.0.5'
@@ -124,7 +124,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "2.12.4" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "2.12.5" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "com.github.UBC-Stat-ML"
     }
