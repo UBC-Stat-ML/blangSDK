@@ -7,7 +7,8 @@ plugins {
   id 'application'
 }
 
-
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
   mavenCentral()
@@ -24,18 +25,13 @@ xtend {
   }
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
-
-def blangVersion = '4.0.8' // Note to self: not the one that changes often!
+                 // warning: DSL v.4.0.8-4.1.x are broken. TODO: get rid of artifacts!
+def blangVersion = '4.0.7' // Note to self: not the one that changes often!
 
 dependencies {
   xtextLanguages "com.github.UBC-Stat-ML.blangDSL:ca.ubc.stat.blang:${blangVersion}"
-  compile "com.github.UBC-Stat-ML.blangDSL:ca.ubc.stat.blang:${blangVersion}"
-  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.17.0'
+  compile "com.github.UBC-Stat-ML:blangDSL:${blangVersion}"
+  compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.24.0'
   compile group: 'com.github.UBC-Stat-ML', name: 'inits', version: '3.4.1'
   compile group: 'com.github.UBC-Stat-ML', name: 'bayonet', version: '4.1.11'
   compile group: 'com.github.UBC-Stat-ML', name: 'binc', version: '2.0.5'
@@ -129,7 +125,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "2.12.6" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "2.13.0" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "com.github.UBC-Stat-ML"
     }
