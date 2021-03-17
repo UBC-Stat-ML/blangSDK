@@ -1,0 +1,25 @@
+package blang.validation.internals.fixtures
+
+model Loop { 
+
+    random RealVar x ?: latentReal
+    
+    random RealVar y ?: latentReal
+    
+    laws {
+        
+        if (true) {
+          x ~ Normal(0, 1)
+        }
+        
+        
+        if (false) {
+          y ~ Normal(1, 2)
+        } else { 
+          y ~ Exponential(1.0)
+        }
+        
+        
+    }
+    
+}
