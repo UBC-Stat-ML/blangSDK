@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * 
  * The rules used to match up the fields of a sampler to the 
  * factors in a ProbabilityModel are implemented in 
- * blang.mcmc.Utils.
+ * blang.mcmc.internals.SamplerMatchingUtils.
  * 
  * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
  */

@@ -239,7 +239,7 @@ class Testing {
           it += '''
             By construction, for any «MATH»K \ge 1, j \in \{1, \dots, M_1\}, l \in \{1, \dots, M_3\}«ENDMATH», 
             the random variable «MATH»F_j«ENDMATH» is equal 
-            in distribution to the random variable «MATH»F_l«ENDMATH» if and only if the kernel «MATH»T_i«ENDMATH» is 
+            in distribution to the random variable «MATH»H_l«ENDMATH» if and only if the kernel «MATH»T_i«ENDMATH» is 
             «MATH»\pi«ENDMATH» invariant. 
             This means that an exact test can be trivially constructed (for example if «MATH»f«ENDMATH» takes on a 
             finite number of values, Fisher's exact test can be used). Alternatively, 
@@ -305,10 +305,10 @@ class Testing {
         section("Implementation of EIT in Blang") [
           
           it += '''
-            Prepare the EIS tests by assembling objects of type «SYMB»Instance«ENDSYMB», for which the constructor's first argument 
+            Prepare the EITs by assembling objects of type «SYMB»Instance«ENDSYMB», for which the constructor's first argument 
             is a Blang model, and the following arguments are one or more test functions, playing the role of «MATH»f«ENDMATH» in the 
             previous section. See for example 
-            «LINK("https://github.com/UBC-Stat-ML/blangSDK/blob/master/src/test/java/blang/Examples.xtend")»the list of 
+            «LINK("https://github.com/UBC-Stat-ML/blangSDK/blob/master/src/main/java/blang/validation/internals/fixtures/Examples.xtend")»the list of 
             instances used to test Blang's SDK«ENDLINK».
             
             Once the instances are available, you can create an automatic test suite by adding a file under the «SYMB»src/test«ENDSYMB» 
