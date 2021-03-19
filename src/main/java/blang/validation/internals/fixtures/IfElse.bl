@@ -8,16 +8,16 @@ model Loop {
     
     laws {
         
-        if (true) {
-          x ~ Normal(0, 1)
-        }
-        
-        
-        if (false) {
-          y ~ Normal(1, 2)
-        } else { 
-          y ~ Exponential(1.0)
-        }
+//        if (true) {
+//          x ~ Normal(0, 1)
+//        }
+//        
+//        
+//        if (false) {
+//          y ~ Normal(1, 2)
+//        } else { 
+//          y ~ Exponential(1.0)
+//        }
         
         
     }
