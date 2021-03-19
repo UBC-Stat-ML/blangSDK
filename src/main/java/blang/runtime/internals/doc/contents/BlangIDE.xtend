@@ -17,17 +17,9 @@ class BlangIDE {
       section("System requirements") [
         it += '''
           The only requirement is that 
-          «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html")»Java 8 SDK«ENDLINK»
-          should be installed on the system (version 9 not yet tested but is likely to work).'''
-        it += '''        
-          We only package the IDE for Mac at the moment but we can post instructions 
-          on how to setup the IDE for other platforms (just email us). If you are a Linux or other 
-          non-Mac Unix user, you can also use
-          «LINK("https://github.com/UBC-Stat-ML/blangDoc/blob/master/using-eclipse-ide.md")»these provisional instructions«ENDLINK».
-          
-          The command line 
-          tools are already shipped multi-platform.
-        '''
+          «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html")»Java 11 SDK«ENDLINK»
+          should be installed on the system.'''
+
       ]
       
       it += installBlang
@@ -37,12 +29,12 @@ class BlangIDE {
           it += '''Blang projects have some dependencies. Here's a robust way to get them:'''
           orderedList [
             it += '''From the terminal, «SYMB»cd«ENDSYMB» into «SYMB»[downloaded blang folder]/workspace/blangExample«ENDSYMB»'''
-            it += '''«SYMB»./gradlew eclipse«ENDSYMB». This will download the dependencies.'''
+            it += '''«SYMB»./gradlew assemble eclipse«ENDSYMB». This will download the dependencies.'''
           ]
           it += '''Now import in Blang IDE:'''
           orderedList[
             it += '''When asked which workspace to use, pick «SYMB»[downloaded blang folder]/workspace«ENDSYMB».'''
-            it += '''Select menu «SYMB»File > Open Projects from File System...«ENDSYMB»'''
+            it += '''Select menu «SYMB»File > Import > General > Existing project into Workspace«ENDSYMB»'''
             it += '''Select «SYMB»[downloaded Blang folder]/workspace/blangExample«ENDSYMB»'''
           ]
           it += 
