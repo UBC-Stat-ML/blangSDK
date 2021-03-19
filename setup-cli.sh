@@ -8,9 +8,9 @@ echo
 
 # some weird gradle-xtext-blang problem may be caused by deamon trying to 
 # handle 2 Blang versions, try to avoid this restarting the daemon after a Blang update
-./gradlew --stop
+./gradlew --stop  || exit 1
   
-./gradlew clean
+./gradlew clean  || exit 1
 ./gradlew installDist || exit 1
 
 # Fix problem arising if eclipse is used jointly
