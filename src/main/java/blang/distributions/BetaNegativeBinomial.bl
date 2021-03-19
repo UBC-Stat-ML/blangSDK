@@ -10,7 +10,7 @@ model BetaNegativeBinomial {
   /** Higher values brings mean accept probability closer to one. \(\alpha > 0 \) */
   param  RealVar alpha
   
-  /** Higher values brings mean accept probabilitycloser to zero. \(\beta > 0 \) */
+  /** Higher values brings mean accept probability closer to zero. \(\beta > 0 \) */
   param  RealVar beta
   
   laws {
