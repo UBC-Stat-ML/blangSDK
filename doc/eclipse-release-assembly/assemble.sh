@@ -6,6 +6,11 @@
 
 CUR=`pwd`
 
+cd ../..
+./setup-cli.sh
+cd -
+
+
 blang_folder=blang
 rm -rf $blang_folder
 mkdir $blang_folder
@@ -29,7 +34,9 @@ sudo codesign --force --sign - $blang_folder/BlangIDE.app
 cd $blang_folder
 mkdir workspace
 cd workspace
-git clone https://github.com/UBC-Stat-ML/blangExample.git
+
+create-blang-gradle-project --name blangExample --githubOrganization UBC-Stat-ML
+
 git clone https://github.com/UBC-Stat-ML/blangSDK.git
 
 
