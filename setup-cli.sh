@@ -11,7 +11,7 @@ echo
 ./gradlew --stop
   
 ./gradlew clean
-./gradlew installDist
+./gradlew installDist || exit 1
 
 # Fix problem arising if eclipse is used jointly
 mkdir build/xtend/test
