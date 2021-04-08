@@ -168,7 +168,8 @@ public class ParallelTempering
     if (nChains < 1)
       throw new RuntimeException("Number of tempering chains must be greater than zero.");
     temperingParameters = ladder.temperingParameters(nChains);
-    int nChains = temperingParameters.size();
+    if (nChains != temperingParameters.size())
+      throw new RuntimeException();
     states = initStates(prototype, nChains);
     setAnnealingParameters(temperingParameters);
     parallelRandomStreams =  Random.parallelRandomStreams(random, nChains);
