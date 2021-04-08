@@ -20,15 +20,42 @@ import blang.validation.internals.fixtures.Doomsday;
 
 public class TestLadders
 {
+  
   @Test
   public void test() 
   {
-    List<TemperatureLadder> ladders = Arrays.asList(new EquallySpaced(), new Geometric(), new Polynomial(), userSpecified(), userSpecified2(true), fromEarlier());
+    List<TemperatureLadder> ladders = Arrays.asList(
+        new EquallySpaced(), 
+        new Geometric(), 
+        new Polynomial(), 
+        userSpecified(), 
+        userSpecified2(true), 
+        fromEarlier());
 
     for (TemperatureLadder ladder : ladders)
     {
       Assert.assertEquals(ladder.temperingParameters(4).size(), 4);
       System.out.println(ladder.temperingParameters(4));
+    }
+    
+  }
+  
+  @Test
+  public void testOneChain() 
+  {
+    List<TemperatureLadder> ladders = Arrays.asList(
+        new EquallySpaced(), 
+        new Geometric(), 
+        new Polynomial(), 
+        //userSpecified(),  // this one by design will not work with one chain
+        userSpecified2(true), 
+        fromEarlier());
+
+
+    for (TemperatureLadder ladder : ladders)
+    {
+      Assert.assertEquals(ladder.temperingParameters(1).size(), 1);
+      System.out.println(ladder.temperingParameters(1));
     }
     
   }

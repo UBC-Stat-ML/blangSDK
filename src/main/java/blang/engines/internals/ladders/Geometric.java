@@ -20,9 +20,11 @@ public class Geometric implements TemperatureLadder
     if (nChains == 1)
       temperingParameters.add(1.0);
     else
+    {
       for (int i = 0; i < nChains - 1; i++)
         temperingParameters.add(Math.pow(annealingScaling, i));
-    temperingParameters.add(0.0);
+      temperingParameters.add(0.0);
+    }
     return temperingParameters;
   }
 }
