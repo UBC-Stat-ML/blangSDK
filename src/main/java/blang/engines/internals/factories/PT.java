@@ -405,12 +405,12 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         Pair.of(Column.effectiveNScans, effectiveNScans)
       );
     
+    double correctedNScans = effectiveNScans == 0 ? round.nScans : effectiveNScans;
     if (paths != null) 
     {
       int n = paths.nRejuvenations();
       double tau;
-      if (effectiveNScans == 0) tau = 0.0;
-      else tau = ((double) n / effectiveNScans);
+      tau = ((double) n / correctedNScans);
       writer(MonitoringOutput.actualTemperedRestarts).printAndWrite(
         roundReport,
         Pair.of(Column.count, n), 
@@ -423,7 +423,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     else
     {
       double tauBar = 1.0 / (2.0 + 2.0 * Lambda);
-      double nBar = tauBar * effectiveNScans;
+      double nBar = tauBar * correctedNScans;
       writer(asymptoticRoundTripBound).printAndWrite(
         roundReport,
         Pair.of(Column.count, nBar), 
@@ -431,7 +431,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       );
       
       double tau = 1.0 / (2.0 + 2.0 * inefficiency);
-      double nTheoretical = tau * effectiveNScans;
+      double nTheoretical = tau * correctedNScans;
       writer(nonAsymptoticRountTrip).printAndWrite(
           roundReport,
           Pair.of(Column.count, nTheoretical), 
