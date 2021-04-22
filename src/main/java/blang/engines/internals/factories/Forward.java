@@ -1,6 +1,5 @@
 package blang.engines.internals.factories;
 
-import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.Random;
 import blang.engines.internals.PosteriorInferenceEngine;
@@ -18,9 +17,6 @@ public class Forward implements PosteriorInferenceEngine
   @Arg               @DefaultValue("1")
   public Random random = new Random(1);
   
-  @Arg   @DefaultValue("1")
-  public int nSamples = 1;
-  
   @GlobalArg ExperimentResults results;
   
   SampledModel model;
@@ -36,11 +32,8 @@ public class Forward implements PosteriorInferenceEngine
   public void performInference() 
   {
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER));
-    for (int i = 0; i < nSamples; i++) 
-    {
-      model.forwardSample(random, false);
-      model.getSampleWriter(tidySerializer).write(Pair.of(Runner.sampleColumn, i)); 
-    }
+    model.forwardSample(random, true);
+    model.getSampleWriter(tidySerializer).write();
   }
 
   @Override
