@@ -158,7 +158,7 @@ class DefaultPostProcessor extends PostProcessor {
       
     simplePlot(csvFile(monitoringFolder, MonitoringOutput::swapSummaries.toString), Column::round, Column::average)
     
-    for (estimateName : #[MonitoringOutput::globalLambda, MonitoringOutput::logNormalizationContantProgress])
+    for (estimateName : #[MonitoringOutput::globalLambda, MonitoringOutput::logNormalizationConstantProgress])
       simplePlot(csvFile(monitoringFolder, estimateName.toString), Column::round, TidySerializer::VALUE)
       
     simplePlot(new File(outputFolder(Output::ess), SampleOutput::energy + ESS_SUFFIX), Column::chain, TidySerializer::VALUE)
