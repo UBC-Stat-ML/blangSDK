@@ -3,7 +3,7 @@ package blang.validation
 import java.util.function.Supplier
 import bayonet.distributions.ExhaustiveDebugRandom
 
-class UnbiasnessTest {
+class UnbiasednessTest {
   def static double expectedZEstimate(Supplier<Double> logZEstimator, ExhaustiveDebugRandom exhausiveRand) {
     var expectation = 0.0
     var nProgramTraces = 0

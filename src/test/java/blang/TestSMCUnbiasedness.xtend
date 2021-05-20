@@ -20,9 +20,9 @@ import blang.types.internals.IntScalar
 import blang.runtime.Observations
 import java.util.ArrayList
 import blang.validation.internals.fixtures.IntNaiveMHSampler
-import blang.validation.UnbiasnessTest
+import blang.validation.UnbiasednessTest
 
-class TestSMCUnbiasness {
+class TestSMCUnbiasedness {
   @Test def void testHMM() {
     
     blang.System.out.silence
@@ -55,7 +55,7 @@ class TestSMCUnbiasness {
       random = exhausiveRand
     ]
     
-    val expectedZEstimate = UnbiasnessTest::expectedZEstimate([engine.getApproximation(sampledModel).logNormEstimate], exhausiveRand)
+    val expectedZEstimate = UnbiasednessTest::expectedZEstimate([engine.getApproximation(sampledModel).logNormEstimate], exhausiveRand)
     
     val ExactHMMCalculations exactCalc = new ExactHMMCalculations => [
       parameters = new ExactHMMCalculations.SimpleTwoStates()

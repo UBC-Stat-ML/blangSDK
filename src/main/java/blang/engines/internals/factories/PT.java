@@ -445,7 +445,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       optionalLogNorms.put(LogNormalizationEstimator.steppingStone, steppingStoneEstimator());
       optionalLogNorms.put(LogNormalizationEstimator.thermodynamicIntegration, thermodynamicEstimator());
       optionalLogNorms.put(LogNormalizationEstimator.bridgeSampling, bridgeSamplingEstimator());
-      writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
+      writer(MonitoringOutput.logNormalizationConstantProgress).printAndWrite(
         roundReport,
         Pair.of(TidySerializer.VALUE, optionalLogNorms)
       );
@@ -472,7 +472,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       else
         throw new RuntimeException();
       if (optionalLogNorm.isPresent())
-        writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
+        writer(MonitoringOutput.logNormalizationConstantProgress).printAndWrite(
           roundReport,
           Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
         );
@@ -505,7 +505,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum MonitoringOutput
   {
-    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, timeToFirstRestart, 
+    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationConstantProgress, timeToFirstRestart, 
     globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
   }
   

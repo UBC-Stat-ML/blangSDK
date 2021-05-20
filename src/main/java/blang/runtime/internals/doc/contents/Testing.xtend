@@ -3,9 +3,9 @@ package blang.runtime.internals.doc.contents
 import blang.runtime.internals.doc.Categories
 import blang.xdoc.components.Code.Language
 import blang.xdoc.components.Document
-import blang.validation.UnbiasnessTest
 
 import static extension blang.xdoc.DocElementExtensions.*
+import blang.validation.UnbiasednessTest
 
 class Testing {
   
@@ -62,10 +62,10 @@ class Testing {
           continuous or discrete, so we can achieve code coverage of the inference engines using discrete models.  
           See «LINK("https://github.com/alexandrebouchard/bayonet/blob/master/src/main/java/bayonet/distributions/ExhaustiveDebugRandom.java")»bayonet.distributions.ExhaustiveRandom«ENDLINK».
           
-          We use this for example to test the unbiasness of the normalization constant estimate provided by our 
+          We use this for example to test the unbiasedness of the normalization constant estimate provided by our 
           SMC implementation. 
         '''
-        code(UnbiasnessTest)
+        code(UnbiasednessTest)
         it += '''
           This can be called with a small finite model, e.g. 
           «LINK("https://github.com/UBC-Stat-ML/blangSDK/blob/master/src/test/java/blang/TestSMCUnbiasness.xtend")»a short HMM here«ENDLINK», 
