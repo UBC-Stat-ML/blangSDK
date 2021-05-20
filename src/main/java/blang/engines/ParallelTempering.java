@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import bayonet.distributions.Random;
+import bayonet.math.NumericalUtils;
 import blang.engines.internals.LogSumAccumulator;
 import blang.engines.internals.ladders.EquallySpaced;
 import blang.engines.internals.ladders.TemperatureLadder;
@@ -43,6 +44,8 @@ public class ParallelTempering
   public List<Double> temperingParameters;
   protected Random [] parallelRandomStreams;
   public SummaryStatistics [] energies, swapAcceptPrs;
+  protected ArrayList<ArrayList<Double>> logNumeratorRatios;   // Both ratios used by bridge sampling estimator
+  protected ArrayList<ArrayList<Double>> logDenominatorRatios; // Dimensions: (nChains, nScans)
   protected LogSumAccumulator [] logSumLikelihoodRatios; // used by Stepping stone marginalization
   protected int swapIndex = 0;
   protected boolean [] swapIndicators;
@@ -107,10 +110,15 @@ public class ParallelTempering
         - states[j].logDensity(temperingParameters.get(j)); // so for stepping stone we want the proposal to be the one closer to prior (this is IS so we want proposal to be wider)
     
     logSumLikelihoodRatios[i].add(steppingStoneLogRatio); 
+    
       
-    final double logRatio = steppingStoneLogRatio 
+    final double logDensityRatio =
         + states[i].logDensity(temperingParameters.get(j))
         - states[i].logDensity(temperingParameters.get(i));
+    final double logRatio = steppingStoneLogRatio + logDensityRatio;
+
+    logNumeratorRatios.get(i).add(steppingStoneLogRatio);
+    logDenominatorRatios.get(i).add(-logDensityRatio);
         
     double acceptPr = Math.min(1.0, Math.exp(logRatio));
     if (Double.isNaN(acceptPr))
@@ -135,6 +143,48 @@ public class ParallelTempering
     return Optional.of(-sum);
   }
   
+  public Optional<Double> bridgeSamplingEstimator() 
+  {
+    double threshold = 1e-7;     // Stopping criterion
+    int iterationThreshold = 30; // Stopping criterion
+    double [] logNormConstRatioEstimates = new double[nChains() - 1]; // estimates of Z{i} / Z{i+1}; i is closer to posterior than (i + 1)
+    for (int c = 0; c < nChains() - 1; c++) // arbitrary initial estimates
+      logNormConstRatioEstimates[c] = 1;
+
+    int iterationCount = 1;
+    double difference = threshold + 1;
+    double estimate = 0;
+
+    while (difference >= threshold) {
+      for (int c = 0; c < nChains() - 1; c++)
+        logNormConstRatioEstimates[c] = estimateRatio(c, logNormConstRatioEstimates[c]);
+      double newEstimate = 0;
+      for (double logRatioEstimate : logNormConstRatioEstimates)
+        newEstimate += logRatioEstimate;
+      difference = Math.abs(newEstimate - estimate);
+      estimate = newEstimate;
+      if (iterationCount >= iterationThreshold)
+        break;
+      iterationCount++;
+    }
+    
+    return Optional.of(estimate);
+  }
+
+  private double estimateRatio(int c, double logRatioEstimate) {
+    LogSumAccumulator numerator = new LogSumAccumulator();
+    for (int i = 0; i < logNumeratorRatios.get(c).size(); i++) {
+      numerator.add(logNumeratorRatios.get(c).get(i) - NumericalUtils.logAdd(logNumeratorRatios.get(c).get(i), logRatioEstimate));
+    }
+
+    LogSumAccumulator denominator = new LogSumAccumulator();
+    for (int i = 0; i < logDenominatorRatios.get(c).size(); i++) {
+      denominator.add(-NumericalUtils.logAdd(logDenominatorRatios.get(c).get(i), logRatioEstimate));
+    }
+    
+    return numerator.logSum() - denominator.logSum() ;
+  }
+
   public Optional<Double> steppingStoneEstimator() 
   {
     if (nChains() == 1) return Optional.empty();
@@ -192,8 +242,13 @@ public class ParallelTempering
     swapAcceptPrs = initStats(nChains - 1);
     energies = initStats(nChains);
     logSumLikelihoodRatios = new LogSumAccumulator[nChains - 1];
-    for (int i = 0; i < nChains - 1; i++)
+    logNumeratorRatios = new ArrayList<ArrayList<Double>>();
+    logDenominatorRatios = new ArrayList<ArrayList<Double>>();
+    for (int i = 0; i < nChains - 1; i++) {
       logSumLikelihoodRatios[i] = new LogSumAccumulator(); 
+      logNumeratorRatios.add(new ArrayList<Double>()); 
+      logDenominatorRatios.add(new ArrayList<Double>());
+    }
   }
   
   private SampledModel [] initStates(SampledModel prototype, int nChains)

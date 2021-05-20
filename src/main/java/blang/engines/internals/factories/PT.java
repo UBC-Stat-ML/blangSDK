@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -258,7 +259,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum InitType { COPIES, FORWARD, SCM }
   
-  public static enum LogNormalizationEstimator { thermodynamicIntegration, steppingStone }
+  public static enum LogNormalizationEstimator { all, thermodynamicIntegration, steppingStone, bridgeSampling }
   
   @Override
   public void setSampledModel(SampledModel model) 
@@ -439,27 +440,52 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         );
     }
     
-    Optional<Double> optionalLogNorm = null;
+    HashMap<LogNormalizationEstimator, Optional<Double>> optionalLogNorms = new HashMap<LogNormalizationEstimator, Optional<Double>>();
+    if (logNormalizationEstimator == LogNormalizationEstimator.all) {
+      optionalLogNorms.put(LogNormalizationEstimator.steppingStone, steppingStoneEstimator());
+      optionalLogNorms.put(LogNormalizationEstimator.thermodynamicIntegration, thermodynamicEstimator());
+      optionalLogNorms.put(LogNormalizationEstimator.bridgeSampling, bridgeSamplingEstimator());
+      writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
+        roundReport,
+        Pair.of(TidySerializer.VALUE, optionalLogNorms)
+      );
+      // log normalization, again (this gets overwritten, so this will be the final estimate in the same format as SCM)
+      if (!round.isAdapt) {
+        for (LogNormalizationEstimator estimator : LogNormalizationEstimator.values()) {
+          if (estimator == LogNormalizationEstimator.all)
+              continue;
+          if (optionalLogNorms.get(estimator).isPresent())
+            results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
+                Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, estimator),
+                Pair.of(TidySerializer.VALUE, optionalLogNorms.get(estimator).get())
+              );
+        }
+      }
+    } else {
+      Optional<Double> optionalLogNorm = null;
       if (logNormalizationEstimator == LogNormalizationEstimator.steppingStone)
         optionalLogNorm = steppingStoneEstimator();
+      else if (logNormalizationEstimator == LogNormalizationEstimator.bridgeSampling)
+        optionalLogNorm = bridgeSamplingEstimator();
       else if (logNormalizationEstimator == LogNormalizationEstimator.thermodynamicIntegration)
         optionalLogNorm = thermodynamicEstimator();
       else
         throw new RuntimeException();
       if (optionalLogNorm.isPresent())
-        writer(MonitoringOutput.logNormalizationConstantProgress).printAndWrite(
+        writer(MonitoringOutput.logNormalizationContantProgress).printAndWrite(
           roundReport,
           Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
         );
       else
         System.out.println("To obtain an estimate of the marginal likelihood (log normalization), note that thermodynamic integration is disabled when the support is being annealed");
-    
-    // log normalization, again (this gets overwritten, so this will be the final estimate in the same format as SCM)
-    if (optionalLogNorm.isPresent() && !round.isAdapt)
-      results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
-          Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, logNormalizationEstimator),
-          Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
-        );
+
+      // log normalization, again (this gets overwritten, so this will be the final estimate in the same format as SCM)
+      if (optionalLogNorm.isPresent() && !round.isAdapt)
+        results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
+            Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, logNormalizationEstimator),
+            Pair.of(TidySerializer.VALUE, optionalLogNorm.get())
+          );
+      }
   }
 
   
@@ -479,7 +505,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum MonitoringOutput
   {
-    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationConstantProgress, timeToFirstRestart, 
+    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationContantProgress, timeToFirstRestart, 
     globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
   }
   
