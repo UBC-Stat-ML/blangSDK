@@ -2,8 +2,7 @@ language: java
 script:
    - ./gradlew check -i --stacktrace
 jdk:
-  - openjdk15
-  - openjdk13
-  - openjdk11
   - openjdk8
+  - openjdk11
+  - openjdk15
 install: travis_wait 30 ./gradlew installDist -i --stacktrace
