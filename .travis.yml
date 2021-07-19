@@ -3,6 +3,5 @@ script:
    - ./gradlew check -i --stacktrace
 jdk:
   - openjdk15
-  - openjdk13
   - openjdk11
 install: travis_wait 30 ./gradlew installDist -i --stacktrace
