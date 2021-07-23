@@ -23,8 +23,8 @@ public class UserSpecifiedTemperatureSchedule implements TemperatureSchedule
                               @DefaultValue("false")
   public boolean allowSplineGeneralization = false;
 
-  @Arg(description = "DESCRIBE FILE FORMAT")
-  public String filepath;
+  @Arg(description = "Path to a line-separated file of annealing parameters.")
+  public String filePath;
   
   public List<Double> annealingParameters;
   
@@ -32,6 +32,8 @@ public class UserSpecifiedTemperatureSchedule implements TemperatureSchedule
   @Override
   public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature, double maxAnnealingParameter)
   {
+    if (maxAnnealingParameter != 1)
+      throw new RuntimeException("maxAnnealingParameter not equal to 1 is currently unsupported for this schedule.");
     if (annealingParameters == null) {
       annealingParameters = parse();
       annealingParametersStack = temperingParameters();
@@ -46,11 +48,21 @@ public class UserSpecifiedTemperatureSchedule implements TemperatureSchedule
   
   private List<Double> parse() {
     ArrayList<Double> result = new ArrayList<Double>();
-    for (List<String> line : BriefIO.readLines(filepath).splitCSV().skip(1)) {
-      Double annealingParam = Double.parseDouble(line.get(1));
+    for (String param : BriefIO.readLines(filePath).toList()) {
+      Double annealingParam = Double.parseDouble(param);
       result.add(annealingParam);
     }
-    result.add(1.0);
+    boolean containsZero = false, containsOne = false;
+    for (Double param : result) {
+      if (param == 0)
+        containsZero = true;
+      if (param == 1)
+        containsOne = true;
+    }
+    if (!containsZero)
+      result.add(0.0);
+    if (!containsOne)
+      result.add(1.0);
     return result;
   }
 
