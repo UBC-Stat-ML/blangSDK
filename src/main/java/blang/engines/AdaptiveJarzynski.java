@@ -38,6 +38,12 @@ public class AdaptiveJarzynski
   @Arg     @DefaultValue("1_000")
   public int nParticles = 1_000;
 
+  @Arg            @DefaultValue("3")
+  public double nPassesPerScan = 3;
+
+  @Arg            @DefaultValue("true")
+  public boolean useSingleKernelMoves = true;
+
   @Arg           @DefaultValue("Dynamic")
   public Cores nThreads = Cores.dynamic();
   
@@ -167,7 +173,11 @@ public class AdaptiveJarzynski
   private SampledModel sampleNext(Random random, SampledModel current, double temperature)
   {
     current.setExponent(temperature);
-    current.posteriorSamplingStep(random); 
+    if (useSingleKernelMoves) {
+      current.posteriorSamplingStep(random);
+    } else {
+      current.posteriorSamplingScan(random, nPassesPerScan);
+    }
     return current;
   }
   
