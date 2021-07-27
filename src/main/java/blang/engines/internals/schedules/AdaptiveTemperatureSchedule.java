@@ -24,6 +24,11 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
                                @DefaultValue("1e-10") // TODO: fix using the Alive Particle Sampler paper? 
   public double nudgeFromZeroIfOutOfSupport = 1e-10; // we do not want constraints at temperature zero so that normalization constant is known there
   
+  @Arg(description = "The absolute accuracy for the PegasusSolver "
+      + "(root finding method used to determine the next annealing parameter).")
+                    @DefaultValue("1e-10")
+  public double absoluteAccuracy = 1e-10;
+
   @Override
   public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature, double maxAnnealingParameter)
   {
@@ -41,7 +46,7 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
     
     double nextTemperature = objective.value(maxAnnealingParameter) >= 0 ? 
       maxAnnealingParameter :
-      new PegasusSolver().solve(100, objective, temperature, maxAnnealingParameter);
+      new PegasusSolver(absoluteAccuracy).solve(100, objective, temperature, maxAnnealingParameter);
     return nextTemperature;
   }
 
