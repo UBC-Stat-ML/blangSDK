@@ -100,18 +100,19 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
 
   }
   
-  private double approximateChiSquareDivergence(ParticlePopulation<SampledModel> approximation) {
+  private double approximateChiSquareDivergence(ParticlePopulation<SampledModel> pop) {
     LogSumAccumulator logSumAccumulator = new LogSumAccumulator();
-    double [] logDensityRatios = new double[approximation.nParticles()];
+    double [] logDensityRatios = new double[pop.nParticles()];
     BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
     {
-      logDensityRatios[particleIndex] = approximation.particles.get(particleIndex).logDensityRatio(0, 1);
+      logDensityRatios[particleIndex] = pop.particles.get(particleIndex).logDensityRatio(0, 1);
     });
 
     for (double logDensityRatio : logDensityRatios) {
       logSumAccumulator.add(logDensityRatio);
     }
-    return logSumAccumulator.logSum() - Math.log(approximation.nParticles()) - approximation.logNormEstimate();
+    double integralEstimate = logSumAccumulator.logSum() - Math.log(pop.nParticles()) - pop.logNormEstimate();
+    return Math.log(Math.exp(integralEstimate) - 1);
   }
 
   public static boolean isUniform(ParticlePopulation<?> pop)
