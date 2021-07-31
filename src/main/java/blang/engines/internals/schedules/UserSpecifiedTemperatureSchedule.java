@@ -33,7 +33,7 @@ public class UserSpecifiedTemperatureSchedule implements TemperatureSchedule
   public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature, double maxAnnealingParameter)
   {
     if (maxAnnealingParameter != 1)
-      throw new RuntimeException("maxAnnealingParameter not equal to 1 is currently unsupported for this schedule.");
+      throw new UnsupportedOperationException("maxAnnealingParameter not equal to 1 is currently unsupported for this schedule.");
     if (annealingParameters == null) {
       annealingParameters = parse();
       annealingParametersStack = temperingParameters();

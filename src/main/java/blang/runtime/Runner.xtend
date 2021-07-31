@@ -263,8 +263,9 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   }
   
   public val static String RUNNING_TIME_SUMMARY = "runningTimeSummary.tsv"
+  public val static String LOG_CHI_SQUARE_DIVERGENCE_ESTIMATE = "logChiSquareDivergenceEstimate"
   public val static String LOG_NORMALIZATION_ESTIMATE = "logNormalizationEstimate"
-    public val static String LOG_NORMALIZATION_ESTIMATOR = "estimator"
+  public val static String LOG_NORMALIZATION_ESTIMATOR = "estimator"
   public val static String MONITORING_FOLDER = "monitoring"
   public val static String SAMPLES_FOLDER = "samples"
   

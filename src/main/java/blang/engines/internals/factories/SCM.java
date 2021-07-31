@@ -5,6 +5,7 @@ import org.eclipse.xtext.xbase.lib.Pair;
 import bayonet.distributions.Random;
 import bayonet.smc.ParticlePopulation;
 import blang.engines.AdaptiveJarzynski;
+import blang.engines.internals.LogSumAccumulator;
 import blang.engines.internals.PosteriorInferenceEngine;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
@@ -29,6 +30,9 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   @Arg(description = "Number of rejuvenation passes to do after the change of measure.")     
                     @DefaultValue("5")
   public int nFinalRejuvenations = 5;
+
+  @Arg                             @DefaultValue("true")
+  public boolean approximateChiSquareDivergence = true;
   
   SampledModel model;
   
@@ -38,10 +42,23 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     this.model = model;
   }
 
+  private void checkValidArguments() {
+    if (nFinalRejuvenations < 0) {
+      throw new RuntimeException("nFinalRejuvenation must be non-negative.");
+    }
+    if (nFinalRejuvenations == 0) {
+      throw new UnsupportedOperationException("Zero-valued nFinalRejuvenation is currently unsupported.");
+    }
+    if (nFinalRejuvenations == 0 && approximateChiSquareDivergence) {
+      throw new UnsupportedOperationException("Chi-square approximation without final rejuvenation is currently unsupported.");
+    }
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public void performInference() 
   {
+    checkValidArguments();
     // create approx
     ParticlePopulation<SampledModel> approximation = getApproximation(model);
     
@@ -58,6 +75,16 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
       approximation = approximation.resample(random, resamplingScheme);
     rejuvenate(parallelRandomStreams, approximation);
     
+    // write Chi-square estimate
+    if (approximateChiSquareDivergence) {
+      double logChiSqrDiv = approximateChiSquareDivergence(approximation);
+      System.out.println("Log χ2 divergence estimate: " + logChiSqrDiv);
+      results.getTabularWriter(Runner.LOG_CHI_SQUARE_DIVERGENCE_ESTIMATE).write(
+          Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SCM"),
+          Pair.of(TidySerializer.VALUE, logChiSqrDiv)
+      );
+    }
+
     // write samples
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     BlangTidySerializer densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
@@ -68,8 +95,25 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
       densitySerializer.serialize(model.logDensity(), "logDensity", Pair.of(Runner.sampleColumn, particleIndex));
       particleIndex++;
     }
+
+
+
   }
   
+  private double approximateChiSquareDivergence(ParticlePopulation<SampledModel> approximation) {
+    LogSumAccumulator logSumAccumulator = new LogSumAccumulator();
+    double [] logDensityRatios = new double[approximation.nParticles()];
+    BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
+    {
+      logDensityRatios[particleIndex] = approximation.particles.get(particleIndex).logDensityRatio(0, 1);
+    });
+
+    for (double logDensityRatio : logDensityRatios) {
+      logSumAccumulator.add(logDensityRatio);
+    }
+    return logSumAccumulator.logSum() - Math.log(approximation.nParticles()) - approximation.logNormEstimate();
+  }
+
   public static boolean isUniform(ParticlePopulation<?> pop)
   {
     for (int i = 0; i < pop.nParticles(); i++) 
