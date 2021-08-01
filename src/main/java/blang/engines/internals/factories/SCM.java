@@ -102,9 +102,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
 
   }
   
-  private double approximateChiSquareDivergenceHelper(ParticlePopulation<SampledModel> pop, boolean isPosterior) {
-
-    double logNormEst = isPosterior ? pop.logNormEstimate() : 0;
+  private double approximateChiSquareDivergenceHelper(ParticlePopulation<SampledModel> pop, double logNormEst) {
     int n = pop.nParticles();
     double [] logTerms = new double[n];
     LogSumAccumulator logSumAccumulator = new LogSumAccumulator();
@@ -126,13 +124,14 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   private double approximateChiSquareDivergenceInPlace(ParticlePopulation<SampledModel> posteriorPopulation) {
     // Multiple mixture estimator (Section 5 of Owen and Zhou 2000)
     // https://www.jstor.org/stable/2669533
-    double logTermPosterior = approximateChiSquareDivergenceHelper(posteriorPopulation, true);
+    double logNormEst = posteriorPopulation.logNormEstimate();
+    double logTermPosterior = approximateChiSquareDivergenceHelper(posteriorPopulation, logNormEst);
     BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
     {
       posteriorPopulation.particles.get(particleIndex).setExponent(0);
       posteriorPopulation.particles.get(particleIndex).forwardSample(random, false);
     });
-    double logTermPrior = approximateChiSquareDivergenceHelper(posteriorPopulation, false);
+    double logTermPrior = approximateChiSquareDivergenceHelper(posteriorPopulation, logNormEst);
 
     return NumericalUtils.logAdd(logTermPosterior, logTermPrior);
   }
