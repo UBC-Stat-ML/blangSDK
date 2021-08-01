@@ -3,6 +3,7 @@ package blang.engines.internals.factories;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.Random;
+import bayonet.math.NumericalUtils;
 import bayonet.smc.ParticlePopulation;
 import blang.engines.AdaptiveJarzynski;
 import blang.engines.internals.LogSumAccumulator;
@@ -59,6 +60,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   public void performInference() 
   {
     checkValidArguments();
+
     // create approx
     ParticlePopulation<SampledModel> approximation = getApproximation(model);
     
@@ -77,7 +79,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     
     // write Chi-square estimate
     if (approximateChiSquareDivergence) {
-      double logChiSqrDiv = approximateChiSquareDivergence(approximation);
+      double logChiSqrDiv = approximateChiSquareDivergenceInPlace(approximation);
       System.out.println("Log χ2 divergence estimate: " + logChiSqrDiv);
       results.getTabularWriter(Runner.LOG_CHI_SQUARE_DIVERGENCE_ESTIMATE).write(
           Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SCM"),
@@ -100,19 +102,39 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
 
   }
   
-  private double approximateChiSquareDivergence(ParticlePopulation<SampledModel> pop) {
+  private double approximateChiSquareDivergenceHelper(ParticlePopulation<SampledModel> pop, boolean isPosterior) {
+
+    double logNormEst = isPosterior ? pop.logNormEstimate() : 0;
+    int n = pop.nParticles();
+    double [] logTerms = new double[n];
     LogSumAccumulator logSumAccumulator = new LogSumAccumulator();
-    double [] logDensityRatios = new double[pop.nParticles()];
+
     BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
     {
-      logDensityRatios[particleIndex] = pop.particles.get(particleIndex).logDensityRatio(0, 1);
+      double logPosteriorDensity = pop.particles.get(particleIndex).logDensity(1) - logNormEst;
+      double logPriorDensity = pop.particles.get(particleIndex).logDensity(0);
+      double logTotalDensity = NumericalUtils.logAdd(logPosteriorDensity, logPriorDensity);
+      logTerms[particleIndex] = 2 * logPosteriorDensity - logPriorDensity - logTotalDensity;
     });
 
-    for (double logDensityRatio : logDensityRatios) {
-      logSumAccumulator.add(logDensityRatio);
-    }
-    double integralEstimate = logSumAccumulator.logSum() - Math.log(pop.nParticles()) - pop.logNormEstimate();
-    return Math.log(Math.exp(integralEstimate) - 1);
+    for (double logTerm : logTerms)
+      logSumAccumulator.add(logTerm);
+
+    return logSumAccumulator.logSum() - Math.log(n);
+  }
+
+  private double approximateChiSquareDivergenceInPlace(ParticlePopulation<SampledModel> posteriorPopulation) {
+    // Multiple mixture estimator (Section 5 of Owen and Zhou 2000)
+    // https://www.jstor.org/stable/2669533
+    double logTermPosterior = approximateChiSquareDivergenceHelper(posteriorPopulation, true);
+    BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
+    {
+      posteriorPopulation.particles.get(particleIndex).setExponent(0);
+      posteriorPopulation.particles.get(particleIndex).forwardSample(random, false);
+    });
+    double logTermPrior = approximateChiSquareDivergenceHelper(posteriorPopulation, false);
+
+    return NumericalUtils.logAdd(logTermPosterior, logTermPrior);
   }
 
   public static boolean isUniform(ParticlePopulation<?> pop)

@@ -41,7 +41,7 @@ public class AdaptiveJarzynski
   @Arg            @DefaultValue("3")
   public double nPassesPerScan = 3;
 
-  @Arg            @DefaultValue("true")
+  @Arg                   @DefaultValue("true")
   public boolean useSingleKernelMoves = true;
 
   @Arg           @DefaultValue("Dynamic")
