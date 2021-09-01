@@ -99,6 +99,9 @@ class ExtensionUtils {  // Warning: blang.types.ExtensionUtils hard-coded in ca.
   
   /** Copy the contents of a matrix into another one. */
   def static void setTo(Matrix one, Matrix another) {
+    if (one === another) {
+      return // nothing to do, and code below would be incorrect
+    }
     if (one.nRows != another.nRows || one.nCols != another.nCols) {
       throw new RuntimeException
     }
