@@ -1,5 +1,7 @@
 package blang.engines.internals.factories;
 
+import java.util.List;
+
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.Random;
@@ -102,12 +104,29 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   public static final String
   
     propagationFileName = "propagation",
+    ancestryFileName = "ancestry",
     resamplingFileName = "resampling",
     
     essColumn = "ess",
     logNormalizationColumn = "logNormalization",
     iterationColumn = "iteration",
+    particleColumn = "particle",
+    ancestorColumn = "ancestor",
     annealingParameterColumn = "annealingParameter";
+
+  protected void recordAncestry(int iteration, List<Integer> ancestors, double temperature) {
+    int particleIndex = 0;
+    for (int ancestor : ancestors)
+    {
+      results.child(Runner.MONITORING_FOLDER).getTabularWriter(ancestryFileName).write(
+          Pair.of(iterationColumn, iteration),
+          Pair.of(annealingParameterColumn, temperature),
+          Pair.of(particleColumn, particleIndex),
+          Pair.of(ancestorColumn, ancestor)
+      );
+      particleIndex++;
+    }
+  }
 
   @Override
   protected void recordPropagationStatistics(int iteration, double temperature, double ess) {

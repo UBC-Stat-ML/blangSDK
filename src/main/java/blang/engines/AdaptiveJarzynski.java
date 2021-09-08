@@ -1,6 +1,7 @@
 package blang.engines;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.xtext.xbase.lib.Pair;
 
@@ -91,7 +92,7 @@ public class AdaptiveJarzynski
       { 
         population = resample(random, population);
         recordResamplingStatistics(iter, nextTemperature, population.logNormEstimate());
-        
+        recordAncestry(iter, population.ancestors, temperature);
       }
       temperature = nextTemperature;
       iter++;
@@ -151,6 +152,7 @@ public class AdaptiveJarzynski
     return ParticlePopulation.buildDestructivelyFromLogWeights(
         logWeights, 
         Arrays.asList(particles),
+        null,
         isInitial ? 0.0 : currentPopulation.logScaling);
   }
   
@@ -177,6 +179,8 @@ public class AdaptiveJarzynski
     return propose(randoms, null, Double.NaN, Double.NaN);
   }
   
+  protected void recordAncestry(int iteration, List<Integer> ancestors, double temperature) {}
+
   protected void recordPropagationStatistics(int iteration, double temperature, double ess) 
   {
     System.out.formatln("Propagation", 

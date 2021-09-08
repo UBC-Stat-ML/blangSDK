@@ -150,6 +150,7 @@ class DefaultPostProcessor extends PostProcessor {
     simplePlot(csvFile(monitoringFolder, SCM::propagationFileName), SCM::iterationColumn, SCM::essColumn, "-ess")
     simplePlot(csvFile(monitoringFolder, SCM::resamplingFileName), SCM::iterationColumn, SCM::annealingParameterColumn)
     simplePlot(csvFile(monitoringFolder, SCM::resamplingFileName), SCM::iterationColumn, SCM::logNormalizationColumn, "-logNormalization")
+    ancestryPlots()
     
     // for PT:
     
@@ -265,6 +266,91 @@ class DefaultPostProcessor extends PostProcessor {
     ''')
   }
   
+  def void ancestryPlots() {
+    val monitorDir = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
+    val monitorPlotDir = new File(blangExecutionDirectory.get, Output::monitoringPlots.toString)
+    val ancestryFile = csvFile(monitorDir, SCM::ancestryFileName.toString)
+    if (ancestryFile === null) return
+    val rScript = new File(monitorPlotDir, ".ancestry.r")
+    val outputPrefix = monitorPlotDir.absolutePath
+    callR(rScript, '''
+        library("ggplot2")
+        library("tidyverse")
+        theme_set(theme_bw() + theme(legend.position = "bottom"))
+
+        tempDf <- read.csv("«ancestryFile.absolutePath»") %>%
+          mutate(«SCM::particleColumn» = «SCM::particleColumn» + 1, «SCM::ancestorColumn» = «SCM::ancestorColumn» + 1)
+
+        nParticles <- length(unique(tempDf$«SCM::particleColumn»))
+        nResamples <- length(unique(tempDf$«SCM::iterationColumn»))
+        ancestryDf <- tempDf %>%
+          select(-«SCM::annealingParameterColumn») %>%
+          arrange(«SCM::particleColumn», «SCM::iterationColumn») %>%
+          pivot_wider(id_cols = «SCM::particleColumn», names_from = «SCM::iterationColumn», names_prefix = "«SCM::iterationColumn»_", values_from = «SCM::ancestorColumn») %>%
+          column_to_rownames(var="«SCM::particleColumn»")
+
+        ancestryMtx <- as.matrix(ancestryDf, rownames.force = 1)
+
+        resultMtx <- ancestryMtx
+        for (particle in 1:nParticles) {
+          resultMtx[particle, 1] <- ancestryMtx[particle, nResamples]
+          for (iter in 2:nResamples) {
+            resultMtx[particle, iter] <- ancestryMtx[resultMtx[particle, iter - 1], nResamples - iter + 1]
+          }
+        }
+
+
+        resultDf <- data.frame(resultMtx)
+        resultLong <- resultDf %>%
+          mutate(«SCM::particleColumn» = as.integer(row.names(resultDf))) %>%
+          pivot_longer(cols=-c(«SCM::particleColumn»), values_to="«SCM::ancestorColumn»", names_to="«SCM::iterationColumn»", names_prefix="«SCM::iterationColumn»_") %>%
+          mutate(«SCM::iterationColumn» = as.integer(«SCM::iterationColumn»)) %>%
+          group_by(«SCM::particleColumn») %>%
+          arrange(«SCM::iterationColumn») %>%
+          mutate(«SCM::iterationColumn»= rev(«SCM::iterationColumn»)) %>%
+          ungroup()
+
+        resultDf <- resultLong %>%
+          left_join(
+            tempDf %>%
+            select(-«SCM::ancestorColumn») %>%
+            bind_rows(data.frame(«SCM::particleColumn» = 1:nParticles,
+                                 «SCM::iterationColumn» = 0,
+                                 «SCM::annealingParameterColumn»= 0))
+          ) %>%
+          bind_rows(data.frame(«SCM::ancestorColumn» = 1:nParticles,
+                               «SCM::particleColumn» = 1:nParticles,
+                               «SCM::annealingParameterColumn» = 0,
+                               «SCM::iterationColumn» = 0)) %>%
+          pivot_longer(cols=c(«SCM::annealingParameterColumn», «SCM::iterationColumn»), names_to="timeType", values_to="time")
+
+        distinctDf <- resultDf %>%
+          group_by(timeType, time) %>%
+          distinct(«SCM::ancestorColumn») %>%
+          count
+        write.csv(distinctDf, paste0("«monitorDir.absolutePath»", "/«SCM::ancestryFileName»-distinct.csv"), row.names=F)
+
+        p <- ggplot(distinctDf, aes(x=time, y=n)) +
+          geom_point() +
+          geom_line() +
+          ylab("Count") +
+          xlab("Time") +
+          ylim(c(0, NA)) +
+          facet_wrap(~timeType, scales="free_x", nrow=2)
+        ggsave(paste0("«outputPrefix»", "/«SCM::ancestryFileName»-distinct.pdf"), p)
+
+        p <- ggplot(resultDf, aes(x=time, y=«SCM::ancestorColumn», group=«SCM::particleColumn», colour=«SCM::particleColumn»)) +
+          geom_point() +
+          geom_line(alpha=0.1) +
+          scale_color_gradientn(colors=rainbow(nParticles)) +
+          ylab("Ancestor") +
+          xlab("Time") +
+          labs(colour='Particle') +
+          facet_wrap(~timeType, scales="free_x", nrow=2)
+        ggsave(paste0("«outputPrefix»", "/«SCM::ancestryFileName».pdf"), p)
+    ''')
+  }
+
   def void simplePlot(File data, Object x, Object y) { simplePlot(data, x, y, "") }
   def void simplePlot(File data, Object x, Object y, String suffix) {
     if (data === null) return 
