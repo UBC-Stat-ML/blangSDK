@@ -106,14 +106,30 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     propagationFileName = "propagation",
     ancestryFileName = "ancestry",
     resamplingFileName = "resampling",
+    weightsFileName = "weights",
     
     essColumn = "ess",
     logNormalizationColumn = "logNormalization",
     iterationColumn = "iteration",
     particleColumn = "particle",
     ancestorColumn = "ancestor",
+    weightColumn = "logWeight",
     annealingParameterColumn = "annealingParameter";
 
+  @Override
+  protected void recordLogWeights(double [] weights, double temperature) {
+    int particleIndex = 0;
+    for (double weight : weights) {
+      results.child(Runner.MONITORING_FOLDER).getTabularWriter(weightsFileName).write(
+          Pair.of(annealingParameterColumn, temperature),
+          Pair.of(particleColumn, particleIndex),
+          Pair.of(weightColumn, weight)
+      );
+      particleIndex++;
+    }
+  }
+
+  @Override
   protected void recordAncestry(int iteration, List<Integer> ancestors, double temperature) {
     int particleIndex = 0;
     for (int ancestor : ancestors)
@@ -129,13 +145,14 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   }
 
   @Override
-  protected void recordPropagationStatistics(int iteration, double temperature, double ess) {
+  protected void recordPropagationStatistics(int iteration, double nextTemp, double ess, double logNorm) {
     results.child(Runner.MONITORING_FOLDER).getTabularWriter(propagationFileName).write(
         Pair.of(iterationColumn, iteration),
-        Pair.of(annealingParameterColumn, temperature),
-        Pair.of(essColumn, ess)
+        Pair.of(annealingParameterColumn, nextTemp),
+        Pair.of(essColumn, ess),
+        Pair.of(logNormalizationColumn, logNorm)
     );
-    super.recordPropagationStatistics(iteration, temperature, ess);
+    super.recordPropagationStatistics(iteration, nextTemp, ess, logNorm);
   }
 
   @Override

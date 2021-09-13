@@ -46,6 +46,10 @@ public class AdaptiveJarzynski
                          @DefaultValue("1.0")
   public double maxAnnealingParameter = 1.0;
   
+  @Arg(description = "Save log weights over iterations.")
+                  @DefaultValue("false")
+  public boolean recordWeights = false;
+
   protected SampledModel prototype;
   protected Random [] parallelRandomStreams;
   
@@ -87,7 +91,7 @@ public class AdaptiveJarzynski
       // TODO: slight optimization, probably not worth it: could know at this point if resampling is needed, 
       // and which particles will survive, so if a particle has no offspring no need to actually sample it.
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
-      recordPropagationStatistics(iter, temperature, population.getRelativeESS());
+      recordPropagationStatistics(iter, nextTemperature, population.getRelativeESS(), population.logNormEstimate());
       if (resamplingNeeded(population, nextTemperature))
       { 
         population = resample(random, population);
@@ -148,6 +152,9 @@ public class AdaptiveJarzynski
           sampleNext(random, currentPopulation.particles.get(particleIndex), nextTemperature);
       particles[particleIndex] = proposed;
     });
+
+    if (recordWeights)
+      recordLogWeights(logWeights, nextTemperature);
     
     return ParticlePopulation.buildDestructivelyFromLogWeights(
         logWeights, 
@@ -179,14 +186,16 @@ public class AdaptiveJarzynski
     return propose(randoms, null, Double.NaN, Double.NaN);
   }
   
+  protected void recordLogWeights(double [] weights, double temperature) {}
   protected void recordAncestry(int iteration, List<Integer> ancestors, double temperature) {}
 
-  protected void recordPropagationStatistics(int iteration, double temperature, double ess) 
+  protected void recordPropagationStatistics(int iteration, double temperature, double ess, double logNorm)
   {
     System.out.formatln("Propagation", 
       "[", 
         Pair.of("annealParam", temperature), 
         Pair.of("ess", ess), 
+        Pair.of("logNormalization", logNorm),
       "]");
   }
   
