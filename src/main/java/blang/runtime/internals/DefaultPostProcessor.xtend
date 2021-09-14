@@ -402,8 +402,7 @@ class DefaultPostProcessor extends PostProcessor {
     callR(rScript, '''
         library("tidyverse")
 
-        tempDf <- read.csv("«ancestryFile.absolutePath»") %>%
-          mutate(«SCM::particleColumn» = «SCM::particleColumn» + 1, «SCM::ancestorColumn» = «SCM::ancestorColumn» + 1)
+        tempDf <- read.csv("«ancestryFile.absolutePath»")
 
         nParticles <- length(unique(tempDf$«SCM::particleColumn»))
         nResamples <- length(unique(tempDf$«SCM::iterationColumn»))
@@ -420,7 +419,7 @@ class DefaultPostProcessor extends PostProcessor {
             for (particle in 1:nParticles) {
               resultMtx[particle, 1] <- ancestryMtx[particle, nResamples]
               for (iter in 2:nResamples) {
-                resultMtx[particle, iter] <- ancestryMtx[resultMtx[particle, iter - 1], nResamples - iter + 1]
+                resultMtx[particle, iter] <- ancestryMtx[resultMtx[particle, iter - 1] + 1, nResamples - iter + 1]
               }
             }
         }
@@ -485,7 +484,9 @@ class DefaultPostProcessor extends PostProcessor {
           ylim(c(0, nParticles)) +
           facet_wrap(~timeType, scales="free_x", nrow=2, labeller=facetLabeller)
 
-        simplifiedDf <- resultDf %>% distinct(ancestor, time, .keep_all=T)
+        # TODO: plot distinct lineages without losing segments.
+        # simplifiedDf <- resultDf %>% distinct(ancestor, time, .keep_all=T)  # this plot will lose segments
+        simplifiedDf <- resultDf
         p2 <- ggplot(simplifiedDf, aes(x=time, y=«SCM::ancestorColumn», group=«SCM::particleColumn», colour=«SCM::particleColumn»)) +
           geom_point(size=«DefaultPostProcessor::POINT_SIZE») +
           geom_line(alpha=«DefaultPostProcessor::LINE_ALPHA») +

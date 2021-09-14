@@ -42,6 +42,12 @@ public class AdaptiveJarzynski
   @Arg           @DefaultValue("Dynamic")
   public Cores nThreads = Cores.dynamic();
   
+  @Arg                       @DefaultValue("false")
+  public boolean usePosteriorSamplingScan = false;
+
+  @Arg            @DefaultValue("3")
+  public double nPassesPerScan = 3;
+
   @Arg(description = "Use higher values for likelihood maximization")
                          @DefaultValue("1.0")
   public double maxAnnealingParameter = 1.0;
@@ -176,7 +182,11 @@ public class AdaptiveJarzynski
   private SampledModel sampleNext(Random random, SampledModel current, double temperature)
   {
     current.setExponent(temperature);
-    current.posteriorSamplingStep(random); 
+    if (usePosteriorSamplingScan)
+      current.posteriorSamplingScan(random, nPassesPerScan);
+    else
+      current.posteriorSamplingStep(random);
+
     return current;
   }
   
