@@ -479,7 +479,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum MonitoringOutput
   {
-    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationConstantProgress, timeToFirstRestart, 
+    swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationConstantProgress, timeToFirstRestart,
     globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
   }
   

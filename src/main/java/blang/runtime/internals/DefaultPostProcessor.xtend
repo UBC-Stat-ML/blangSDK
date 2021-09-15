@@ -153,11 +153,8 @@ class DefaultPostProcessor extends PostProcessor {
     
     // for SCM:
     
-    ancestryPlots() // calls untangleAncestry() internally
+    ancestryPlots()
     propagationPlots()
-    /* TODO:
-     * ChiSquare plots
-     */
     
     // for PT:
     
@@ -277,6 +274,8 @@ class DefaultPostProcessor extends PostProcessor {
     val monitorDir = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
     val propagationFile = csvFile(monitorDir, SCM::propagationFileName.toString)
     if (propagationFile === null) return
+    val resamplingFile = csvFile(monitorDir, SCM::resamplingFileName.toString)
+    val resampled = !(resamplingFile === null)
 
     val monitorPlotDir = new File(blangExecutionDirectory.get, Output::monitoringPlots.toString)
     val rScript = new File(monitorPlotDir, ".propagation.r")
@@ -290,25 +289,34 @@ class DefaultPostProcessor extends PostProcessor {
         propagationDf <- read.csv(paste0("«monitorDir.absolutePath»", "/«SCM::propagationFileName».csv")) %>%
           mutate(time = «SCM::iterationColumn» / max(«SCM::iterationColumn»))
         nIterations <- max(propagationDf$«SCM::iterationColumn»)
-        resamplingDf <- read.csv(paste0("«monitorDir.absolutePath»", "/«SCM::resamplingFileName».csv")) %>%
-          mutate(time=«SCM::iterationColumn» / nIterations)
+        resampled <- "«resampled»" == "true"
+        if (resampled) {
+          resamplingDf <- read.csv(paste0("«monitorDir.absolutePath»", "/«SCM::resamplingFileName».csv")) %>%
+            mutate(time=«SCM::iterationColumn» / nIterations)
+        }
 
         schedulePlot <- ggplot(propagationDf, aes(x=time, y=«SCM::annealingParameterColumn», colour="Propagation")) +
           geom_point(size=«DefaultPostProcessor::POINT_SIZE») +
           geom_line(alpha=«DefaultPostProcessor::LINE_ALPHA») +
-          geom_point(data=resamplingDf,
-           aes(x=time, y=«SCM::annealingParameterColumn», colour="Resampling"),
-               size=«DefaultPostProcessor::POINT_SIZE» * 5) +
           ylab("Annealing parameter") +
           xlab("Time") +
           ylim(c(0, 1)) +
           labs(colour="Statistic") +
           theme(legend.position=c(0.03, 0.97),
                 legend.justification = c("left", "top"))
+        if (resampled) {
+          schedulePlot <- schedulePlot + geom_point(data=resamplingDf,
+           aes(x=time, y=«SCM::annealingParameterColumn», colour="Resampling"),
+               size=«DefaultPostProcessor::POINT_SIZE» * 5)
+        }
 
         histDf <- propagationDf %>%
-          mutate(type="Propagation") %>%
-          bind_rows(resamplingDf %>% mutate(type="Resampling"))
+          mutate(type="Propagation")
+        if (resampled) {
+          histDf <- histDf %>%
+            bind_rows(resamplingDf %>% mutate(type="Resampling"))
+        }
+
         histPlot <- ggplot(histDf, aes(x=«SCM::annealingParameterColumn», group=type, colour=type)) +
           geom_histogram(aes(y=..density..), fill=NA) +
           geom_density(alpha=«DefaultPostProcessor::LINE_ALPHA») +
@@ -349,40 +357,50 @@ class DefaultPostProcessor extends PostProcessor {
           geom_line(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
           geom_point(aes(x=time, colour="Iteration (rescaled)"), size=«DefaultPostProcessor::POINT_SIZE») +
           geom_line(aes(x=time, colour="Iteration (rescaled)"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
-          geom_point(data=resamplingDf,
-                     aes(x=time, y=«SCM::logNormalizationColumn», colour="Resampling"),
-                     size=«DefaultPostProcessor::POINT_SIZE» * 5) +
-          geom_point(data=resamplingDf,
-                     aes(x=«SCM::annealingParameterColumn», y=«SCM::logNormalizationColumn», colour="Resampling"),
-                     size=«DefaultPostProcessor::POINT_SIZE» * 5,) +
           ylab("Log normalization estimate") +
           xlab("Time") +
           labs(colour="Time index") +
           guides(alpha="none", size="none") +
           theme(legend.position=c(0.03, 0.03),
                 legend.justification = c("left", "bottom"))
+        if (resampled) {
+          zPlot <- zPlot +
+            geom_point(data=resamplingDf,
+                       aes(x=time, y=«SCM::logNormalizationColumn», colour="Resampling"),
+                       size=«DefaultPostProcessor::POINT_SIZE» * 5) +
+            geom_point(data=resamplingDf,
+                       aes(x=«SCM::annealingParameterColumn», y=«SCM::logNormalizationColumn», colour="Resampling"),
+                       size=«DefaultPostProcessor::POINT_SIZE» * 5)
+        }
 
         ratioDf <- propagationDf %>%
-          mutate(logRatio = «SCM::logNormalizationColumn» - lag(«SCM::logNormalizationColumn», 1, propagationDf$«SCM::logNormalizationColumn»[1], order_by=«SCM::iterationColumn»)) %>%
-          left_join(resamplingDf %>%
-                      rename(resamplingTime=time, resamplingBeta=«SCM::annealingParameterColumn»))
+          mutate(logRatio = «SCM::logNormalizationColumn» - lag(«SCM::logNormalizationColumn», 1, propagationDf$«SCM::logNormalizationColumn»[1], order_by=«SCM::iterationColumn»))
+        if (resampled) {
+          ratioDf <- ratioDf %>%
+            left_join(resamplingDf %>%
+                        rename(resamplingTime=time, resamplingBeta=«SCM::annealingParameterColumn»))
+        }
+
         ratioPlot <- ggplot(ratioDf, aes(y=logRatio)) +
           geom_point(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), size=«DefaultPostProcessor::POINT_SIZE») +
           geom_line(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
           geom_point(aes(x=time, colour="Iteration (rescaled)"), size=«DefaultPostProcessor::POINT_SIZE») +
           geom_line(aes(x=time, colour="Iteration (rescaled)"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
-          geom_point(data=ratioDf,
-                     aes(x=resamplingTime, y=logRatio, colour="Resampling"),
-                     size=«DefaultPostProcessor::POINT_SIZE» * 5) +
-          geom_point(data=ratioDf,
-                     aes(x=resamplingBeta, y=logRatio, colour="Resampling"),
-                     size=«DefaultPostProcessor::POINT_SIZE» * 5,) +
           ylab("Log normalization estimate") +
           xlab("Time") +
           labs(colour="Time index") +
           guides(alpha="none", size="none") +
           theme(legend.position=c(0.03, 0.03),
                 legend.justification = c("left", "bottom"))
+        if (resampled) {
+          ratioPlot <- ratioPlot +
+            geom_point(data=ratioDf,
+                       aes(x=resamplingTime, y=logRatio, colour="Resampling"),
+                       size=«DefaultPostProcessor::POINT_SIZE» * 5) +
+            geom_point(data=ratioDf,
+                       aes(x=resamplingBeta, y=logRatio, colour="Resampling"),
+                       size=«DefaultPostProcessor::POINT_SIZE» * 5)
+        }
 
         p <- cowplot::plot_grid(schedulePlot, histPlot, derivPlot, zPlot, ratioPlot, essPlot, nrow=2, ncol=3)
         ggsave(paste0("«outputPrefix»", "/«SCM::propagationFileName».pdf"),

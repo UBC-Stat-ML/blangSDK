@@ -23,10 +23,26 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
   @Arg(description = "If all particles are out of support at first iteration, nudge the temperature a bit so that support constraints kick in.")
                                @DefaultValue("1e-10") // TODO: fix using the Alive Particle Sampler paper? 
   public double nudgeFromZeroIfOutOfSupport = 1e-10; // we do not want constraints at temperature zero so that normalization constant is known there
-  
+
   @Arg(description = "The absolute accuracy for searching for next annealing parameter.")
                     @DefaultValue("1e-16")
   public double absoluteAccuracy = 1e-16;
+
+  private int numIter = 0; // for tracking number of iterations
+
+  private boolean hasReachedFinalIter = false;
+
+  public double getChiSquareDivergenceParameter() {
+    return 1.0 / threshold - 1.0;
+  }
+
+  public int getNumIter()
+  {
+	if (hasReachedFinalIter)
+	  return numIter;
+	else
+	  throw new java.lang.UnsupportedOperationException("Cannot determine number of iterations until inference completes.");
+  }
 
   @Override
   public double nextTemperature(ParticlePopulation<SampledModel> population, double temperature, double maxAnnealingParameter)
@@ -46,6 +62,10 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
     double nextTemperature = objective.value(maxAnnealingParameter) >= 0 ? 
       maxAnnealingParameter :
       new PegasusSolver(absoluteAccuracy).solve(100, objective, temperature, maxAnnealingParameter);
+
+    if (!hasReachedFinalIter)
+		numIter++;
+    hasReachedFinalIter = nextTemperature >= maxAnnealingParameter;
     return nextTemperature;
   }
 

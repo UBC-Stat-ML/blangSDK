@@ -5,9 +5,11 @@ import java.util.List;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.Random;
+import bayonet.math.NumericalUtils;
 import bayonet.smc.ParticlePopulation;
 import blang.engines.AdaptiveJarzynski;
 import blang.engines.internals.PosteriorInferenceEngine;
+import blang.engines.internals.schedules.AdaptiveTemperatureSchedule;
 import blang.inits.Arg;
 import blang.inits.DefaultValue;
 import blang.inits.GlobalArg;
@@ -27,11 +29,11 @@ import blang.System;
 public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
 {
   @GlobalArg public ExperimentResults results = new ExperimentResults();
-  
+
   @Arg(description = "Number of rejuvenation passes to do after the change of measure.")     
                     @DefaultValue("5")
   public int nFinalRejuvenations = 5;
-  
+
   SampledModel model;
   
   @Override
@@ -40,27 +42,25 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     this.model = model;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public void performInference() 
   {
     // create approx
     ParticlePopulation<SampledModel> approximation = getApproximation(model);
-    
-    // write Z estimate
-    double logNormEstimate = approximation.logNormEstimate();
-    System.out.println("Log normalization constant estimate: " + logNormEstimate);
-    results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
-        Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SCM"),
-        Pair.of(TidySerializer.VALUE, logNormEstimate)
-      );
-    
-    // resample & rejuvenate the last iteration to simplify processing downstream
+    recordZ(approximation);
+    recordRelativeVarZ(approximation);
+    resampleLastIteration(approximation);
+    rejuvenate(parallelRandomStreams, approximation);
+    writeSamples(approximation);
+  }
+
+  private void resampleLastIteration(ParticlePopulation<SampledModel> approximation) {
     if (!isUniform(approximation)) // could happen if there were zero-weight particles in last round
       approximation = approximation.resample(random, resamplingScheme);
-    rejuvenate(parallelRandomStreams, approximation);
-    
-    // write samples
+  }
+
+  @SuppressWarnings("unchecked")
+  private void writeSamples(ParticlePopulation<SampledModel> approximation) {
     BlangTidySerializer tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     BlangTidySerializer densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     int particleIndex = 0;
@@ -71,7 +71,22 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
       particleIndex++;
     }
   }
-  
+
+  private void recordRelativeVarZ(ParticlePopulation<SampledModel> approximation) {
+    // TODO: implement this for SCM in the general case, i.e., compute CESS and accumulate.
+    if (temperatureSchedule instanceof AdaptiveTemperatureSchedule)
+      recordRelativeVarZ(relVarFactorizationMethodName, logRelativeVarZ());
+  }
+
+  private void recordZ(ParticlePopulation<SampledModel> approximation) {
+    double logNormEstimate = approximation.logNormEstimate();
+    System.out.println("Log normalization constant estimate: " + logNormEstimate);
+    results.getTabularWriter(Runner.LOG_NORMALIZATION_ESTIMATE).write(
+        Pair.of(Runner.LOG_NORMALIZATION_ESTIMATOR, "SCM"),
+        Pair.of(TidySerializer.VALUE, logNormEstimate)
+    );
+  }
+
   public static boolean isUniform(ParticlePopulation<?> pop)
   {
     for (int i = 0; i < pop.nParticles(); i++) 
@@ -82,7 +97,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   
   private void rejuvenate(Random [] randoms, final ParticlePopulation<SampledModel> finalPopulation)
   {
-    if (nFinalRejuvenations == 0) 
+    if (nFinalRejuvenations <= 0)
       return;
     System.out.println("Final rejuvenation started");
     deepCopyParticles(finalPopulation);
@@ -103,10 +118,13 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   
   public static final String
   
+    relVarFactorizationMethodName = "factorizationMethod",
+
     propagationFileName = "propagation",
     ancestryFileName = "ancestry",
     resamplingFileName = "resampling",
     weightsFileName = "weights",
+    chiSquareFileName = "chiSquare",
     
     essColumn = "ess",
     logNormalizationColumn = "logNormalization",
@@ -114,10 +132,31 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     particleColumn = "particle",
     ancestorColumn = "ancestor",
     weightColumn = "logWeight",
+    estimatorColumn = "estimator",
+    logRelVarColumn = "logRelativeVarianceZ",
     annealingParameterColumn = "annealingParameter";
 
+  protected double logRelativeVarZ()
+  {
+    double numIter = ((AdaptiveTemperatureSchedule) temperatureSchedule).getNumIter();
+    double delta = ((AdaptiveTemperatureSchedule) temperatureSchedule).getChiSquareDivergenceParameter();
+    double log1pRelativeVar = numIter * NumericalUtils.logAdd(0, Math.log(delta) - Math.log(nParticles));
+    // Note: logDifference(x,y) returns log|exp(x)-exp(y)| and log1pRelativeVar > 1
+    return NumericalUtils.logDifference(log1pRelativeVar, 0);
+  }
+
+  protected void recordRelativeVarZ(String estimatorName, double logRelativeVarZ)
+  {
+    results.child(Runner.MONITORING_FOLDER).getTabularWriter(chiSquareFileName).write(
+        Pair.of(estimatorColumn, estimatorName),
+        Pair.of(logRelVarColumn, logRelativeVarZ)
+    );
+    System.out.println("RelativeVariance(Z) estimate (" + estimatorName + "): " + logRelativeVarZ);
+  }
+
   @Override
-  protected void recordLogWeights(double [] weights, double temperature) {
+  protected void recordLogWeights(double [] weights, double temperature)
+  {
     int particleIndex = 0;
     for (double weight : weights) {
       results.child(Runner.MONITORING_FOLDER).getTabularWriter(weightsFileName).write(
@@ -130,7 +169,8 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
   }
 
   @Override
-  protected void recordAncestry(int iteration, List<Integer> ancestors, double temperature) {
+  protected void recordAncestry(int iteration, List<Integer> ancestors, double temperature)
+  {
     int particleIndex = 0;
     for (int ancestor : ancestors)
     {
