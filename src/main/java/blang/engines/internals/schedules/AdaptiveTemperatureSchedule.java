@@ -38,10 +38,10 @@ public class AdaptiveTemperatureSchedule implements TemperatureSchedule
 
   public int getNumIter()
   {
-	if (hasReachedFinalIter)
-	  return numIter;
-	else
-	  throw new java.lang.UnsupportedOperationException("Cannot determine number of iterations until inference completes.");
+	  if (hasReachedFinalIter)
+	    return numIter;
+	  else
+	    throw new java.lang.UnsupportedOperationException("Cannot determine number of iterations until inference completes.");
   }
 
   @Override

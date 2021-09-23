@@ -142,7 +142,7 @@ public class SCM extends AdaptiveJarzynski implements PosteriorInferenceEngine
     double delta = ((AdaptiveTemperatureSchedule) temperatureSchedule).getChiSquareDivergenceParameter();
     double log1pRelativeVar = numIter * NumericalUtils.logAdd(0, Math.log(delta) - Math.log(nParticles));
     // Note: logDifference(x,y) returns log|exp(x)-exp(y)| and log1pRelativeVar > 1
-    return NumericalUtils.logDifference(log1pRelativeVar, 0);
+    return NumericalUtils.logAbsDifference(log1pRelativeVar, 0);
   }
 
   protected void recordRelativeVarZ(String estimatorName, double logRelativeVarZ)
