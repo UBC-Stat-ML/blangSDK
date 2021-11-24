@@ -33,7 +33,7 @@ dependencies {
   compile "com.github.UBC-Stat-ML:blangDSL:${blangVersion}"
   compile group: 'org.eclipse.xtext', name: 'org.eclipse.xtext.xbase.lib', version: '2.24.0'
   compile group: 'com.github.UBC-Stat-ML', name: 'inits', version: '3.4.1'
-  compile group: 'com.github.UBC-Stat-ML', name: 'bayonet', version: '4.1.11'
+  compile group: 'com.github.UBC-Stat-ML', name: 'bayonet', version: '4.1.12'
   compile group: 'com.github.UBC-Stat-ML', name: 'binc', version: '2.0.5'
   compile group: 'com.github.UBC-Stat-ML', name: 'xlinear', version: '2.3.0'
   compile group: 'com.github.UBC-Stat-ML', name: 'pxviz', version: '1.2.1'
