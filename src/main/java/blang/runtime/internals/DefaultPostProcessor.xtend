@@ -73,6 +73,13 @@ class DefaultPostProcessor extends PostProcessor {
   def File outputFolder(Output out) { return results.getFileInResultFolder(out.toString) }
   
   public static final String ESS_SUFFIX = "-ess.csv"
+
+  static final double PLOT_SCALE = 3
+  static final double PLOT_LONG_SIDE = 16
+  static final double PLOT_SHORT_SIDE = 10
+  static final String PLOT_UNITS = "cm"
+  static final double POINT_SIZE = 0.1
+  static final double LINE_ALPHA = 0.5
   
   var Command _Rscript
   def Command Rscript() {
@@ -146,10 +153,8 @@ class DefaultPostProcessor extends PostProcessor {
     
     // for SCM:
     
-    simplePlot(csvFile(monitoringFolder, SCM::propagationFileName), SCM::iterationColumn, SCM::annealingParameterColumn)
-    simplePlot(csvFile(monitoringFolder, SCM::propagationFileName), SCM::iterationColumn, SCM::essColumn, "-ess")
-    simplePlot(csvFile(monitoringFolder, SCM::resamplingFileName), SCM::iterationColumn, SCM::annealingParameterColumn)
-    simplePlot(csvFile(monitoringFolder, SCM::resamplingFileName), SCM::iterationColumn, SCM::logNormalizationColumn, "-logNormalization")
+    ancestryPlots()
+    propagationPlots()
     
     // for PT:
     
@@ -158,7 +163,7 @@ class DefaultPostProcessor extends PostProcessor {
       
     simplePlot(csvFile(monitoringFolder, MonitoringOutput::swapSummaries.toString), Column::round, Column::average)
     
-    for (estimateName : #[MonitoringOutput::globalLambda, MonitoringOutput::logNormalizationContantProgress])
+    for (estimateName : #[MonitoringOutput::globalLambda, MonitoringOutput::logNormalizationConstantProgress])
       simplePlot(csvFile(monitoringFolder, estimateName.toString), Column::round, TidySerializer::VALUE)
       
     simplePlot(new File(outputFolder(Output::ess), SampleOutput::energy + ESS_SUFFIX), Column::chain, TidySerializer::VALUE)
@@ -168,7 +173,7 @@ class DefaultPostProcessor extends PostProcessor {
       plot(csvFile(monitoringFolder, stat.toString), '''
         data <- data[data$isAdapt=="false",]
         p <- ggplot(data, aes(x = «Column::chain», y = «TidySerializer::VALUE»)) +
-          geom_point(size = 0.1) + geom_line(alpha = 0.5) +
+          geom_point(size = «DefaultPostProcessor::POINT_SIZE») + geom_line(alpha = «DefaultPostProcessor::LINE_ALPHA») +
           ylab("«stat»") + «scale»
           theme_bw()
       ''')
@@ -186,7 +191,7 @@ class DefaultPostProcessor extends PostProcessor {
       plot(csvFile(monitoringFolder, stat.toString), '''
         data <- data[data$isAdapt=="false",]
         p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE»)) +
-          geom_point(size = 0.1) + geom_line(alpha = 0.5) +
+          geom_point(size = «DefaultPostProcessor::POINT_SIZE») + geom_line(alpha = «DefaultPostProcessor::LINE_ALPHA») +
           ylab("«stat»") + 
           theme_bw()
       ''')
@@ -265,13 +270,271 @@ class DefaultPostProcessor extends PostProcessor {
     ''')
   }
   
+  def void propagationPlots() {
+    val monitorDir = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
+    val propagationFile = csvFile(monitorDir, SCM::propagationFileName.toString)
+    if (propagationFile === null) return
+    val resamplingFile = csvFile(monitorDir, SCM::resamplingFileName.toString)
+    val resampled = !(resamplingFile === null)
+
+    val monitorPlotDir = new File(blangExecutionDirectory.get, Output::monitoringPlots.toString)
+    val rScript = new File(monitorPlotDir, ".propagation.r")
+    val outputPrefix = monitorPlotDir.absolutePath
+    callR(rScript, '''
+        library("ggplot2")
+        library("tidyverse")
+        theme_set(theme_bw() + theme(aspect.ratio=1,
+                                     legend.direction = "horizontal"))
+
+        propagationDf <- read.csv(paste0("«monitorDir.absolutePath»", "/«SCM::propagationFileName».csv")) %>%
+          mutate(time = «SCM::iterationColumn» / max(«SCM::iterationColumn»))
+        nIterations <- max(propagationDf$«SCM::iterationColumn»)
+
+        if (nIterations > 0) {
+
+          resampled <- "«resampled»" == "true"
+          if (resampled) {
+            resamplingDf <- read.csv(paste0("«monitorDir.absolutePath»", "/«SCM::resamplingFileName».csv")) %>%
+              mutate(time=«SCM::iterationColumn» / nIterations)
+          }
+
+          schedulePlot <- ggplot(propagationDf, aes(x=time, y=«SCM::annealingParameterColumn», colour="Propagation")) +
+            geom_point(size=«DefaultPostProcessor::POINT_SIZE») +
+            geom_line(alpha=«DefaultPostProcessor::LINE_ALPHA») +
+            ylab("Annealing parameter") +
+            xlab("Time") +
+            ylim(c(0, 1)) +
+            labs(colour="Statistic") +
+            theme(legend.position=c(0.03, 0.97),
+                  legend.justification = c("left", "top"))
+          if (resampled) {
+            schedulePlot <- schedulePlot + geom_point(data=resamplingDf,
+             aes(x=time, y=«SCM::annealingParameterColumn», colour="Resampling"),
+                 size=«DefaultPostProcessor::POINT_SIZE» * 5)
+          }
+
+          histDf <- propagationDf %>%
+            mutate(type="Propagation")
+          if (resampled) {
+            histDf <- histDf %>%
+              bind_rows(resamplingDf %>% mutate(type="Resampling"))
+          }
+
+          histPlot <- ggplot(histDf, aes(x=«SCM::annealingParameterColumn», group=type, colour=type)) +
+            geom_histogram(aes(y=..density..), fill=NA) +
+            geom_density(alpha=«DefaultPostProcessor::LINE_ALPHA») +
+            guides(fill="none") +
+            labs(colour="Histogram") +
+            xlab("Annealing parameter") +
+            ylab("Density") +
+            theme(legend.position=c(0.97, 0.97),
+                  legend.justification=c("right", "top"))
+
+
+          schedGenerator <- splinefun(y = propagationDf$«SCM::iterationColumn», x=propagationDf$«SCM::annealingParameterColumn», method = "monoH.FC")
+          xx <- seq(0, 1, by=0.01)
+          yy <- schedGenerator(xx, deriv=1)
+          derivDf <- data.frame(dTime=yy, beta=xx)
+
+          derivPlot <- ggplot(derivDf, aes(x=beta, y=dTime)) +
+            geom_line() +
+            xlab("Annealing parameter") +
+            ylab("dTime / dBeta") +
+            xlim(c(0, 1))
+
+          essPlot <- ggplot(propagationDf, aes(y=«SCM::essColumn»)) +
+            geom_point(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), size=«DefaultPostProcessor::POINT_SIZE») +
+            geom_line(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
+            geom_point(aes(x=time, colour="Iteration (rescaled)"), size=«DefaultPostProcessor::POINT_SIZE») +
+            geom_line(aes(x=time, colour="Iteration (rescaled)"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
+            ylab("ESS") +
+            xlab("Time") +
+            labs(colour="Time index") +
+            guides(alpha="none", size="none") +
+            theme(legend.position=c(0.03, 0.03),
+                  legend.justification = c("left", "bottom"))
+
+
+          zPlot <- ggplot(propagationDf, aes(y=«SCM::logNormalizationColumn»)) +
+            geom_point(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), size=«DefaultPostProcessor::POINT_SIZE») +
+            geom_line(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
+            geom_point(aes(x=time, colour="Iteration (rescaled)"), size=«DefaultPostProcessor::POINT_SIZE») +
+            geom_line(aes(x=time, colour="Iteration (rescaled)"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
+            ylab("Log normalization estimate") +
+            xlab("Time") +
+            labs(colour="Time index") +
+            guides(alpha="none", size="none") +
+            theme(legend.position=c(0.03, 0.03),
+                  legend.justification = c("left", "bottom"))
+          if (resampled) {
+            zPlot <- zPlot +
+              geom_point(data=resamplingDf,
+                         aes(x=time, y=«SCM::logNormalizationColumn», colour="Resampling"),
+                         size=«DefaultPostProcessor::POINT_SIZE» * 5) +
+              geom_point(data=resamplingDf,
+                         aes(x=«SCM::annealingParameterColumn», y=«SCM::logNormalizationColumn», colour="Resampling"),
+                         size=«DefaultPostProcessor::POINT_SIZE» * 5)
+          }
+
+          ratioDf <- propagationDf %>%
+            mutate(logRatio = «SCM::logNormalizationColumn» - lag(«SCM::logNormalizationColumn», 1, propagationDf$«SCM::logNormalizationColumn»[1], order_by=«SCM::iterationColumn»))
+          if (resampled) {
+            ratioDf <- ratioDf %>%
+              left_join(resamplingDf %>%
+                          rename(resamplingTime=time, resamplingBeta=«SCM::annealingParameterColumn»))
+          }
+
+          ratioPlot <- ggplot(ratioDf, aes(y=logRatio)) +
+            geom_point(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), size=«DefaultPostProcessor::POINT_SIZE») +
+            geom_line(aes(x=«SCM::annealingParameterColumn», colour="Annealing parameter"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
+            geom_point(aes(x=time, colour="Iteration (rescaled)"), size=«DefaultPostProcessor::POINT_SIZE») +
+            geom_line(aes(x=time, colour="Iteration (rescaled)"), alpha=«DefaultPostProcessor::LINE_ALPHA») +
+            ylab("Log normalization estimate") +
+            xlab("Time") +
+            labs(colour="Time index") +
+            guides(alpha="none", size="none") +
+            theme(legend.position=c(0.03, 0.03),
+                  legend.justification = c("left", "bottom"))
+          if (resampled) {
+            ratioPlot <- ratioPlot +
+              geom_point(data=ratioDf,
+                         aes(x=resamplingTime, y=logRatio, colour="Resampling"),
+                         size=«DefaultPostProcessor::POINT_SIZE» * 5) +
+              geom_point(data=ratioDf,
+                         aes(x=resamplingBeta, y=logRatio, colour="Resampling"),
+                         size=«DefaultPostProcessor::POINT_SIZE» * 5)
+          }
+
+          p <- cowplot::plot_grid(schedulePlot, histPlot, derivPlot, zPlot, ratioPlot, essPlot, nrow=2, ncol=3)
+          ggsave(paste0("«outputPrefix»", "/«SCM::propagationFileName».pdf"),
+            p,
+            scale=«DefaultPostProcessor::PLOT_SCALE»,
+            width=«DefaultPostProcessor::PLOT_LONG_SIDE»,
+            height=«DefaultPostProcessor::PLOT_SHORT_SIDE»,
+            units="«DefaultPostProcessor::PLOT_UNITS»")
+        }
+    ''')
+  }
+
+  def void untangleAncestry() {
+    val monitorDir = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
+    val ancestryFile = csvFile(monitorDir, SCM::ancestryFileName.toString)
+    if (ancestryFile === null) return
+    val rScript = new File(monitorDir, ".ancestry-untangle.r")
+    callR(rScript, '''
+        library("tidyverse")
+
+        tempDf <- read.csv("«ancestryFile.absolutePath»")
+
+        nParticles <- length(unique(tempDf$«SCM::particleColumn»))
+        nResamples <- length(unique(tempDf$«SCM::iterationColumn»))
+        ancestryDf <- tempDf %>%
+          select(-«SCM::annealingParameterColumn») %>%
+          arrange(«SCM::particleColumn», «SCM::iterationColumn») %>%
+          pivot_wider(id_cols = «SCM::particleColumn», names_from = «SCM::iterationColumn», names_prefix = "«SCM::iterationColumn»_", values_from = «SCM::ancestorColumn») %>%
+          column_to_rownames(var="«SCM::particleColumn»")
+
+        ancestryMtx <- as.matrix(ancestryDf, rownames.force = 1)
+
+        resultMtx <- ancestryMtx
+        if (nResamples > 1) {
+            for (particle in 1:nParticles) {
+              resultMtx[particle, 1] <- ancestryMtx[particle, nResamples]
+              for (iter in 2:nResamples) {
+                resultMtx[particle, iter] <- ancestryMtx[resultMtx[particle, iter - 1] + 1, nResamples - iter + 1]
+              }
+            }
+        }
+
+
+        tempResultDf <- data.frame(resultMtx)
+        resultLong <- tempResultDf %>%
+          mutate(«SCM::particleColumn» = as.integer(row.names(tempResultDf))) %>%
+          pivot_longer(cols=-c(«SCM::particleColumn»), values_to="«SCM::ancestorColumn»", names_to="«SCM::iterationColumn»", names_prefix="«SCM::iterationColumn»_") %>%
+          mutate(«SCM::iterationColumn» = as.integer(«SCM::iterationColumn»)) %>%
+          group_by(«SCM::particleColumn») %>%
+          arrange(«SCM::iterationColumn») %>%
+          mutate(«SCM::iterationColumn»= rev(«SCM::iterationColumn»)) %>%
+          ungroup()
+
+        resultDf <- resultLong %>%
+          left_join(
+            tempDf %>%
+            select(-«SCM::ancestorColumn»)
+          ) %>%
+          pivot_longer(cols=c(«SCM::annealingParameterColumn», «SCM::iterationColumn»), names_to="timeType", values_to="time") %>%
+          mutate(particle = particle - 1)
+        write.csv(resultDf, paste0("«monitorDir.absolutePath»", "/«SCM::ancestryFileName»-untangled.csv"), row.names=F)
+
+        distinctDf <- resultDf %>%
+          group_by(timeType, time) %>%
+          distinct(«SCM::ancestorColumn») %>%
+          count
+        write.csv(distinctDf, paste0("«monitorDir.absolutePath»", "/«SCM::ancestryFileName»-distinct.csv"), row.names=F)
+    ''')
+  }
+
+
+  def void ancestryPlots() {
+    untangleAncestry()
+    val monitorDir = new File(blangExecutionDirectory.get, Runner::MONITORING_FOLDER)
+    val ancestryFile = csvFile(monitorDir, SCM::ancestryFileName.toString)
+    if (ancestryFile === null) return
+
+    val monitorPlotDir = new File(blangExecutionDirectory.get, Output::monitoringPlots.toString)
+    val rScript = new File(monitorPlotDir, ".ancestry-plot.r")
+    val outputPrefix = monitorPlotDir.absolutePath
+    callR(rScript, '''
+        library("ggplot2")
+        library("tidyverse")
+        theme_set(theme_bw() + theme(legend.position = c(0.03, 0.03),
+                                     legend.direction = "horizontal",
+                                     legend.justification = "left"))
+
+        distinctDf <- read.csv(paste0("«monitorDir.absolutePath»", "/«SCM::ancestryFileName»-distinct.csv"))
+        resultDf <- read.csv(paste0("«monitorDir.absolutePath»", "/«SCM::ancestryFileName»-untangled.csv"))
+
+        nParticles <- length(unique(resultDf$«SCM::particleColumn»))
+        facetLabeller <- as_labeller(c("«SCM::annealingParameterColumn»"="Annealing parameter",
+                                       "«SCM::iterationColumn»"="Iteration"))
+
+        p1 <- ggplot(distinctDf, aes(x=time, y=n)) +
+          geom_point(size=«DefaultPostProcessor::POINT_SIZE») +
+          geom_line(alpha=«DefaultPostProcessor::LINE_ALPHA») +
+          ylab("Count") +
+          xlab("Time") +
+          ylim(c(0, nParticles)) +
+          facet_wrap(~timeType, scales="free_x", nrow=2, labeller=facetLabeller)
+
+        # TODO: plot distinct lineages without losing segments.
+        # simplifiedDf <- resultDf %>% distinct(ancestor, time, .keep_all=T)  # this plot will lose segments
+        simplifiedDf <- resultDf
+        p2 <- ggplot(simplifiedDf, aes(x=time, y=«SCM::ancestorColumn», group=«SCM::particleColumn», colour=«SCM::particleColumn»)) +
+          geom_point(size=«DefaultPostProcessor::POINT_SIZE») +
+          geom_line(alpha=«DefaultPostProcessor::LINE_ALPHA») +
+          scale_color_gradientn(colors=rainbow(length(unique(simplifiedDf$«SCM::particleColumn»)))) +
+          ylab("Ancestor") +
+          xlab("Time") +
+          ylim(c(0, nParticles - 1)) +
+          labs(colour='Particle') +
+          facet_wrap(~timeType, scales="free_x", nrow=2, labeller=facetLabeller)
+        p <- cowplot::plot_grid(p2, p1, ncol=2)
+        ggsave(paste0("«outputPrefix»", "/«SCM::ancestryFileName».pdf"),
+          p,
+          scale=«DefaultPostProcessor::PLOT_SCALE»,
+          width=«DefaultPostProcessor::PLOT_LONG_SIDE»,
+          height=«DefaultPostProcessor::PLOT_SHORT_SIDE»,
+          units="«DefaultPostProcessor::PLOT_UNITS»")
+    ''')
+  }
+
   def void simplePlot(File data, Object x, Object y) { simplePlot(data, x, y, "") }
   def void simplePlot(File data, Object x, Object y, String suffix) {
     if (data === null) return 
     val name = variableName(data)
     plot(data, '''
       p <- ggplot(data, aes(x = «x», y = «y»)) +
-        geom_point(size = 0.1) + geom_line(alpha = 0.5) +
+        geom_point(size = «DefaultPostProcessor::POINT_SIZE») + geom_line(alpha = «DefaultPostProcessor::LINE_ALPHA») +
         ylab("«name + " " + y»") + 
         theme_bw()
     ''', suffix)
@@ -412,7 +675,7 @@ class DefaultPostProcessor extends PostProcessor {
       this.removeBurnIn = removeBurnIn
     }
     override ggCommand() {
-      val geomString = if (isRealValued(types.get(TidySerializer::VALUE))) "geom_point(size = 0.1) + geom_line(alpha = 0.5)" else "geom_step()"
+      val geomString = if (isRealValued(types.get(TidySerializer::VALUE))) '''geom_point(size = «DefaultPostProcessor::POINT_SIZE») + geom_line(alpha = «DefaultPostProcessor::LINE_ALPHA»)''' else '''geom_step()'''
       return (if (removeBurnIn) removeBurnIn() else "") + '''
       
       p <- ggplot(data, aes(x = «Runner::sampleColumn», y = «TidySerializer::VALUE»)) +

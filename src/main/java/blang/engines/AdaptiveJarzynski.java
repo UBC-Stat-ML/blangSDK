@@ -1,6 +1,7 @@
 package blang.engines;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.xtext.xbase.lib.Pair;
 
@@ -41,10 +42,20 @@ public class AdaptiveJarzynski
   @Arg           @DefaultValue("Dynamic")
   public Cores nThreads = Cores.dynamic();
   
+  @Arg                       @DefaultValue("false")
+  public boolean usePosteriorSamplingScan = false;
+
+  @Arg            @DefaultValue("3")
+  public double nPassesPerScan = 3;
+
   @Arg(description = "Use higher values for likelihood maximization")
                          @DefaultValue("1.0")
   public double maxAnnealingParameter = 1.0;
   
+  @Arg(description = "Save log weights over iterations.")
+                  @DefaultValue("false")
+  public boolean recordWeights = false;
+
   protected SampledModel prototype;
   protected Random [] parallelRandomStreams;
   
@@ -86,12 +97,12 @@ public class AdaptiveJarzynski
       // TODO: slight optimization, probably not worth it: could know at this point if resampling is needed, 
       // and which particles will survive, so if a particle has no offspring no need to actually sample it.
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
-      recordPropagationStatistics(iter, temperature, population.getRelativeESS());
+      recordPropagationStatistics(iter, nextTemperature, population.getRelativeESS(), population.logNormEstimate());
       if (resamplingNeeded(population, nextTemperature))
       { 
         population = resample(random, population);
         recordResamplingStatistics(iter, nextTemperature, population.logNormEstimate());
-        
+        recordAncestry(iter, population.ancestors, temperature);
       }
       temperature = nextTemperature;
       iter++;
@@ -147,10 +158,14 @@ public class AdaptiveJarzynski
           sampleNext(random, currentPopulation.particles.get(particleIndex), nextTemperature);
       particles[particleIndex] = proposed;
     });
+
+    if (recordWeights)
+      recordLogWeights(logWeights, nextTemperature);
     
     return ParticlePopulation.buildDestructivelyFromLogWeights(
         logWeights, 
         Arrays.asList(particles),
+        null,
         isInitial ? 0.0 : currentPopulation.logScaling);
   }
   
@@ -167,7 +182,11 @@ public class AdaptiveJarzynski
   private SampledModel sampleNext(Random random, SampledModel current, double temperature)
   {
     current.setExponent(temperature);
-    current.posteriorSamplingStep(random); 
+    if (usePosteriorSamplingScan)
+      current.posteriorSamplingScan(random, nPassesPerScan);
+    else
+      current.posteriorSamplingStep(random);
+
     return current;
   }
   
@@ -177,12 +196,16 @@ public class AdaptiveJarzynski
     return propose(randoms, null, Double.NaN, Double.NaN);
   }
   
-  protected void recordPropagationStatistics(int iteration, double temperature, double ess) 
+  protected void recordLogWeights(double [] weights, double temperature) {}
+  protected void recordAncestry(int iteration, List<Integer> ancestors, double temperature) {}
+
+  protected void recordPropagationStatistics(int iteration, double temperature, double ess, double logNorm)
   {
     System.out.formatln("Propagation", 
       "[", 
         Pair.of("annealParam", temperature), 
         Pair.of("ess", ess), 
+        Pair.of("logNormalization", logNorm),
       "]");
   }
   
