@@ -21,8 +21,7 @@ class BlangCLI {
         
         it += '''The «SYMB»git«ENDSYMB» command'''
         
-        it += '''The Java Software Development Kit (SDK), version 8 or more recent (at the time of publication, 
-        «SYMB»Open SDK«ENDSYMB» 8 and 11 are tested). The Java runtime environment is not sufficient, as 
+        it += '''The Java Software Development Kit (SDK), version 11. The Java runtime environment is not sufficient, as 
         compilation of models requires compilation into the Java Virtual Machine. Type «SYMB»javac -version«ENDSYMB» to 
         test if the Java SDK is installed. If not, the Java SDK is freely available at 
         «LINK("https://openjdk.java.net/")»https://openjdk.java.net/«ENDLINK».'''

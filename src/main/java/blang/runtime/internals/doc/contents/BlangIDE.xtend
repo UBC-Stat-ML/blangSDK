@@ -16,8 +16,7 @@ class BlangIDE {
         
       section("System requirements") [
         it += '''
-          The only requirement is that 
-          «LINK("http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html")»Java 11 SDK«ENDLINK»
+          The only requirement is that Java 11 SDK
           should be installed on the system.'''
 
       ]
