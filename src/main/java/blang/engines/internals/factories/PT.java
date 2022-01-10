@@ -141,7 +141,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   /**
    * @return The estimated cumulative lambda function. 
    */
-  private MonotoneCubicSpline adapt(boolean finalAdapt)
+  protected MonotoneCubicSpline adapt(boolean finalAdapt)
   {
     List<Double> annealingParameters = new ArrayList<>(temperingParameters);
     Collections.reverse(annealingParameters);

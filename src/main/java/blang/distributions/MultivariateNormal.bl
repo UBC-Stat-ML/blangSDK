@@ -21,7 +21,7 @@ model MultivariateNormal {
     logf(mean, precision, realization)  {
       val Matrix centered = mean - realization
       val Matrix L = precision.L
-      // Note: caching L L' would not change the asymptotic running time of d^2
+      // by doing left to right this is quadratic not cubic:  
       return - 0.5 * (centered.transpose * L * L.transpose * centered).doubleValue
     }
   }
