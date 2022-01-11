@@ -35,7 +35,7 @@ dependencies {
   compile group: 'com.github.UBC-Stat-ML', name: 'inits', version: '3.4.1'
   compile group: 'com.github.UBC-Stat-ML', name: 'bayonet', version: '4.1.12'
   compile group: 'com.github.UBC-Stat-ML', name: 'binc', version: '2.0.5'
-  compile group: 'com.github.UBC-Stat-ML', name: 'xlinear', version: '2.3.0'
+  compile group: 'com.github.UBC-Stat-ML', name: 'xlinear', version: '2.4.1'
   compile group: 'com.github.UBC-Stat-ML', name: 'pxviz', version: '1.2.1'
   compile group: 'uk.com.robust-it', name: 'cloning', version: '1.9.6'
   /* blang-standalone-compiler-directive - do not edit : ADD_SDK_DEPENDENCY */
@@ -125,7 +125,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "2.14.0" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "2.14.1" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "com.github.UBC-Stat-ML"
     }
