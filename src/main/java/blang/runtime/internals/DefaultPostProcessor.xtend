@@ -158,7 +158,7 @@ class DefaultPostProcessor extends PostProcessor {
     
     // for PT:
     
-    for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound, MonitoringOutput::nonAsymptoticRountTrip])
+    for (rateName : #[MonitoringOutput::actualTemperedRestarts, MonitoringOutput::asymptoticRoundTripBound, MonitoringOutput::nonAsymptoticRoundTrip])
       simplePlot(csvFile(monitoringFolder, rateName.toString), Column::round, Column::rate)
       
     simplePlot(csvFile(monitoringFolder, MonitoringOutput::swapSummaries.toString), Column::round, Column::average)

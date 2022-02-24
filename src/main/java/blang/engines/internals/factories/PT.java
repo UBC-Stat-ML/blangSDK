@@ -432,7 +432,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       
       double tau = 1.0 / (2.0 + 2.0 * inefficiency);
       double nTheoretical = tau * correctedNScans;
-      writer(nonAsymptoticRountTrip).printAndWrite(
+      writer(nonAsymptoticRoundTrip).printAndWrite(
           roundReport,
           Pair.of(Column.count, nTheoretical), 
           Pair.of(Column.rate, tau)
@@ -480,7 +480,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   public static enum MonitoringOutput
   {
     swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationConstantProgress, timeToFirstRestart,
-    globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
+    globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRoundTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
   }
   
   public static enum SampleOutput
