@@ -13,7 +13,7 @@ model MultivariateNormal {
   
   laws {
     logf(double dim = realization.nEntries) {
-      - dim * log(2*PI) / 2.0
+      - 0.5 * dim * log(2.0*PI)
     }
     logf(precision) {
       0.5 * precision.logDet
