@@ -333,7 +333,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     swapIndicatorSerializer = new BlangTidySerializer(results.child(Runner.MONITORING_FOLDER));  
   }
   
-  private void reportRoundStatistics(Round round)
+  protected void reportRoundStatistics(Round round)
   {
     long movesPerScan = (long) (nChains()/2 /* communication */ + nPassesPerScan * states[0].nPosteriorSamplers() * nChains() /* exploration */);
     long nMoves =  movesPerScan * round.nScans;
@@ -495,11 +495,11 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static class Round
   {
-    int nScans;
-    int roundIndex = -1;
-    int firstScanInclusive;
-    int lastScanExclusive;
-    boolean isAdapt;
+    public int nScans;
+    public int roundIndex = -1;
+    public int firstScanInclusive;
+    public int lastScanExclusive;
+    public boolean isAdapt;
     public Round(int nScans, boolean isAdapt) {
       this.nScans = nScans;
       this.isAdapt = isAdapt;
