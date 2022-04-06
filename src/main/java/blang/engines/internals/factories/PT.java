@@ -141,7 +141,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   /**
    * @return The estimated cumulative lambda function. 
    */
-  protected MonotoneCubicSpline adapt(boolean finalAdapt)
+  public MonotoneCubicSpline adapt(boolean finalAdapt)
   {
     List<Double> annealingParameters = new ArrayList<>(temperingParameters);
     Collections.reverse(annealingParameters);
@@ -166,9 +166,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     return EngineStaticUtils.fixedSizeOptimalPartition(cumulativeLambdaEstimate, size);
   }
   
-  private void reportAcceptanceRatios(Round round) 
+  public void reportAcceptanceRatios(Round round) 
   {
-    TabularWriter 
+    TabularWriter  
       swapTabularWriter = writer(MonitoringOutput.swapStatistics),
       annealingParamTabularWriter = writer(MonitoringOutput.annealingParameters);
     
@@ -346,14 +346,14 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   }
   
   @SuppressWarnings("unchecked")
-  private void recordSamples(int scanIndex) 
+  public void recordSamples(int scanIndex) 
   {
     getTargetState().getSampleWriter(tidySerializer).write(
       Pair.of(sampleColumn, scanIndex));
   }
   
-  @SuppressWarnings("unchecked")
-  private void swapAndRecordStatistics(int scanIndex) 
+  @SuppressWarnings("unchecked") 
+  public void swapAndRecordStatistics(int scanIndex) 
   {
     // perform the swaps
     boolean[] swapIndicators = swapKernel();
@@ -365,7 +365,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
         Pair.of(Column.chain, c));
   }
   
-  private void reportParallelTemperingDiagnostics(Round round)
+  public void reportParallelTemperingDiagnostics(Round round)
   {
     Pair<?,?> roundReport = Pair.of(Column.round, round.roundIndex);
     
