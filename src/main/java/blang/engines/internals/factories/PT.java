@@ -90,7 +90,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       for (int scanInRound = 0; scanInRound < round.nScans; scanInRound++)
       {
         moveKernel(nPassesPerScan);
-        recordEnergyStatistics(densitySerializer, scanIndex);
+        recordEnergyStatistics(scanIndex);
         if (scanIndex % thinning == 0)
           recordSamples(scanIndex);
         if (nChains() > 1)
@@ -110,7 +110,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   }
   
   @SuppressWarnings("unchecked")
-  private void recordEnergyStatistics(BlangTidySerializer densitySerializer, int iter)  
+  public void recordEnergyStatistics(int iter)  
   {
     if (temperingParameters.size() > statisticRecordedMaxChainIndex)
       BriefLog.warnOnce("Only printing energy statistics for the first " + statisticRecordedMaxChainIndex + " chains, see statisticRecordedMaxChainIndex option in PT");
@@ -186,7 +186,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   }
   
   public static int _lamdbaDiscretization = 100;
-  private void reportLambdaFunctions(Round round, MonotoneCubicSpline cumulativeLambdaEstimate)
+  public void reportLambdaFunctions(Round round, MonotoneCubicSpline cumulativeLambdaEstimate)
   {
     Pair<?,?> 
       r = Pair.of(Column.round, round.roundIndex),
@@ -205,7 +205,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     }
   }
   
-  private void reportRoundTiming(Round round, long time) 
+  public void reportRoundTiming(Round round, long time) 
   {
     writer(MonitoringOutput.roundTimings).write(
       Pair.of(Column.round, round.roundIndex),
