@@ -11,12 +11,11 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 repositories {
+  maven { url "file:///${System.properties['user.home']}/artifacts/" }
+  maven { url "https://www.stat.ubc.ca/~bouchard/maven/" }
+  maven { url 'https://jitpack.io' }
   mavenCentral()
   jcenter()
-  maven { url "file:///${System.properties['user.home']}/artifacts/" }
-  maven { url 'https://jitpack.io' }
-  maven { url "https://ubc-stat-ml.github.io/artifacts/" }
-  maven { url "https://www.stat.ubc.ca/~bouchard/maven/" }
 }
 
 xtend {
