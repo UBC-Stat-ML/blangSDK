@@ -267,6 +267,7 @@ class Runner extends Experiment {  // Warning: "blang.runtime.Runner" hard-coded
   public val static String LOG_NORMALIZATION_ESTIMATOR = "estimator"
   public val static String MONITORING_FOLDER = "monitoring"
   public val static String SAMPLES_FOLDER = "samples"
+  public val static String SAMPLES_FOR_ALL_CHAINS = "samplesForAllChains"
   
   public val static String sampleColumn = "sample"
 }

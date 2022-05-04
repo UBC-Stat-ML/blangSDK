@@ -78,6 +78,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
                                @DefaultValue("100")
   public int statisticRecordedMaxChainIndex = 100;
   
+  @Arg                       @DefaultValue("false")
+  public boolean storeSamplesForAllChains = false; 
+  
   @Override
   public void performInference() 
   {
@@ -324,13 +327,16 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   }
   
   private BlangTidySerializer tidySerializer;
+  private BlangTidySerializer allChainsSerializer;
   private BlangTidySerializer densitySerializer;
   private BlangTidySerializer swapIndicatorSerializer; 
   protected void initSerializers()
   {
     tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
     densitySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
-    swapIndicatorSerializer = new BlangTidySerializer(results.child(Runner.MONITORING_FOLDER));  
+    swapIndicatorSerializer = new BlangTidySerializer(results.child(Runner.MONITORING_FOLDER)); 
+    if (storeSamplesForAllChains)
+       allChainsSerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOR_ALL_CHAINS));
   }
   
   protected void reportRoundStatistics(Round round)
@@ -350,6 +356,14 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   {
     getTargetState().getSampleWriter(tidySerializer).write(
       Pair.of(sampleColumn, scanIndex));
+    
+    if (storeSamplesForAllChains) { 
+      for (int c = 0; c < states.length; c++)
+        states[c].getSampleWriter(allChainsSerializer).write(
+          Pair.of(sampleColumn, scanIndex),
+          Pair.of(Column.chain, c)
+        );
+    }
   }
   
   @SuppressWarnings("unchecked") 

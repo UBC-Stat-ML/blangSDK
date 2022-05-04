@@ -65,10 +65,13 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg                    @DefaultValue("Batch")
   public EssEstimator essEstimator = new Batch
   
+  @Arg  @DefaultValue("scale_colour_gradient(low = \"blue\", high = \"orange\")")
+  public String pathPlotArguments = "scale_colour_gradient(low = \"blue\", high = \"orange\")"
+  
   @Arg(description = "A directory containing means and variance estimates from a long run, used to improve ESS estimates; usually of the form /path/to/[longRunId].exec/summaries")
   public Optional<File> referenceSamples = Optional.empty 
   
-  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss, autocorrelationFunctions }
+  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss, autocorrelationFunctions, pathPlots }
   
   def File outputFolder(Output out) { return results.getFileInResultFolder(out.toString) }
   
@@ -98,6 +101,7 @@ class DefaultPostProcessor extends PostProcessor {
     // note comment that the workaround above breaks access to file so need something better clearly
     if (runPxviz) pxviz   
     
+    val allChainsSamplesFolder = new File(blangExecutionDirectory.get, Runner::SAMPLES_FOR_ALL_CHAINS)
     for (posteriorSamples : BriefFiles.ls(new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER))) 
       if (posteriorSamples.name.endsWith(".csv") || posteriorSamples.name.endsWith(".csv.gz")) {
         println("Post-processing " + variableName(posteriorSamples))
@@ -136,6 +140,14 @@ class DefaultPostProcessor extends PostProcessor {
               new DensityPlot(posteriorSamples, types, this),
               outputFolder(Output::posteriorPlots)
             )
+            if (allChainsSamplesFolder.exists) {
+              val samplesForAllChainsFile = new File(allChainsSamplesFolder, posteriorSamples.name)
+              if (samplesForAllChainsFile.exists)
+                createPlot(
+                  new PathPlot(samplesForAllChainsFile, types, this),
+                  outputFolder(Output::pathPlots)
+                )
+            }
           }
           if (isSpikeSlab(type)) {
             createPlot(
@@ -733,6 +745,28 @@ class DefaultPostProcessor extends PostProcessor {
              theme_bw() + 
              geom_segment(mapping = aes(xend = lag, yend = 0))
       '''
+    }
+  }
+  
+  static class PathPlot extends GgPlot {
+    new(File samples, Map<String, Class<?>> types, DefaultPostProcessor processor) {
+      super(samples, types, processor)
+    }
+    override ggCommand() {
+      return '''
+      «removeBurnIn»
+      
+      p <- ggplot(data, aes(x = «TidySerializer::VALUE», colour = «Column.chain», group = «Column.chain»)) +
+        geom_density() + «facetString»
+        theme_bw() + 
+        xlab("«variableName»") +
+        ylab("density") + 
+        «processor.pathPlotArguments» +
+        ggtitle("Density plot for: «variableName»")
+      '''
+    }
+    override facetVariables() {
+      indices(types) => [remove(Column.chain.toString)]
     }
   }
   
