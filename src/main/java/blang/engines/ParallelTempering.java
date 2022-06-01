@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import bayonet.distributions.Random;
+import blang.engines.internals.CovarAccumulator;
 import blang.engines.internals.LogSumAccumulator;
 import blang.engines.internals.ladders.EquallySpaced;
 import blang.engines.internals.ladders.TemperatureLadder;
@@ -44,6 +45,7 @@ public class ParallelTempering
   protected Random [] parallelRandomStreams;
   public SummaryStatistics [] energies, swapAcceptPrs;
   protected LogSumAccumulator [] logSumLikelihoodRatios; // used by Stepping stone marginalization
+  protected CovarAccumulator [] energyCovariances;
   protected int swapIndex = 0;
   protected boolean [] swapIndicators;
    
@@ -78,11 +80,14 @@ public class ParallelTempering
     {
       Random random = parallelRandomStreams[chainIndex];
       SampledModel current = states[chainIndex];
+      double before = -current.preAnnealedLogLikelihood();
       if (temperingParameters.get(chainIndex) == 0 && usePriorSamples)
         current.forwardSample(random, false);
       else
-        current.posteriorSamplingScan(random, nPasses); 
-      energies[chainIndex].addValue(-current.preAnnealedLogLikelihood());
+        current.posteriorSamplingScan(random, nPasses);
+      double after = -current.preAnnealedLogLikelihood();
+      energies[chainIndex].addValue(after);
+      energyCovariances[chainIndex].add(before, after);
     });
   }
   
@@ -194,6 +199,9 @@ public class ParallelTempering
     logSumLikelihoodRatios = new LogSumAccumulator[nChains - 1];
     for (int i = 0; i < nChains - 1; i++)
       logSumLikelihoodRatios[i] = new LogSumAccumulator(); 
+    energyCovariances = new CovarAccumulator[nChains];
+    for (int i = 0; i < nChains; i++)
+      energyCovariances[i] = new CovarAccumulator();
   }
   
   private SampledModel [] initStates(SampledModel prototype, int nChains)

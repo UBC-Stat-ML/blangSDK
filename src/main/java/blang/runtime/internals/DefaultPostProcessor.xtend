@@ -180,6 +180,13 @@ class DefaultPostProcessor extends PostProcessor {
       
     simplePlot(new File(outputFolder(Output::ess), SampleOutput::energy + ESS_SUFFIX), Column::chain, TidySerializer::VALUE)
     
+    plot(csvFile(monitoringFolder, MonitoringOutput::energyExplCorrelation.toString), '''
+      data <- data[data$isAdapt=="false",]
+      p <- ggplot(data, aes(x = «Column::beta», y = «TidySerializer::VALUE»)) +
+        geom_line() + 
+        theme_bw()
+    ''')
+    
     for (stat : #[MonitoringOutput::swapStatistics, MonitoringOutput::annealingParameters]) {
       val scale = if (stat == MonitoringOutput::annealingParameters) "scale_y_log10() + " else ""
       plot(csvFile(monitoringFolder, stat.toString), '''

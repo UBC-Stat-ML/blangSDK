@@ -391,6 +391,29 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       Pair.of(Column.average, swapStats.getMean())
     );
     
+    // cor of energy before and after
+    SummaryStatistics corrs = new SummaryStatistics();
+    for (int chain = 0; chain < nChains; chain++) {
+      double covar = energyCovariances[chain].sampleCovariance();
+      double var = energies[chain].getVariance();
+      double corr = covar / var;
+      double beta = temperingParameters.get(chain);
+      if (corr < -1) corr = -1;
+      if (corr > 1) corr = 1;
+      writer(MonitoringOutput.energyExplCorrelation).write(
+          roundReport,
+          Pair.of(Column.chain, chain),
+          Pair.of(Column.beta, beta),
+          Pair.of(Column.isAdapt, round.isAdapt),
+          Pair.of(TidySerializer.VALUE, corr)
+      );
+      corrs.addValue(corr);
+    }
+    writer(MonitoringOutput.energyExplCorrelationSummaries).printAndWrite(
+        roundReport,
+        Pair.of(Column.average, corrs.getMean()),
+        Pair.of(Column.highest, corrs.getMax()));
+    
     // round trip information
     results.flushAll(); // make sure first the indicators are written
     File swapIndicsFile = CSV.csvFile(results.getFileInResultFolder(Runner.MONITORING_FOLDER), MonitoringOutput.swapIndicators.toString());
@@ -494,7 +517,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   public static enum MonitoringOutput
   {
     swapIndicators, swapStatistics, annealingParameters, swapSummaries, logNormalizationConstantProgress, timeToFirstRestart,
-    globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, cumulativeLambda
+    globalLambda, actualTemperedRestarts, asymptoticRoundTripBound, nonAsymptoticRountTrip, roundTimings, lambdaInstantaneous, 
+    cumulativeLambda, energyExplCorrelation, energyExplCorrelationSummaries
   }
   
   public static enum SampleOutput
@@ -504,7 +528,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum Column
   {
-    chain, round, isAdapt, count, rate, lowest, average, beta, time, effectiveNScans
+    chain, round, isAdapt, count, rate, lowest, highest, average, beta, time, effectiveNScans
   }
   
   public static class Round
