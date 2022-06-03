@@ -71,7 +71,7 @@ class DefaultPostProcessor extends PostProcessor {
   @Arg(description = "A directory containing means and variance estimates from a long run, used to improve ESS estimates; usually of the form /path/to/[longRunId].exec/summaries")
   public Optional<File> referenceSamples = Optional.empty 
   
-  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, summaries, monitoringPlots, paths, allEss, autocorrelationFunctions, pathPlots }
+  static enum Output { ess, tracePlots, tracePlotsFull, posteriorPlots, posteriorECDFs, summaries, monitoringPlots, paths, allEss, autocorrelationFunctions, pathPlots }
   
   def File outputFolder(Output out) { return results.getFileInResultFolder(out.toString) }
   
@@ -119,6 +119,10 @@ class DefaultPostProcessor extends PostProcessor {
               new TracePlot(posteriorSamples, types, this, true),
               outputFolder(Output::tracePlots)
             )
+            createPlot(
+              ecdfPlot(posteriorSamples, types, this),
+              outputFolder(Output::posteriorECDFs)
+            )
             if (indices(types).empty) { // ACF only available for univariate qts for now
               createPlot(
                 new ACFPlot(posteriorSamples, types, this),
@@ -137,7 +141,7 @@ class DefaultPostProcessor extends PostProcessor {
           // statistics for reals only
           if (isRealValued(type)) {
             createPlot(
-              new DensityPlot(posteriorSamples, types, this),
+              densityPlot(posteriorSamples, types, this),
               outputFolder(Output::posteriorPlots)
             )
             if (allChainsSamplesFolder.exists) {
@@ -707,9 +711,19 @@ class DefaultPostProcessor extends PostProcessor {
     }
   }
   
+  def static densityPlot(File posteriorSamples, Map<String, Class<?>> types, DefaultPostProcessor processor) {
+    return new DensityPlot(posteriorSamples, types, processor, true)
+  }
+  
+  def static ecdfPlot(File posteriorSamples, Map<String, Class<?>> types, DefaultPostProcessor processor) {
+    return new DensityPlot(posteriorSamples, types, processor, false)
+  }
+  
   static class DensityPlot extends GgPlot {
-    new(File posteriorSamples, Map<String, Class<?>> types, DefaultPostProcessor processor) {
+    val boolean density
+    new(File posteriorSamples, Map<String, Class<?>> types, DefaultPostProcessor processor, boolean density) {
       super(posteriorSamples, types, processor)
+      this.density = density
     }
     override ggCommand() {
       return '''
@@ -720,7 +734,7 @@ class DefaultPostProcessor extends PostProcessor {
                  HDI.upper=hdi_upper(«TidySerializer::VALUE»))
       
       p <- ggplot(data, aes(x = «TidySerializer::VALUE»)) +
-        geom_density() + «facetString»
+        «IF density»geom_density«ELSE»stat_ecdf«ENDIF»() + «facetString»
         theme_bw() + 
         geom_segment(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, xend=HDI.upper, y=0, yend=0), col="red") + 
         geom_point(inherit.aes = FALSE, data = hdi_df, aes(x=HDI.lower, y=0), col="red") + 
