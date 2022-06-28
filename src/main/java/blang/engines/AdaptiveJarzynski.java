@@ -1,8 +1,10 @@
 package blang.engines;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 import bayonet.distributions.Random;
@@ -55,9 +57,19 @@ public class AdaptiveJarzynski
   @Arg(description = "Save log weights over iterations.")
                   @DefaultValue("false")
   public boolean recordWeights = false;
+  
+  @Arg(description = "Estimate not only Z_1 but also Z_beta for all annealing parameters beta visited.")
+                          @DefaultValue("false")
+  public boolean estimateFullZFunction = false;
+  
+  public int nResamplingRounds;
 
   protected SampledModel prototype;
   protected Random [] parallelRandomStreams;
+  
+  public List<Double> fullZFunction = null;        // entry i estimates Z_{beta_i}
+  public List<Double> energySDs = null;            // entry i estimates SD[ V_{beta_i} ]
+  public List<Double> annealingParameters = null;  // beta_i
   
   private boolean dropForwardSimulator; // e.g. do not want to drop them when initializing PT
   
@@ -81,6 +93,7 @@ public class AdaptiveJarzynski
       boolean dropForwardSimulator
       )
   {
+    nResamplingRounds = 0;
     this.dropForwardSimulator = dropForwardSimulator;
     if (initial.nParticles() != nParticles)
       throw new RuntimeException();
@@ -88,6 +101,11 @@ public class AdaptiveJarzynski
     this.parallelRandomStreams = parallelRandomStreams;
     
     ParticlePopulation<SampledModel> population = initial;
+    
+    if (estimateFullZFunction) {
+      fullZFunction.add(0.0);
+      annealingParameters.add(0.0);
+    }
     
     int iter = 0;
     double temperature = population.particles.get(0).getExponent();
@@ -97,12 +115,18 @@ public class AdaptiveJarzynski
       // TODO: slight optimization, probably not worth it: could know at this point if resampling is needed, 
       // and which particles will survive, so if a particle has no offspring no need to actually sample it.
       population = propose(parallelRandomStreams, population, temperature, nextTemperature);
+      if (estimateFullZFunction) {
+        fullZFunction.add(population.logNormEstimate());
+        annealingParameters.add(nextTemperature);
+        
+      }
       recordPropagationStatistics(iter, nextTemperature, population.getRelativeESS(), population.logNormEstimate());
       if (resamplingNeeded(population, nextTemperature))
       { 
         population = resample(random, population);
         recordResamplingStatistics(iter, nextTemperature, population.logNormEstimate());
         recordAncestry(iter, population.ancestors, temperature);
+        nResamplingRounds++;
       }
       temperature = nextTemperature;
       iter++;
@@ -145,13 +169,18 @@ public class AdaptiveJarzynski
     final boolean isInitial = currentPopulation == null;
     
     final double [] logWeights = new double[nParticles];
+    final double [] energies = estimateFullZFunction ? new double[nParticles] : null;
     final SampledModel [] particles = (SampledModel[]) new SampledModel[nParticles];
+    final double inverseNegativeIncrement = 1.0 / (temperature - nextTemperature);
     
     BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
     {
       Random random = randoms[particleIndex];
+      double incrementalLogWeight = isInitial ? 0.0 : currentPopulation.particles.get(particleIndex).logDensityRatio(temperature, nextTemperature);
+      if (estimateFullZFunction && !isInitial)
+        energies[particleIndex] = incrementalLogWeight * inverseNegativeIncrement;
       logWeights[particleIndex] = 
-        (isInitial ? 0.0 : currentPopulation.particles.get(particleIndex).logDensityRatio(temperature, nextTemperature) + Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
+        (isInitial ? 0.0 : incrementalLogWeight + Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
       // Note: order important since computation is done in place: weight computation should be done first
       SampledModel proposed = isInitial ?
           sampleInitial(random) :
@@ -161,6 +190,14 @@ public class AdaptiveJarzynski
 
     if (recordWeights)
       recordLogWeights(logWeights, nextTemperature);
+    
+    if (estimateFullZFunction && !isInitial)
+    {
+      SummaryStatistics stats = new SummaryStatistics();
+      for (double e : energies)
+        stats.addValue(e);
+      energySDs.add(stats.getStandardDeviation());
+    }
     
     return ParticlePopulation.buildDestructivelyFromLogWeights(
         logWeights, 
@@ -192,6 +229,10 @@ public class AdaptiveJarzynski
   
   public ParticlePopulation<SampledModel> initialize(SampledModel prototype, Random [] randoms)
   {
+    this.fullZFunction        = estimateFullZFunction ? new ArrayList<Double>() : null;
+    this.annealingParameters  = estimateFullZFunction ? new ArrayList<Double>() : null;
+    this.energySDs            = estimateFullZFunction ? new ArrayList<Double>() : null;
+    
     this.prototype = prototype;
     return propose(randoms, null, Double.NaN, Double.NaN);
   }

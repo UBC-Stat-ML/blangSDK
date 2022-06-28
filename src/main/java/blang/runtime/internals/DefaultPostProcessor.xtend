@@ -102,7 +102,8 @@ class DefaultPostProcessor extends PostProcessor {
     if (runPxviz) pxviz   
     
     val allChainsSamplesFolder = new File(blangExecutionDirectory.get, Runner::SAMPLES_FOR_ALL_CHAINS)
-    for (posteriorSamples : BriefFiles.ls(new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER))) 
+    val samplesFolder = new File(blangExecutionDirectory.get, Runner::SAMPLES_FOLDER)
+    if (samplesFolder.exists) for (posteriorSamples : BriefFiles.ls(samplesFolder)) 
       if (posteriorSamples.name.endsWith(".csv") || posteriorSamples.name.endsWith(".csv.gz")) {
         println("Post-processing " + variableName(posteriorSamples))
         val types = TidySerializer::types(posteriorSamples)
