@@ -44,7 +44,8 @@ public class AdaptiveJarzynski
   @Arg           @DefaultValue("Dynamic")
   public Cores nThreads = Cores.dynamic();
   
-  @Arg                       @DefaultValue("false")
+  @Arg(description = "If false, do only one move between annealing param change, otherwise do nPassesPerScan scans")
+                             @DefaultValue("false")
   public boolean usePosteriorSamplingScan = false;
 
   @Arg            @DefaultValue("3")
@@ -61,6 +62,10 @@ public class AdaptiveJarzynski
   @Arg(description = "Estimate not only Z_1 but also Z_beta for all annealing parameters beta visited.")
                           @DefaultValue("false")
   public boolean estimateFullZFunction = false;
+  
+  @Arg(description = "Perform nPassesPerScan scans after each resampling event.")
+                                    @DefaultValue("false")
+  public boolean resamplingTriggeredRejuvenation = false;
   
   public int nResamplingRounds;
 
@@ -146,6 +151,17 @@ public class AdaptiveJarzynski
   {
     population = population.resample(random, resamplingScheme);
     deepCopyParticles(population);
+    final ParticlePopulation<SampledModel> result = population;
+    
+    if (resamplingTriggeredRejuvenation) {
+      BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
+      {
+        Random rand = parallelRandomStreams[particleIndex];
+        for (int i = 0; i < nPassesPerScan; i++)
+          result.particles.get(particleIndex).posteriorSamplingScan(rand);
+      });
+    }
+    
     return population;
   }
 
@@ -177,8 +193,9 @@ public class AdaptiveJarzynski
     {
       Random random = randoms[particleIndex];
       double incrementalLogWeight = isInitial ? 0.0 : currentPopulation.particles.get(particleIndex).logDensityRatio(temperature, nextTemperature);
-      if (estimateFullZFunction && !isInitial)
+      if (estimateFullZFunction && !isInitial) {
         energies[particleIndex] = incrementalLogWeight * inverseNegativeIncrement;
+      }
       logWeights[particleIndex] = 
         (isInitial ? 0.0 : incrementalLogWeight + Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
       // Note: order important since computation is done in place: weight computation should be done first
@@ -196,7 +213,10 @@ public class AdaptiveJarzynski
       SummaryStatistics stats = new SummaryStatistics();
       for (double e : energies)
         stats.addValue(e);
-      energySDs.add(stats.getStandardDeviation());
+      if (!Double.isFinite(stats.getStandardDeviation()))
+        energySDs.add(robustSD(energies, stats)); // work around needed by e.g. ode.MRNATransfection in blangDemo b/c of extreme but finite values in the energy
+      else
+        energySDs.add(stats.getStandardDeviation());
     }
     
     return ParticlePopulation.buildDestructivelyFromLogWeights(
@@ -204,6 +224,17 @@ public class AdaptiveJarzynski
         Arrays.asList(particles),
         null,
         isInitial ? 0.0 : currentPopulation.logScaling);
+  }
+  
+  private static double robustSD(double [] numbers, SummaryStatistics stats) 
+  {
+    double m = stats.getMean();
+    double spread = Math.max(stats.getMax() - m, m - stats.getMin());
+    SummaryStatistics transf = new SummaryStatistics();
+    for (double n : numbers) {
+      transf.addValue((n - m)/spread);
+    }
+    return transf.getStandardDeviation() * spread;
   }
   
   private SampledModel sampleInitial(Random random)
