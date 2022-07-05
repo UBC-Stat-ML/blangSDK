@@ -11,13 +11,43 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 
 import bayonet.distributions.Multinomial;
+import bayonet.math.NumericalUtils;
 import bayonet.smc.ParticlePopulation;
 import blang.engines.internals.Spline.MonotoneCubicSpline;
 import blang.runtime.SampledModel;
 
 public class EngineStaticUtils
 {
-  public static double relativeESS(ParticlePopulation<SampledModel> population, double temperature, double nextTemperature, boolean conditional)
+  public static double relativeESS(ParticlePopulation<SampledModel> population, double temperature, double nextTemperature, boolean conditional) {
+    if (conditional) 
+      return relativeCESS(population, temperature, nextTemperature);
+    else
+      return _relativeESS(population, temperature, nextTemperature, false);
+  }
+  
+  public static double relativeCESS(ParticlePopulation<SampledModel> population, double temperature, double nextTemperature) {
+    double [] logDensityRatios = logDensityRatios(population, temperature, nextTemperature);
+    double logNum = 2.0 * previousPopulationLogExpectation(population, logDensityRatios, false);
+    double logDenom = previousPopulationLogExpectation(population, logDensityRatios, true);
+    return Math.exp(logNum - logDenom);
+  }
+  
+  private static double[] logDensityRatios(ParticlePopulation<SampledModel> population, double temperature, double nextTemperature) {
+    double [] result = new double[population.nParticles()];
+    for (int i = 0; i < population.nParticles(); i++)
+      result[i] = population.particles.get(i).logDensityRatio(temperature, nextTemperature);
+    return result;
+  }
+
+  private static double previousPopulationLogExpectation(ParticlePopulation<SampledModel> population, double [] logDensityRatios, boolean squared) {
+    double result = Double.NEGATIVE_INFINITY;
+    for (int i = 0; i < population.nParticles(); i++)
+      result = NumericalUtils.logAdd(result, Math.log(population.getNormalizedWeight(i)) + (squared ? 2.0 : 1.0) * logDensityRatios[i]);
+    return result;
+  }
+  
+  // TODO: rewrite more numerically stable version
+  public static double _relativeESS(ParticlePopulation<SampledModel> population, double temperature, double nextTemperature, boolean conditional)
   {
     double [] incrementalWeights = incrementalWeights(population, temperature, nextTemperature);
     double 

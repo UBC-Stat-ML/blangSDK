@@ -10,6 +10,7 @@ import org.eclipse.xtext.xbase.lib.Pair;
 import bayonet.distributions.Random;
 import bayonet.smc.ParticlePopulation;
 import bayonet.smc.ResamplingScheme;
+import blang.engines.internals.EngineStaticUtils;
 import blang.engines.internals.schedules.AdaptiveTemperatureSchedule;
 import blang.engines.internals.schedules.TemperatureSchedule;
 import blang.inits.Arg;
@@ -68,9 +69,10 @@ public class AdaptiveJarzynski
   protected SampledModel prototype;
   protected Random [] parallelRandomStreams;
   
-  public List<Double> fullZFunction = null;        // entry i estimates Z_{beta_i}
-  public List<Double> incrementalLogWeightSDs = null;            // entry i estimates SD[incr log W] = SD[ (beta_{i+1} - beta_i) V_{beta_i} ]
-  public List<Double> annealingParameters = null;  // beta_i
+  public List<Double> fullZFunction = null;           // entry i estimates Z_{beta_i} (Z_0 = 0)
+  public List<Double> relativeConditonalESSs = null;  // estimate of rCESS(beta_i, beta
+  public List<Double> incrementalLogWeightSDs = null; // entry i estimates SD[incr log W] = SD[ (beta_{i+1} - beta_i) V_{beta_i} ]
+  public List<Double> annealingParameters = null;     // beta_i (beta_0 = 0)
   
   private boolean dropForwardSimulator; // e.g. do not want to drop them when initializing PT
   
@@ -113,6 +115,8 @@ public class AdaptiveJarzynski
     while (temperature < maxAnnealingParameter)
     {
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature, maxAnnealingParameter); 
+      if (estimateISCMStatistics)
+        relativeConditonalESSs.add(EngineStaticUtils.relativeESS(population, temperature, nextTemperature, true));
       if (resamplingNeeded(population, nextTemperature))
       { 
         population = resample(random, population);
@@ -230,6 +234,7 @@ public class AdaptiveJarzynski
   
   public ParticlePopulation<SampledModel> initialize(SampledModel prototype, Random [] randoms)
   {
+    this.relativeConditonalESSs  = estimateISCMStatistics ? new ArrayList<Double>() : null;
     this.fullZFunction           = estimateISCMStatistics ? new ArrayList<Double>() : null;
     this.annealingParameters     = estimateISCMStatistics ? new ArrayList<Double>() : null;
     this.incrementalLogWeightSDs = estimateISCMStatistics ? new ArrayList<Double>() : null;
