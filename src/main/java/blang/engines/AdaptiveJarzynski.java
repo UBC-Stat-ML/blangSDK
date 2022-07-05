@@ -63,10 +63,6 @@ public class AdaptiveJarzynski
                           @DefaultValue("false")
   public boolean estimateISCMStatistics = false;
   
-  @Arg(description = "Perform nPassesPerScan scans after each resampling event.")
-                                    @DefaultValue("false")
-  public boolean resamplingTriggeredRejuvenation = false;
-  
   public int nResamplingRounds;
 
   protected SampledModel prototype;
@@ -117,14 +113,6 @@ public class AdaptiveJarzynski
     while (temperature < maxAnnealingParameter)
     {
       double nextTemperature = temperatureSchedule.nextTemperature(population, temperature, maxAnnealingParameter); 
-      // TODO: slight optimization, probably not worth it: could know at this point if resampling is needed, 
-      // and which particles will survive, so if a particle has no offspring no need to actually sample it.
-      population = propose(parallelRandomStreams, population, temperature, nextTemperature);
-      if (estimateISCMStatistics) {
-        fullZFunction.add(population.logNormEstimate());
-        annealingParameters.add(nextTemperature);
-      }
-      recordPropagationStatistics(iter, nextTemperature, population.getRelativeESS(), population.logNormEstimate());
       if (resamplingNeeded(population, nextTemperature))
       { 
         population = resample(random, population);
@@ -132,6 +120,12 @@ public class AdaptiveJarzynski
         recordAncestry(iter, population.ancestors, temperature);
         nResamplingRounds++;
       }
+      population = propose(parallelRandomStreams, population, temperature, nextTemperature);
+      if (estimateISCMStatistics) {
+        fullZFunction.add(population.logNormEstimate());
+        annealingParameters.add(nextTemperature);
+      }
+      recordPropagationStatistics(iter, nextTemperature, population.getRelativeESS(), population.logNormEstimate());
       temperature = nextTemperature;
       iter++;
     }
@@ -141,8 +135,10 @@ public class AdaptiveJarzynski
   private boolean resamplingNeeded(ParticlePopulation<SampledModel> population, double nextTemperature) 
   {
     for (int i = 0; i < population.nParticles(); i++)
-      if (population.getNormalizedWeight(i) == 0.0)
+      if (population.getNormalizedWeight(i) == 0.0) {
+        System.out.println("At least one particle had zero weight... resampling triggered");
         return true;
+      }
     return population.getRelativeESS() < resamplingESSThreshold && nextTemperature < maxAnnealingParameter;
   }
 
@@ -150,17 +146,6 @@ public class AdaptiveJarzynski
   {
     population = population.resample(random, resamplingScheme);
     deepCopyParticles(population);
-    final ParticlePopulation<SampledModel> result = population;
-    
-    if (resamplingTriggeredRejuvenation) {
-      BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex ->
-      {
-        Random rand = parallelRandomStreams[particleIndex];
-        for (int i = 0; i < nPassesPerScan; i++)
-          result.particles.get(particleIndex).posteriorSamplingScan(rand);
-      });
-    }
-    
     return population;
   }
 
