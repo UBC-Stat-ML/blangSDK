@@ -120,7 +120,7 @@ public class EngineStaticUtils
   {
     double Lambda = cumulativeLambda.value(1.0);
     List<Double> result = new ArrayList<>();
-    PegasusSolver solver = new PegasusSolver(1e-10);
+    PegasusSolver solver = new PegasusSolver(1e-16);
     double leftBound = 0.0;
     for (int i = 0; i < nGrids - 1; i++) 
     {
