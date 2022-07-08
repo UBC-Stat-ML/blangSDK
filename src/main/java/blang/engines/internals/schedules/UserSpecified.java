@@ -30,6 +30,8 @@ public class UserSpecified implements TemperatureSchedule
     next = new HashMap<>();
     for (int i = 0; i < annealingParameters.size() - 1; i++) 
       next.put(annealingParameters.get(i), annealingParameters.get(i + 1));
+    if (next.size() != annealingParameters.size() - 1)
+      throw new RuntimeException();
   }
 
   @Override
