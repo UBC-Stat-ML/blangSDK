@@ -210,9 +210,15 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public void reportRoundTiming(Round round, long time) 
   {
+    int nExplorationStepsPerChain = round.nScans * (int) Math.floor(nPassesPerScan * states[0].nPosteriorSamplers());
+    int nExplorationSteps = nExplorationStepsPerChain * nChains();
+    
     writer(MonitoringOutput.roundTimings).write(
       Pair.of(Column.round, round.roundIndex),
       Pair.of(Column.isAdapt, round.isAdapt),
+      Pair.of(Column.nScans, nScans),
+      Pair.of(Column.nExplorationStepsPerChain, nExplorationStepsPerChain),
+      Pair.of(Column.nExplorationSteps, nExplorationSteps),
       Pair.of(TidySerializer.VALUE, time)
     );
     if (!round.isAdapt) {
@@ -528,7 +534,7 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
   
   public static enum Column
   {
-    chain, round, isAdapt, count, rate, lowest, highest, average, beta, time, effectiveNScans
+    chain, round, isAdapt, count, rate, lowest, highest, average, beta, time, effectiveNScans, nScans, nExplorationStepsPerChain, nExplorationSteps
   }
   
   public static class Round
