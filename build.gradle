@@ -124,7 +124,7 @@ uploadArchives {
     mavenDeployer {
       repository(url: "file:///${System.properties['user.home']}/artifacts/")
       snapshotRepository(url: "file:///${System.properties['user.home']}/artifacts/")
-      pom.version = "2.17.0" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
+      pom.version = "2.17.1" /* blang-standalone-compiler-directive - do not edit : EXTRACT_VERSION */
       pom.artifactId = "blangSDK"
       pom.groupId = "com.github.UBC-Stat-ML"
     }

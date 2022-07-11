@@ -95,7 +95,23 @@ public class EngineStaticUtils
    * @param annealingParameters length N + 1
    * @param acceptanceProbabilities length N, entry i is accept b/w chain i-1 and i
    */
-  public static MonotoneCubicSpline estimateCumulativeLambda(List<Double> annealingParameters, List<Double> acceptanceProbabilities)
+  public static MonotoneCubicSpline estimateCumulativeLambda(
+      List<Double> annealingParameters, 
+      List<Double> acceptanceProbabilities) {
+    return estimateCumulativeFunctions(annealingParameters, acceptanceProbabilities, false);
+  }
+  
+  public static MonotoneCubicSpline estimateScheduleGenerator(
+      List<Double> annealingParameters, 
+      List<Double> acceptanceProbabilities) {
+    return estimateCumulativeFunctions(annealingParameters, acceptanceProbabilities, true);
+  }
+  
+  
+  public static MonotoneCubicSpline estimateCumulativeFunctions(
+      List<Double> annealingParameters, 
+      List<Double> acceptanceProbabilities, 
+      boolean returnScheduleGenerator)
   {
     if (annealingParameters.size() != acceptanceProbabilities.size() + 1)
       throw new RuntimeException();
@@ -107,11 +123,29 @@ public class EngineStaticUtils
         
     double [] xs = Doubles.toArray(annealingParameters);
     double [] ys = cumulativeLambda(acceptanceProbabilities);
-    return (MonotoneCubicSpline) Spline.createMonotoneCubicSpline(xs, ys);
+    if (returnScheduleGenerator) {
+      double norm = ys[ys.length - 1];
+      for (int i = 0; i < ys.length; i++)
+        ys[i] /= norm;
+    }
+    return (MonotoneCubicSpline) Spline.createMonotoneCubicSpline(returnScheduleGenerator ? ys : xs, returnScheduleGenerator ? xs : ys);
+  }
+  
+  public static List<Double> fixedSizeOptimalPartitionFromScheduleGenerator(UnivariateFunction scheduleGenerator, int nGrids) 
+  {
+    List<Double> result = new ArrayList<>();
+    result.add(0.0);
+    for (int i = 1; i < nGrids - 1; i++) {
+      double u = i / (nGrids - 1.0); 
+      double projected = scheduleGenerator.value(u);
+      result.add(projected);
+    }
+    result.add(1.0);
+    return result;
   }
   
   /**
-   * 
+   * @deprecated
    * @param annealingParameters 
    * @param nGrids number of grids in output partition (including both end points)
    * @return list of size nGrids with optimized partition, sorted in increasing order
