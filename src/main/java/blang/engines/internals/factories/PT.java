@@ -150,7 +150,8 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
     Collections.reverse(annealingParameters);
     List<Double> acceptanceProbabilities = Arrays.stream(swapAcceptPrs).map(stat -> {double result = stat.getMean(); if (result == 1.0) return 0.99999; if (Double.isFinite(result)) return result; else return 0.0;}).collect(Collectors.toList());
     Collections.reverse(acceptanceProbabilities);
-    MonotoneCubicSpline cumulativeLambdaEstimate = EngineStaticUtils.estimateCumulativeLambda(annealingParameters, acceptanceProbabilities);
+    List<Double> intensities = EngineStaticUtils.acceptProbabilitiesToIntensities(acceptanceProbabilities);
+    MonotoneCubicSpline cumulativeLambdaEstimate = EngineStaticUtils.estimateCumulativeLambdaFromIntensities(annealingParameters, intensities);
     if (targetAccept.isPresent() && finalAdapt)
     {
       List<Double> newPartition = EngineStaticUtils.targetAcceptancePartition(cumulativeLambdaEstimate, targetAccept.get());
@@ -159,14 +160,13 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
       initialize(states[0], random);
       setAnnealingParameters(newPartition);
     }
-    else
-      setAnnealingParameters(fixedSizeOptimalPartition(cumulativeLambdaEstimate, annealingParameters.size()));
+    else 
+    {
+      MonotoneCubicSpline scheduleGenerator = EngineStaticUtils.estimateScheduleGeneratorFromIntensities(annealingParameters, intensities);
+      List<Double> updated = EngineStaticUtils.fixedSizeOptimalPartitionFromScheduleGenerator(scheduleGenerator, annealingParameters.size()); 
+      setAnnealingParameters(updated);
+    }
     return cumulativeLambdaEstimate;
-  }
-  
-  protected List<Double> fixedSizeOptimalPartition(MonotoneCubicSpline cumulativeLambdaEstimate, int size) 
-  {
-    return EngineStaticUtils.fixedSizeOptimalPartition(cumulativeLambdaEstimate, size);
   }
   
   public void reportAcceptanceRatios(Round round) 

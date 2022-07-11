@@ -139,9 +139,9 @@ class TestEndToEnd {
   @Test
   def void testNormalizationEstimates() {
     val engines = {#[
-      #["--engine.logNormalizationEstimator", "steppingStone",            " --engine.nScans", "2_000"],
-      #["--engine.logNormalizationEstimator", "thermodynamicIntegration", " --engine.nScans", "2_000"],
-      #["--engine", "SCM",                                            " --engine.nParticles", "2_000"]
+      #["--engine.logNormalizationEstimator", "steppingStone",            " --engine.nScans", "4_000"],
+      #["--engine.logNormalizationEstimator", "thermodynamicIntegration", " --engine.nScans", "4_000"],
+      #["--engine", "SCM",                                            " --engine.nParticles", "4_000"]
     ]}
     val estimates = newArrayOfSize(engines.size)
     var int i = 0;
