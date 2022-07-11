@@ -135,7 +135,7 @@ public class EngineStaticUtils
     if (!Ordering.natural().isOrdered(annealingParameters))
       throw new RuntimeException();
     
-    if (returnScheduleGenerator && intensities.contains(0.0)) 
+    if (returnScheduleGenerator && (intensities.contains(0.0) || intensities.contains(-0.0)))
     {
       // The spline estimator does not work when x axis support 
       // points are equal, i.e. when computing a schedule 
@@ -190,7 +190,7 @@ public class EngineStaticUtils
   {
     cleanedAnnealingParameters.add(0.0);
     for (int i = 0; i < intensities.size(); i++) 
-      if (intensities.get(i) != 0.0 || i == intensities.size() - 1) {
+      if ((intensities.get(i) != 0.0 && intensities.get(i) != -0.0) || i == intensities.size() - 1) {
         cleanedIntensities.add(intensities.get(i));
         cleanedAnnealingParameters.add(annealingParameters.get(i + 1));
     }
