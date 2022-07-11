@@ -48,10 +48,10 @@ public class UserSpecified implements TemperatureLadder
     int swapSize = sortedAnnealingParameters.size() - 1;
     List<Double> uniform = new ArrayList<Double>(swapSize);
     for (int i = 0; i < swapSize; i++)
-      uniform.add(0.1);
+      uniform.add(0.5);
     Collections.reverse(sortedAnnealingParameters);
-    MonotoneCubicSpline spline = EngineStaticUtils.estimateCumulativeLambda(sortedAnnealingParameters, uniform);
-    return EngineStaticUtils.fixedSizeOptimalPartition(spline, nChains);
+    MonotoneCubicSpline generator = EngineStaticUtils.estimateScheduleGeneratorFromIntensities(sortedAnnealingParameters, uniform);
+    return EngineStaticUtils.fixedSizeOptimalPartitionFromScheduleGenerator(generator, nChains);
   }
 
   private List<Double> sorted() 
