@@ -135,25 +135,37 @@ public class EngineStaticUtils
     if (!Ordering.natural().isOrdered(annealingParameters))
       throw new RuntimeException();
     
-    if (returnScheduleGenerator && (intensities.contains(0.0) || intensities.contains(-0.0)))
+    // switch to padded cumulative intensities
+    List<Double> cumulativeIntensities = new ArrayList<Double>();
+    cumulativeIntensities.add(0.0);
+    for (int i = 0; i < intensities.size(); i++) {
+      cumulativeIntensities.add(cumulativeIntensities.get(i-1) + intensities.get(i));
+    }
+    intensities = null;
+    
+    if (returnScheduleGenerator) {
+      double norm = cumulativeIntensities.get(cumulativeIntensities.size()-1);
+      for (int i = 0; i < cumulativeIntensities.size(); i++)
+        cumulativeIntensities.set(i, cumulativeIntensities.get(i) / norm);
+    }
+    
+    if (returnScheduleGenerator)
     {
       // The spline estimator does not work when x axis support 
-      // points are equal, i.e. when computing a schedule 
+      // points are equal 
+      // i.e. when computing a schedule 
       // generator and some intensities are zero
+      // This can also arise due to numerical round offs
       List<Double> cleanedAnnealingParameters = new ArrayList<>();
-      List<Double> cleanedIntensities = new ArrayList<>();
-      skipZeroIntensities(annealingParameters, intensities, cleanedAnnealingParameters, cleanedIntensities);
+      List<Double> cleanedCumulativeIntensities = new ArrayList<>();
+      skipZeroIntensities(annealingParameters, cumulativeIntensities, cleanedAnnealingParameters, cleanedCumulativeIntensities);
       annealingParameters = cleanedAnnealingParameters;
-      intensities = cleanedIntensities;
+      cumulativeIntensities = cleanedCumulativeIntensities;
     }
         
     double [] xs = Doubles.toArray(annealingParameters);
-    double [] ys = paddedCumulative(intensities);
-    if (returnScheduleGenerator) {
-      double norm = ys[ys.length - 1];
-      for (int i = 0; i < ys.length; i++)
-        ys[i] /= norm;
-    }
+    double [] ys = Doubles.toArray(cumulativeIntensities);
+    
     return (MonotoneCubicSpline) Spline.createMonotoneCubicSpline(returnScheduleGenerator ? ys : xs, returnScheduleGenerator ? xs : ys);
   }
   

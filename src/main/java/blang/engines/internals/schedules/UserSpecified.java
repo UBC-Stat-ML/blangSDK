@@ -26,7 +26,7 @@ public class UserSpecified implements TemperatureSchedule
     annealingParameters = new ArrayList<>(annealingParameters);
     Collections.sort(annealingParameters);
     if (annealingParameters.get(0) != 0.0 || annealingParameters.get(annealingParameters.size()-1) != 1.0)
-      throw new RuntimeException();
+      throw new RuntimeException("Bad schedule: " + annealingParameters);
     next = new HashMap<>();
     for (int i = 0; i < annealingParameters.size() - 1; i++) 
       next.put(annealingParameters.get(i), annealingParameters.get(i + 1));
