@@ -51,11 +51,31 @@ public class TestLadders
         userSpecified2(true), 
         fromEarlier());
 
-
+    List<Double> expected = Arrays.asList(1.0);
     for (TemperatureLadder ladder : ladders)
     {
-      Assert.assertEquals(ladder.temperingParameters(1).size(), 1);
-      System.out.println(ladder.temperingParameters(1));
+      List<Double> schedule = ladder.temperingParameters(1);
+      Assert.assertEquals(ladder.getClass().toString(), expected, schedule);
+    }
+    
+  }
+  
+  @Test
+  public void testTwoChains() 
+  {
+    List<TemperatureLadder> ladders = Arrays.asList(
+        new EquallySpaced(), 
+        new Geometric(), 
+        new Polynomial(), 
+        // userSpecified(),  // this one by design will not work with two chain
+        userSpecified2(true), 
+        fromEarlier());
+
+    List<Double> expected = Arrays.asList(1.0, 0.0); 
+    for (TemperatureLadder ladder : ladders)
+    {
+      List<Double> schedule = ladder.temperingParameters(2);
+      Assert.assertEquals(ladder.getClass().toString(), expected, schedule);
     }
     
   }

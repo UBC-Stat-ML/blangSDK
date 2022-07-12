@@ -42,6 +42,12 @@ public class UserSpecified implements TemperatureLadder
   
   public List<Double> splineGeneralization(int nChains)
   {
+    if (nChains == 1) 
+    {
+      List<Double> result = new ArrayList<Double>();
+      result.add(1.0);
+      return result;
+    }
     List<Double> sortedAnnealingParameters = sorted();
     if (!sortedAnnealingParameters.get(sortedAnnealingParameters.size() - 1).equals(0.0))
       throw new RuntimeException();
@@ -51,7 +57,10 @@ public class UserSpecified implements TemperatureLadder
       uniform.add(0.5);
     Collections.reverse(sortedAnnealingParameters);
     MonotoneCubicSpline generator = EngineStaticUtils.estimateScheduleGeneratorFromIntensities(sortedAnnealingParameters, uniform);
-    return EngineStaticUtils.fixedSizeOptimalPartitionFromScheduleGenerator(generator, nChains);
+    List<Double> result = EngineStaticUtils.fixedSizeOptimalPartitionFromScheduleGenerator(generator, nChains);
+    Collections.sort(result);
+    Collections.reverse(result);
+    return result;
   }
 
   private List<Double> sorted() 
