@@ -32,6 +32,10 @@ public abstract class MHSampler implements Sampler
           throw new RuntimeException("Use setProposalLogRatio(..) before calling sampleAcceptance()");
         final double logAfter = logDensity();
         final double ratio = Math.exp(proposalLogRatio + logAfter - logBefore);
+        if (Double.isNaN(ratio)) {
+          System.err.println("NaN MH ratio: " + proposalLogRatio + " " +  logAfter  + " " + logBefore);
+          return false;
+        }
         return Generators.bernoulli(random, Math.min(1.0, ratio));
       }
     };
