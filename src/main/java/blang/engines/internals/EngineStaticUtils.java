@@ -1,7 +1,6 @@
 package blang.engines.internals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -85,11 +84,11 @@ public class EngineStaticUtils
   
   // pad with zero on the left, then cumsum; return as array 
   // to work with the spline function
-  private static double[] paddedCumulative(List<Double> x) 
+  private static double[] paddedCumulative(List<Double> x, double nudge) 
   {
     double [] result = new double[x.size() + 1];
     for (int i = 1 /* i = 0 set to zero */; i < result.length; i++)
-      result[i] = result[i-1] + (x.get(i-1));
+      result[i] = result[i-1] + x.get(i-1) + nudge;
     return result;
   }
   
@@ -113,19 +112,20 @@ public class EngineStaticUtils
   public static MonotoneCubicSpline estimateCumulativeLambdaFromIntensities(
       List<Double> annealingParameters, 
       List<Double> intensities) {
-    return estimateCumulativeFunctionsFromIntensities(annealingParameters, intensities, false);
+    return estimateCumulativeFunctionsFromIntensities(annealingParameters, intensities, false, 0.0);
   }
   
   public static MonotoneCubicSpline estimateScheduleGeneratorFromIntensities(
       List<Double> annealingParameters, 
       List<Double> intensities) {
-    return estimateCumulativeFunctionsFromIntensities(annealingParameters, intensities, true);
+    return estimateCumulativeFunctionsFromIntensities(annealingParameters, intensities, true, 0.0);
   }  
   
   public static MonotoneCubicSpline estimateCumulativeFunctionsFromIntensities(
       List<Double> annealingParameters, 
       List<Double> intensities, 
-      boolean returnScheduleGenerator)
+      boolean returnScheduleGenerator, 
+      double nudge)
   {
     if (annealingParameters.size() != intensities.size() + 1)
       throw new RuntimeException();
@@ -134,70 +134,24 @@ public class EngineStaticUtils
          throw new RuntimeException("Intensities should be non-neg reals: " + intensities);
     if (!Ordering.natural().isOrdered(annealingParameters))
       throw new RuntimeException();
-    
-    if (returnScheduleGenerator && (intensities.contains(0.0) || intensities.contains(-0.0)))
-    {
-      // The spline estimator does not work when x axis support 
-      // points are equal, i.e. when computing a schedule 
-      // generator and some intensities are zero
-      List<Double> cleanedAnnealingParameters = new ArrayList<>();
-      List<Double> cleanedIntensities = new ArrayList<>();
-      skipZeroIntensities(annealingParameters, intensities, cleanedAnnealingParameters, cleanedIntensities);
-      annealingParameters = cleanedAnnealingParameters;
-      intensities = cleanedIntensities;
-    }
         
     double [] xs = Doubles.toArray(annealingParameters);
-    double [] ys = paddedCumulative(intensities);
+    double [] ys = paddedCumulative(intensities, nudge);
     if (returnScheduleGenerator) {
       double norm = ys[ys.length - 1];
-      for (int i = 0; i < ys.length; i++)
+      for (int i = 0; i < ys.length; i++) {
         ys[i] /= norm;
+        if (i > 0 && ys[i] == ys[i-1]) {
+          // The MonotoneCubicSpline code does not handle support point with same 
+          // x location. So when we detect a zero normalized intensity grid point, 
+          // we instead add a small epsilon to each intensity
+          if (nudge > 0) throw new RuntimeException();
+          System.out.print("Zero intensities encountered: adding a slight nudge"); 
+          return estimateCumulativeFunctionsFromIntensities(annealingParameters, intensities, returnScheduleGenerator, 1e-6);
+        }
+      }
     }
     return (MonotoneCubicSpline) Spline.createMonotoneCubicSpline(returnScheduleGenerator ? ys : xs, returnScheduleGenerator ? xs : ys);
-  }
-  
-  /**
-   * Removes zero intensity intervals, shifting both
-   * parameters and other intensities appropriately.
-   * 
-   * Example:
-   * 
-   * 0.0 0.5 1.0  <- params
-   * 0.0 0.2      <- intensities
-   * 
-   * |  remove if intensity is zero and i != 0
-   * V
-   * 
-   * 0.0 1.0
-   * 0.2
-   * 
-   * Special treatment for:
-   * 
-   * 0.0 1.0  <- params
-   * 0.0      <- intensities
-   * 
-   * |  return something that will give uniform schedule
-   * V
-   * 
-   * 0.0 1.0
-   * 0.5
-   * 
-   */
-  private static void skipZeroIntensities(
-      List<Double> annealingParameters, List<Double> intensities,
-      List<Double> cleanedAnnealingParameters, List<Double> cleanedIntensities)
-  {
-    cleanedAnnealingParameters.add(0.0);
-    for (int i = 0; i < intensities.size(); i++) 
-      if ((intensities.get(i) != 0.0 && intensities.get(i) != -0.0) || i == intensities.size() - 1) {
-        cleanedIntensities.add(intensities.get(i));
-        cleanedAnnealingParameters.add(annealingParameters.get(i + 1));
-    }
-    // Special treatment if intensity is exactly zero:
-    //  -> this will return the uniform schedule
-    if (cleanedAnnealingParameters.size() == 2 && cleanedIntensities.get(0) == 0.0)
-      cleanedIntensities.set(0, 0.5);
   }
 
   public static List<Double> fixedSizeOptimalPartitionFromScheduleGenerator(UnivariateFunction scheduleGenerator, int nGrids) 
