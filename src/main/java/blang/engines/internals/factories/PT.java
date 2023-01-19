@@ -137,8 +137,9 @@ public class PT extends ParallelTempering implements PosteriorInferenceEngine
             Pair.of(Column.chain, i));
       }
     }
-    densitySerializer.serialize(getTargetState().logDensity(), SampleOutput.logDensity.toString(), 
-      Pair.of(sampleColumn, iter));
+    if (statisticRecordedMaxChainIndex >= 0)
+      densitySerializer.serialize(getTargetState().logDensity(), SampleOutput.logDensity.toString(), 
+        Pair.of(sampleColumn, iter));
   }
   
   /**
