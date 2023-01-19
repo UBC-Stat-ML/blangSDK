@@ -1,0 +1,20 @@
+package blang.validation.internals.fixtures
+
+model LinRegression {
+  param GlobalDataSource data
+  param Plate<Integer> observationPlate
+  param Plated<RealVar> x
+  
+  random RealVar alpha, beta, sigma
+  random Plated<RealVar> y
+  
+  laws {
+    alpha ~ Normal(0, 25)
+    beta ~ Normal(0, 25)
+    sigma ~ ContinuousUniform(0, 10)
+    for (Index<Integer> i : observationPlate.indices) {
+      y.get(i) | beta, alpha, sigma, RealVar x_i = x.get(i) 
+        ~ Normal(beta * x_i + alpha, sigma * sigma)
+    }
+  }
+}
