@@ -3,6 +3,8 @@ Summary [![Build Status](https://travis-ci.org/UBC-Stat-ML/blangSDK.png?branch=m
 
 **Prospective/current users**: please vist the [project web page](https://www.stat.ubc.ca/~bouchard/blang/index.html) for more information as well as our [JSS paper](https://www.jstatsoft.org/article/view/v103i11).
 
+**New feature:** Blang can now run on 1000s of machines using MPI via [the Pigeons-Blang bridge](https://julia-tempering.github.io/Pigeons.jl/dev/reference/#Pigeons.BlangTarget)
+
 **Blang developers**: in addition to the above resources, see also the [documentation repository](https://github.com/UBC-Stat-ML/blangDoc) for more information.
 
 This is one of the repositories hosting Blang's code. This one contains the Blang's SDK (Software Development Kit), including:
