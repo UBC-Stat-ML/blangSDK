@@ -1,4 +1,4 @@
-Summary [![Build Status](https://travis-ci.org/UBC-Stat-ML/blangSDK.png?branch=master)](https://travis-ci.org/UBC-Stat-ML/blangSDK) 
+Summary  
 -------
 
 **Prospective/current users**: please vist the [project web page](https://www.stat.ubc.ca/~bouchard/blang/index.html) for more information as well as our [JSS paper](https://www.jstatsoft.org/article/view/v103i11).
