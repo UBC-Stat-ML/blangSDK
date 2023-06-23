@@ -253,6 +253,8 @@ public class SampledModel
       posteriorSamplingStep(random); 
   }
   
+  private double cumulativeNScans = 0.0;
+  static double recomputeCacheAfterNScans = 10.0;
   public void posteriorSamplingStep(Random random)
   {
     if (posteriorInvariantSamplers.isEmpty()) 
@@ -269,6 +271,14 @@ public class SampledModel
     }
     int samplerIndex = currentSamplingOrder.get(currentPosition--);
     posteriorSamplingStep(random, samplerIndex);
+    
+    // to avoid numerical issues encountered in blangDemos/MRNATransfection infered using SSCM, 
+    // recompute from scratch once in a while the caches
+    cumulativeNScans += 1.0 / posteriorInvariantSamplers.size();
+    if (cumulativeNScans > recomputeCacheAfterNScans) {
+      updateAll();
+      cumulativeNScans = 0.0;
+    }
   }
   
   public void forwardSample(Random random, boolean force)
