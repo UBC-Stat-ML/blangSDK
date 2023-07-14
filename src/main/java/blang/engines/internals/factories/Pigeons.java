@@ -38,6 +38,8 @@ public class Pigeons implements PosteriorInferenceEngine
       while (true)
       {
         String line = br.readLine();
+        if (line == null)
+          return;
         if (line.startsWith(LOG_POTENTIAL_CODE))
                             log_potential(parseAnnealingParameter(line, 
                             LOG_POTENTIAL_CODE)); 
