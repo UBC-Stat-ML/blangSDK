@@ -21,6 +21,7 @@ import blang.core.ForwardSimulator;
 import blang.core.LogScaleFactor;
 import blang.core.Model;
 import blang.core.Param;
+import blang.engines.internals.factories.Pigeons;
 import blang.inits.experiments.tabwriters.TidySerializer;
 import blang.mcmc.Sampler;
 import blang.mcmc.internals.BuiltSamplers;
@@ -267,6 +268,7 @@ public class SampledModel
     if (currentPosition == -1)
     {
       Collections.shuffle(currentSamplingOrder, random);
+      Pigeons.static_log(currentSamplingOrder);
       currentPosition = nPosteriorSamplers() - 1;
     }
     int samplerIndex = currentSamplingOrder.get(currentPosition--);

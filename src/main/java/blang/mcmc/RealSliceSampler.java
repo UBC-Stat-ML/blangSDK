@@ -6,6 +6,7 @@ import bayonet.math.NumericalUtils;
 import blang.core.LogScaleFactor;
 import blang.core.WritableRealVar;
 import blang.distributions.Generators;
+import blang.engines.internals.factories.Pigeons;
 
 
 public class RealSliceSampler implements Sampler
@@ -52,6 +53,7 @@ public class RealSliceSampler implements Sampler
   
   public void execute(Random random)
   {
+    Pigeons.static_log("before_slice: " + variable.doubleValue());
     // sample slice
     final double logSliceHeight = nextLogSliceHeight(random, logDensity());  // log(Y) in Neal's paper
     final double oldState = variable.doubleValue();        // x0 in Neal's paper
@@ -100,6 +102,7 @@ public class RealSliceSampler implements Sampler
       if (logSliceHeight <= logDensityAt(newState) && accept(oldState, newState, logSliceHeight, leftProposalEndPoint, rightProposalEndPoint)) // *
       {
         variable.set(newState);
+        Pigeons.static_log("after_slice(1): " + variable.doubleValue());
         return;
       }
       if (newState < oldState)
@@ -113,6 +116,7 @@ public class RealSliceSampler implements Sampler
         // This was observed in a case caused by the uniform generator excluding
         // the right end point, creating an infinite loop.
         variable.set(oldState);
+        Pigeons.static_log("after_slice(2): " + variable.doubleValue());
         return;
       }
     }
@@ -144,7 +148,7 @@ public class RealSliceSampler implements Sampler
   {
     if (logDensity == Double.NEGATIVE_INFINITY)
       return -1e100; // work around: if initialized at zero probability, e.g Beta at zero, we want this to be greater INF so than line (*) above is rejected for invalid configs
-    return logDensity - Generators.unitRateExponential(random);
+    return logDensity - Pigeons.static_log(Generators.unitRateExponential(random));
   }
   
   private double logDensityAt(double x)

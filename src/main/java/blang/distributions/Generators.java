@@ -99,6 +99,7 @@ public class Generators // Warning: blang.distributions.Generators hard-coded in
   /** */
   public static double halfstudentt(Random random, double nu, double sigma) {
 	  double t = studentt(random, nu, 0, 1);
+	  System.out.println("t = " + t);
 	  return Math.abs(t) * sigma;
   }
 
