@@ -1,0 +1,45 @@
+package blang.validation.internals.fixtures.glms
+
+import blang.validation.internals.fixtures.Blocked
+import blang.validation.internals.fixtures.glms.DotProduct
+import briefj.BriefLog
+
+model SonarLogisticRegression {
+  
+  param GlobalDataSource data
+  param Plate<String> instances, features
+  
+  param Plated<Double> covariates
+  random Plated<RealVar> betas
+  random Plated<IntVar> labels
+
+  random RealVar intercept ?: latentReal 
+  
+  param String covarianceDataDirectory ?: null
+  
+  random Blocked<WritableRealVar> blocked ?: {
+  	val result = new ArrayList<WritableRealVar>() 
+  	BriefLog.warnOnce("Assuming following order: intercept, followed by features: " + features.indices.map[it.key])
+  	result.add(intercept as WritableRealVar)
+  	for (feature : features.indices) {
+      result.add(betas.get(feature) as WritableRealVar)
+    }
+  	return new Blocked(result, covarianceDataDirectory)
+  }
+  
+  
+  laws {
+    
+    intercept ~ Normal(0, 400.0)
+
+    for (Index<String> feature : features.indices) {
+      betas.get(feature) ~ Normal(0, 25.0)
+    }
+
+    for (Index<String> instance : instances.indices) {
+      labels.get(instance) | intercept, DotProduct dotProduct = DotProduct.of(features, betas, covariates.slice(instance))
+        ~ Bernoulli(logistic(intercept + dotProduct.compute))
+    }   
+    
+  }
+}
