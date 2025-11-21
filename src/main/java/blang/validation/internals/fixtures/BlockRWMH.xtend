@@ -74,9 +74,9 @@ class BlockRWMH implements Sampler {
 			set(variable)
 			rate.addValue(0.0)
 		}
-		if (rate.n > 0 && rate.n % 50 == 0) {
-			println("BlockRWMH accept rate = " + rate.mean)
-		}
+//		if (rate.n > 0 && rate.n % 50 == 0) {
+//			println("BlockRWMH accept rate = " + rate.mean)
+//		}
 	}
 	
 	def double logDensity(Matrix m) {
