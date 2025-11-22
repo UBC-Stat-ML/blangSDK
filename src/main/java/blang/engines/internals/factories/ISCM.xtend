@@ -33,8 +33,8 @@ class ISCM extends SCM {
                              @DefaultValue("20")
   public int initialNumberOfSMCIterations = 20;
   
-  @Arg  @DefaultValue("true")
-  public boolean alwaysIncreaseBothNAndT = true;
+  @Arg  	  @DefaultValue("200")
+  public int maxNParticles = 200;
   
   SampledModel model;
   
@@ -63,13 +63,14 @@ class ISCM extends SCM {
       
       // increase number of particles, temperatures
       
-      if (!alwaysIncreaseBothNAndT && stabilized(approx)) {
-        System.out.println(" --> no resampling performed: increasing # particles x2")
-        nParticles *= 2
+      val proposedNParticles = Math::ceil(nParticles * Math::sqrt(2.0)) as int
+      if (proposedNParticles > maxNParticles) {
+        System.out.println(" --> max number of particles reached: increasing # timesteps x2")
+        numberOfSMCIterations *= 2
       } else {
         System.out.println(" --> increasing # particles x1.4; # iteration x1.4")
         numberOfSMCIterations = Math::ceil(numberOfSMCIterations * Math::sqrt(2.0)) as int
-        nParticles            = Math::ceil(nParticles            * Math::sqrt(2.0)) as int
+        nParticles = proposedNParticles
       }
       
       // update schedule
