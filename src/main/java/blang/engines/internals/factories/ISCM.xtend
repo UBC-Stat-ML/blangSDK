@@ -41,10 +41,16 @@ class ISCM extends SCM {
   @Arg  	  	  @DefaultValue("false")
   public boolean createSamples = false;
   
+  @Arg  	   @DefaultValue("false")
+  public boolean rejuvenate = false;
+  
   SampledModel model;
   
   var currentRound = 0
   override performInference() {
+  	
+  	if (rejuvenate && !createSamples)
+  		throw new RuntimeException
     
     var numberOfSMCIterations = initialNumberOfSMCIterations;
     estimateISCMStatistics = true;
@@ -99,21 +105,24 @@ class ISCM extends SCM {
       	deepCopyParticles(resampledApprox)
       	val nParticles = resampledApprox.nParticles()
     	for (var rejIter = 0; rejIter < currentNumberOfSMCIterations; rejIter++) {
-    		BriefParallel.process(nParticles, nThreads.numberAvailable(), [particleIndex |
-		      val random = streams.get(particleIndex)
-		      resampledApprox.particles.get(particleIndex).posteriorSamplingScan(random);
-		    ])
-		    val tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
-	    	var particleIndex = 0;
-		    for (SampledModel model : resampledApprox.particles)  
-		    {
-		      model.getSampleWriter(tidySerializer).write(
-		      	Column.chain -> particleIndex,
-		      	Column.round -> currentRound,
-		      	Column.nExplorationSteps -> rejIter
-		      )
-		      particleIndex++;
-		    }
+    		if (rejuvenate)
+	    		BriefParallel.process(nParticles, nThreads.numberAvailable(), [particleIndex |
+			      val random = streams.get(particleIndex)
+			      resampledApprox.particles.get(particleIndex).posteriorSamplingScan(random);
+			    ])
+			if (rejuvenate || rejIter == 0) {
+			    val tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
+		    	var particleIndex = 0;
+			    for (SampledModel model : resampledApprox.particles)  
+			    {
+			      model.getSampleWriter(tidySerializer).write(
+			      	Column.chain -> particleIndex,
+			      	Column.round -> currentRound,
+			      	Column.nExplorationSteps -> rejIter
+			      )
+			      particleIndex++;
+			    }   
+			 }
 	     }
       }
       
