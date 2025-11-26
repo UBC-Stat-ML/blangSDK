@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit
 import java.util.ArrayList
 import bayonet.smc.ParticlePopulation
 import bayonet.math.NumericalUtils
+import briefj.BriefParallel
+import blang.io.BlangTidySerializer
 
 class ISCM extends SCM { 
    
@@ -36,6 +38,9 @@ class ISCM extends SCM {
   @Arg  	  @DefaultValue("200")
   public int maxNParticles = 200;
   
+  @Arg  	  	  @DefaultValue("false")
+  public boolean createSamples = false;
+  
   SampledModel model;
   
   var currentRound = 0
@@ -47,6 +52,7 @@ class ISCM extends SCM {
     var TemperatureSchedule schedule = new FixedTemperatureSchedule() => [ nTemperatures = initialNumberOfSMCIterations ]
     for (currentRound = 0; currentRound < nRounds; currentRound++) {
       System.out.indentWithTiming("Round(" + (currentRound+1) + "/" + nRounds + ")") 
+      val currentNumberOfSMCIterations = numberOfSMCIterations
       writer(ISCMOutput::budget).printAndWrite(
         Column::round -> currentRound,
         "nParticles" -> nParticles, 
@@ -87,9 +93,36 @@ class ISCM extends SCM {
         Column.nExplorationSteps -> nExplorationSteps,
         TidySerializer.VALUE -> roundTime
       )
+      
+      if (createSamples) {
+      	val resampledApprox = approx.resample(random, resamplingScheme)
+      	deepCopyParticles(resampledApprox)
+    	for (var rejIter = 0; rejIter < currentNumberOfSMCIterations; rejIter++) {
+    		BriefParallel.process(nParticles, nThreads.numberAvailable(), [particleIndex |
+		      val random = streams.get(particleIndex)
+		      resampledApprox.particles.get(particleIndex).posteriorSamplingScan(random);
+		    ])
+		    val tidySerializer = new BlangTidySerializer(results.child(Runner.SAMPLES_FOLDER)); 
+	    	var particleIndex = 0;
+		    for (SampledModel model : resampledApprox.particles)  
+		    {
+		      model.getSampleWriter(tidySerializer).write(
+		      	Column.chain -> particleIndex,
+		      	Column.round -> currentRound,
+		      	Column.nExplorationSteps -> rejIter
+		      )
+		      particleIndex++;
+		    }
+	     }
+      }
+      
+      
       results.flushAll
     }
   }
+  
+  
+  
   
   def boolean stabilized(ParticlePopulation<?> p) {
     val isAIS = resamplingESSThreshold == 0.0
