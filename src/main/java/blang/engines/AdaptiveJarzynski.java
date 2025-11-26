@@ -155,6 +155,7 @@ public class AdaptiveJarzynski
 
   protected void deepCopyParticles(final ParticlePopulation<SampledModel> population) 
   {
+	int nParticles = population.nParticles();
     SampledModel [] cloned = (SampledModel[]) new SampledModel[nParticles];
     
     BriefParallel.process(nParticles, nThreads.numberAvailable(), particleIndex -> 

@@ -97,6 +97,7 @@ class ISCM extends SCM {
       if (createSamples) {
       	val resampledApprox = approx.resample(random, resamplingScheme)
       	deepCopyParticles(resampledApprox)
+      	val nParticles = resampledApprox.nParticles()
     	for (var rejIter = 0; rejIter < currentNumberOfSMCIterations; rejIter++) {
     		BriefParallel.process(nParticles, nThreads.numberAvailable(), [particleIndex |
 		      val random = streams.get(particleIndex)
